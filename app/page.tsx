@@ -2,6 +2,7 @@ import { DashboardHeader } from "@/components/dashboard/header"
 import { KPICards } from "@/components/dashboard/kpi-cards"
 import { IncidentStatistics } from "@/components/dashboard/incident-statistics"
 import { InspectionReports } from "@/components/dashboard/inspection-reports"
+import { UsersManagement } from "@/components/dashboard/users-management"
 
 export default function HSEDashboard() {
   return (
@@ -29,6 +30,11 @@ export default function HSEDashboard() {
         {/* Inspection Reports */}
         <section aria-label="Inspection Reports">
           <InspectionReports />
+        </section>
+
+        {/* Team Members / Users */}
+        <section aria-label="Team Members">
+          <UsersManagement />
         </section>
       </main>
 
