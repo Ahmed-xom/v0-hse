@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Bell, Calendar, ChevronDown, Menu, Search, Settings, Shield, X } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -16,12 +17,12 @@ import {
 import { Badge } from "@/components/ui/badge"
 
 const navItems = [
-  { label: "Overview", href: "#", active: true },
+  { label: "Overview", href: "/", active: true },
   { label: "Incidents", href: "#" },
   { label: "Inspections", href: "#" },
   { label: "Training", href: "#" },
   { label: "Reports", href: "#" },
-  { label: "Settings", href: "#" },
+  { label: "Settings", href: "/settings" },
 ]
 
 export function DashboardHeader() {
@@ -49,7 +50,7 @@ export function DashboardHeader() {
             <ul className="flex items-center gap-1">
               {navItems.map((item) => (
                 <li key={item.label}>
-                  <a
+                  <Link
                     href={item.href}
                     className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                       item.active
@@ -58,7 +59,7 @@ export function DashboardHeader() {
                     }`}
                   >
                     {item.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -110,10 +111,12 @@ export function DashboardHeader() {
           </DropdownMenu>
 
           {/* Settings */}
-          <Button variant="ghost" size="icon" className="hidden sm:flex">
-            <Settings className="h-5 w-5" />
-            <span className="sr-only">Settings</span>
-          </Button>
+          <Link href="/settings">
+            <Button variant="ghost" size="icon" className="hidden sm:flex">
+              <Settings className="h-5 w-5" />
+              <span className="sr-only">Settings</span>
+            </Button>
+          </Link>
 
           {/* User Menu */}
           <DropdownMenu>
@@ -152,7 +155,7 @@ export function DashboardHeader() {
           <ul className="space-y-1">
             {navItems.map((item) => (
               <li key={item.label}>
-                <a
+                <Link
                   href={item.href}
                   className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                     item.active
@@ -162,7 +165,7 @@ export function DashboardHeader() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
