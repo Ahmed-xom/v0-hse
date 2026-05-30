@@ -3,6 +3,7 @@ import { KPICards } from "@/components/dashboard/kpi-cards"
 import { IncidentStatistics } from "@/components/dashboard/incident-statistics"
 import { InspectionReports } from "@/components/dashboard/inspection-reports"
 import { UsersManagement } from "@/components/dashboard/users-management"
+import { BusinessUnits } from "@/components/dashboard/business-units"
 
 export default function HSEDashboard() {
   return (
@@ -35,6 +36,11 @@ export default function HSEDashboard() {
         {/* Team Members / Users */}
         <section aria-label="Team Members">
           <UsersManagement />
+        </section>
+
+        {/* Business Units */}
+        <section aria-label="Business Units">
+          <BusinessUnits />
         </section>
       </main>
 
