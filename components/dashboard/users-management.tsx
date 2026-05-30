@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import {
   Search,
   Filter,
@@ -15,8 +15,11 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  Building2,
+  Users,
+  Download,
 } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -54,165 +57,77 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { users, businessUnits, roles, type User } from "@/lib/users-data"
 
-interface User {
-  id: string
-  name: string
-  email: string
-  phone: string
-  role: "admin" | "safety_officer" | "supervisor" | "employee"
-  department: string
-  status: "active" | "inactive" | "pending"
-  certifications: string[]
-  lastActive: string
-  avatar?: string
-}
-
-const users: User[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john.doe@company.com",
-    phone: "+1 (555) 123-4567",
-    role: "admin",
-    department: "HSE Management",
-    status: "active",
-    certifications: ["OSHA 30", "First Aid", "Fire Safety"],
-    lastActive: "Just now",
-  },
-  {
-    id: "2",
-    name: "Sarah Chen",
-    email: "sarah.chen@company.com",
-    phone: "+1 (555) 234-5678",
-    role: "safety_officer",
-    department: "Operations",
-    status: "active",
-    certifications: ["OSHA 30", "Hazmat", "Confined Space"],
-    lastActive: "2 hours ago",
-  },
-  {
-    id: "3",
-    name: "Michael Torres",
-    email: "m.torres@company.com",
-    phone: "+1 (555) 345-6789",
-    role: "supervisor",
-    department: "Manufacturing",
-    status: "active",
-    certifications: ["OSHA 10", "First Aid"],
-    lastActive: "1 day ago",
-  },
-  {
-    id: "4",
-    name: "Emily Johnson",
-    email: "e.johnson@company.com",
-    phone: "+1 (555) 456-7890",
-    role: "safety_officer",
-    department: "Warehouse",
-    status: "active",
-    certifications: ["OSHA 30", "Forklift Safety", "First Aid"],
-    lastActive: "3 hours ago",
-  },
-  {
-    id: "5",
-    name: "David Kim",
-    email: "d.kim@company.com",
-    phone: "+1 (555) 567-8901",
-    role: "employee",
-    department: "Logistics",
-    status: "pending",
-    certifications: ["OSHA 10"],
-    lastActive: "Never",
-  },
-  {
-    id: "6",
-    name: "Lisa Patel",
-    email: "l.patel@company.com",
-    phone: "+1 (555) 678-9012",
-    role: "supervisor",
-    department: "Quality Control",
-    status: "active",
-    certifications: ["OSHA 30", "ISO Auditor", "First Aid"],
-    lastActive: "5 hours ago",
-  },
-  {
-    id: "7",
-    name: "Robert Williams",
-    email: "r.williams@company.com",
-    phone: "+1 (555) 789-0123",
-    role: "employee",
-    department: "Manufacturing",
-    status: "inactive",
-    certifications: ["OSHA 10"],
-    lastActive: "30 days ago",
-  },
-  {
-    id: "8",
-    name: "Amanda Foster",
-    email: "a.foster@company.com",
-    phone: "+1 (555) 890-1234",
-    role: "safety_officer",
-    department: "Construction",
-    status: "active",
-    certifications: ["OSHA 30", "Fall Protection", "Scaffolding"],
-    lastActive: "1 hour ago",
-  },
-]
-
-const roleLabels: Record<User["role"], string> = {
-  admin: "Administrator",
-  safety_officer: "Safety Officer",
-  supervisor: "Supervisor",
-  employee: "Employee",
-}
-
-const roleColors: Record<User["role"], string> = {
-  admin: "bg-primary/20 text-primary border-primary/30",
-  safety_officer: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  supervisor: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  employee: "bg-secondary text-muted-foreground border-border",
+const roleColors: Record<string, string> = {
+  "ADMIN SYSTEM": "bg-red-500/20 text-red-400 border-red-500/30",
+  "MANAGEMENT": "bg-purple-500/20 text-purple-400 border-purple-500/30",
+  "SITE MANAGER": "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  "SITE MANAGER - Global": "bg-indigo-500/20 text-indigo-400 border-indigo-500/30",
+  "HSE ADMIN": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  "HSE": "bg-teal-500/20 text-teal-400 border-teal-500/30",
+  "HR": "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  "MASTER USER": "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  "USER": "bg-secondary text-muted-foreground border-border",
+  "USER - JM": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
 }
 
 const statusConfig: Record<User["status"], { label: string; className: string; icon: typeof UserCheck }> = {
-  active: {
+  Active: {
     label: "Active",
     className: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
     icon: UserCheck,
   },
-  inactive: {
+  Inactive: {
     label: "Inactive",
     className: "bg-muted text-muted-foreground border-border",
     icon: UserX,
   },
-  pending: {
-    label: "Pending",
-    className: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-    icon: Shield,
-  },
 }
+
+const ITEMS_PER_PAGE = 15
 
 export function UsersManagement() {
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [businessUnitFilter, setBusinessUnitFilter] = useState<string>("all")
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.department.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesRole = roleFilter === "all" || user.role === roleFilter
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter
-    return matchesSearch && matchesRole && matchesStatus
-  })
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) => {
+      const matchesSearch =
+        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.designation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.payrollNo.toLowerCase().includes(searchQuery.toLowerCase())
+      const matchesRole = roleFilter === "all" || user.role === roleFilter
+      const matchesStatus = statusFilter === "all" || user.status === statusFilter
+      const matchesBusinessUnit = businessUnitFilter === "all" || user.businessUnit === businessUnitFilter
+      return matchesSearch && matchesRole && matchesStatus && matchesBusinessUnit
+    })
+  }, [searchQuery, roleFilter, statusFilter, businessUnitFilter])
 
-  const stats = {
-    total: users.length,
-    active: users.filter((u) => u.status === "active").length,
-    pending: users.filter((u) => u.status === "pending").length,
-    safetyOfficers: users.filter((u) => u.role === "safety_officer").length,
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    return filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+  }, [filteredUsers, currentPage])
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
+    setter(value)
+    setCurrentPage(1)
   }
+
+  const stats = useMemo(() => ({
+    total: users.length,
+    active: users.filter((u) => u.status === "Active").length,
+    inactive: users.filter((u) => u.status === "Inactive").length,
+    management: users.filter((u) => u.role === "MANAGEMENT" || u.role === "SITE MANAGER" || u.role === "SITE MANAGER - Global").length,
+    hse: users.filter((u) => u.role === "HSE" || u.role === "HSE ADMIN").length,
+  }), [])
 
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
@@ -220,83 +135,91 @@ export function UsersManagement() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="flex items-center gap-2 text-xl">
-              <Shield className="h-5 w-5 text-primary" />
+              <Users className="h-5 w-5 text-primary" />
               Team Members
             </CardTitle>
-            <CardDescription>Manage HSE personnel and their certifications</CardDescription>
+            <CardDescription>Manage {users.length} HSE personnel across all business units</CardDescription>
           </div>
-          <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add User
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Add New Team Member</DialogTitle>
-                <DialogDescription>
-                  Add a new user to the HSE management system.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" placeholder="Enter full name" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="email@company.com" />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" type="tel" placeholder="+1 (555) 000-0000" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Administrator</SelectItem>
-                        <SelectItem value="safety_officer">Safety Officer</SelectItem>
-                        <SelectItem value="supervisor">Supervisor</SelectItem>
-                        <SelectItem value="employee">Employee</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="department">Department</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select dept" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="hse">HSE Management</SelectItem>
-                        <SelectItem value="operations">Operations</SelectItem>
-                        <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                        <SelectItem value="warehouse">Warehouse</SelectItem>
-                        <SelectItem value="logistics">Logistics</SelectItem>
-                        <SelectItem value="construction">Construction</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
-                  Cancel
+          <div className="flex gap-2">
+            <Button variant="outline" className="gap-2">
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+            <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add User
                 </Button>
-                <Button onClick={() => setIsAddUserOpen(false)}>Add User</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Add New Team Member</DialogTitle>
+                  <DialogDescription>
+                    Add a new user to the HSE management system.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="payroll">Payroll No</Label>
+                      <Input id="payroll" placeholder="L-XXX-0000" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="name">Full Name</Label>
+                      <Input id="name" placeholder="Enter full name" />
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" placeholder="email@company.com" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="designation">Designation</Label>
+                    <Input id="designation" placeholder="Job title" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="role">Role</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roles.map((role) => (
+                            <SelectItem key={role} value={role}>{role}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="businessUnit">Business Unit</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {businessUnits.map((unit) => (
+                            <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={() => setIsAddUserOpen(false)}>Add User</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Stats Row */}
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
           <div className="rounded-lg border border-border/50 bg-secondary/30 p-3">
             <p className="text-sm text-muted-foreground">Total Users</p>
             <p className="text-2xl font-bold">{stats.total}</p>
@@ -306,51 +229,68 @@ export function UsersManagement() {
             <p className="text-2xl font-bold text-emerald-400">{stats.active}</p>
           </div>
           <div className="rounded-lg border border-border/50 bg-secondary/30 p-3">
-            <p className="text-sm text-muted-foreground">Pending</p>
-            <p className="text-2xl font-bold text-amber-400">{stats.pending}</p>
+            <p className="text-sm text-muted-foreground">Inactive</p>
+            <p className="text-2xl font-bold text-muted-foreground">{stats.inactive}</p>
           </div>
           <div className="rounded-lg border border-border/50 bg-secondary/30 p-3">
-            <p className="text-sm text-muted-foreground">Safety Officers</p>
-            <p className="text-2xl font-bold text-blue-400">{stats.safetyOfficers}</p>
+            <p className="text-sm text-muted-foreground">Management</p>
+            <p className="text-2xl font-bold text-purple-400">{stats.management}</p>
+          </div>
+          <div className="rounded-lg border border-border/50 bg-secondary/30 p-3">
+            <p className="text-sm text-muted-foreground">HSE Staff</p>
+            <p className="text-2xl font-bold text-teal-400">{stats.hse}</p>
           </div>
         </div>
       </CardHeader>
 
       <CardContent>
         {/* Filters */}
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="Search by name, email, or department..."
+              placeholder="Search by name, email, designation, or payroll no..."
               className="pl-9"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setCurrentPage(1)
+              }}
             />
           </div>
-          <div className="flex gap-2">
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-[140px]">
-                <Filter className="mr-2 h-4 w-4" />
+          <div className="flex flex-wrap gap-2">
+            <Select value={businessUnitFilter} onValueChange={handleFilterChange(setBusinessUnitFilter)}>
+              <SelectTrigger className="w-[180px]">
+                <Building2 className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="Business Unit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Units</SelectItem>
+                {businessUnits.map((unit) => (
+                  <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={roleFilter} onValueChange={handleFilterChange(setRoleFilter)}>
+              <SelectTrigger className="w-[160px]">
+                <Shield className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Role" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="admin">Administrator</SelectItem>
-                <SelectItem value="safety_officer">Safety Officer</SelectItem>
-                <SelectItem value="supervisor">Supervisor</SelectItem>
-                <SelectItem value="employee">Employee</SelectItem>
+                {roles.map((role) => (
+                  <SelectItem key={role} value={role}>{role}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={handleFilterChange(setStatusFilter)}>
               <SelectTrigger className="w-[130px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -361,77 +301,62 @@ export function UsersManagement() {
           <Table>
             <TableHeader>
               <TableRow className="border-border/50 bg-muted/30 hover:bg-muted/30">
-                <TableHead className="font-semibold">User</TableHead>
+                <TableHead className="font-semibold">Employee</TableHead>
+                <TableHead className="font-semibold hidden sm:table-cell">Payroll No</TableHead>
                 <TableHead className="font-semibold">Role</TableHead>
-                <TableHead className="hidden font-semibold md:table-cell">Department</TableHead>
-                <TableHead className="hidden font-semibold lg:table-cell">Certifications</TableHead>
+                <TableHead className="hidden font-semibold lg:table-cell">Business Unit</TableHead>
+                <TableHead className="hidden font-semibold xl:table-cell">Designation</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
-                <TableHead className="hidden font-semibold sm:table-cell">Last Active</TableHead>
                 <TableHead className="w-[50px]">
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.map((user) => {
+              {paginatedUsers.map((user) => {
                 const StatusIcon = statusConfig[user.status].icon
                 return (
                   <TableRow key={user.id} className="border-border/50">
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
-                          <AvatarImage src={user.avatar} />
                           <AvatarFallback className="bg-primary/20 text-primary text-sm">
                             {user.name
                               .split(" ")
+                              .slice(0, 2)
                               .map((n) => n[0])
-                              .join("")}
+                              .join("")
+                              .toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <span className="font-medium">{user.name}</span>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <span className="font-medium text-sm">{user.name}</span>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Mail className="h-3 w-3" />
-                            <span className="hidden sm:inline">{user.email}</span>
-                            <span className="sm:hidden">{user.email.split("@")[0]}</span>
+                            <span className="truncate max-w-[180px]">{user.email}</span>
                           </div>
                         </div>
                       </div>
                     </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <span className="font-mono text-xs text-muted-foreground">{user.payrollNo}</span>
+                    </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={roleColors[user.role]}>
-                        {roleLabels[user.role]}
+                      <Badge variant="outline" className={`text-xs ${roleColors[user.role] || roleColors["USER"]}`}>
+                        {user.role}
                       </Badge>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <span className="text-muted-foreground">{user.department}</span>
-                    </TableCell>
                     <TableCell className="hidden lg:table-cell">
-                      <div className="flex flex-wrap gap-1">
-                        {user.certifications.slice(0, 2).map((cert) => (
-                          <Badge
-                            key={cert}
-                            variant="outline"
-                            className="border-border bg-secondary/50 text-xs"
-                          >
-                            {cert}
-                          </Badge>
-                        ))}
-                        {user.certifications.length > 2 && (
-                          <Badge variant="outline" className="border-border bg-secondary/50 text-xs">
-                            +{user.certifications.length - 2}
-                          </Badge>
-                        )}
-                      </div>
+                      <span className="text-sm text-muted-foreground">{user.businessUnit}</span>
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      <span className="text-sm text-muted-foreground truncate max-w-[200px] block">{user.designation}</span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`gap-1 ${statusConfig[user.status].className}`}>
+                      <Badge variant="outline" className={`gap-1 text-xs ${statusConfig[user.status].className}`}>
                         <StatusIcon className="h-3 w-3" />
                         {statusConfig[user.status].label}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="hidden text-muted-foreground sm:table-cell">
-                      {user.lastActive}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
@@ -454,12 +379,12 @@ export function UsersManagement() {
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <Phone className="mr-2 h-4 w-4" />
-                            Call User
+                            View Profile
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Remove User
+                            Deactivate
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -472,16 +397,52 @@ export function UsersManagement() {
         </div>
 
         {/* Pagination */}
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {filteredUsers.length} of {users.length} users
+            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
+            {filteredUsers.length !== users.length && ` (filtered from ${users.length})`}
           </p>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            >
               <ChevronLeft className="h-4 w-4" />
               Previous
             </Button>
-            <Button variant="outline" size="sm" disabled>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum: number
+                if (totalPages <= 5) {
+                  pageNum = i + 1
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i
+                } else {
+                  pageNum = currentPage - 2 + i
+                }
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    size="sm"
+                    className="w-8 h-8 p-0"
+                    onClick={() => setCurrentPage(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                )
+              })}
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            >
               Next
               <ChevronRight className="h-4 w-4" />
             </Button>
