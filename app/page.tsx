@@ -7,6 +7,7 @@ import { InspectionReports } from "@/components/dashboard/inspection-reports"
 import { InspectionTypes } from "@/components/dashboard/inspection-types"
 import { UsersManagement } from "@/components/dashboard/users-management"
 import { BusinessUnits } from "@/components/dashboard/business-units"
+import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
 import { ProtectedRoute } from "@/components/protected-route"
 
 export default function HSEDashboard() {
@@ -31,6 +32,11 @@ export default function HSEDashboard() {
           {/* Incident Statistics */}
           <section aria-label="Incident Statistics">
             <IncidentStatistics />
+          </section>
+
+          {/* Behaviour Observations */}
+          <section aria-label="Behaviour Observations">
+            <BehaviourObservations />
           </section>
 
           {/* Inspection Reports */}
