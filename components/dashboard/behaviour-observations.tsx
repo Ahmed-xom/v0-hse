@@ -80,6 +80,8 @@ const statusColors: Record<ObservationStatus, string> = {
   "In Progress": "bg-amber-500/20 text-amber-400 border-amber-500/30",
   "Closed": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
   "Overdue": "bg-red-500/20 text-red-400 border-red-500/30",
+  "NoA": "bg-slate-500/20 text-slate-400 border-slate-500/30",
+  "Approval Pending": "bg-purple-500/20 text-purple-400 border-purple-500/30",
 }
 
 const typeColors: Record<ObservationType, string> = {
@@ -137,7 +139,7 @@ export function BehaviourObservations() {
   const filteredObservations = useMemo(() => {
     return observations.filter((obs) => {
       const matchesSearch =
-        obs.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (obs.number?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
         obs.observer.toLowerCase().includes(searchQuery.toLowerCase()) ||
         obs.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         obs.category.toLowerCase().includes(searchQuery.toLowerCase())
@@ -356,7 +358,7 @@ export function BehaviourObservations() {
             <TableBody>
               {paginatedObservations.map((obs) => (
                 <TableRow key={obs.id} className="border-border/50">
-                  <TableCell className="font-medium">{obs.id}</TableCell>
+                  <TableCell className="font-medium">{obs.number || obs.id}</TableCell>
                   <TableCell>{new Date(obs.date).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div>
