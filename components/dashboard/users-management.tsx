@@ -18,6 +18,9 @@ import {
   Building2,
   Users,
   Download,
+  KeyRound,
+  Copy,
+  Check,
 } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -57,7 +60,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/auth-context"
 import { users, businessUnits, roles, type User } from "@/lib/users-data"
+
+// Default password for reset
+const DEFAULT_PASSWORD = "Xom@2026"
 
 const roleColors: Record<string, string> = {
   "ADMIN SYSTEM": "bg-red-500/20 text-red-400 border-red-500/30",
@@ -94,6 +102,14 @@ export function UsersManagement() {
   const [businessUnitFilter, setBusinessUnitFilter] = useState<string>("all")
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null)
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false)
+  const [copiedPassword, setCopiedPassword] = useState(false)
+  const { toast } = useToast()
+  const { user: currentUser } = useAuth()
+  
+  // Check if current user is admin
+  const isAdmin = currentUser?.role === "ADMIN SYSTEM" || currentUser?.role === "MASTER USER"
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
@@ -128,6 +144,33 @@ export function UsersManagement() {
     management: users.filter((u) => u.role === "MANAGEMENT" || u.role === "SITE MANAGER" || u.role === "SITE MANAGER - Global").length,
     hse: users.filter((u) => u.role === "HSE" || u.role === "HSE ADMIN").length,
   }), [])
+
+  const handleResetPassword = (user: User) => {
+    setResetPasswordUser(user)
+    setIsResetPasswordOpen(true)
+    setCopiedPassword(false)
+  }
+
+  const confirmResetPassword = () => {
+    if (resetPasswordUser) {
+      toast({
+        title: "Password Reset Successful",
+        description: `Password for ${resetPasswordUser.name} has been reset to the default password.`,
+      })
+      setIsResetPasswordOpen(false)
+      setResetPasswordUser(null)
+    }
+  }
+
+  const copyPassword = () => {
+    navigator.clipboard.writeText(DEFAULT_PASSWORD)
+    setCopiedPassword(true)
+    setTimeout(() => setCopiedPassword(false), 2000)
+    toast({
+      title: "Password Copied",
+      description: "Default password has been copied to clipboard.",
+    })
+  }
 
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
@@ -381,6 +424,15 @@ export function UsersManagement() {
                             <Phone className="mr-2 h-4 w-4" />
                             View Profile
                           </DropdownMenuItem>
+                          {isAdmin && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleResetPassword(user)}>
+                                <KeyRound className="mr-2 h-4 w-4" />
+                                Reset Password
+                              </DropdownMenuItem>
+                            </>
+                          )}
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -449,6 +501,75 @@ export function UsersManagement() {
           </div>
         </div>
       </CardContent>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <KeyRound className="h-5 w-5 text-primary" />
+              Reset User Password
+            </DialogTitle>
+            <DialogDescription>
+              Reset password for the selected user to the default password.
+            </DialogDescription>
+          </DialogHeader>
+          {resetPasswordUser && (
+            <div className="space-y-4 py-4">
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-primary/20 text-primary">
+                      {resetPasswordUser.name
+                        .split(" ")
+                        .slice(0, 2)
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{resetPasswordUser.name}</p>
+                    <p className="text-sm text-muted-foreground">{resetPasswordUser.email}</p>
+                    <Badge variant="outline" className={`mt-1 text-xs ${roleColors[resetPasswordUser.role] || roleColors["USER"]}`}>
+                      {resetPasswordUser.role}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>New Password (Default)</Label>
+                <div className="flex items-center gap-2">
+                  <Input 
+                    value={DEFAULT_PASSWORD} 
+                    readOnly 
+                    className="font-mono"
+                  />
+                  <Button variant="outline" size="icon" onClick={copyPassword}>
+                    {copiedPassword ? (
+                      <Check className="h-4 w-4 text-emerald-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  The user will need to sign in with this password. Recommend they change it after logging in.
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsResetPasswordOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmResetPassword}>
+              Reset Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

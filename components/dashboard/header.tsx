@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Bell, Calendar, ChevronDown, Menu, Search, Settings, Shield, X } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useRouter } from "next/navigation"
+import { Bell, Calendar, ChevronDown, LogOut, Menu, Search, Settings, Shield, User, X } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -15,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
+import { useAuth, isMasterUser } from "@/lib/auth-context"
 
 const navItems = [
   { label: "Overview", href: "/", active: true },
@@ -22,11 +24,28 @@ const navItems = [
   { label: "Inspections", href: "#" },
   { label: "Training", href: "#" },
   { label: "Reports", href: "#" },
-  { label: "Settings", href: "/settings" },
 ]
 
 export function DashboardHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { user, logout } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    logout()
+    router.push("/sign-in")
+  }
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  const showSettings = user && isMasterUser(user.role)
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
@@ -38,9 +57,9 @@ export function DashboardHeader() {
               <Shield className="h-5 w-5 text-primary-foreground" />
             </div>
             <div className="hidden sm:block">
-              <span className="text-lg font-semibold">SafetyFirst</span>
+              <span className="text-lg font-semibold">XOM Oman</span>
               <Badge variant="secondary" className="ml-2 text-xs">
-                Enterprise
+                HSE
               </Badge>
             </div>
           </div>
@@ -62,6 +81,16 @@ export function DashboardHeader() {
                   </Link>
                 </li>
               ))}
+              {showSettings && (
+                <li>
+                  <Link
+                    href="/settings"
+                    className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground"
+                  >
+                    Settings
+                  </Link>
+                </li>
+              )}
             </ul>
           </nav>
         </div>
@@ -110,34 +139,57 @@ export function DashboardHeader() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Settings */}
-          <Link href="/settings">
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
-              <Settings className="h-5 w-5" />
-              <span className="sr-only">Settings</span>
-            </Button>
-          </Link>
+          {/* Settings (only for master users) */}
+          {showSettings && (
+            <Link href="/settings">
+              <Button variant="ghost" size="icon" className="hidden sm:flex">
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">Settings</span>
+              </Button>
+            </Link>
+          )}
 
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="gap-2 px-2">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg" />
-                  <AvatarFallback className="bg-primary text-primary-foreground">JD</AvatarFallback>
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {user ? getInitials(user.name) : "U"}
+                  </AvatarFallback>
                 </Avatar>
-                <span className="hidden text-sm font-medium lg:block">John Doe</span>
+                <div className="hidden text-left lg:block">
+                  <span className="block text-sm font-medium">{user?.name || "User"}</span>
+                  <span className="block text-xs text-muted-foreground">{user?.role || ""}</span>
+                </div>
                 <ChevronDown className="hidden h-4 w-4 lg:block" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                </div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuItem>Team</DropdownMenuItem>
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                Profile
+              </DropdownMenuItem>
+              {showSettings && (
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Log out</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                Log out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -168,6 +220,28 @@ export function DashboardHeader() {
                 </Link>
               </li>
             ))}
+            {showSettings && (
+              <li>
+                <Link
+                  href="/settings"
+                  className="block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Settings
+                </Link>
+              </li>
+            )}
+            <li>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  handleLogout()
+                }}
+                className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-destructive transition-colors hover:bg-secondary/50"
+              >
+                Log out
+              </button>
+            </li>
           </ul>
         </nav>
       )}
