@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { usersData } from "./users-data"
+import { users } from "./users-data"
 
 export type UserRole = "ADMIN SYSTEM" | "MANAGEMENT" | "SITE MANAGER" | "HSE ADMIN" | "HSE" | "HR" | "MASTER USER" | "USER" | "USER - JM"
 
@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     // Find user by email
-    const foundUser = usersData.find(
+    const foundUser = users.find(
       (u) => u.email.toLowerCase() === email.toLowerCase()
     )
 
@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const authUser: AuthUser = {
-      payrollNumber: foundUser.payrollNumber,
+      payrollNumber: foundUser.payrollNo,
       name: foundUser.name,
       email: foundUser.email,
       role: foundUser.role as UserRole,
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const requestPasswordReset = async (email: string): Promise<{ success: boolean; error?: string }> => {
     // Find user by email
-    const foundUser = usersData.find(
+    const foundUser = users.find(
       (u) => u.email.toLowerCase() === email.toLowerCase()
     )
 
