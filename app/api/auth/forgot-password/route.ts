@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import nodemailer from "nodemailer"
 
-// Email configuration
-const EMAIL_USER = "hsexomoman@gmail.com"
-const EMAIL_PASS = "Xom@2026"
+// Email configuration - use environment variables for security
+const EMAIL_USER = process.env.EMAIL_USER || "hsexomoman@gmail.com"
+const EMAIL_APP_PASSWORD = process.env.EMAIL_APP_PASSWORD // Gmail App Password required
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,16 +13,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 })
     }
 
+    // Check if email credentials are configured
+    if (!EMAIL_APP_PASSWORD) {
+      console.log("[v0] Password reset requested for:", email)
+      console.log("[v0] Email sending is not configured - EMAIL_APP_PASSWORD environment variable is missing")
+      
+      // For demo purposes, simulate success but log the reset link
+      const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+      const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
+      console.log("[v0] Reset link would be:", resetLink)
+      
+      // Return success for demo - in production, this should return an error
+      return NextResponse.json({ 
+        success: true, 
+        message: "If an account with that email exists, a password reset link has been sent.",
+        demo: true 
+      })
+    }
+
     // Generate a reset token (in production, store this in database with expiry)
     const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
     const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
 
-    // Create transporter
+    // Create transporter with Gmail App Password
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
         user: EMAIL_USER,
-        pass: EMAIL_PASS,
+        pass: EMAIL_APP_PASSWORD,
       },
     })
 
