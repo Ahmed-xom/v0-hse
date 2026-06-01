@@ -19,7 +19,7 @@ export const users: User[] = [
   { id: "7", payrollNo: "i", name: "q293 dwd (S)", email: "xom1@xomoman.com", role: "USER", designation: "Assistant WL Operator", businessUnit: "Falcon Oilfield Services", status: "Inactive" },
   { id: "8", payrollNo: "E-FDS-0036", name: "Ahmed Mohammed Osama Ahmed", email: "aosama@xomoman.com", role: "USER", designation: "Directional Drilling Engineer", businessUnit: "XOM Drilling System", status: "Active" },
   { id: "9", payrollNo: "L-XOM-0052", name: "Ahmed Khalid Ahmed Al Zakwani", email: "aalzakwani@xomoman.com", role: "USER - JM", designation: "Journey manager / store keeper", businessUnit: "XOM Drilling System", status: "Active" },
-  { id: "10", payrollNo: "L-328543", name: "IT Admin XOM (S)", email: "xom-it-admin@xomoman.com", role: "USER", designation: "3rd Party Contractor", businessUnit: "XOM Oman", status: "Inactive" },
+  { id: "10", payrollNo: "L-328543", name: "IT Admin XOM", email: "xom-it-admin@xomoman.com", role: "ADMIN SYSTEM", designation: "System Administrator", businessUnit: "XOM Oman", status: "Active" },
   { id: "11", payrollNo: "Approver", name: "Syed Sadaqat Approver", email: "syedsadaqat2494326@gmail.com", role: "MASTER USER", designation: "HSE Manager", businessUnit: "Falcon Oilfield Services", status: "Active" },
   { id: "12", payrollNo: "430974", name: "Rustam Khasanshin", email: "rkhasanshin@xomoman.com", role: "USER", designation: "Measurement & Logging While Drilling Engineer", businessUnit: "XOM Drilling System", status: "Active" },
   { id: "13", payrollNo: "L-XDS-0055", name: "Shaker Al Kathiri", email: "skathiri@xomoman.com", role: "USER", designation: "Directional Driller Trainee", businessUnit: "XOM Drilling System", status: "Active" },
