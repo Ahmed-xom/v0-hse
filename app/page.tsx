@@ -8,6 +8,7 @@ import { InspectionTypes } from "@/components/dashboard/inspection-types"
 import { UsersManagement } from "@/components/dashboard/users-management"
 import { BusinessUnits } from "@/components/dashboard/business-units"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
+import { CoursesManagement } from "@/components/dashboard/courses-management"
 import { ProtectedRoute } from "@/components/protected-route"
 
 export default function HSEDashboard() {
@@ -47,6 +48,11 @@ export default function HSEDashboard() {
           {/* Inspection Types */}
           <section aria-label="Inspection Types">
             <InspectionTypes />
+          </section>
+
+          {/* Training Courses */}
+          <section aria-label="Training Courses">
+            <CoursesManagement />
           </section>
 
           {/* Team Members / Users */}
