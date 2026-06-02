@@ -89,6 +89,7 @@ export function CoursesManagement() {
   const [isAddCourseOpen, setIsAddCourseOpen] = useState(false)
   const [isViewCourseOpen, setIsViewCourseOpen] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+  const [coursesList, setCoursesList] = useState<Course[]>(courses)
   const [newCourse, setNewCourse] = useState({
     title: "",
     category: "HSE" as CourseCategory,
@@ -108,18 +109,18 @@ export function CoursesManagement() {
 
   // Stats
   const stats = useMemo(() => ({
-    total: courses.length,
-    hse: courses.filter((c) => c.category === "HSE").length,
-    medical: courses.filter((c) => c.category === "Medical").length,
-    maintenance: courses.filter((c) => c.category === "Maintenance").length,
-    license: courses.filter((c) => c.category === "License").length,
-    operation: courses.filter((c) => c.category === "Operation").length,
-    free: courses.filter((c) => c.cost === 0).length,
-  }), [])
+    total: coursesList.length,
+    hse: coursesList.filter((c) => c.category === "HSE").length,
+    medical: coursesList.filter((c) => c.category === "Medical").length,
+    maintenance: coursesList.filter((c) => c.category === "Maintenance").length,
+    license: coursesList.filter((c) => c.category === "License").length,
+    operation: coursesList.filter((c) => c.category === "Operation").length,
+    free: coursesList.filter((c) => c.cost === 0).length,
+  }), [coursesList])
 
   // Filter courses
   const filteredCourses = useMemo(() => {
-    return courses.filter((course) => {
+    return coursesList.filter((course) => {
       const matchesSearch =
         course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         course.shortTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -130,7 +131,7 @@ export function CoursesManagement() {
 
       return matchesSearch && matchesCategory && matchesCurrency
     })
-  }, [searchQuery, categoryFilter, currencyFilter])
+  }, [searchQuery, categoryFilter, currencyFilter, coursesList])
 
   // Pagination
   const totalPages = Math.ceil(filteredCourses.length / itemsPerPage)
@@ -142,6 +143,21 @@ export function CoursesManagement() {
   const handleAddCourse = () => {
     const duration = `0 Years, 0 Months, ${newCourse.durationDays} Days, ${newCourse.durationHours} Hours`
     const recertification = newCourse.recertificationMonths > 0 ? `${newCourse.recertificationMonths} Months` : "0 Months"
+    
+    const newCourseData: Course = {
+      id: `course-${Date.now()}`,
+      title: newCourse.title,
+      category: newCourse.category,
+      shortTitle: newCourse.shortTitle,
+      cost: newCourse.cost,
+      currency: newCourse.currency,
+      description: newCourse.description,
+      duration: duration,
+      recertificationInterval: recertification,
+      createdAt: new Date().toISOString(),
+    }
+    
+    setCoursesList(prev => [newCourseData, ...prev])
     
     toast({
       title: "Course Added",
@@ -158,6 +174,14 @@ export function CoursesManagement() {
       durationDays: 0,
       durationHours: 0,
       recertificationMonths: 0,
+    })
+  }
+
+  const handleDeleteCourse = (courseId: string) => {
+    setCoursesList(prev => prev.filter(c => c.id !== courseId))
+    toast({
+      title: "Course Deleted",
+      description: "The course has been removed.",
     })
   }
 

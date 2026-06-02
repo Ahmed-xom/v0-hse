@@ -27,47 +27,47 @@ export default function HSEDashboard() {
           </div>
 
           {/* KPI Cards */}
-          <section aria-label="Key Performance Indicators">
+          <section id="kpi-cards" aria-label="Key Performance Indicators">
             <KPICards />
           </section>
 
           {/* Incident Statistics */}
-          <section aria-label="Incident Statistics">
+          <section id="incident-statistics" aria-label="Incident Statistics">
             <IncidentStatistics />
           </section>
 
           {/* Behaviour Observations */}
-          <section aria-label="Behaviour Observations">
+          <section id="behaviour-observations" aria-label="Behaviour Observations">
             <BehaviourObservations />
           </section>
 
           {/* Inspection Reports */}
-          <section aria-label="Inspection Reports">
+          <section id="inspection-reports" aria-label="Inspection Reports">
             <InspectionReports />
           </section>
 
           {/* Inspection Types */}
-          <section aria-label="Inspection Types">
+          <section id="inspection-types" aria-label="Inspection Types">
             <InspectionTypes />
           </section>
 
           {/* Training Courses */}
-          <section aria-label="Training Courses">
+          <section id="training-courses" aria-label="Training Courses">
             <CoursesManagement />
           </section>
 
           {/* Training Records */}
-          <section aria-label="Training Records">
+          <section id="training-records" aria-label="Training Records">
             <TrainingRecords />
           </section>
 
           {/* Team Members / Users */}
-          <section aria-label="Team Members">
+          <section id="team-members" aria-label="Team Members">
             <UsersManagement />
           </section>
 
           {/* Business Units */}
-          <section aria-label="Business Units">
+          <section id="business-units" aria-label="Business Units">
             <BusinessUnits />
           </section>
         </main>

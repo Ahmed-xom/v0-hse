@@ -19,11 +19,11 @@ import { Badge } from "@/components/ui/badge"
 import { useAuth, isMasterUser } from "@/lib/auth-context"
 
 const navItems = [
-  { label: "Overview", href: "/", active: true },
-  { label: "Incidents", href: "#" },
-  { label: "Inspections", href: "#" },
-  { label: "Training", href: "#" },
-  { label: "Reports", href: "#" },
+  { label: "Overview", href: "#kpi-cards", active: true },
+  { label: "Incidents", href: "#incident-statistics" },
+  { label: "Inspections", href: "#inspection-reports" },
+  { label: "Training", href: "#training-courses" },
+  { label: "Reports", href: "#behaviour-observations" },
 ]
 
 export function DashboardHeader() {

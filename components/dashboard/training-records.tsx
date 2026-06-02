@@ -110,6 +110,21 @@ export function TrainingRecords() {
   const [isAddRecordOpen, setIsAddRecordOpen] = useState(false)
   const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState<TrainingRecord | null>(null)
+  const [recordsList, setRecordsList] = useState<TrainingRecord[]>(trainingRecords)
+  const [newRecord, setNewRecord] = useState({
+    employeeId: "",
+    employeeName: "",
+    courseName: "",
+    courseCode: "",
+    status: "APPEAR" as TrainingStatus,
+    result: "PASSED" as TrainingResult,
+    completedDate: "",
+    expiryDate: "",
+    score: "",
+    certificateNumber: "",
+    instructor: "",
+    location: "",
+  })
   const { toast } = useToast()
   const { user: currentUser } = useAuth()
 
@@ -119,28 +134,28 @@ export function TrainingRecords() {
   // Get unique courses from records
   const uniqueCourses = useMemo(() => {
     const coursesSet = new Set<string>()
-    trainingRecords.forEach((record) => coursesSet.add(record.courseName))
+    recordsList.forEach((record) => coursesSet.add(record.courseName))
     return Array.from(coursesSet).sort()
-  }, [])
+  }, [recordsList])
 
   // Calculate stats
   const stats = useMemo(() => ({
-    total: trainingRecords.length,
-    passed: trainingRecords.filter((r) => r.result === "PASSED").length,
-    failed: trainingRecords.filter((r) => r.result === "FAILED").length,
-    scheduled: trainingRecords.filter((r) => r.status === "SCHEDULED").length,
-    expiringSoon: trainingRecords.filter((r) => {
+    total: recordsList.length,
+    passed: recordsList.filter((r) => r.result === "PASSED").length,
+    failed: recordsList.filter((r) => r.result === "FAILED").length,
+    scheduled: recordsList.filter((r) => r.status === "SCHEDULED").length,
+    expiringSoon: recordsList.filter((r) => {
       if (!r.expiryDate) return false
       const expiry = new Date(r.expiryDate)
       const now = new Date()
       const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
       return daysUntilExpiry > 0 && daysUntilExpiry <= 90
     }).length,
-  }), [])
+  }), [recordsList])
 
   // Filter records
   const filteredRecords = useMemo(() => {
-    return trainingRecords.filter((record) => {
+    return recordsList.filter((record) => {
       const matchesSearch =
         record.employeeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         record.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -153,7 +168,7 @@ export function TrainingRecords() {
 
       return matchesSearch && matchesStatus && matchesResult && matchesCourse
     })
-  }, [searchQuery, statusFilter, resultFilter, courseFilter])
+  }, [searchQuery, statusFilter, resultFilter, courseFilter, recordsList])
 
   // Pagination
   const totalPages = Math.ceil(filteredRecords.length / itemsPerPage)
@@ -168,11 +183,60 @@ export function TrainingRecords() {
   }
 
   const handleAddRecord = () => {
+    if (!newRecord.employeeName || !newRecord.courseName) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in employee name and course name.",
+        variant: "destructive",
+      })
+      return
+    }
+    
+    const record: TrainingRecord = {
+      id: `TR-${Date.now()}`,
+      employeeId: newRecord.employeeId || `EMP-${Date.now()}`,
+      employeeName: newRecord.employeeName,
+      courseName: newRecord.courseName,
+      courseCode: newRecord.courseCode || newRecord.courseName.substring(0, 8).toUpperCase(),
+      status: newRecord.status,
+      result: newRecord.result,
+      completedDate: newRecord.completedDate || new Date().toISOString().split("T")[0],
+      expiryDate: newRecord.expiryDate,
+      score: newRecord.score,
+      certificateNumber: newRecord.certificateNumber,
+      instructor: newRecord.instructor,
+      location: newRecord.location,
+    }
+    
+    setRecordsList(prev => [record, ...prev])
+    
     toast({
       title: "Training Record Added",
-      description: "The training record has been successfully added.",
+      description: `Training record for ${newRecord.employeeName} has been added.`,
     })
     setIsAddRecordOpen(false)
+    setNewRecord({
+      employeeId: "",
+      employeeName: "",
+      courseName: "",
+      courseCode: "",
+      status: "APPEAR",
+      result: "PASSED",
+      completedDate: "",
+      expiryDate: "",
+      score: "",
+      certificateNumber: "",
+      instructor: "",
+      location: "",
+    })
+  }
+
+  const handleDeleteRecord = (recordId: string) => {
+    setRecordsList(prev => prev.filter(r => r.id !== recordId))
+    toast({
+      title: "Record Deleted",
+      description: "The training record has been removed.",
+    })
   }
 
   return (
@@ -454,7 +518,17 @@ export function TrainingRecords() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label>Employee</Label>
-              <Select>
+              <Select 
+                value={newRecord.employeeId} 
+                onValueChange={(val) => {
+                  const emp = employees.find(e => e.payrollNo === val)
+                  setNewRecord(prev => ({
+                    ...prev, 
+                    employeeId: val,
+                    employeeName: emp?.name || ""
+                  }))
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select employee" />
                 </SelectTrigger>
@@ -469,7 +543,17 @@ export function TrainingRecords() {
             </div>
             <div className="space-y-2">
               <Label>Course</Label>
-              <Select>
+              <Select
+                value={newRecord.courseCode}
+                onValueChange={(val) => {
+                  const course = courses.find(c => c.id === val)
+                  setNewRecord(prev => ({
+                    ...prev,
+                    courseCode: course?.shortTitle || val,
+                    courseName: course?.title || ""
+                  }))
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select course" />
                 </SelectTrigger>
@@ -485,7 +569,10 @@ export function TrainingRecords() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Status</Label>
-                <Select defaultValue="APPEAR">
+                <Select 
+                  value={newRecord.status} 
+                  onValueChange={(val) => setNewRecord(prev => ({ ...prev, status: val as TrainingStatus }))}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -499,7 +586,10 @@ export function TrainingRecords() {
               </div>
               <div className="space-y-2">
                 <Label>Result</Label>
-                <Select defaultValue="PASSED">
+                <Select 
+                  value={newRecord.result} 
+                  onValueChange={(val) => setNewRecord(prev => ({ ...prev, result: val as TrainingResult }))}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -515,34 +605,57 @@ export function TrainingRecords() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Completion Date</Label>
-                <Input type="date" />
+                <Input 
+                  type="date" 
+                  value={newRecord.completedDate}
+                  onChange={(e) => setNewRecord(prev => ({ ...prev, completedDate: e.target.value }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Expiry Date</Label>
-                <Input type="date" />
+                <Input 
+                  type="date" 
+                  value={newRecord.expiryDate}
+                  onChange={(e) => setNewRecord(prev => ({ ...prev, expiryDate: e.target.value }))}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Score (%)</Label>
-                <Input type="number" placeholder="e.g., 85" min={0} max={100} />
+                <Input 
+                  type="number" 
+                  placeholder="e.g., 85" 
+                  min={0} 
+                  max={100}
+                  value={newRecord.score}
+                  onChange={(e) => setNewRecord(prev => ({ ...prev, score: e.target.value }))}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Certificate No.</Label>
-                <Input placeholder="Certificate number" />
+                <Input 
+                  placeholder="Certificate number"
+                  value={newRecord.certificateNumber}
+                  onChange={(e) => setNewRecord(prev => ({ ...prev, certificateNumber: e.target.value }))}
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label>Instructor</Label>
-              <Input placeholder="Instructor name" />
+              <Input 
+                placeholder="Instructor name"
+                value={newRecord.instructor}
+                onChange={(e) => setNewRecord(prev => ({ ...prev, instructor: e.target.value }))}
+              />
             </div>
             <div className="space-y-2">
               <Label>Location</Label>
-              <Input placeholder="Training location" />
-            </div>
-            <div className="space-y-2">
-              <Label>Notes</Label>
-              <Textarea placeholder="Additional notes..." />
+              <Input 
+                placeholder="Training location"
+                value={newRecord.location}
+                onChange={(e) => setNewRecord(prev => ({ ...prev, location: e.target.value }))}
+              />
             </div>
           </div>
           <DialogFooter>
