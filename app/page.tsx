@@ -9,6 +9,7 @@ import { UsersManagement } from "@/components/dashboard/users-management"
 import { BusinessUnits } from "@/components/dashboard/business-units"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
 import { CoursesManagement } from "@/components/dashboard/courses-management"
+import { FleetManagement } from "@/components/dashboard/fleet-management"
 import { ProtectedRoute } from "@/components/protected-route"
 
 export default function HSEDashboard() {
@@ -53,6 +54,11 @@ export default function HSEDashboard() {
           {/* Training Courses */}
           <section aria-label="Training Courses">
             <CoursesManagement />
+          </section>
+
+          {/* Fleet Management */}
+          <section aria-label="Fleet Management">
+            <FleetManagement />
           </section>
 
           {/* Team Members / Users */}
