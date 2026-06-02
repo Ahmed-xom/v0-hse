@@ -20,6 +20,11 @@ import {
   Clock,
   Eye,
   Copy,
+  MapPin,
+  Route,
+  User,
+  FileText,
+  Play,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -58,9 +63,18 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { vehicles, vehicleTypes, type Vehicle, type VehicleStatus } from "@/lib/fleet-data"
+import { vehicles, vehicleTypes, journeyRecords, type Vehicle, type VehicleStatus, type JourneyManagement } from "@/lib/fleet-data"
+
+const jmStatusColors: Record<string, string> = {
+  Pending: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  Approved: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  "In Progress": "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+  Completed: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+  Cancelled: "bg-red-500/20 text-red-400 border-red-500/30",
+}
 
 const statusColors: Record<VehicleStatus, string> = {
   Active: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
@@ -651,9 +665,9 @@ export function FleetManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* View Details Dialog */}
+      {/* View Details Dialog with JM */}
       <Dialog open={isViewDetailsOpen} onOpenChange={setIsViewDetailsOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Truck className="h-5 w-5 text-primary" />
@@ -661,61 +675,207 @@ export function FleetManagement() {
             </DialogTitle>
           </DialogHeader>
           {selectedVehicle && (
-            <div className="space-y-4">
-              <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-lg font-semibold">{selectedVehicle.registrationNo}</p>
+            <Tabs defaultValue="details" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="details">Vehicle Info</TabsTrigger>
+                <TabsTrigger value="jm" className="gap-1">
+                  <Route className="h-4 w-4" />
+                  Journey Management
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="details" className="space-y-4 pt-4">
+                <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-lg font-semibold">{selectedVehicle.registrationNo}</p>
+                      <Badge
+                        variant="outline"
+                        className={`mt-1 ${typeColors[selectedVehicle.vehicleType] || "bg-muted"}`}
+                      >
+                        {selectedVehicle.vehicleType}
+                      </Badge>
+                    </div>
                     <Badge
                       variant="outline"
-                      className={`mt-1 ${typeColors[selectedVehicle.vehicleType] || "bg-muted"}`}
+                      className={`gap-1 ${statusColors[selectedVehicle.status]}`}
                     >
-                      {selectedVehicle.vehicleType}
+                      {statusIcons[selectedVehicle.status]}
+                      {selectedVehicle.status}
                     </Badge>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={`gap-1 ${statusColors[selectedVehicle.status]}`}
-                  >
-                    {statusIcons[selectedVehicle.status]}
-                    {selectedVehicle.status}
-                  </Badge>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Expiry Date</p>
-                  <p className="flex items-center gap-1.5 font-medium">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    {formatDate(selectedVehicle.expiryDate)}
-                  </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Expiry Date</p>
+                    <p className="flex items-center gap-1.5 font-medium">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      {formatDate(selectedVehicle.expiryDate)}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Allowable Load</p>
+                    <p className="flex items-center gap-1.5 font-medium">
+                      <Weight className="h-4 w-4 text-muted-foreground" />
+                      {selectedVehicle.allowableLoad || "-"}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">KM/Hours Reading</p>
+                    <p className="flex items-center gap-1.5 font-medium">
+                      <Gauge className="h-4 w-4 text-muted-foreground" />
+                      {selectedVehicle.kmReading || "-"}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">JM Status</p>
+                    <p className="flex items-center gap-1.5 font-medium">
+                      <Route className="h-4 w-4 text-muted-foreground" />
+                      {selectedVehicle.jmEnabled ? (
+                        <Badge variant="outline" className="bg-emerald-500/20 text-emerald-400">Enabled</Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-slate-500/20 text-slate-400">Disabled</Badge>
+                      )}
+                    </p>
+                  </div>
+                  {selectedVehicle.jmEnabled && (
+                    <>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Total Journeys</p>
+                        <p className="flex items-center gap-1.5 font-medium">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          {selectedVehicle.totalJourneys || 0}
+                        </p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">Last Journey</p>
+                        <p className="flex items-center gap-1.5 font-medium">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          {selectedVehicle.lastJourneyDate ? formatDate(selectedVehicle.lastJourneyDate) : "-"}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Allowable Load</p>
-                  <p className="flex items-center gap-1.5 font-medium">
-                    <Weight className="h-4 w-4 text-muted-foreground" />
-                    {selectedVehicle.allowableLoad || "-"}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">KM/Hours Reading</p>
-                  <p className="flex items-center gap-1.5 font-medium">
-                    <Gauge className="h-4 w-4 text-muted-foreground" />
-                    {selectedVehicle.kmReading || "-"}
-                  </p>
-                </div>
-              </div>
 
-              {selectedVehicle.description && (
-                <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">Description</p>
-                  <p className="rounded-lg border border-border/50 bg-muted/20 p-3 text-sm">
-                    {selectedVehicle.description}
-                  </p>
-                </div>
-              )}
-            </div>
+                {selectedVehicle.description && (
+                  <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Description</p>
+                    <p className="rounded-lg border border-border/50 bg-muted/20 p-3 text-sm">
+                      {selectedVehicle.description}
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="jm" className="space-y-4 pt-4">
+                {selectedVehicle.jmEnabled ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-muted-foreground">
+                        Recent journey records for this vehicle
+                      </p>
+                      {isAdmin && (
+                        <Button size="sm" className="gap-1">
+                          <Plus className="h-4 w-4" />
+                          New Journey
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {/* Journey Records Table */}
+                    <div className="rounded-lg border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Driver</TableHead>
+                            <TableHead>Route</TableHead>
+                            <TableHead>Purpose</TableHead>
+                            <TableHead>Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {journeyRecords
+                            .filter((jr) => jr.vehicleId === selectedVehicle.id)
+                            .slice(0, 5)
+                            .map((journey) => (
+                              <TableRow key={journey.id}>
+                                <TableCell className="font-medium">
+                                  {formatDate(journey.journeyDate)}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1.5">
+                                    <User className="h-3.5 w-3.5 text-muted-foreground" />
+                                    {journey.driver}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-1 text-xs">
+                                    <MapPin className="h-3 w-3 text-muted-foreground" />
+                                    <span className="truncate max-w-[100px]" title={journey.startLocation}>
+                                      {journey.startLocation}
+                                    </span>
+                                    <span className="text-muted-foreground">→</span>
+                                    <span className="truncate max-w-[100px]" title={journey.endLocation}>
+                                      {journey.endLocation}
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-sm">{journey.purpose}</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className={jmStatusColors[journey.status]}>
+                                    {journey.status}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          {journeyRecords.filter((jr) => jr.vehicleId === selectedVehicle.id).length === 0 && (
+                            <TableRow>
+                              <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
+                                No journey records found for this vehicle
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Journey Stats */}
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-center">
+                        <p className="text-2xl font-bold text-primary">{selectedVehicle.totalJourneys || 0}</p>
+                        <p className="text-xs text-muted-foreground">Total Journeys</p>
+                      </div>
+                      <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-center">
+                        <p className="text-2xl font-bold text-emerald-400">
+                          {journeyRecords.filter((jr) => jr.vehicleId === selectedVehicle.id && jr.status === "Completed").length}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Completed</p>
+                      </div>
+                      <div className="rounded-lg border border-border/50 bg-muted/20 p-3 text-center">
+                        <p className="text-2xl font-bold text-amber-400">
+                          {journeyRecords.filter((jr) => jr.vehicleId === selectedVehicle.id && (jr.status === "Pending" || jr.status === "In Progress")).length}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Active</p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-12 text-center">
+                    <Route className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                    <p className="mt-4 text-muted-foreground">Journey Management is not enabled for this vehicle</p>
+                    {isAdmin && (
+                      <Button variant="outline" className="mt-4 gap-1">
+                        <Play className="h-4 w-4" />
+                        Enable JM
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsViewDetailsOpen(false)}>
