@@ -103,13 +103,15 @@ export function UsersManagement() {
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null)
-  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false)
+  const [isResetLoading, setIsResetLoading] = useState(false)
+  const [generatedPassword, setGeneratedPassword] = useState("")
   const [copiedPassword, setCopiedPassword] = useState(false)
   const { toast } = useToast()
   const { user: currentUser } = useAuth()
   
   // Check if current user is admin
-  const isAdmin = currentUser?.role === "ADMIN SYSTEM" || currentUser?.role === "MASTER USER"
+  // Only xom-it-admin@xomoman.com can reset passwords
+  const isAdmin = currentUser?.email === "xom-it-admin@xomoman.com"
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
@@ -149,16 +151,59 @@ export function UsersManagement() {
     setResetPasswordUser(user)
     setIsResetPasswordOpen(true)
     setCopiedPassword(false)
+    setGeneratedPassword("")
+    setIsResetLoading(false)
   }
 
-  const confirmResetPassword = () => {
-    if (resetPasswordUser) {
+  const confirmResetPassword = async () => {
+    if (!resetPasswordUser) return
+
+    setIsResetLoading(true)
+    try {
+      const response = await fetch("/api/admin/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: resetPasswordUser.id,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        toast({
+          title: "Error",
+          description: data.error || "Failed to reset password",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Display the generated password
+      setGeneratedPassword(data.temporaryPassword || "Password sent to user email")
+      
       toast({
         title: "Password Reset Successful",
-        description: `Password for ${resetPasswordUser.name} has been reset to the default password.`,
+        description: `Password for ${resetPasswordUser.name} has been reset. New password has been sent to their email.`,
       })
-      setIsResetPasswordOpen(false)
-      setResetPasswordUser(null)
+
+      // Keep dialog open to show the password
+      setTimeout(() => {
+        setIsResetPasswordOpen(false)
+        setResetPasswordUser(null)
+        setGeneratedPassword("")
+      }, 3000)
+    } catch (error) {
+      console.error("[v0] Reset password error:", error)
+      toast({
+        title: "Error",
+        description: "Failed to reset password",
+        variant: "destructive",
+      })
+    } finally {
+      setIsResetLoading(false)
     }
   }
 
@@ -539,33 +584,45 @@ export function UsersManagement() {
               </div>
 
               <div className="space-y-2">
-                <Label>New Password (Default)</Label>
-                <div className="flex items-center gap-2">
-                  <Input 
-                    value={DEFAULT_PASSWORD} 
-                    readOnly 
-                    className="font-mono"
-                  />
-                  <Button variant="outline" size="icon" onClick={copyPassword}>
-                    {copiedPassword ? (
-                      <Check className="h-4 w-4 text-emerald-500" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
+                <Label>Generated Password</Label>
+                {generatedPassword ? (
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      value={generatedPassword} 
+                      readOnly 
+                      className="font-mono"
+                    />
+                    <Button variant="outline" size="icon" onClick={() => {
+                      navigator.clipboard.writeText(generatedPassword)
+                      setCopiedPassword(true)
+                      setTimeout(() => setCopiedPassword(false), 2000)
+                    }}>
+                      {copiedPassword ? (
+                        <Check className="h-4 w-4 text-emerald-500" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">
+                      Click "Reset Password" to generate a new temporary password. This password will be sent to the user via email at {resetPasswordUser.email}.
+                    </p>
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">
-                  The user will need to sign in with this password. Recommend they change it after logging in.
+                  The temporary password has been sent to the user via email. They should change it immediately after logging in.
                 </p>
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsResetPasswordOpen(false)}>
+            <Button variant="outline" onClick={() => setIsResetPasswordOpen(false)} disabled={isResetLoading}>
               Cancel
             </Button>
-            <Button onClick={confirmResetPassword}>
-              Reset Password
+            <Button onClick={confirmResetPassword} disabled={isResetLoading}>
+              {isResetLoading ? "Resetting..." : "Reset Password"}
             </Button>
           </DialogFooter>
         </DialogContent>

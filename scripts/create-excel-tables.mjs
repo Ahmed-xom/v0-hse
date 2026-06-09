@@ -36,7 +36,7 @@ async function createTableFromExcelSheet(filename, sheetName, headers) {
 }
 
 async function importExcelData() {
-  const himayaPath = '/tmp/himaya';
+  const himayaPath = './scripts/himaya';
   const files = fs.readdirSync(himayaPath).filter(f => f.endsWith('.xls') || f.endsWith('.xlsx')).sort();
 
   let tablesCreated = 0;
