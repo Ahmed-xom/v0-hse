@@ -1,12 +1,18 @@
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 
-// Initialize email transporter
+// Initialize email transporter with Office365 SMTP
 const transporter = nodemailer.createTransport({
-  service: 'outlook',
+  host: 'smtp.office365.com',
+  port: 587,
+  secure: false,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
+    user: process.env.EMAIL_USER, // hsesystem.xom@outlook.com
+    pass: process.env.EMAIL_PASSWORD, // Xom@2026
+  },
+  tls: {
+    ciphers: 'SSLv3',
+    rejectUnauthorized: false,
   },
 });
 
