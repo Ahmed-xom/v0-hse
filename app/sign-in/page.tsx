@@ -153,6 +153,10 @@ export default function SignInPage() {
 
         <p className="mt-6 text-center text-sm text-muted-foreground">
           Need help?{" "}
+          <Link href="/login-help" className="text-primary hover:underline">
+            View Login Credentials
+          </Link>
+          {" | "}
           <a href="mailto:hsexomoman@gmail.com" className="text-primary hover:underline">
             Contact Support
           </a>

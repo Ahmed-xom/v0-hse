@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { KPICards } from "@/components/dashboard/kpi-cards"
 import { IncidentStatistics } from "@/components/dashboard/incident-statistics"
@@ -15,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
 
 export default function HSEDashboard() {
-  const { currentUser } = useAuth()
+  const { currentUser, isLoading } = useAuth()
   const isAdmin = currentUser?.email === "xom-it-admin@xomoman.com"
 
   return (
@@ -31,7 +30,11 @@ export default function HSEDashboard() {
             </p>
           </div>
 
-          {isAdmin ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-muted-foreground">Loading dashboard...</p>
+            </div>
+          ) : isAdmin ? (
             <Tabs defaultValue="dashboard" className="w-full">
               <TabsList className="grid w-full max-w-md grid-cols-2">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
@@ -39,37 +42,30 @@ export default function HSEDashboard() {
               </TabsList>
 
               <TabsContent value="dashboard" className="space-y-6">
-                {/* KPI Cards */}
                 <section aria-label="Key Performance Indicators">
                   <KPICards />
                 </section>
 
-                {/* Incident Statistics */}
                 <section aria-label="Incident Statistics">
                   <IncidentStatistics />
                 </section>
 
-                {/* Behaviour Observations */}
                 <section aria-label="Behaviour Observations">
                   <BehaviourObservations />
                 </section>
 
-                {/* Inspection Reports */}
                 <section aria-label="Inspection Reports">
                   <InspectionReports />
                 </section>
 
-                {/* Inspection Types */}
                 <section aria-label="Inspection Types">
                   <InspectionTypes />
                 </section>
 
-                {/* Team Members / Users */}
                 <section aria-label="Team Members">
                   <UsersManagement />
                 </section>
 
-                {/* Business Units */}
                 <section aria-label="Business Units">
                   <BusinessUnits />
                 </section>
@@ -81,37 +77,30 @@ export default function HSEDashboard() {
             </Tabs>
           ) : (
             <>
-              {/* KPI Cards */}
               <section aria-label="Key Performance Indicators">
                 <KPICards />
               </section>
 
-              {/* Incident Statistics */}
               <section aria-label="Incident Statistics">
                 <IncidentStatistics />
               </section>
 
-              {/* Behaviour Observations */}
               <section aria-label="Behaviour Observations">
                 <BehaviourObservations />
               </section>
 
-              {/* Inspection Reports */}
               <section aria-label="Inspection Reports">
                 <InspectionReports />
               </section>
 
-              {/* Inspection Types */}
               <section aria-label="Inspection Types">
                 <InspectionTypes />
               </section>
 
-              {/* Team Members / Users */}
               <section aria-label="Team Members">
                 <UsersManagement />
               </section>
 
-              {/* Business Units */}
               <section aria-label="Business Units">
                 <BusinessUnits />
               </section>
@@ -119,7 +108,6 @@ export default function HSEDashboard() {
           )}
         </main>
 
-        {/* Footer */}
         <footer className="border-t border-border/50 bg-card/30">
           <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
