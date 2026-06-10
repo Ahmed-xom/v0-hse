@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Settings, Users, Mail, Plus, Eye, EyeOff } from "lucide-react"
+import { Settings, Users, Mail, Plus, Eye, EyeOff, Database } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -23,6 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ExcelDataViewer } from "./excel-data-viewer"
 
 const ROLES = [
   "ADMIN SYSTEM",
@@ -163,69 +165,81 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
         <h2 className="text-xl font-semibold">Admin Settings</h2>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Users
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{users.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Active: {users.filter((u) => u.status === "Active").length}
-            </p>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="data">Excel Data</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Admin Accounts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">
-              {users.filter((u) => u.role === "ADMIN SYSTEM").length}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              System administrators
-            </p>
-          </CardContent>
-        </Card>
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6">
+          {/* Quick Stats */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Users
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{users.length}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Active: {users.filter((u) => u.status === "Active").length}
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Email Service
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
-              Configured
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              hsesystem.xom@outlook.com
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Admin Accounts
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">
+                  {users.filter((u) => u.role === "ADMIN SYSTEM").length}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  System administrators
+                </p>
+              </CardContent>
+            </Card>
 
-      {/* Add User Section */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              <div>
-                <CardTitle>User Management</CardTitle>
-                <CardDescription>Add or manage system users</CardDescription>
-              </div>
-            </div>
-            <Button onClick={() => setIsAddUserOpen(true)} size="sm">
-              <Plus className="h-4 w-4 mr-2" />
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Email Service
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                  Configured
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  hsesystem.xom@outlook.com
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* User Management Tab */}
+        <TabsContent value="users" className="space-y-6">
+          {/* Add User Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  <div>
+                    <CardTitle>User Management</CardTitle>
+                    <CardDescription>Add or manage system users</CardDescription>
+                  </div>
+                </div>
+                <Button onClick={() => setIsAddUserOpen(true)} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
               Add New User
             </Button>
           </div>
@@ -378,6 +392,13 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+        </TabsContent>
+
+        {/* Excel Data Tab */}
+        <TabsContent value="data" className="space-y-6">
+          <ExcelDataViewer />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
