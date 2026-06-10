@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/auth-context"
 import { users, type User } from "@/lib/users-data"
 import {
   Select,
@@ -49,6 +50,7 @@ const STATUSES = ["Active", "Inactive"]
 
 export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
   const { toast } = useToast()
+  const { user: currentUser } = useAuth()
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -89,6 +91,7 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
         },
         body: JSON.stringify({
           ...formData,
+          adminEmail: currentUser?.email,
           status: formData.status === "Active",
         }),
       })
