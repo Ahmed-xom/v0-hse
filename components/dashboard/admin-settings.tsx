@@ -45,7 +45,7 @@ const BUSINESS_UNITS = [
 
 const STATUSES = ["Active", "Inactive"]
 
-export function AdminSettings() {
+export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
   const { toast } = useToast()
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -106,6 +106,31 @@ export function AdminSettings() {
         title: "Success",
         description: `User ${formData.name} has been added successfully!`,
       })
+
+      // Save new user to localStorage for UI update
+      try {
+        const storedUsers = localStorage.getItem("added_users") || "[]"
+        const addedUsers = JSON.parse(storedUsers)
+        const newUser = {
+          id: `added_${Date.now()}`,
+          name: formData.name,
+          email: formData.email,
+          payrollNo: formData.payrollNo,
+          role: formData.role,
+          designation: formData.designation,
+          businessUnit: formData.businessUnit,
+          status: formData.status === "Active" ? "Active" : "Inactive",
+        }
+        addedUsers.push(newUser)
+        localStorage.setItem("added_users", JSON.stringify(addedUsers))
+      } catch (storageError) {
+        console.error("[v0] Failed to save user to localStorage:", storageError)
+      }
+
+      // Call callback to refresh user list
+      if (onUserAdded) {
+        onUserAdded()
+      }
 
       // Reset form
       setFormData({

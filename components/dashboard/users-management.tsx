@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Search,
   Filter,
@@ -107,15 +107,27 @@ export function UsersManagement() {
   const [isResetLoading, setIsResetLoading] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState("")
   const [copiedPassword, setCopiedPassword] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
   const { toast } = useToast()
   const { user: currentUser } = useAuth()
   
+  // Combine static users with newly added users from localStorage
+  const localUsers = useMemo(() => {
+    try {
+      const storedUsers = localStorage.getItem("added_users")
+      const addedUsers = storedUsers ? JSON.parse(storedUsers) : []
+      return [...users, ...addedUsers]
+    } catch {
+      return users
+    }
+  }, [refreshKey])
+
   // Check if current user is admin
   // Only xom-it-admin@xomoman.com can reset passwords
   const isAdmin = currentUser?.email === "xom-it-admin@xomoman.com"
 
   const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
+    return localUsers.filter((user) => {
       const matchesSearch =
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -126,7 +138,17 @@ export function UsersManagement() {
       const matchesBusinessUnit = businessUnitFilter === "all" || user.businessUnit === businessUnitFilter
       return matchesSearch && matchesRole && matchesStatus && matchesBusinessUnit
     })
-  }, [searchQuery, roleFilter, statusFilter, businessUnitFilter])
+  }, [searchQuery, roleFilter, statusFilter, businessUnitFilter, refreshKey, localUsers])
+
+  // Listen for localStorage changes to refresh user list
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setRefreshKey((prev) => prev + 1)
+    }
+    
+    window.addEventListener("storage", handleStorageChange)
+    return () => window.removeEventListener("storage", handleStorageChange)
+  }, [])
 
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)
   const paginatedUsers = useMemo(() => {
@@ -141,10 +163,10 @@ export function UsersManagement() {
   }
 
   const stats = useMemo(() => ({
-    total: users.length,
-    active: users.filter((u) => u.status === "Active").length,
-    inactive: users.filter((u) => u.status === "Inactive").length,
-    management: users.filter((u) => u.role === "MANAGEMENT" || u.role === "SITE MANAGER" || u.role === "SITE MANAGER - Global").length,
+    total: localUsers.length,
+    active: localUsers.filter((u) => u.status === "Active").length,
+    inactive: localUsers.filter((u) => u.status === "Inactive").length,
+    management: localUsers.filter((u) => u.role === "MANAGEMENT" || u.role === "SITE MANAGER" || u.role === "SITE MANAGER - Global").length,
     hse: users.filter((u) => u.role === "HSE" || u.role === "HSE ADMIN").length,
   }), [])
 
