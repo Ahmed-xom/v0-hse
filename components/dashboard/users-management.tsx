@@ -103,6 +103,7 @@ export function UsersManagement() {
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null)
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false)
   const [isResetLoading, setIsResetLoading] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState("")
   const [copiedPassword, setCopiedPassword] = useState(false)
