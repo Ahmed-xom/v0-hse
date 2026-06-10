@@ -93,12 +93,16 @@ export async function POST(request: NextRequest) {
 
     try {
       const transporter = nodemailer.createTransport({
-        host: "smtp-mail.outlook.com",
+        host: "smtp.office365.com",
         port: 587,
         secure: false,
         auth: {
           user: EMAIL_USER,
           pass: EMAIL_PASSWORD,
+        },
+        tls: {
+          ciphers: "SSLv3",
+          rejectUnauthorized: false,
         },
       })
 
