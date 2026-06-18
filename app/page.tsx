@@ -1,16 +1,29 @@
 "use client"
 
+import { useState } from "react"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { KPICards } from "@/components/dashboard/kpi-cards"
 import { IncidentStatistics } from "@/components/dashboard/incident-statistics"
 import { InspectionReports } from "@/components/dashboard/inspection-reports"
 import { InspectionTypes } from "@/components/dashboard/inspection-types"
-import { UsersManagement } from "@/components/dashboard/users-management"
+import { UsersManagementWithRefresh } from "@/components/dashboard/users-management-with-refresh"
 import { BusinessUnits } from "@/components/dashboard/business-units"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
+import { AdminSettings } from "@/components/dashboard/admin-settings"
 import { ProtectedRoute } from "@/components/protected-route"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useAuth } from "@/lib/auth-context"
+import { users } from "@/lib/users-data"
 
 export default function HSEDashboard() {
+  const { currentUser, isLoading } = useAuth()
+  const isAdmin = currentUser?.email === "xom-it-admin@xomoman.com"
+  const [usersRefreshKey, setUsersRefreshKey] = useState(0)
+
+  const handleUserAdded = () => {
+    setUsersRefreshKey((prev) => prev + 1)
+  }
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-background">
@@ -24,40 +37,96 @@ export default function HSEDashboard() {
             </p>
           </div>
 
-          {/* KPI Cards */}
-          <section aria-label="Key Performance Indicators">
-            <KPICards />
-          </section>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-muted-foreground">Loading dashboard...</p>
+            </div>
+          ) : isAdmin ? (
+            <Tabs defaultValue="dashboard" className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-2">
+                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="settings">Settings</TabsTrigger>
+              </TabsList>
 
-          {/* Incident Statistics */}
-          <section aria-label="Incident Statistics">
-            <IncidentStatistics />
-          </section>
+              <TabsContent value="dashboard" className="space-y-6">
+                {/* KPI Cards */}
+                <section aria-label="Key Performance Indicators">
+                  <KPICards />
+                </section>
 
-          {/* Behaviour Observations */}
-          <section aria-label="Behaviour Observations">
-            <BehaviourObservations />
-          </section>
+                {/* Incident Statistics */}
+                <section aria-label="Incident Statistics">
+                  <IncidentStatistics />
+                </section>
 
-          {/* Inspection Reports */}
-          <section aria-label="Inspection Reports">
-            <InspectionReports />
-          </section>
+                {/* Behaviour Observations */}
+                <section aria-label="Behaviour Observations">
+                  <BehaviourObservations />
+                </section>
 
-          {/* Inspection Types */}
-          <section aria-label="Inspection Types">
-            <InspectionTypes />
-          </section>
+                {/* Inspection Reports */}
+                <section aria-label="Inspection Reports">
+                  <InspectionReports />
+                </section>
 
-          {/* Team Members / Users */}
-          <section aria-label="Team Members">
-            <UsersManagement />
-          </section>
+                {/* Inspection Types */}
+                <section aria-label="Inspection Types">
+                  <InspectionTypes />
+                </section>
 
-          {/* Business Units */}
-          <section aria-label="Business Units">
-            <BusinessUnits />
-          </section>
+                {/* Team Members / Users */}
+                <section aria-label="Team Members">
+                  <UsersManagementWithRefresh key={usersRefreshKey} />
+                </section>
+
+                {/* Business Units */}
+                <section aria-label="Business Units">
+                  <BusinessUnits />
+                </section>
+              </TabsContent>
+
+              <TabsContent value="settings" className="space-y-6">
+                <AdminSettings onUserAdded={handleUserAdded} />
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <>
+              {/* KPI Cards */}
+              <section aria-label="Key Performance Indicators">
+                <KPICards />
+              </section>
+
+              {/* Incident Statistics */}
+              <section aria-label="Incident Statistics">
+                <IncidentStatistics />
+              </section>
+
+              {/* Behaviour Observations */}
+              <section aria-label="Behaviour Observations">
+                <BehaviourObservations />
+              </section>
+
+              {/* Inspection Reports */}
+              <section aria-label="Inspection Reports">
+                <InspectionReports />
+              </section>
+
+              {/* Inspection Types */}
+              <section aria-label="Inspection Types">
+                <InspectionTypes />
+              </section>
+
+              {/* Team Members / Users */}
+              <section aria-label="Team Members">
+                <UsersManagementWithRefresh key={usersRefreshKey} />
+              </section>
+
+              {/* Business Units */}
+              <section aria-label="Business Units">
+                <BusinessUnits />
+              </section>
+            </>
+          )}
         </main>
 
         {/* Footer */}

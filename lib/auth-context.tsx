@@ -17,6 +17,7 @@ export interface AuthUser {
 
 interface AuthContextType {
   user: AuthUser | null
+  currentUser: AuthUser | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
@@ -120,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, requestPasswordReset }}>
+    <AuthContext.Provider value={{ user, currentUser: user, isLoading, login, logout, requestPasswordReset }}>
       {children}
     </AuthContext.Provider>
   )
