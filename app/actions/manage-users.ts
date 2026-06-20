@@ -1,7 +1,8 @@
 'use server'
 
-import { sql } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { db } from '@/lib/db'
+import { user } from '@/lib/db/schema'
 
 export async function updateUserStatus(
   userId: string,
@@ -19,18 +20,20 @@ export async function updateUserStatus(
 
     // Update user status in database
     const isBanned = status === 'Inactive'
-    const result = await db.execute(sql`
-      UPDATE "user" 
-      SET banned = ${isBanned}, "updatedAt" = NOW() 
-      WHERE id = ${userId}
-      RETURNING id, email, name, banned, "updatedAt"
-    `)
+    const result = await db
+      .update(user)
+      .set({
+        banned: isBanned,
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId))
+      .returning()
 
-    console.log('[v0] User status updated:', result.rows?.[0])
+    console.log('[v0] User status updated:', result[0])
     return {
       success: true,
       message: `User status changed to ${status}`,
-      data: result.rows?.[0],
+      data: result[0],
     }
   } catch (error: any) {
     console.error('[v0] Error updating user status:', error)
@@ -56,18 +59,20 @@ export async function updateUserRole(
     }
 
     // Update user role in database
-    const result = await db.execute(sql`
-      UPDATE "user" 
-      SET role = ${role}, "updatedAt" = NOW() 
-      WHERE id = ${userId}
-      RETURNING id, email, name, role, "updatedAt"
-    `)
+    const result = await db
+      .update(user)
+      .set({
+        role: role,
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId))
+      .returning()
 
-    console.log('[v0] User role updated:', result.rows?.[0])
+    console.log('[v0] User role updated:', result[0])
     return {
       success: true,
       message: `User role changed to ${role}`,
-      data: result.rows?.[0],
+      data: result[0],
     }
   } catch (error: any) {
     console.error('[v0] Error updating user role:', error)
@@ -90,18 +95,20 @@ export async function deleteUser(userId: string) {
     }
 
     // Soft delete by banning the user
-    const result = await db.execute(sql`
-      UPDATE "user" 
-      SET banned = true, "updatedAt" = NOW() 
-      WHERE id = ${userId}
-      RETURNING id, email, name
-    `)
+    const result = await db
+      .update(user)
+      .set({
+        banned: true,
+        updatedAt: new Date(),
+      })
+      .where(eq(user.id, userId))
+      .returning()
 
-    console.log('[v0] User deleted:', result.rows?.[0])
+    console.log('[v0] User deleted:', result[0])
     return {
       success: true,
       message: 'User deleted successfully',
-      data: result.rows?.[0],
+      data: result[0],
     }
   } catch (error: any) {
     console.error('[v0] Error deleting user:', error)
