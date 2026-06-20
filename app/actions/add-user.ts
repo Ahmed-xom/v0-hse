@@ -69,7 +69,7 @@ export async function addNewUser(userData: {
     console.log('[v0] Creating user with ID:', newUserId)
 
     // Use raw SQL to insert only the columns we need
-    const now = new Date()
+    const now = new Date().toISOString()
     const newUser = await db.execute(
       sql`
         INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt", banned, role)
