@@ -6,8 +6,6 @@ import { eq, sql } from 'drizzle-orm'
 import { Resend } from 'resend'
 import crypto from 'crypto'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
@@ -119,6 +117,7 @@ export async function requestPasswordReset(email: string) {
       console.warn('[v0] Resend API key missing')
     } else {
       try {
+        const resend = new Resend(process.env.RESEND_API_KEY)
         const htmlContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); padding: 30px; border-radius: 10px 10px 0 0;">

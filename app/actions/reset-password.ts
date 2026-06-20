@@ -8,8 +8,6 @@ import { headers } from 'next/headers'
 import crypto from 'crypto'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
@@ -115,6 +113,7 @@ export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?
         `
 
         console.log('[v0] Sending reset email via Resend to:', targetUserData.email)
+        const resend = new Resend(process.env.RESEND_API_KEY)
         const { data, error } = await resend.emails.send({
           from: 'HSE System <onboarding@resend.dev>',
           to: targetUserData.email,

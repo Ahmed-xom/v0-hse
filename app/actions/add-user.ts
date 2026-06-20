@@ -6,8 +6,6 @@ import crypto from 'crypto'
 import { Resend } from 'resend'
 import { sql } from 'drizzle-orm'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
@@ -119,6 +117,7 @@ export async function addNewUser(userData: {
         `
 
         console.log('[v0] Sending welcome email via Resend to:', cleanEmail)
+        const resend = new Resend(process.env.RESEND_API_KEY)
         const { data, error } = await resend.emails.send({
           from: 'HSE System <onboarding@resend.dev>',
           to: cleanEmail,

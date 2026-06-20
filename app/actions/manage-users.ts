@@ -19,8 +19,9 @@ export async function updateUserStatus(
 
     // Update user status in database using neon_auth schema
     const isBanned = status === 'Inactive'
+    const now = new Date().toISOString()
     await db.execute(
-      sql`UPDATE neon_auth."user" SET "updatedAt" = ${new Date()}, "banned" = ${isBanned} WHERE id = ${userId}`
+      sql`UPDATE neon_auth."user" SET "updatedAt" = ${now}, "banned" = ${isBanned} WHERE id = ${userId}`
     )
 
     console.log('[v0] User status updated:', { userId, status })
@@ -52,8 +53,9 @@ export async function updateUserRole(
     }
 
     // Update user role in database using neon_auth schema
+    const now = new Date().toISOString()
     await db.execute(
-      sql`UPDATE neon_auth."user" SET "updatedAt" = ${new Date()}, "role" = ${role} WHERE id = ${userId}`
+      sql`UPDATE neon_auth."user" SET "updatedAt" = ${now}, "role" = ${role} WHERE id = ${userId}`
     )
 
     console.log('[v0] User role updated:', { userId, role })
@@ -82,8 +84,9 @@ export async function deleteUser(userId: string) {
     }
 
     // Soft delete by banning the user using neon_auth schema
+    const now = new Date().toISOString()
     await db.execute(
-      sql`UPDATE neon_auth."user" SET "updatedAt" = ${new Date()}, "banned" = true WHERE id = ${userId}`
+      sql`UPDATE neon_auth."user" SET "updatedAt" = ${now}, "banned" = true WHERE id = ${userId}`
     )
 
     console.log('[v0] User deleted:', { userId })
