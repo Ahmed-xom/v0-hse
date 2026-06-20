@@ -30,15 +30,26 @@ export async function requestPasswordReset(email: string) {
       return { success: false, error: 'Invalid email address' }
     }
 
-    // Check if user exists in database
-    const existingUser = await db
-      .select({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-      })
-      .from(user)
-      .where(eq(user.email, email.toLowerCase()))
+    // Check if user exists in database - try simple query first
+    console.log('[v0] Querying user with email:', email.toLowerCase())
+    let existingUser
+    try {
+      const queryResult = await db
+        .select()
+        .from(user)
+        .where(eq(user.email, email.toLowerCase()))
+      
+      existingUser = queryResult.length > 0 ? [{
+        id: (queryResult[0] as any).id,
+        email: (queryResult[0] as any).email,
+        name: (queryResult[0] as any).name,
+      }] : []
+      
+      console.log('[v0] Query result:', existingUser.length > 0 ? 'User found' : 'User not found')
+    } catch (err) {
+      console.error('[v0] Database query error:', err)
+      return { success: false, error: 'Database query failed. Please try again later.' }
+    }
 
     if (!existingUser || existingUser.length === 0) {
       console.log('[v0] User not found for email:', email)
