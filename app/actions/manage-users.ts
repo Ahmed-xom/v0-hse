@@ -20,20 +20,19 @@ export async function updateUserStatus(
 
     // Update user status in database
     const isBanned = status === 'Inactive'
-    const result = await db
+    await db
       .update(user)
       .set({
         banned: isBanned,
         updatedAt: new Date(),
       })
       .where(eq(user.id, userId))
-      .returning()
+      .execute()
 
-    console.log('[v0] User status updated:', result[0])
+    console.log('[v0] User status updated:', { userId, status })
     return {
       success: true,
       message: `User status changed to ${status}`,
-      data: result[0],
     }
   } catch (error: any) {
     console.error('[v0] Error updating user status:', error)
@@ -59,20 +58,19 @@ export async function updateUserRole(
     }
 
     // Update user role in database
-    const result = await db
+    await db
       .update(user)
       .set({
         role: role,
         updatedAt: new Date(),
       })
       .where(eq(user.id, userId))
-      .returning()
+      .execute()
 
-    console.log('[v0] User role updated:', result[0])
+    console.log('[v0] User role updated:', { userId, role })
     return {
       success: true,
       message: `User role changed to ${role}`,
-      data: result[0],
     }
   } catch (error: any) {
     console.error('[v0] Error updating user role:', error)
@@ -95,20 +93,19 @@ export async function deleteUser(userId: string) {
     }
 
     // Soft delete by banning the user
-    const result = await db
+    await db
       .update(user)
       .set({
         banned: true,
         updatedAt: new Date(),
       })
       .where(eq(user.id, userId))
-      .returning()
+      .execute()
 
-    console.log('[v0] User deleted:', result[0])
+    console.log('[v0] User deleted:', { userId })
     return {
       success: true,
       message: 'User deleted successfully',
-      data: result[0],
     }
   } catch (error: any) {
     console.error('[v0] Error deleting user:', error)
