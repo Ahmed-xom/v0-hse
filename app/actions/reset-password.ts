@@ -67,7 +67,7 @@ export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?
       .insert(passwordReset)
       .values({
         id: crypto.randomUUID(),
-        userId: targetUserId,
+        userId: targetUserData.id,
         resetBy: adminEmail || 'unknown',
         newPassword: hashedPassword,
         ipAddress: (await headers()).get('x-forwarded-for') || (await headers()).get('x-real-ip') || 'unknown',
