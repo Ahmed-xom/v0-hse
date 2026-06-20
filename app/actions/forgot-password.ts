@@ -35,21 +35,21 @@ export async function requestPasswordReset(email: string) {
     let existingUser = null
     
     try {
-      // Query user using Drizzle ORM
-      const queryResult = await db.query.user.findFirst({
-        where: eq(user.email, email.toLowerCase()),
-        columns: {
-          id: true,
-          email: true,
-          name: true,
-        }
-      })
+      // Query user using Drizzle ORM standard query builder
+      const queryResult = await db
+        .select({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        })
+        .from(user)
+        .where(eq(user.email, email.toLowerCase()))
       
-      if (queryResult) {
+      if (queryResult && queryResult.length > 0) {
         existingUser = {
-          id: queryResult.id,
-          email: queryResult.email,
-          name: queryResult.name,
+          id: queryResult[0].id,
+          email: queryResult[0].email,
+          name: queryResult[0].name,
         }
       }
       
