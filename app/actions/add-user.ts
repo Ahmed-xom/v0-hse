@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { user, hseUser } from '@/lib/db/schema'
+import { user } from '@/lib/db/schema'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
@@ -58,8 +58,14 @@ export async function addNewUser(userData: {
     // Generate temporary password
     const temporaryPassword = generateSecurePassword()
 
-    // Create user record in Better Auth
-    const newUserId = `user_${Date.now()}`
+    // Hash password using crypto
+    const hashedPassword = crypto.createHash('sha256').update(temporaryPassword).digest('hex')
+
+    // Create user record in Neon (Better Auth schema)
+    // The user ID should be a UUID, not a string
+    const newUserId = crypto.randomUUID()
+
+    console.log('[v0] Creating user with ID:', newUserId)
 
     const newUser = await db
       .insert(user)
@@ -68,27 +74,14 @@ export async function addNewUser(userData: {
         name: userData.name,
         email: userData.email,
         emailVerified: false,
-        role: 'USER',
+        role: userData.hseRole || 'USER',
+        banned: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
       .returning()
 
-    // Create HSE user record with app-specific data
-    const hseUserRecord = await db
-      .insert(hseUser)
-      .values({
-        id: `hse_${newUserId}`,
-        userId: newUserId,
-        payrollNo: userData.payrollNo || `P${Date.now()}`,
-        designation: userData.designation || '',
-        businessUnit: userData.businessUnit || 'XOM Oman',
-        hseRole: userData.hseRole || 'USER',
-        status: userData.status || 'Active',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .returning()
+    console.log('[v0] User created:', newUser)
 
     // Send welcome email with temporary password
     let emailSent = false
@@ -166,7 +159,6 @@ export async function addNewUser(userData: {
       success: true,
       message: 'User created successfully',
       user: newUser[0],
-      hseUser: hseUserRecord[0],
       temporaryPassword,
       emailSent,
       emailError: emailError || (emailSent ? 'Email sent successfully' : 'Email not sent'),
