@@ -35,7 +35,6 @@ export async function requestPasswordReset(email: string) {
       .select()
       .from(user)
       .where(eq(user.email, email.toLowerCase()))
-      .limit(1)
 
     if (!existingUser || existingUser.length === 0) {
       console.log('[v0] User not found for email:', email)

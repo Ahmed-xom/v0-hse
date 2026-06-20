@@ -28,7 +28,7 @@ export async function resetUserPassword(targetUserId: string, adminEmail?: strin
     console.log('[v0] Password reset requested for user:', targetUserId, 'by admin:', adminEmail)
 
     // Get the target user
-    const targetUser = await db.select().from(user).where(eq(user.id, targetUserId)).limit(1)
+    const targetUser = await db.select().from(user).where(eq(user.id, targetUserId))
 
     if (targetUser.length === 0) {
       return { success: false, error: 'User not found' }
