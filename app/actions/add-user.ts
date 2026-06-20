@@ -1,12 +1,9 @@
 'use server'
 
-import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { user } from '@/lib/db/schema'
-import { headers } from 'next/headers'
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
-import { sql } from 'drizzle-orm'
 
 const EMAIL_USER = process.env.EMAIL_USER || 'hse-system@gmail.com'
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
@@ -37,7 +34,7 @@ export async function addNewUser(userData: {
   try {
     console.log('[v0] Adding new user:', { name: userData.name, email: userData.email, adminEmail: userData.adminEmail })
 
-    // Verify admin is authenticated (check if caller is admin)
+    // Verify admin is authenticated
     const callerEmail = userData.adminEmail
 
     if (!callerEmail) {
@@ -59,26 +56,26 @@ export async function addNewUser(userData: {
     // Generate temporary password
     const temporaryPassword = generateSecurePassword()
 
-    // Hash password using crypto
-    const hashedPassword = crypto.createHash('sha256').update(temporaryPassword).digest('hex')
-
-    // Create user record in Neon (Better Auth schema)
-    // The user ID should be a UUID, not a string
+    // Create user record in Neon
     const newUserId = crypto.randomUUID()
+    const now = new Date()
+    const role = userData.hseRole || 'USER'
+    
+    console.log('[v0] Inserting user:', { id: newUserId, name: userData.name, email: userData.email, role })
 
-    console.log('[v0] Creating user with ID:', newUserId)
+    // Create user in database
+    const newUser = await db.insert(user).values({
+      id: newUserId,
+      name: userData.name,
+      email: userData.email,
+      emailVerified: false,
+      role: role,
+      banned: false,
+      createdAt: now,
+      updatedAt: now,
+    }).returning()
 
-    // Use raw SQL to insert only the columns we need
-    const now = new Date().toISOString()
-    const newUser = await db.execute(
-      sql`
-        INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt", banned, role)
-        VALUES (${newUserId}, ${userData.name}, ${userData.email}, false, ${now}, ${now}, false, ${userData.hseRole || 'USER'})
-        RETURNING *
-      `
-    )
-
-    console.log('[v0] User created:', newUser)
+    console.log('[v0] User created successfully:', newUser[0])
 
     // Send welcome email with temporary password
     let emailSent = false
@@ -155,7 +152,7 @@ export async function addNewUser(userData: {
     return {
       success: true,
       message: 'User created successfully',
-      user: newUser.rows?.[0] || newUser[0],
+      user: newUser[0],
       temporaryPassword,
       emailSent,
       emailError: emailError || (emailSent ? 'Email sent successfully' : 'Email not sent'),
