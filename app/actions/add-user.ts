@@ -55,14 +55,14 @@ export async function addNewUser(userData: {
     
     console.log('[v0] Inserting user:', { id: newUserId, name: userData.name, email: userData.email, role })
 
-    // Create user in database using raw SQL to avoid Drizzle ORM schema issues
+    // Create user in database using raw SQL with neon_auth schema
     const isoNow = now.toISOString()
     let newUserResult
     let newUser
     
     try {
       newUserResult = await db.execute(
-        sql`INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt", role, banned)
+        sql`INSERT INTO neon_auth."user" (id, name, email, "emailVerified", "createdAt", "updatedAt", role, banned)
             VALUES (${newUserId}, ${userData.name}, ${cleanEmail}, false, ${isoNow}, ${isoNow}, ${role}, false)
             RETURNING id, name, email`
       )
