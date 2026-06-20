@@ -32,7 +32,11 @@ export async function requestPasswordReset(email: string) {
 
     // Check if user exists in database
     const existingUser = await db
-      .select()
+      .select({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      })
       .from(user)
       .where(eq(user.email, email.toLowerCase()))
 
