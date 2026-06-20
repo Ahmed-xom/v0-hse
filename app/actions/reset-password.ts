@@ -3,7 +3,7 @@
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { passwordReset, user } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
