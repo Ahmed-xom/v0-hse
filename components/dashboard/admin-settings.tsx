@@ -86,9 +86,24 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
 
     setIsLoading(true)
     try {
+      // Trim and validate email
+      const cleanEmail = formData.email.trim().toLowerCase()
+      
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(cleanEmail)) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address",
+          variant: "destructive",
+        })
+        setIsLoading(false)
+        return
+      }
+
       const result = await addNewUser({
         name: formData.name,
-        email: formData.email,
+        email: cleanEmail,
         payrollNo: formData.payrollNo || `P${Date.now()}`,
         designation: formData.designation,
         businessUnit: formData.businessUnit,

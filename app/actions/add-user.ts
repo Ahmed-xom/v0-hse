@@ -33,7 +33,10 @@ export async function addNewUser(userData: {
   adminEmail?: string
 }) {
   try {
-    console.log('[v0] Adding new user:', { name: userData.name, email: userData.email, adminEmail: userData.adminEmail })
+    // Sanitize email - trim and lowercase
+    const cleanEmail = userData.email.trim().toLowerCase()
+    
+    console.log('[v0] Adding new user:', { name: userData.name, email: cleanEmail, originalEmail: userData.email, adminEmail: userData.adminEmail })
 
     // Verify admin is authenticated
     const callerEmail = userData.adminEmail
@@ -72,7 +75,7 @@ export async function addNewUser(userData: {
     try {
       newUserResult = await db.execute(
         sql`INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt", role, banned)
-            VALUES (${newUserId}, ${userData.name}, ${userData.email}, false, ${isoNow}, ${isoNow}, ${role}, false)
+            VALUES (${newUserId}, ${userData.name}, ${cleanEmail}, false, ${isoNow}, ${isoNow}, ${role}, false)
             RETURNING *`
       )
       
@@ -123,7 +126,7 @@ export async function addNewUser(userData: {
             
             <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <p><strong>Login Credentials:</strong></p>
-              <p><strong>Email:</strong> ${userData.email}</p>
+              <p><strong>Email:</strong> ${cleanEmail}</p>
               <p><strong>Temporary Password:</strong> <code style="background: #fff; padding: 5px 10px; border-radius: 4px; font-family: monospace;">${temporaryPassword}</code></p>
               <p><strong>Role:</strong> ${userData.hseRole || 'User'}</p>
               <p><strong>Business Unit:</strong> ${userData.businessUnit || 'XOM Oman'}</p>
@@ -144,10 +147,10 @@ export async function addNewUser(userData: {
           </div>
         `
 
-        console.log('[v0] Sending email to:', userData.email)
+        console.log('[v0] Sending email to:', cleanEmail)
         const info = await transporter.sendMail({
           from: `"HSE System" <${EMAIL_USER}>`,
-          to: userData.email,
+          to: cleanEmail,
           subject: 'Welcome to HSE System - Account Created',
           html: htmlContent,
         })
