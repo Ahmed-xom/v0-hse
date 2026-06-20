@@ -16,13 +16,16 @@ export async function updateUserStatus(
       }
     }
 
-    // Update user status in database using neon_auth schema
-    const isBanned = status === 'Inactive'
+    // Update user status in employee table
     const now = new Date().toISOString()
-    await pool.query(
-      'UPDATE neon_auth."user" SET "updatedAt" = $1, "banned" = $2 WHERE id = $3',
-      [now, isBanned, userId]
+    const result = await pool.query(
+      'UPDATE public."employee" SET "updated_at" = $1, "status" = $2 WHERE id = $3 RETURNING id',
+      [now, status, userId]
     )
+    
+    if (result.rows.length === 0) {
+      throw new Error('User not found')
+    }
 
     console.log('[v0] User status updated:', { userId, status })
     return {
@@ -52,12 +55,16 @@ export async function updateUserRole(
       }
     }
 
-    // Update user role in database using neon_auth schema
+    // Update user role in employee table
     const now = new Date().toISOString()
-    await pool.query(
-      'UPDATE neon_auth."user" SET "updatedAt" = $1, "role" = $2 WHERE id = $3',
+    const result = await pool.query(
+      'UPDATE public."employee" SET "updated_at" = $1, "hse_role" = $2 WHERE id = $3 RETURNING id',
       [now, role, userId]
     )
+    
+    if (result.rows.length === 0) {
+      throw new Error('User not found')
+    }
 
     console.log('[v0] User role updated:', { userId, role })
     return {
@@ -84,12 +91,16 @@ export async function deleteUser(userId: string) {
       }
     }
 
-    // Soft delete by banning the user using neon_auth schema
+    // Soft delete by setting status to Inactive in employee table
     const now = new Date().toISOString()
-    await pool.query(
-      'UPDATE neon_auth."user" SET "updatedAt" = $1, "banned" = true WHERE id = $2',
-      [now, userId]
+    const result = await pool.query(
+      'UPDATE public."employee" SET "updated_at" = $1, "status" = $2 WHERE id = $3 RETURNING id',
+      [now, 'Inactive', userId]
     )
+    
+    if (result.rows.length === 0) {
+      throw new Error('User not found')
+    }
 
     console.log('[v0] User deleted:', { userId })
     return {
