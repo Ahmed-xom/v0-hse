@@ -18,8 +18,9 @@ export async function updateUserStatus(
     }
 
     // Update user status in database
+    const isBanned = status === 'Inactive'
     const result = await db.execute(
-      sql`UPDATE "user" SET banned = ${status === 'Inactive'}, "updatedAt" = NOW()
+      sql`UPDATE "user" SET banned = ${isBanned}, "updatedAt" = NOW()
           WHERE id = ${userId}
           RETURNING id, email, name, banned, "updatedAt"`
     )
@@ -88,7 +89,7 @@ export async function deleteUser(userId: string) {
 
     // Soft delete by banning the user
     const result = await db.execute(
-      sql`UPDATE "user" SET banned = true, "banReason" = 'User deleted', "updatedAt" = NOW()
+      sql`UPDATE "user" SET banned = true, "updatedAt" = NOW()
           WHERE id = ${userId}
           RETURNING id, email, name`
     )
