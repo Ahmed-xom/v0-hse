@@ -1,7 +1,6 @@
 'use server'
 
-import { sql } from 'drizzle-orm'
-import { db } from '@/lib/db'
+import { pool } from '@/lib/db'
 
 export async function updateUserStatus(
   userId: string,
@@ -20,8 +19,9 @@ export async function updateUserStatus(
     // Update user status in database using neon_auth schema
     const isBanned = status === 'Inactive'
     const now = new Date().toISOString()
-    await db.execute(
-      sql`UPDATE neon_auth."user" SET "updatedAt" = ${now}, "banned" = ${isBanned} WHERE id = ${userId}`
+    await pool.query(
+      'UPDATE neon_auth."user" SET "updatedAt" = $1, "banned" = $2 WHERE id = $3',
+      [now, isBanned, userId]
     )
 
     console.log('[v0] User status updated:', { userId, status })
@@ -54,8 +54,9 @@ export async function updateUserRole(
 
     // Update user role in database using neon_auth schema
     const now = new Date().toISOString()
-    await db.execute(
-      sql`UPDATE neon_auth."user" SET "updatedAt" = ${now}, "role" = ${role} WHERE id = ${userId}`
+    await pool.query(
+      'UPDATE neon_auth."user" SET "updatedAt" = $1, "role" = $2 WHERE id = $3',
+      [now, role, userId]
     )
 
     console.log('[v0] User role updated:', { userId, role })
@@ -85,8 +86,9 @@ export async function deleteUser(userId: string) {
 
     // Soft delete by banning the user using neon_auth schema
     const now = new Date().toISOString()
-    await db.execute(
-      sql`UPDATE neon_auth."user" SET "updatedAt" = ${now}, "banned" = true WHERE id = ${userId}`
+    await pool.query(
+      'UPDATE neon_auth."user" SET "updatedAt" = $1, "banned" = true WHERE id = $2',
+      [now, userId]
     )
 
     console.log('[v0] User deleted:', { userId })
