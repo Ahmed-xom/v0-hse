@@ -66,15 +66,28 @@ export async function addNewUser(userData: {
 
     // Create user in database using raw SQL to avoid Drizzle ORM schema issues
     const isoNow = now.toISOString()
-    const newUserResult = await db.execute(
-      sql`INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt", role, banned)
-          VALUES (${newUserId}, ${userData.name}, ${userData.email}, false, ${isoNow}, ${isoNow}, ${role}, false)
-          RETURNING *`
-    )
+    let newUserResult
+    let newUser
     
-    const newUser = newUserResult.rows || [newUserResult]
-
-    console.log('[v0] User created successfully:', newUser[0])
+    try {
+      newUserResult = await db.execute(
+        sql`INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt", role, banned)
+            VALUES (${newUserId}, ${userData.name}, ${userData.email}, false, ${isoNow}, ${isoNow}, ${role}, false)
+            RETURNING *`
+      )
+      
+      newUser = newUserResult.rows?.[0] || newUserResult[0]
+      console.log('[v0] User created successfully:', newUser)
+    } catch (dbError: any) {
+      // Check if it's a unique constraint violation on email
+      if (dbError.message?.includes('unique') || dbError.message?.includes('email')) {
+        return {
+          success: false,
+          error: `A user with email ${userData.email} already exists. Please use a different email address.`,
+        }
+      }
+      throw dbError
+    }
 
     // Send welcome email with temporary password
     let emailSent = false
