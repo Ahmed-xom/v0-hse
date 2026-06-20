@@ -55,12 +55,24 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
 import { businessUnitsData, type BusinessUnit } from "@/lib/business-units-data"
+import { addBusinessUnit, deleteBusinessUnit, updateBusinessUnit } from "@/app/actions/manage-business-units"
+import { useToast } from "@/hooks/use-toast"
 
 export function BusinessUnits() {
+  const { toast } = useToast()
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    email: "",
+    type: "Business Unit" as "Business Unit" | "Group",
+    status: "Active" as "Active" | "Inactive",
+    manager: "",
+  })
 
   const filteredUnits = businessUnitsData.filter((unit) => {
     const matchesSearch =
@@ -73,6 +85,86 @@ export function BusinessUnits() {
 
     return matchesSearch && matchesType && matchesStatus
   })
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleAddUnit = async () => {
+    if (!formData.name || !formData.email) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in name and email",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const result = await addBusinessUnit({
+        name: formData.name,
+        description: formData.description,
+        email: formData.email,
+        type: formData.type as "Business Unit" | "Group",
+        status: formData.status as "Active" | "Inactive",
+        manager: formData.manager || undefined,
+      })
+
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "Business unit added successfully",
+        })
+        setIsAddDialogOpen(false)
+        setFormData({
+          name: "",
+          description: "",
+          email: "",
+          type: "Business Unit",
+          status: "Active",
+          manager: "",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteUnit = async (id: string) => {
+    if (confirm("Are you sure you want to delete this business unit?")) {
+      try {
+        const result = await deleteBusinessUnit(id)
+        if (result.success) {
+          toast({
+            title: "Success",
+            description: "Business unit deleted successfully",
+          })
+        } else {
+          toast({
+            title: "Error",
+            description: result.error,
+            variant: "destructive",
+          })
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to delete business unit",
+          variant: "destructive",
+        })
+      }
+    }
+  }
 
   const activeUnits = businessUnitsData.filter((u) => u.status === "Active").length
   const groupCount = businessUnitsData.filter((u) => u.type === "Group").length
@@ -136,37 +228,57 @@ export function BusinessUnits() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="unit-name">Unit Name</Label>
-                  <Input id="unit-name" placeholder="Enter unit name" />
+                  <Input
+                    id="unit-name"
+                    placeholder="Enter unit name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange("name", e.target.value)}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="unit-type">Type</Label>
-                    <Select>
+                    <Select value={formData.type} onValueChange={(value) => handleInputChange("type", value)}>
                       <SelectTrigger id="unit-type">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="group">Group</SelectItem>
-                        <SelectItem value="business-unit">Business Unit</SelectItem>
+                        <SelectItem value="Group">Group</SelectItem>
+                        <SelectItem value="Business Unit">Business Unit</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="parent-unit">Parent Unit</Label>
-                    <Select>
-                      <SelectTrigger id="parent-unit">
-                        <SelectValue placeholder="Select parent" />
+                    <Label htmlFor="unit-status">Status</Label>
+                    <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
+                      <SelectTrigger id="unit-status">
+                        <SelectValue placeholder="Select status" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="primary">Primary</SelectItem>
-                        <SelectItem value="xom-oman">XOM Oman</SelectItem>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Inactive">Inactive</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="unit-email">Email</Label>
-                  <Input id="unit-email" type="email" placeholder="unit@company.com" />
+                  <Input
+                    id="unit-email"
+                    type="email"
+                    placeholder="unit@company.com"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="unit-manager">Manager</Label>
+                  <Input
+                    id="unit-manager"
+                    placeholder="Manager name"
+                    value={formData.manager}
+                    onChange={(e) => handleInputChange("manager", e.target.value)}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="unit-description">Description</Label>
@@ -174,6 +286,8 @@ export function BusinessUnits() {
                     id="unit-description"
                     placeholder="Describe the business unit..."
                     rows={3}
+                    value={formData.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
                   />
                 </div>
               </div>
@@ -181,7 +295,9 @@ export function BusinessUnits() {
                 <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={() => setIsAddDialogOpen(false)}>Create Unit</Button>
+                <Button onClick={handleAddUnit} disabled={isLoading}>
+                  {isLoading ? "Creating..." : "Create Unit"}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

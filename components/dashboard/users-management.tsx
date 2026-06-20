@@ -63,6 +63,8 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { users, businessUnits, roles, type User } from "@/lib/users-data"
+import { resetUserPassword } from "@/app/actions/reset-password"
+import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel } from "@/app/actions/manage-users"
 
 // Default password for reset
 const DEFAULT_PASSWORD = "Xom@2026"
@@ -108,6 +110,14 @@ export function UsersManagement() {
   const [generatedPassword, setGeneratedPassword] = useState("")
   const [copiedPassword, setCopiedPassword] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isEditLoading, setIsEditLoading] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    role: "",
+    status: "Active" as "Active" | "Inactive",
+  })
   const { toast } = useToast()
   const { user: currentUser } = useAuth()
   
@@ -183,33 +193,28 @@ export function UsersManagement() {
 
     setIsResetLoading(true)
     try {
-      const response = await fetch("/api/admin/reset-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: resetPasswordUser.id,
-        }),
-      })
+      const result = await resetUserPassword(resetPasswordUser.id, currentUser?.email)
 
-      const data = await response.json()
-
-      if (!response.ok) {
+      if (!result.success) {
         toast({
           title: "Error",
-          description: data.error || "Failed to reset password",
+          description: result.error || "Failed to reset password",
           variant: "destructive",
         })
         return
       }
 
       // Display the generated password
-      setGeneratedPassword(data.temporaryPassword || "Password sent to user email")
+      setGeneratedPassword(result.temporaryPassword || "Password sent to user email")
       
+      const description = result.emailSent
+        ? `Password reset and sent to ${result.userEmail}`
+        : `Password reset but email failed: ${result.emailError || 'Check email config'}`
+
       toast({
-        title: "Password Reset Successful",
-        description: `Password for ${resetPasswordUser.name} has been reset. New password has been sent to their email.`,
+        title: result.emailSent ? "Password Reset Successful" : "⚠️ Reset Partial",
+        description,
+        variant: result.emailSent ? "default" : "destructive",
       })
 
       // Keep dialog open to show the password
@@ -222,7 +227,7 @@ export function UsersManagement() {
       console.error("[v0] Reset password error:", error)
       toast({
         title: "Error",
-        description: "Failed to reset password",
+        description: error instanceof Error ? error.message : "Failed to reset password",
         variant: "destructive",
       })
     } finally {
@@ -240,6 +245,128 @@ export function UsersManagement() {
     })
   }
 
+  const handleEditUser = (user: User) => {
+    setEditingUser(user)
+    setEditFormData({
+      name: user.name,
+      role: user.role,
+      status: user.status,
+    })
+    setIsEditDialogOpen(true)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return
+
+    setIsEditLoading(true)
+    try {
+      // Update status if changed
+      if (editFormData.status !== editingUser.status) {
+        const statusResult = await updateUserStatus(editingUser.id, editFormData.status)
+        if (!statusResult.success) {
+          toast({
+            title: "Error",
+            description: statusResult.error,
+            variant: "destructive",
+          })
+          setIsEditLoading(false)
+          return
+        }
+      }
+
+      // Update role if changed
+      if (editFormData.role !== editingUser.role) {
+        const roleResult = await updateUserRole(editingUser.id, editFormData.role)
+        if (!roleResult.success) {
+          toast({
+            title: "Error",
+            description: roleResult.error,
+            variant: "destructive",
+          })
+          setIsEditLoading(false)
+          return
+        }
+      }
+
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      })
+      setIsEditDialogOpen(false)
+      setRefreshKey(refreshKey + 1)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update user",
+        variant: "destructive",
+      })
+    } finally {
+      setIsEditLoading(false)
+    }
+  }
+
+  const handleDeleteUser = async (user: User) => {
+    if (!confirm(`Are you sure you want to delete ${user.name}?`)) return
+
+    try {
+      const result = await deleteUser(user.id)
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "User deleted successfully",
+        })
+        setRefreshKey(refreshKey + 1)
+      } else {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleExportToExcel = async () => {
+    try {
+      const result = await exportUsersToExcel(localUsers)
+      if (result.success && result.data) {
+        // Create a blob and download
+        const blob = new Blob([result.data], { type: 'text/csv;charset=utf-8;' })
+        const link = document.createElement('a')
+        const url = URL.createObjectURL(blob)
+        link.setAttribute('href', url)
+        link.setAttribute('download', `users_export_${new Date().toISOString().split('T')[0]}.csv`)
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        toast({
+          title: "Success",
+          description: "Users exported to Excel successfully",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to export users",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to export users",
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
       <CardHeader>
@@ -252,7 +379,7 @@ export function UsersManagement() {
             <CardDescription>Manage {users.length} HSE personnel across all business units</CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={handleExportToExcel}>
               <Download className="h-4 w-4" />
               Export
             </Button>
@@ -480,7 +607,7 @@ export function UsersManagement() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditUser(user)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit User
                           </DropdownMenuItem>
@@ -502,9 +629,12 @@ export function UsersManagement() {
                             </>
                           )}
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem 
+                            className="text-destructive"
+                            onClick={() => handleDeleteUser(user)}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Deactivate
+                            {user.status === 'Active' ? 'Deactivate' : 'Delete'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -646,6 +776,80 @@ export function UsersManagement() {
             </Button>
             <Button onClick={confirmResetPassword} disabled={isResetLoading}>
               {isResetLoading ? "Resetting..." : "Reset Password"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5 text-primary" />
+              Edit User
+            </DialogTitle>
+            <DialogDescription>
+              Update user role and status information.
+            </DialogDescription>
+          </DialogHeader>
+          {editingUser && (
+            <div className="space-y-4 py-4">
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-primary/20 text-primary">
+                      {editingUser.name
+                        .split(" ")
+                        .slice(0, 2)
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{editingUser.name}</p>
+                    <p className="text-sm text-muted-foreground">{editingUser.email}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-role">Role</Label>
+                  <Select value={editFormData.role} onValueChange={(value) => setEditFormData({ ...editFormData, role: value })}>
+                    <SelectTrigger id="edit-role">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role} value={role}>{role}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-status">Status</Label>
+                  <Select value={editFormData.status} onValueChange={(value) => setEditFormData({ ...editFormData, status: value as "Active" | "Inactive" })}>
+                    <SelectTrigger id="edit-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isEditLoading}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={isEditLoading}>
+              {isEditLoading ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>

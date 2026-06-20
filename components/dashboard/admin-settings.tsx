@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ExcelDataViewer } from "./excel-data-viewer"
+import { addNewUser } from "@/app/actions/add-user"
+import { resetUserPassword } from "@/app/actions/reset-password"
 
 const ROLES = [
   "ADMIN SYSTEM",
@@ -84,32 +86,49 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
 
     setIsLoading(true)
     try {
-      const response = await fetch("/api/admin/add-user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          adminEmail: currentUser?.email,
-          status: formData.status === "Active",
-        }),
+      // Trim and validate email
+      const cleanEmail = formData.email.trim().toLowerCase()
+      
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(cleanEmail)) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address",
+          variant: "destructive",
+        })
+        setIsLoading(false)
+        return
+      }
+
+      const result = await addNewUser({
+        name: formData.name,
+        email: cleanEmail,
+        payrollNo: formData.payrollNo || `P${Date.now()}`,
+        designation: formData.designation,
+        businessUnit: formData.businessUnit,
+        hseRole: formData.role,
+        status: formData.status,
+        adminEmail: currentUser?.email,
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
+      if (!result.success) {
         toast({
           title: "Error",
-          description: data.error || "Failed to add user",
+          description: result.error || "Failed to add user",
           variant: "destructive",
         })
         return
       }
 
+      const description = result.emailSent
+        ? `User ${formData.name} created! Password sent to ${formData.email}.`
+        : `User created but email failed: ${result.emailError || 'Unknown error'}. Check environment variables.`
+
       toast({
-        title: "Success",
-        description: `User ${formData.name} has been added successfully!`,
+        title: result.emailSent ? "Success" : "⚠️ Partial Success",
+        description,
+        variant: result.emailSent ? "default" : "destructive",
       })
 
       // Save new user to localStorage for UI update
@@ -117,7 +136,7 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
         const storedUsers = localStorage.getItem("added_users") || "[]"
         const addedUsers = JSON.parse(storedUsers)
         const newUser = {
-          id: `added_${Date.now()}`,
+          id: result.user?.id || `added_${Date.now()}`,
           name: formData.name,
           email: formData.email,
           payrollNo: formData.payrollNo,
@@ -153,7 +172,7 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
       console.error("[v0] Error adding user:", error)
       toast({
         title: "Error",
-        description: "Failed to add user",
+        description: error instanceof Error ? error.message : "Failed to add user",
         variant: "destructive",
       })
     } finally {

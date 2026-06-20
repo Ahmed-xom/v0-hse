@@ -10,9 +10,10 @@ export const user = pgTable('user', {
   image: text('image'),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
-  twoFactorEnabled: boolean('twoFactorEnabled').default(false),
+  banned: boolean('banned').default(false),
+  banReason: text('banReason'),
+  banExpires: timestamp('banExpires'),
   role: text('role').default('USER'),
-  isSuperAdmin: boolean('isSuperAdmin').default(false),
 })
 
 export const session = pgTable('session', {
