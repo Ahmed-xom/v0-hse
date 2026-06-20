@@ -63,6 +63,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { users, businessUnits, roles, type User } from "@/lib/users-data"
+import { resetUserPassword } from "@/app/actions/reset-password"
 
 // Default password for reset
 const DEFAULT_PASSWORD = "Xom@2026"
@@ -183,33 +184,23 @@ export function UsersManagement() {
 
     setIsResetLoading(true)
     try {
-      const response = await fetch("/api/admin/reset-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: resetPasswordUser.id,
-        }),
-      })
+      const result = await resetUserPassword(resetPasswordUser.id)
 
-      const data = await response.json()
-
-      if (!response.ok) {
+      if (!result.success) {
         toast({
           title: "Error",
-          description: data.error || "Failed to reset password",
+          description: result.error || "Failed to reset password",
           variant: "destructive",
         })
         return
       }
 
       // Display the generated password
-      setGeneratedPassword(data.temporaryPassword || "Password sent to user email")
+      setGeneratedPassword(result.temporaryPassword || "Password sent to user email")
       
       toast({
         title: "Password Reset Successful",
-        description: `Password for ${resetPasswordUser.name} has been reset. New password has been sent to their email.`,
+        description: `Password for ${resetPasswordUser.name} has been reset. New password has been sent to ${result.userEmail}.`,
       })
 
       // Keep dialog open to show the password
@@ -222,7 +213,7 @@ export function UsersManagement() {
       console.error("[v0] Reset password error:", error)
       toast({
         title: "Error",
-        description: "Failed to reset password",
+        description: error instanceof Error ? error.message : "Failed to reset password",
         variant: "destructive",
       })
     } finally {
