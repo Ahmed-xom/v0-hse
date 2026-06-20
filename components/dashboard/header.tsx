@@ -26,8 +26,13 @@ const navItems = [
   { label: "Reports", href: "#" },
 ]
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+  onDateRangeChange?: (range: string) => void
+}
+
+export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [dateRange, setDateRange] = useState("30days")
   const { user, logout } = useAuth()
   const router = useRouter()
 
@@ -104,11 +109,57 @@ export function DashboardHeader() {
           </div>
 
           {/* Date Range */}
-          <Button variant="outline" className="hidden gap-2 sm:flex">
-            <Calendar className="h-4 w-4" />
-            <span>Last 30 days</span>
-            <ChevronDown className="h-4 w-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="hidden gap-2 sm:flex">
+                <Calendar className="h-4 w-4" />
+                <span>
+                  {dateRange === "7days" ? "Last 7 days" : dateRange === "30days" ? "Last 30 days" : dateRange === "90days" ? "Last 90 days" : "This year"}
+                </span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Date Range</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => {
+                  setDateRange("7days")
+                  onDateRangeChange?.("7days")
+                }}
+              >
+                Last 7 days
+                {dateRange === "7days" && <span className="ml-2 text-xs">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => {
+                  setDateRange("30days")
+                  onDateRangeChange?.("30days")
+                }}
+              >
+                Last 30 days
+                {dateRange === "30days" && <span className="ml-2 text-xs">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => {
+                  setDateRange("90days")
+                  onDateRangeChange?.("90days")
+                }}
+              >
+                Last 90 days
+                {dateRange === "90days" && <span className="ml-2 text-xs">✓</span>}
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => {
+                  setDateRange("thisyear")
+                  onDateRangeChange?.("thisyear")
+                }}
+              >
+                This year
+                {dateRange === "thisyear" && <span className="ml-2 text-xs">✓</span>}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Notifications */}
           <DropdownMenu>
