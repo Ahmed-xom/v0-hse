@@ -7,7 +7,7 @@ import { headers } from 'next/headers'
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
 
-const EMAIL_USER = process.env.EMAIL_USER || 'hsesystem.xom@outlook.com'
+const EMAIL_USER = process.env.EMAIL_USER || 'hse-system@gmail.com'
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
 const ADMIN_EMAIL = 'xom-it-admin@xomoman.com'
 
@@ -93,19 +93,15 @@ export async function addNewUser(userData: {
       console.warn('[v0] Email credentials missing:', { EMAIL_USER, hasPassword: !!EMAIL_PASSWORD })
     } else {
       try {
-        console.log('[v0] Creating email transporter with:', { host: 'smtp.office365.com', port: 587, user: EMAIL_USER })
+        console.log('[v0] Creating email transporter with:', { host: 'smtp.gmail.com', port: 587, user: EMAIL_USER })
 
         const transporter = nodemailer.createTransport({
-          host: 'smtp.office365.com',
+          host: 'smtp.gmail.com',
           port: 587,
           secure: false,
           auth: {
             user: EMAIL_USER,
             pass: EMAIL_PASSWORD,
-          },
-          tls: {
-            ciphers: 'SSLv3',
-            rejectUnauthorized: false,
           },
         })
 
@@ -145,7 +141,7 @@ export async function addNewUser(userData: {
 
         console.log('[v0] Sending email to:', userData.email)
         const info = await transporter.sendMail({
-          from: EMAIL_USER,
+          from: `"HSE System" <${EMAIL_USER}>`,
           to: userData.email,
           subject: 'Welcome to HSE System - Account Created',
           html: htmlContent,
