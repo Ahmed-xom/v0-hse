@@ -85,8 +85,16 @@ export async function addNewUser(userData: {
       .returning()
 
     // Send welcome email with temporary password
-    if (EMAIL_USER && EMAIL_PASSWORD) {
+    let emailSent = false
+    let emailError: string | null = null
+
+    if (!EMAIL_PASSWORD) {
+      emailError = 'Email credentials not configured. Please set EMAIL_USER and EMAIL_PASSWORD environment variables.'
+      console.warn('[v0] Email credentials missing:', { EMAIL_USER, hasPassword: !!EMAIL_PASSWORD })
+    } else {
       try {
+        console.log('[v0] Creating email transporter with:', { host: 'smtp.office365.com', port: 587, user: EMAIL_USER })
+
         const transporter = nodemailer.createTransport({
           host: 'smtp.office365.com',
           port: 587,
@@ -100,6 +108,11 @@ export async function addNewUser(userData: {
             rejectUnauthorized: false,
           },
         })
+
+        // Verify connection
+        console.log('[v0] Verifying email connection...')
+        await transporter.verify()
+        console.log('[v0] Email connection verified')
 
         const htmlContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -130,15 +143,20 @@ export async function addNewUser(userData: {
           </div>
         `
 
-        await transporter.sendMail({
+        console.log('[v0] Sending email to:', userData.email)
+        const info = await transporter.sendMail({
           from: EMAIL_USER,
           to: userData.email,
           subject: 'Welcome to HSE System - Account Created',
           html: htmlContent,
         })
-      } catch (emailError) {
-        console.error('[v0] Email send error:', emailError)
-        // Don't fail user creation if email fails
+
+        console.log('[v0] Email sent successfully:', info.messageId)
+        emailSent = true
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err)
+        console.error('[v0] Email send error:', errMsg)
+        emailError = `Email failed: ${errMsg}`
       }
     }
 
@@ -148,6 +166,8 @@ export async function addNewUser(userData: {
       user: newUser[0],
       hseUser: hseUserRecord[0],
       temporaryPassword,
+      emailSent,
+      emailError: emailError || (emailSent ? 'Email sent successfully' : 'Email not sent'),
     }
   } catch (error) {
     console.error('[v0] Error adding user:', error)

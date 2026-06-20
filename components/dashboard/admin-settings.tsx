@@ -105,9 +105,14 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
         return
       }
 
+      const description = result.emailSent
+        ? `User ${formData.name} created! Password sent to ${formData.email}.`
+        : `User created but email failed: ${result.emailError || 'Unknown error'}. Check environment variables.`
+
       toast({
-        title: "Success",
-        description: `User ${formData.name} has been added successfully! Temporary password sent to email.`,
+        title: result.emailSent ? "Success" : "⚠️ Partial Success",
+        description,
+        variant: result.emailSent ? "default" : "destructive",
       })
 
       // Save new user to localStorage for UI update

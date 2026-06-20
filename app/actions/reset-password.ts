@@ -66,8 +66,16 @@ export async function resetUserPassword(targetUserId: string) {
       .returning()
 
     // Send email with new password
-    if (EMAIL_USER && EMAIL_PASSWORD) {
+    let emailSent = false
+    let emailErrorMsg: string | null = null
+
+    if (!EMAIL_PASSWORD) {
+      emailErrorMsg = 'Email credentials not configured. Please set EMAIL_USER and EMAIL_PASSWORD environment variables.'
+      console.warn('[v0] Email credentials missing:', { EMAIL_USER, hasPassword: !!EMAIL_PASSWORD })
+    } else {
       try {
+        console.log('[v0] Creating email transporter for reset with:', { host: 'smtp.office365.com', port: 587, user: EMAIL_USER })
+
         const transporter = nodemailer.createTransport({
           host: 'smtp.office365.com',
           port: 587,
@@ -81,6 +89,11 @@ export async function resetUserPassword(targetUserId: string) {
             rejectUnauthorized: false,
           },
         })
+
+        // Verify connection
+        console.log('[v0] Verifying email connection for reset...')
+        await transporter.verify()
+        console.log('[v0] Email connection verified for reset')
 
         const htmlContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -121,15 +134,20 @@ export async function resetUserPassword(targetUserId: string) {
           </div>
         `
 
-        await transporter.sendMail({
+        console.log('[v0] Sending reset email to:', targetUserData.email)
+        const info = await transporter.sendMail({
           from: `"HSE System" <${EMAIL_USER}>`,
           to: targetUserData.email,
           subject: 'Your Password Has Been Reset - HSE System',
           html: htmlContent,
         })
-      } catch (emailError) {
-        console.error('[v0] Email send error:', emailError)
-        // Don't fail the password reset if email fails
+
+        console.log('[v0] Reset email sent successfully:', info.messageId)
+        emailSent = true
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err)
+        console.error('[v0] Email send error on reset:', errMsg)
+        emailErrorMsg = `Email failed: ${errMsg}`
       }
     }
 
@@ -138,6 +156,8 @@ export async function resetUserPassword(targetUserId: string) {
       message: 'Password has been reset and email sent to user',
       temporaryPassword: newPassword,
       userEmail: targetUserData.email,
+      emailSent,
+      emailError: emailErrorMsg || (emailSent ? 'Email sent successfully' : 'Email not sent'),
     }
   } catch (error) {
     console.error('[v0] Error resetting password:', error)

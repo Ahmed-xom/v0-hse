@@ -198,9 +198,14 @@ export function UsersManagement() {
       // Display the generated password
       setGeneratedPassword(result.temporaryPassword || "Password sent to user email")
       
+      const description = result.emailSent
+        ? `Password reset and sent to ${result.userEmail}`
+        : `Password reset but email failed: ${result.emailError || 'Check email config'}`
+
       toast({
-        title: "Password Reset Successful",
-        description: `Password for ${resetPasswordUser.name} has been reset. New password has been sent to ${result.userEmail}.`,
+        title: result.emailSent ? "Password Reset Successful" : "⚠️ Reset Partial",
+        description,
+        variant: result.emailSent ? "default" : "destructive",
       })
 
       // Keep dialog open to show the password
