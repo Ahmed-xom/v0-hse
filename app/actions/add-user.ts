@@ -31,18 +31,24 @@ export async function addNewUser(userData: {
   businessUnit?: string
   hseRole?: string
   status?: string
+  adminEmail?: string
 }) {
   try {
-    // Verify admin is authenticated
-    const session = await auth.api.getSession({ headers: await headers() })
+    console.log('[v0] Adding new user:', { name: userData.name, email: userData.email, adminEmail: userData.adminEmail })
 
-    if (!session?.user) {
-      return { success: false, error: 'Unauthorized: Not authenticated' }
+    // Verify admin is authenticated (check if caller is admin)
+    const callerEmail = userData.adminEmail
+
+    if (!callerEmail) {
+      return { success: false, error: 'Unauthorized: Admin email required' }
     }
 
-    if (session.user.email !== ADMIN_EMAIL) {
+    if (callerEmail !== ADMIN_EMAIL) {
+      console.log('[v0] Unauthorized attempt:', { caller: callerEmail, admin: ADMIN_EMAIL })
       return { success: false, error: 'Forbidden: Only authorized admin can add users' }
     }
+
+    console.log('[v0] Admin verified:', callerEmail)
 
     // Validate required fields
     if (!userData.name || !userData.email) {

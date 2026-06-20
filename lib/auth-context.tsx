@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
 import { users } from "./users-data"
+import { requestPasswordReset as requestPasswordResetAction } from "@/app/actions/forgot-password"
 
 export type UserRole = "ADMIN SYSTEM" | "MANAGEMENT" | "SITE MANAGER" | "HSE ADMIN" | "HSE" | "HR" | "MASTER USER" | "USER" | "USER - JM"
 
@@ -90,33 +91,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const requestPasswordReset = async (email: string): Promise<{ success: boolean; error?: string }> => {
-    // Find user by email
-    const foundUser = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    )
-
-    if (!foundUser) {
-      return { success: false, error: "No account found with this email address." }
-    }
-
-    // In production, this would send an actual email
-    // For now, we'll simulate the API call
+    // Call server action to handle password reset
     try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
-
-      if (response.ok) {
+      const result = await requestPasswordResetAction(email)
+      
+      if (result.success) {
         return { success: true }
       } else {
-        const data = await response.json()
-        return { success: false, error: data.error || "Failed to send reset email." }
+        return { success: false, error: result.error || "Failed to process password reset." }
       }
-    } catch {
-      // If API fails, still show success for demo purposes
-      return { success: true }
+    } catch (error) {
+      console.error('[v0] Password reset error:', error)
+      return { success: false, error: "An unexpected error occurred. Please try again." }
     }
   }
 

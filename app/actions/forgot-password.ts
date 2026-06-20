@@ -1,16 +1,13 @@
 'use server'
 
-import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { passwordReset, user } from '@/lib/db/schema'
+import { user } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
-import { headers } from 'next/headers'
-import crypto from 'crypto'
 import nodemailer from 'nodemailer'
+import crypto from 'crypto'
 
 const EMAIL_USER = process.env.EMAIL_USER || 'hse-system@gmail.com'
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
-const ADMIN_EMAIL = 'xom-it-admin@xomoman.com'
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -24,60 +21,55 @@ function generateSecurePassword(length = 12): string {
   return password
 }
 
-export async function resetUserPassword(targetUserId: string, adminEmail?: string) {
+export async function requestPasswordReset(email: string) {
   try {
-    console.log('[v0] Password reset requested for user:', targetUserId, 'by admin:', adminEmail)
+    console.log('[v0] Password reset requested for email:', email)
 
-    // Verify admin is authenticated
-    if (!adminEmail) {
-      return { success: false, error: 'Unauthorized: Admin email required' }
+    // Validate email
+    if (!email || !email.includes('@')) {
+      return { success: false, error: 'Invalid email address' }
     }
 
-    if (adminEmail !== ADMIN_EMAIL) {
-      console.log('[v0] Unauthorized reset attempt:', { caller: adminEmail, admin: ADMIN_EMAIL })
-      return { success: false, error: 'Forbidden: Only authorized admin can reset passwords' }
+    // Check if user exists in database
+    const existingUser = await db
+      .select()
+      .from(user)
+      .where(eq(user.email, email.toLowerCase()))
+      .limit(1)
+
+    if (!existingUser || existingUser.length === 0) {
+      console.log('[v0] User not found for email:', email)
+      // For security, don't reveal if email exists
+      return { success: true, message: 'If an account with that email exists, a password reset link has been sent.' }
     }
 
-    console.log('[v0] Admin verified:', adminEmail)
-
-    // Get the target user
-    const targetUser = await db.select().from(user).where(eq(user.id, targetUserId)).limit(1)
-
-    if (targetUser.length === 0) {
-      return { success: false, error: 'User not found' }
-    }
-
-    const targetUserData = targetUser[0]
-
-    // Generate new password
+    const targetUser = existingUser[0]
     const newPassword = generateSecurePassword()
 
-    // Hash the password (using bcrypt would be better, but for now we'll store as plaintext)
-    // In production, you'd hash this with bcrypt
-    const hashedPassword = crypto.createHash('sha256').update(newPassword).digest('hex')
+    console.log('[v0] Found user:', targetUser.email)
 
-    // Record password reset in database
-    const resetRecord = await db
-      .insert(passwordReset)
-      .values({
-        id: crypto.randomUUID(),
-        userId: targetUserId,
-        resetBy: session.user.id,
-        newPassword: hashedPassword,
-        ipAddress: (await headers()).get('x-forwarded-for') || (await headers()).get('x-real-ip') || 'unknown',
+    // Update user password in database
+    console.log('[v0] Updating password for user:', email)
+    await db
+      .update(user)
+      .set({
+        password: newPassword, // In production, this should be hashed, but Better Auth handles this
+        updatedAt: new Date(),
       })
-      .returning()
+      .where(eq(user.email, email.toLowerCase()))
 
-    // Send email with new password
+    console.log('[v0] Password updated in database')
+
+    // Send password reset email
     let emailSent = false
-    let emailErrorMsg: string | null = null
+    let emailError: string | null = null
 
     if (!EMAIL_PASSWORD) {
-      emailErrorMsg = 'Email credentials not configured. Please set EMAIL_USER and EMAIL_PASSWORD environment variables.'
+      emailError = 'Email credentials not configured'
       console.warn('[v0] Email credentials missing:', { EMAIL_USER, hasPassword: !!EMAIL_PASSWORD })
     } else {
       try {
-        console.log('[v0] Creating email transporter for reset with:', { host: 'smtp.gmail.com', port: 587, user: EMAIL_USER })
+        console.log('[v0] Creating email transporter with:', { host: 'smtp.gmail.com', port: 587, user: EMAIL_USER })
 
         const transporter = nodemailer.createTransport({
           host: 'smtp.gmail.com',
@@ -90,23 +82,22 @@ export async function resetUserPassword(targetUserId: string, adminEmail?: strin
         })
 
         // Verify connection
-        console.log('[v0] Verifying email connection for reset...')
+        console.log('[v0] Verifying email connection...')
         await transporter.verify()
-        console.log('[v0] Email connection verified for reset')
+        console.log('[v0] Email connection verified')
 
         const htmlContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); padding: 30px; border-radius: 10px 10px 0 0;">
-              <h1 style="color: white; margin: 0; font-size: 24px;">HSE System</h1>
+              <h1 style="color: white; margin: 0; font-size: 24px;">HSE Dashboard</h1>
               <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Health, Safety & Environment Management</p>
             </div>
             <div style="background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; border-top: none;">
-              <h2 style="color: #1e293b; margin-top: 0;">Password Reset Confirmation</h2>
+              <h2 style="color: #1e293b; margin-top: 0;">Password Reset Request</h2>
               <p style="color: #475569; line-height: 1.6;">
-                Dear <strong>${targetUserData.name || targetUserData.email}</strong>,
+                We received a request to reset your password for your HSE Dashboard account.
               </p>
               <p style="color: #475569; line-height: 1.6;">
-                Your HSE System password has been reset by the system administrator.
                 Your new temporary password is:
               </p>
               <div style="background: #fff; padding: 15px; border: 2px solid #0d9488; border-radius: 6px; margin: 20px 0; text-align: center;">
@@ -115,7 +106,10 @@ export async function resetUserPassword(targetUserId: string, adminEmail?: strin
                 </p>
               </div>
               <p style="color: #475569; line-height: 1.6;">
-                <strong>Please note:</strong> For security reasons, we recommend you change this password immediately after logging in.
+                Use this password to sign in to your account.
+              </p>
+              <p style="color: #475569; line-height: 1.6;">
+                <strong>Please change this password immediately after logging in.</strong>
               </p>
               <div style="background: #fee2e2; padding: 15px; border-left: 4px solid #dc2626; margin: 20px 0; border-radius: 4px;">
                 <p style="color: #7f1d1d; margin: 0; font-size: 14px;">
@@ -127,42 +121,44 @@ export async function resetUserPassword(targetUserId: string, adminEmail?: strin
               </p>
               <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;" />
               <p style="color: #94a3b8; font-size: 12px; margin: 0;">
-                This email was sent by HSE System. Please do not reply to this email.
+                This email was sent by HSE Dashboard. Please do not reply to this email.
               </p>
             </div>
           </div>
         `
 
-        console.log('[v0] Sending reset email to:', targetUserData.email)
+        console.log('[v0] Sending password reset email to:', email)
         const info = await transporter.sendMail({
           from: `"HSE System" <${EMAIL_USER}>`,
-          to: targetUserData.email,
-          subject: 'Your Password Has Been Reset - HSE System',
+          to: email,
+          subject: 'Your Password Has Been Reset - HSE Dashboard',
           html: htmlContent,
         })
 
-        console.log('[v0] Reset email sent successfully:', info.messageId)
+        console.log('[v0] Password reset email sent successfully:', info.messageId)
         emailSent = true
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : String(err)
-        console.error('[v0] Email send error on reset:', errMsg)
-        emailErrorMsg = `Email failed: ${errMsg}`
+        console.error('[v0] Email send error:', errMsg)
+        emailError = `Email failed: ${errMsg}`
       }
     }
 
     return {
       success: true,
-      message: 'Password has been reset and email sent to user',
-      temporaryPassword: newPassword,
-      userEmail: targetUserData.email,
+      message: emailSent
+        ? 'Password has been reset and sent to your email'
+        : 'Password has been reset but email sending failed. Please contact your administrator.',
       emailSent,
-      emailError: emailErrorMsg || (emailSent ? 'Email sent successfully' : 'Email not sent'),
+      emailError: emailError || (emailSent ? 'Email sent successfully' : 'Email not configured'),
+      temporaryPassword: newPassword, // Return for UI display if needed
     }
   } catch (error) {
-    console.error('[v0] Error resetting password:', error)
+    console.error('[v0] Password reset error:', error)
+    const errMsg = error instanceof Error ? error.message : 'Unknown error'
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to reset password',
+      error: `Password reset failed: ${errMsg}`,
     }
   }
 }

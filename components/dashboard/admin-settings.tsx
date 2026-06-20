@@ -94,6 +94,7 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
         businessUnit: formData.businessUnit,
         hseRole: formData.role,
         status: formData.status,
+        adminEmail: currentUser?.email,
       })
 
       if (!result.success) {
