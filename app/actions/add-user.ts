@@ -90,10 +90,10 @@ export async function addNewUser(userData: {
       console.warn('[v0] Email credentials missing:', { EMAIL_USER, hasPassword: !!EMAIL_PASSWORD })
     } else {
       try {
-        console.log('[v0] Creating email transporter with:', { host: 'smtp.gmail.com', port: 587, user: EMAIL_USER })
+        console.log('[v0] Creating email transporter with:', { host: 'smtp-mail.outlook.com', port: 587, user: EMAIL_USER })
 
         const transporter = nodemailer.createTransport({
-          host: 'smtp.gmail.com',
+          host: 'smtp-mail.outlook.com',
           port: 587,
           secure: false,
           auth: {
