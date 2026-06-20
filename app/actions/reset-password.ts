@@ -28,7 +28,14 @@ export async function resetUserPassword(targetUserId: string, adminEmail?: strin
     console.log('[v0] Password reset requested for user:', targetUserId, 'by admin:', adminEmail)
 
     // Get the target user
-    const targetUser = await db.select().from(user).where(eq(user.id, targetUserId))
+    const targetUser = await db
+      .select({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      })
+      .from(user)
+      .where(eq(user.id, targetUserId))
 
     if (targetUser.length === 0) {
       return { success: false, error: 'User not found' }
@@ -44,7 +51,7 @@ export async function resetUserPassword(targetUserId: string, adminEmail?: strin
     const hashedPassword = crypto.createHash('sha256').update(newPassword).digest('hex')
 
     // Record password reset in database
-    const resetRecord = await db
+    await db
       .insert(passwordReset)
       .values({
         id: crypto.randomUUID(),
@@ -53,7 +60,7 @@ export async function resetUserPassword(targetUserId: string, adminEmail?: strin
         newPassword: hashedPassword,
         ipAddress: (await headers()).get('x-forwarded-for') || (await headers()).get('x-real-ip') || 'unknown',
       })
-      .returning()
+      .execute()
 
     // Send email with new password
     let emailSent = false
