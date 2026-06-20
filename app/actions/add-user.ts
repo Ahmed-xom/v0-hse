@@ -65,7 +65,7 @@ export async function addNewUser(userData: {
       newUserResult = await db.execute(
         sql`INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt", role, banned)
             VALUES (${newUserId}, ${userData.name}, ${cleanEmail}, false, ${isoNow}, ${isoNow}, ${role}, false)
-            RETURNING *`
+            RETURNING id, name, email`
       )
       
       newUser = newUserResult.rows?.[0] || newUserResult[0]

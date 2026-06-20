@@ -10,7 +10,6 @@ import nodemailer from 'nodemailer'
 
 const EMAIL_USER = process.env.EMAIL_USER || 'hse-system@gmail.com'
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
-const ADMIN_EMAIL = 'xom-it-admin@xomoman.com'
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -27,18 +26,6 @@ function generateSecurePassword(length = 12): string {
 export async function resetUserPassword(targetUserId: string, adminEmail?: string) {
   try {
     console.log('[v0] Password reset requested for user:', targetUserId, 'by admin:', adminEmail)
-
-    // Verify admin is authenticated
-    if (!adminEmail) {
-      return { success: false, error: 'Unauthorized: Admin email required' }
-    }
-
-    if (adminEmail !== ADMIN_EMAIL) {
-      console.log('[v0] Unauthorized reset attempt:', { caller: adminEmail, admin: ADMIN_EMAIL })
-      return { success: false, error: 'Forbidden: Only authorized admin can reset passwords' }
-    }
-
-    console.log('[v0] Admin verified:', adminEmail)
 
     // Get the target user
     const targetUser = await db.select().from(user).where(eq(user.id, targetUserId)).limit(1)
@@ -62,7 +49,7 @@ export async function resetUserPassword(targetUserId: string, adminEmail?: strin
       .values({
         id: crypto.randomUUID(),
         userId: targetUserId,
-        resetBy: session.user.id,
+        resetBy: adminEmail || 'unknown',
         newPassword: hashedPassword,
         ipAddress: (await headers()).get('x-forwarded-for') || (await headers()).get('x-real-ip') || 'unknown',
       })
