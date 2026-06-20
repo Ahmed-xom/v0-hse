@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { user } from '@/lib/db/schema'
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
+import { sql } from 'drizzle-orm'
 
 const EMAIL_USER = process.env.EMAIL_USER || 'hse-system@gmail.com'
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
@@ -63,20 +64,15 @@ export async function addNewUser(userData: {
     
     console.log('[v0] Inserting user:', { id: newUserId, name: userData.name, email: userData.email, role })
 
-    // Create user in database with explicit NULL for optional columns
-    const newUser = await db.insert(user).values({
-      id: newUserId,
-      name: userData.name,
-      email: userData.email,
-      emailVerified: false,
-      image: null,
-      role: role,
-      banned: false,
-      banReason: null,
-      banExpires: null,
-      createdAt: now,
-      updatedAt: now,
-    }).returning()
+    // Create user in database using raw SQL to avoid Drizzle ORM schema issues
+    const isoNow = now.toISOString()
+    const newUserResult = await db.execute(
+      sql`INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt", role, banned)
+          VALUES (${newUserId}, ${userData.name}, ${userData.email}, false, ${isoNow}, ${isoNow}, ${role}, false)
+          RETURNING *`
+    )
+    
+    const newUser = newUserResult.rows || [newUserResult]
 
     console.log('[v0] User created successfully:', newUser[0])
 
