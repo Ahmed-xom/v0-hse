@@ -23,25 +23,37 @@ function generateSecurePassword(length = 12): string {
   return password
 }
 
-export async function resetUserPassword(targetUserId: string, adminEmail?: string) {
+export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?: string) {
   try {
-    console.log('[v0] Password reset requested for user:', targetUserId, 'by admin:', adminEmail)
+    console.log('[v0] Password reset requested for user:', targetUserIdOrEmail, 'by admin:', adminEmail)
 
-    // Get the target user
-    const targetUser = await db
+    // Try to get user by email (primary method), then by ID
+    let targetUserResult = await db
       .select({
         id: user.id,
         email: user.email,
         name: user.name,
       })
       .from(user)
-      .where(eq(user.id, targetUserId))
+      .where(eq(user.email, targetUserIdOrEmail.toLowerCase()))
 
-    if (targetUser.length === 0) {
+    // If not found by email, try by ID
+    if (targetUserResult.length === 0 && targetUserIdOrEmail.includes('-') === false) {
+      targetUserResult = await db
+        .select({
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        })
+        .from(user)
+        .where(eq(user.id, targetUserIdOrEmail))
+    }
+
+    if (targetUserResult.length === 0) {
       return { success: false, error: 'User not found' }
     }
 
-    const targetUserData = targetUser[0]
+    const targetUserData = targetUserResult[0]
 
     // Generate new password
     const newPassword = generateSecurePassword()

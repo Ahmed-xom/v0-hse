@@ -193,7 +193,7 @@ export function UsersManagement() {
 
     setIsResetLoading(true)
     try {
-      const result = await resetUserPassword(resetPasswordUser.id, currentUser?.email)
+      const result = await resetUserPassword(resetPasswordUser.email, currentUser?.email)
 
       if (!result.success) {
         toast({
