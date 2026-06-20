@@ -6,6 +6,8 @@ import crypto from 'crypto'
 import { Resend } from 'resend'
 import { sql } from 'drizzle-orm'
 
+const resend = new Resend(process.env.RESEND_API_KEY)
+
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
@@ -87,10 +89,6 @@ export async function addNewUser(userData: {
       console.warn('[v0] Resend API key missing')
     } else {
       try {
-        console.log('[v0] Initializing Resend with API key...')
-        const resend = new Resend(process.env.RESEND_API_KEY)
-        console.log('[v0] Resend initialized successfully')
-
         const htmlContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #1f2937;">Welcome to HSE System</h2>
