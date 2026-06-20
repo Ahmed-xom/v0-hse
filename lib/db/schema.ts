@@ -1,7 +1,7 @@
 import { pgTable, text, varchar, timestamp, boolean, integer, decimal, jsonb, index, uuid } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
-// Better Auth Tables
+// Better Auth Tables (in neon_auth schema)
 export const user = pgTable('user', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name'),

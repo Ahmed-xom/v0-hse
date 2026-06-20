@@ -35,21 +35,17 @@ export async function requestPasswordReset(email: string) {
     let existingUser = null
     
     try {
-      // Query user using Drizzle ORM standard query builder
-      const queryResult = await db
-        .select({
-          id: user.id,
-          email: user.email,
-          name: user.name,
-        })
-        .from(user)
-        .where(eq(user.email, email.toLowerCase()))
+      // Use raw SQL to query from neon_auth schema
+      const queryResult = await db.execute(sql`
+        SELECT id, email, name FROM neon_auth."user" WHERE email = ${email.toLowerCase()}
+      `)
       
-      if (queryResult && queryResult.length > 0) {
+      const rows = (queryResult as any).rows || []
+      if (rows && rows.length > 0) {
         existingUser = {
-          id: queryResult[0].id,
-          email: queryResult[0].email,
-          name: queryResult[0].name,
+          id: rows[0].id,
+          email: rows[0].email,
+          name: rows[0].name,
         }
       }
       
