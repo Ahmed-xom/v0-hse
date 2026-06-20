@@ -63,14 +63,17 @@ export async function addNewUser(userData: {
     
     console.log('[v0] Inserting user:', { id: newUserId, name: userData.name, email: userData.email, role })
 
-    // Create user in database
+    // Create user in database with explicit NULL for optional columns
     const newUser = await db.insert(user).values({
       id: newUserId,
       name: userData.name,
       email: userData.email,
       emailVerified: false,
+      image: null,
       role: role,
       banned: false,
+      banReason: null,
+      banExpires: null,
       createdAt: now,
       updatedAt: now,
     }).returning()
