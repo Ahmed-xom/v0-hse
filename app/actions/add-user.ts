@@ -8,7 +8,6 @@ import { sql } from 'drizzle-orm'
 
 const EMAIL_USER = process.env.EMAIL_USER || 'hse-system@gmail.com'
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
-const ADMIN_EMAIL = 'xom-it-admin@xomoman.com'
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -38,19 +37,9 @@ export async function addNewUser(userData: {
     
     console.log('[v0] Adding new user:', { name: userData.name, email: cleanEmail, originalEmail: userData.email, adminEmail: userData.adminEmail })
 
-    // Verify admin is authenticated
+    // Just log the admin email for audit trail
     const callerEmail = userData.adminEmail
-
-    if (!callerEmail) {
-      return { success: false, error: 'Unauthorized: Admin email required' }
-    }
-
-    if (callerEmail !== ADMIN_EMAIL) {
-      console.log('[v0] Unauthorized attempt:', { caller: callerEmail, admin: ADMIN_EMAIL })
-      return { success: false, error: 'Forbidden: Only authorized admin can add users' }
-    }
-
-    console.log('[v0] Admin verified:', callerEmail)
+    console.log('[v0] User added by admin:', callerEmail)
 
     // Validate required fields
     if (!userData.name || !userData.email) {
