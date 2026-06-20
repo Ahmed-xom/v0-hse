@@ -1,6 +1,7 @@
 'use server'
 
 import { pool } from '@/lib/db'
+import { revalidateTag } from 'next/cache'
 
 export async function updateUserStatus(
   userId: string,
@@ -28,6 +29,12 @@ export async function updateUserStatus(
     }
 
     console.log('[v0] User status updated:', { userId, status })
+    
+    // Trigger real-time updates for all users
+    revalidateTag('users')
+    revalidateTag('observations')
+    revalidateTag('inspections')
+    
     return {
       success: true,
       message: `User status changed to ${status}`,
@@ -67,6 +74,12 @@ export async function updateUserRole(
     }
 
     console.log('[v0] User role updated:', { userId, role })
+    
+    // Trigger real-time updates for all users
+    revalidateTag('users')
+    revalidateTag('observations')
+    revalidateTag('inspections')
+    
     return {
       success: true,
       message: `User role changed to ${role}`,
@@ -103,9 +116,15 @@ export async function deleteUser(userId: string) {
     }
 
     console.log('[v0] User deleted:', { userId })
+    
+    // Trigger real-time updates for all users - cascade updates to observations/inspections
+    revalidateTag('users')
+    revalidateTag('observations')
+    revalidateTag('inspections')
+    
     return {
       success: true,
-      message: 'User deleted successfully',
+      message: 'User deleted successfully - all observations updated',
     }
   } catch (error: any) {
     console.error('[v0] Error deleting user:', error)
