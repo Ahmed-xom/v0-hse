@@ -30,34 +30,46 @@ export async function requestPasswordReset(email: string) {
       return { success: false, error: 'Invalid email address' }
     }
 
-    // Check if user exists in database - try simple query first
+    // Check if user exists in database
     console.log('[v0] Querying user with email:', email.toLowerCase())
-    let existingUser
+    let existingUser = null
+    
     try {
-      const queryResult = await db
-        .select()
-        .from(user)
-        .where(eq(user.email, email.toLowerCase()))
+      // Use raw SQL to avoid Drizzle ORM issues
+      const queryResult = await db.execute(`
+        SELECT id, email, name FROM "user" WHERE email = $1
+      `, [email.toLowerCase()])
       
-      existingUser = queryResult.length > 0 ? [{
-        id: (queryResult[0] as any).id,
-        email: (queryResult[0] as any).email,
-        name: (queryResult[0] as any).name,
-      }] : []
+      if (queryResult.rows && queryResult.rows.length > 0) {
+        existingUser = {
+          id: (queryResult.rows[0] as any).id,
+          email: (queryResult.rows[0] as any).email,
+          name: (queryResult.rows[0] as any).name,
+        }
+      }
       
-      console.log('[v0] Query result:', existingUser.length > 0 ? 'User found' : 'User not found')
-    } catch (err) {
-      console.error('[v0] Database query error:', err)
-      return { success: false, error: 'Database query failed. Please try again later.' }
+      console.log('[v0] Query result:', existingUser ? 'User found' : 'User not found')
+    } catch (err: any) {
+      console.error('[v0] Database query error:', {
+        name: err?.name,
+        message: err?.message,
+        code: err?.code,
+        detail: err?.detail,
+        fullError: String(err),
+      })
+      return { 
+        success: false, 
+        error: `Database query failed: ${err?.message || 'Unknown error'}. Please try again later.` 
+      }
     }
 
-    if (!existingUser || existingUser.length === 0) {
+    if (!existingUser) {
       console.log('[v0] User not found for email:', email)
       // For security, don't reveal if email exists
       return { success: true, message: 'If an account with that email exists, a password reset link has been sent.' }
     }
 
-    const targetUser = existingUser[0]
+    const targetUser = existingUser
     const newPassword = generateSecurePassword()
 
     console.log('[v0] Found user:', targetUser.email)
