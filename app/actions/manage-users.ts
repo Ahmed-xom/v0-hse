@@ -1,8 +1,7 @@
 'use server'
 
-import { eq } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import { db } from '@/lib/db'
-import { user } from '@/lib/db/schema'
 
 export async function updateUserStatus(
   userId: string,
@@ -18,16 +17,11 @@ export async function updateUserStatus(
       }
     }
 
-    // Update user status in database
+    // Update user status in database using neon_auth schema
     const isBanned = status === 'Inactive'
-    await db
-      .update(user)
-      .set({
-        banned: isBanned,
-        updatedAt: new Date(),
-      })
-      .where(eq(user.id, userId))
-      .execute()
+    await db.execute(
+      sql`UPDATE neon_auth."user" SET "updatedAt" = ${new Date()}, "banned" = ${isBanned} WHERE id = ${userId}`
+    )
 
     console.log('[v0] User status updated:', { userId, status })
     return {
@@ -57,15 +51,10 @@ export async function updateUserRole(
       }
     }
 
-    // Update user role in database
-    await db
-      .update(user)
-      .set({
-        role: role,
-        updatedAt: new Date(),
-      })
-      .where(eq(user.id, userId))
-      .execute()
+    // Update user role in database using neon_auth schema
+    await db.execute(
+      sql`UPDATE neon_auth."user" SET "updatedAt" = ${new Date()}, "role" = ${role} WHERE id = ${userId}`
+    )
 
     console.log('[v0] User role updated:', { userId, role })
     return {
@@ -92,15 +81,10 @@ export async function deleteUser(userId: string) {
       }
     }
 
-    // Soft delete by banning the user
-    await db
-      .update(user)
-      .set({
-        banned: true,
-        updatedAt: new Date(),
-      })
-      .where(eq(user.id, userId))
-      .execute()
+    // Soft delete by banning the user using neon_auth schema
+    await db.execute(
+      sql`UPDATE neon_auth."user" SET "updatedAt" = ${new Date()}, "banned" = true WHERE id = ${userId}`
+    )
 
     console.log('[v0] User deleted:', { userId })
     return {
