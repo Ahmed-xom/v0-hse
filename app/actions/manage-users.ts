@@ -19,11 +19,12 @@ export async function updateUserStatus(
 
     // Update user status in database
     const isBanned = status === 'Inactive'
-    const result = await db.execute(
-      sql`UPDATE "user" SET banned = ${isBanned}, "updatedAt" = NOW()
-          WHERE id = ${userId}
-          RETURNING id, email, name, banned, "updatedAt"`
-    )
+    const result = await db.execute(sql`
+      UPDATE "user" 
+      SET banned = ${isBanned}, "updatedAt" = NOW() 
+      WHERE id = ${userId}
+      RETURNING id, email, name, banned, "updatedAt"
+    `)
 
     console.log('[v0] User status updated:', result.rows?.[0])
     return {
@@ -55,11 +56,12 @@ export async function updateUserRole(
     }
 
     // Update user role in database
-    const result = await db.execute(
-      sql`UPDATE "user" SET role = ${role}, "updatedAt" = NOW()
-          WHERE id = ${userId}
-          RETURNING id, email, name, role, "updatedAt"`
-    )
+    const result = await db.execute(sql`
+      UPDATE "user" 
+      SET role = ${role}, "updatedAt" = NOW() 
+      WHERE id = ${userId}
+      RETURNING id, email, name, role, "updatedAt"
+    `)
 
     console.log('[v0] User role updated:', result.rows?.[0])
     return {
@@ -88,11 +90,12 @@ export async function deleteUser(userId: string) {
     }
 
     // Soft delete by banning the user
-    const result = await db.execute(
-      sql`UPDATE "user" SET banned = true, "updatedAt" = NOW()
-          WHERE id = ${userId}
-          RETURNING id, email, name`
-    )
+    const result = await db.execute(sql`
+      UPDATE "user" 
+      SET banned = true, "updatedAt" = NOW() 
+      WHERE id = ${userId}
+      RETURNING id, email, name
+    `)
 
     console.log('[v0] User deleted:', result.rows?.[0])
     return {
