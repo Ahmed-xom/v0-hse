@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/lib/db'
-import { user } from '@/lib/db/schema'
+import { user, account } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import nodemailer from 'nodemailer'
 import crypto from 'crypto'
@@ -51,15 +51,39 @@ export async function requestPasswordReset(email: string) {
 
     console.log('[v0] Found user:', targetUser.email)
 
-    // Update user password in database
+    // Update user password in database - passwords are stored in the account table
     console.log('[v0] Updating password for user:', email)
-    await db
-      .update(user)
-      .set({
-        password: newPassword, // In production, this should be hashed, but Better Auth handles this
-        updatedAt: new Date(),
-      })
-      .where(eq(user.email, email.toLowerCase()))
+    
+    // First, find the account for this user
+    const userAccount = await db
+      .select({ id: account.id })
+      .from(account)
+      .where(eq(account.userId, targetUser.id))
+    
+    if (userAccount && userAccount.length > 0) {
+      await db
+        .update(account)
+        .set({
+          password: newPassword,
+          updatedAt: new Date(),
+        })
+        .where(eq(account.userId, targetUser.id))
+        .execute()
+    } else {
+      // If no account exists, create one
+      await db
+        .insert(account)
+        .values({
+          id: crypto.randomUUID(),
+          accountId: targetUser.id,
+          providerId: 'credential',
+          userId: targetUser.id,
+          password: newPassword,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .execute()
+    }
 
     console.log('[v0] Password updated in database')
 
