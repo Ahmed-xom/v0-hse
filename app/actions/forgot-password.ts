@@ -3,11 +3,10 @@
 import { db } from '@/lib/db'
 import { user, account } from '@/lib/db/schema'
 import { eq, sql } from 'drizzle-orm'
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 import crypto from 'crypto'
 
-const EMAIL_USER = process.env.EMAIL_USER || 'hse-system@gmail.com'
-const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -111,32 +110,15 @@ export async function requestPasswordReset(email: string) {
 
     console.log('[v0] Password updated in database')
 
-    // Send password reset email
+    // Send password reset email using Resend
     let emailSent = false
     let emailError: string | null = null
 
-    if (!EMAIL_PASSWORD) {
-      emailError = 'Email credentials not configured'
-      console.warn('[v0] Email credentials missing:', { EMAIL_USER, hasPassword: !!EMAIL_PASSWORD })
+    if (!process.env.RESEND_API_KEY) {
+      emailError = 'Resend API key not configured'
+      console.warn('[v0] Resend API key missing')
     } else {
       try {
-        console.log('[v0] Creating email transporter with:', { host: 'smtp-mail.outlook.com', port: 587, user: EMAIL_USER })
-
-        const transporter = nodemailer.createTransport({
-          host: 'smtp-mail.outlook.com',
-          port: 587,
-          secure: false,
-          auth: {
-            user: EMAIL_USER,
-            pass: EMAIL_PASSWORD,
-          },
-        })
-
-        // Verify connection
-        console.log('[v0] Verifying email connection...')
-        await transporter.verify()
-        console.log('[v0] Email connection verified')
-
         const htmlContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); padding: 30px; border-radius: 10px 10px 0 0;">
@@ -178,16 +160,21 @@ export async function requestPasswordReset(email: string) {
           </div>
         `
 
-        console.log('[v0] Sending password reset email to:', email)
-        const info = await transporter.sendMail({
-          from: `"HSE System" <${EMAIL_USER}>`,
+        console.log('[v0] Sending password reset email via Resend to:', email)
+        const { data, error } = await resend.emails.send({
+          from: 'HSE System <onboarding@resend.dev>',
           to: email,
           subject: 'Your Password Has Been Reset - HSE Dashboard',
           html: htmlContent,
         })
 
-        console.log('[v0] Password reset email sent successfully:', info.messageId)
-        emailSent = true
+        if (error) {
+          emailError = `Email failed: ${error.message}`
+          console.error('[v0] Resend email error:', error)
+        } else {
+          console.log('[v0] Password reset email sent successfully:', data?.id)
+          emailSent = true
+        }
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : String(err)
         console.error('[v0] Email send error:', errMsg)

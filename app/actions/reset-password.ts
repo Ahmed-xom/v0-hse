@@ -6,10 +6,9 @@ import { passwordReset, user } from '@/lib/db/schema'
 import { eq, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
-const EMAIL_USER = process.env.EMAIL_USER || 'hse-system@gmail.com'
-const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -67,32 +66,15 @@ export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?
       })
       .execute()
 
-    // Send email with new password
+    // Send email with new password using Resend
     let emailSent = false
     let emailErrorMsg: string | null = null
 
-    if (!EMAIL_PASSWORD) {
-      emailErrorMsg = 'Email credentials not configured. Please set EMAIL_USER and EMAIL_PASSWORD environment variables.'
-      console.warn('[v0] Email credentials missing:', { EMAIL_USER, hasPassword: !!EMAIL_PASSWORD })
+    if (!process.env.RESEND_API_KEY) {
+      emailErrorMsg = 'Resend API key not configured'
+      console.warn('[v0] Resend API key missing')
     } else {
       try {
-        console.log('[v0] Creating email transporter for reset with:', { host: 'smtp-mail.outlook.com', port: 587, user: EMAIL_USER })
-
-        const transporter = nodemailer.createTransport({
-          host: 'smtp-mail.outlook.com',
-          port: 587,
-          secure: false,
-          auth: {
-            user: EMAIL_USER,
-            pass: EMAIL_PASSWORD,
-          },
-        })
-
-        // Verify connection
-        console.log('[v0] Verifying email connection for reset...')
-        await transporter.verify()
-        console.log('[v0] Email connection verified for reset')
-
         const htmlContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); padding: 30px; border-radius: 10px 10px 0 0;">
@@ -132,16 +114,21 @@ export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?
           </div>
         `
 
-        console.log('[v0] Sending reset email to:', targetUserData.email)
-        const info = await transporter.sendMail({
-          from: `"HSE System" <${EMAIL_USER}>`,
+        console.log('[v0] Sending reset email via Resend to:', targetUserData.email)
+        const { data, error } = await resend.emails.send({
+          from: 'HSE System <onboarding@resend.dev>',
           to: targetUserData.email,
           subject: 'Your Password Has Been Reset - HSE System',
           html: htmlContent,
         })
 
-        console.log('[v0] Reset email sent successfully:', info.messageId)
-        emailSent = true
+        if (error) {
+          emailErrorMsg = `Email failed: ${error.message}`
+          console.error('[v0] Resend email error:', error)
+        } else {
+          console.log('[v0] Reset email sent successfully:', data?.id)
+          emailSent = true
+        }
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : String(err)
         console.error('[v0] Email send error on reset:', errMsg)
