@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db'
 import { user, account } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import nodemailer from 'nodemailer'
 import crypto from 'crypto'
 
@@ -35,16 +35,21 @@ export async function requestPasswordReset(email: string) {
     let existingUser = null
     
     try {
-      // Use raw SQL to avoid Drizzle ORM issues
-      const queryResult = await db.execute(`
-        SELECT id, email, name FROM "user" WHERE email = $1
-      `, [email.toLowerCase()])
+      // Query user using Drizzle ORM
+      const queryResult = await db.query.user.findFirst({
+        where: eq(user.email, email.toLowerCase()),
+        columns: {
+          id: true,
+          email: true,
+          name: true,
+        }
+      })
       
-      if (queryResult.rows && queryResult.rows.length > 0) {
+      if (queryResult) {
         existingUser = {
-          id: (queryResult.rows[0] as any).id,
-          email: (queryResult.rows[0] as any).email,
-          name: (queryResult.rows[0] as any).name,
+          id: queryResult.id,
+          email: queryResult.email,
+          name: queryResult.name,
         }
       }
       
