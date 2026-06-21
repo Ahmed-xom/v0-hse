@@ -22,6 +22,7 @@ import {
   MapPin,
   Building2,
 } from "lucide-react"
+import { createObservation } from "@/app/actions/observations"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -203,7 +204,7 @@ export function BehaviourObservations() {
     setAttachments(attachments.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.date || !formData.businessUnit || !formData.position || !formData.location || !formData.description || !formData.observationType || !formData.category) {
       toast({
         title: "Required fields missing",
@@ -213,12 +214,40 @@ export function BehaviourObservations() {
       return
     }
 
-    toast({
-      title: "Observation Submitted",
-      description: "Your behaviour observation has been recorded successfully.",
-    })
-    setIsNewObservationOpen(false)
-    resetForm()
+    try {
+      // Call server action to save observation
+      const result = await createObservation({
+        userId: user?.id || 'unknown',
+        observationTypeId: formData.observationType,
+        businessUnitId: formData.businessUnit,
+        description: formData.description,
+        severity: formData.nearMiss === 'yes' ? 'High' : 'Medium',
+        location: formData.location,
+      })
+
+      if (!result.success) {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to save observation",
+          variant: "destructive",
+        })
+        return
+      }
+
+      toast({
+        title: "Success",
+        description: "Your behaviour observation has been recorded and saved to database.",
+      })
+      setIsNewObservationOpen(false)
+      resetForm()
+    } catch (error) {
+      console.error("[v0] Error submitting observation:", error)
+      toast({
+        title: "Error",
+        description: "Failed to submit observation",
+        variant: "destructive",
+      })
+    }
   }
 
   const resetForm = () => {
