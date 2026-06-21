@@ -10,6 +10,7 @@ import { UsersManagementWithRefresh } from "@/components/dashboard/users-managem
 import { BusinessUnits } from "@/components/dashboard/business-units"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
 import { AdminSettings } from "@/components/dashboard/admin-settings"
+import { TrainingRecords } from "@/components/dashboard/training-records"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
@@ -83,6 +84,11 @@ export default function HSEDashboard() {
                 <section aria-label="Business Units">
                   <BusinessUnits />
                 </section>
+
+                {/* Training Records */}
+                <section aria-label="Training Records">
+                  <TrainingRecords />
+                </section>
               </TabsContent>
 
               <TabsContent value="settings" className="space-y-6">
@@ -124,6 +130,11 @@ export default function HSEDashboard() {
               {/* Business Units */}
               <section aria-label="Business Units">
                 <BusinessUnits />
+              </section>
+
+              {/* Training Records */}
+              <section aria-label="Training Records">
+                <TrainingRecords />
               </section>
             </>
           )}
