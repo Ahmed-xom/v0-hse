@@ -36,27 +36,31 @@ export async function resetUserPassword(
       }
     }
 
-    // Try to get user by email first, then by UUID id
+    // Try to get user by email first
     let targetUserResult = await db.execute(sql`
       SELECT id, email, name FROM neon_auth."user" WHERE lower(email) = ${targetUserIdOrEmail.toLowerCase()}
     `)
 
     let targetUserRows = ((targetUserResult as any).rows || []) as any[]
+    console.log('[v0] Search by email result:', targetUserRows.length, 'rows')
 
     // If not found by email, try by UUID id
     if (targetUserRows.length === 0) {
       try {
+        console.log('[v0] Trying to find user by UUID:', targetUserIdOrEmail)
         targetUserResult = await db.execute(sql`
           SELECT id, email, name FROM neon_auth."user" WHERE id = ${targetUserIdOrEmail}::uuid
         `)
         targetUserRows = ((targetUserResult as any).rows || []) as any[]
-      } catch {
-        // Not a valid UUID, ignore
+        console.log('[v0] Search by UUID result:', targetUserRows.length, 'rows')
+      } catch (err) {
+        console.log('[v0] UUID search failed (not a valid UUID):', (err as Error).message)
       }
     }
 
     if (targetUserRows.length === 0) {
-      return { success: false, error: 'User not found' }
+      console.log('[v0] User not found with email:', targetUserIdOrEmail)
+      return { success: false, error: `User not found: ${targetUserIdOrEmail}` }
     }
 
     const targetUserData = targetUserRows[0]

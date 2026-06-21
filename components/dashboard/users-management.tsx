@@ -62,8 +62,9 @@ import {
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { users, businessUnits, roles, type User } from "@/lib/users-data"
+import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword } from "@/app/actions/reset-password"
+import { getRealUsers } from "@/app/actions/get-users"
 import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel } from "@/app/actions/manage-users"
 
 const roleColors: Record<string, string> = {
@@ -95,6 +96,10 @@ const statusConfig: Record<User["status"], { label: string; className: string; i
 const ITEMS_PER_PAGE = 15
 
 export function UsersManagement() {
+  const { toast } = useToast()
+  const { user: currentUser } = useAuth()
+  const [users, setUsers] = useState<User[]>([])
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -110,6 +115,32 @@ export function UsersManagement() {
   const [useCustomPassword, setUseCustomPassword] = useState(false)
   const [resetDone, setResetDone] = useState(false)
   const [resetEmailSent, setResetEmailSent] = useState(false)
+
+  // Load real users from database on component mount
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const result = await getRealUsers()
+        if (result.success) {
+          setUsers(result.users)
+          console.log('[v0] Loaded', result.users.length, 'users from database')
+        } else {
+          console.error('[v0] Failed to load users:', result.error)
+          toast({
+            title: "Error",
+            description: "Failed to load users from database",
+            variant: "destructive",
+          })
+        }
+      } catch (error) {
+        console.error('[v0] Error loading users:', error)
+      } finally {
+        setIsLoadingUsers(false)
+      }
+    }
+
+    loadUsers()
+  }, [])
   const [refreshKey, setRefreshKey] = useState(0)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -119,10 +150,8 @@ export function UsersManagement() {
     role: "",
     status: "Active" as "Active" | "Inactive",
   })
-  const { toast } = useToast()
-  const { user: currentUser } = useAuth()
   
-  // Combine static users with newly added users from localStorage
+  // Combine real users with newly added users from localStorage
   const localUsers = useMemo(() => {
     try {
       const storedUsers = localStorage.getItem("added_users")
