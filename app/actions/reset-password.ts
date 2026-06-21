@@ -152,15 +152,17 @@ export async function resetUserPassword(
           </div>
         `
 
-        console.log('[v0] Sending reset email via Resend to:', targetUserData.email)
+        // In Resend test mode, emails can only be sent to the account owner's email.
+        // Set RESEND_TEST_EMAIL to override the recipient during testing.
+        // Once a domain is verified at resend.com/domains, remove RESEND_TEST_EMAIL to send to real users.
+        const recipient = process.env.RESEND_TEST_EMAIL || targetUserData.email
+        console.log('[v0] Sending reset email via Resend to:', recipient, '(user:', targetUserData.email, ')')
         const resend = new Resend(process.env.RESEND_API_KEY)
-        const fromAddress = process.env.RESEND_FROM_EMAIL
-          ? `HSE System <${process.env.RESEND_FROM_EMAIL}>`
-          : 'HSE System <onboarding@resend.dev>'
+        const fromAddress = 'HSE System <onboarding@resend.dev>'
         const { data, error } = await resend.emails.send({
           from: fromAddress,
-          to: targetUserData.email,
-          subject: 'Your Password Has Been Reset - HSE System',
+          to: recipient,
+          subject: `Password Reset for ${targetUserData.email} - HSE System`,
           html: htmlContent,
         })
 
