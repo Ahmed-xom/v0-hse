@@ -93,14 +93,17 @@ export async function resetUserPassword(
     }
 
     // Record password reset audit log in database
+    const ipAddress = (await headers()).get('x-forwarded-for') || (await headers()).get('x-real-ip') || 'unknown'
+    console.log('[v0] Recording password reset with IP:', ipAddress)
+    
     await db
       .insert(passwordReset)
       .values({
         id: crypto.randomUUID(),
         userId: targetUserData.id,
-        resetBy: adminEmail || 'unknown',
+        resetBy: adminEmail || 'system',
         newPassword: hashedPassword,
-        ipAddress: (await headers()).get('x-forwarded-for') || (await headers()).get('x-real-ip') || 'unknown',
+        ipAddress: ipAddress,
       })
       .execute()
 
