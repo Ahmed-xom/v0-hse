@@ -109,7 +109,10 @@ export async function requestPasswordReset(email: string) {
 
     if (!process.env.RESEND_API_KEY) {
       emailError = 'Resend API key not configured'
-      console.warn('[v0] Resend API key missing')
+      console.warn('[v0] Resend API key missing - emails disabled')
+      // Log password to console for development/testing
+      console.log('[v0] PASSWORD RESET - Temporary Password:', newPassword)
+      console.log('[v0] PASSWORD RESET - For user:', email)
     } else {
       try {
         const resend = new Resend(process.env.RESEND_API_KEY)
@@ -163,8 +166,16 @@ export async function requestPasswordReset(email: string) {
         })
 
         if (error) {
-          emailError = `Email failed: ${error.message}`
+          const errorMsg = error.message || String(error)
+          emailError = `Email failed: ${errorMsg}`
           console.error('[v0] Resend email error:', error)
+          
+          // Log password to console if email fails
+          if (errorMsg.includes('invalid') || errorMsg.includes('API')) {
+            console.log('[v0] EMAIL FAILED - Password available in UI')
+            console.log('[v0] TEMPORARY PASSWORD:', newPassword)
+            console.log('[v0] USER EMAIL:', email)
+          }
         } else {
           console.log('[v0] Password reset email sent successfully:', data?.id)
           emailSent = true
@@ -173,6 +184,11 @@ export async function requestPasswordReset(email: string) {
         const errMsg = err instanceof Error ? err.message : String(err)
         console.error('[v0] Email send error:', errMsg)
         emailError = `Email failed: ${errMsg}`
+        
+        // Log password to console if exception occurs
+        console.log('[v0] PASSWORD RESET EXCEPTION - Using console fallback')
+        console.log('[v0] TEMPORARY PASSWORD:', newPassword)
+        console.log('[v0] USER EMAIL:', email)
       }
     }
 

@@ -14,6 +14,7 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
+  const [resetData, setResetData] = useState<any>(null)
   const { requestPasswordReset } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,6 +26,7 @@ export default function ForgotPasswordPage() {
       const result = await requestPasswordReset(email)
       if (result.success) {
         setSuccess(true)
+        setResetData(result)
       } else {
         setError(result.error || "Failed to send reset email")
       }
@@ -70,9 +72,26 @@ export default function ForgotPasswordPage() {
               <p className="font-medium text-foreground">{email}</p>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground text-center">
-                Click the link in the email to reset your password. If you don&apos;t see the email, check your spam folder.
-              </p>
+              {resetData?.emailSent ? (
+                <p className="text-sm text-muted-foreground text-center">
+                  Click the link in the email to reset your password. If you don&apos;t see the email, check your spam folder.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-4">
+                    <p className="text-sm font-semibold text-yellow-900 mb-2">Temporary Password:</p>
+                    <div className="bg-white border border-yellow-300 rounded p-3 font-mono text-center text-lg font-bold text-yellow-900 break-all">
+                      {resetData?.temporaryPassword}
+                    </div>
+                    <p className="text-xs text-yellow-800 mt-2">
+                      Copy this password and use it to sign in. Change it immediately after logging in.
+                    </p>
+                  </div>
+                  <p className="text-sm text-muted-foreground text-center">
+                    Email sending failed, but your password has been reset successfully. Use the temporary password above to sign in.
+                  </p>
+                </div>
+              )}
 
               <div className="flex flex-col gap-3">
                 <Button
