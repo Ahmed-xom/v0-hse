@@ -21,16 +21,19 @@ function generateSecurePassword(length = 12): string {
   return password
 }
 
-export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?: string, customPassword?: string) {
+export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?: string) {
   try {
-    // Try to get user by email first, then by ID
+    console.log('[v0] Password reset requested for user:', targetUserIdOrEmail, 'by admin:', adminEmail)
+
+    // Try to get user by email (primary method), then by ID - use raw SQL with schema
     let targetUserResult = await db.execute(sql`
       SELECT id, email, name FROM neon_auth."user" WHERE email = ${targetUserIdOrEmail.toLowerCase()}
     `)
 
     let targetUserRows = ((targetUserResult as any).rows || []) as any[]
 
-    if (targetUserRows.length === 0) {
+    // If not found by email, try by ID
+    if (targetUserRows.length === 0 && targetUserIdOrEmail.includes('-') === false) {
       targetUserResult = await db.execute(sql`
         SELECT id, email, name FROM neon_auth."user" WHERE id = ${targetUserIdOrEmail}
       `)
@@ -43,10 +46,8 @@ export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?
 
     const targetUserData = targetUserRows[0]
 
-    // Use custom password if provided by admin, otherwise generate one
-    const newPassword = (customPassword && customPassword.trim().length >= 6)
-      ? customPassword.trim()
-      : generateSecurePassword()
+    // Generate new password
+    const newPassword = generateSecurePassword()
 
     // Hash the password using bcrypt (same as Better Auth uses internally)
     const hashedPassword = await bcrypt.hash(newPassword, 10)
@@ -138,10 +139,9 @@ export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?
 
         console.log('[v0] Sending reset email via Resend to:', targetUserData.email)
         const resend = new Resend(process.env.RESEND_API_KEY)
-        const fromAddress = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
         const { data, error } = await resend.emails.send({
-          from: `HSE System <${fromAddress}>`,
-          to: [targetUserData.email],
+          from: 'HSE System <onboarding@resend.dev>',
+          to: targetUserData.email,
           subject: 'Your Password Has Been Reset - HSE System',
           html: htmlContent,
         })
