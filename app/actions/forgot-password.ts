@@ -1,8 +1,7 @@
 'use server'
 
 import { db } from '@/lib/db'
-import { user, account } from '@/lib/db/schema'
-import { eq, sql } from 'drizzle-orm'
+import { sql } from 'drizzle-orm'
 import { Resend } from 'resend'
 import crypto from 'crypto'
 
@@ -75,35 +74,31 @@ export async function requestPasswordReset(email: string) {
     // Update user password in database - passwords are stored in the account table
     console.log('[v0] Updating password for user:', email)
     
-    // First, find the account for this user
-    const userAccount = await db
-      .select({ id: account.id })
-      .from(account)
-      .where(eq(account.userId, targetUser.id))
-    
-    if (userAccount && userAccount.length > 0) {
-      await db
-        .update(account)
-        .set({
-          password: newPassword,
-          updatedAt: new Date(),
-        })
-        .where(eq(account.userId, targetUser.id))
-        .execute()
-    } else {
-      // If no account exists, create one
-      await db
-        .insert(account)
-        .values({
-          id: crypto.randomUUID(),
-          accountId: targetUser.id,
-          providerId: 'credential',
-          userId: targetUser.id,
-          password: newPassword,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        })
-        .execute()
+    // Update password using raw SQL to target neon_auth schema
+    try {
+      const result = await db.execute(sql`
+        UPDATE neon_auth."account" 
+        SET password = ${newPassword}, "updatedAt" = ${new Date().toISOString()}
+        WHERE "userId" = ${targetUser.id}
+        RETURNING id
+      `)
+      
+      const updatedRows = (result as any).rows || []
+      
+      if (!updatedRows || updatedRows.length === 0) {
+        // If no account exists, create one
+        console.log('[v0] Creating new account for user:', targetUser.id)
+        await db.execute(sql`
+          INSERT INTO neon_auth."account" (
+            id, "accountId", "providerId", "userId", password, "createdAt", "updatedAt"
+          ) VALUES (
+            ${crypto.randomUUID()}, ${targetUser.id}, 'credential', ${targetUser.id}, ${newPassword}, ${new Date().toISOString()}, ${new Date().toISOString()}
+          )
+        `)
+      }
+    } catch (err: any) {
+      console.error('[v0] Password update error:', err)
+      throw new Error(`Failed to update password: ${err?.message || 'Unknown error'}`)
     }
 
     console.log('[v0] Password updated in database')
