@@ -160,8 +160,11 @@ export async function requestPasswordReset(email: string) {
         `
 
         console.log('[v0] Sending password reset email via Resend to:', email)
+        const fromAddress = process.env.RESEND_FROM_EMAIL
+          ? `HSE System <${process.env.RESEND_FROM_EMAIL}>`
+          : 'HSE System <onboarding@resend.dev>'
         const { data, error } = await resend.emails.send({
-          from: 'HSE System <onboarding@resend.dev>',
+          from: fromAddress,
           to: email,
           subject: 'Your Password Has Been Reset - HSE Dashboard',
           html: htmlContent,

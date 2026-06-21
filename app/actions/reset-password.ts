@@ -21,23 +21,38 @@ function generateSecurePassword(length = 12): string {
   return password
 }
 
-export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?: string) {
+export async function resetUserPassword(
+  targetUserIdOrEmail: string,
+  adminEmail?: string,
+  customPassword?: string
+) {
   try {
     console.log('[v0] Password reset requested for user:', targetUserIdOrEmail, 'by admin:', adminEmail)
 
-    // Try to get user by email (primary method), then by ID - use raw SQL with schema
+    // Validate custom password if provided
+    if (customPassword !== undefined) {
+      if (customPassword.length < 8) {
+        return { success: false, error: 'Password must be at least 8 characters' }
+      }
+    }
+
+    // Try to get user by email first, then by UUID id
     let targetUserResult = await db.execute(sql`
-      SELECT id, email, name FROM neon_auth."user" WHERE email = ${targetUserIdOrEmail.toLowerCase()}
+      SELECT id, email, name FROM neon_auth."user" WHERE lower(email) = ${targetUserIdOrEmail.toLowerCase()}
     `)
 
     let targetUserRows = ((targetUserResult as any).rows || []) as any[]
 
-    // If not found by email, try by ID
-    if (targetUserRows.length === 0 && targetUserIdOrEmail.includes('-') === false) {
-      targetUserResult = await db.execute(sql`
-        SELECT id, email, name FROM neon_auth."user" WHERE id = ${targetUserIdOrEmail}
-      `)
-      targetUserRows = ((targetUserResult as any).rows || []) as any[]
+    // If not found by email, try by UUID id
+    if (targetUserRows.length === 0) {
+      try {
+        targetUserResult = await db.execute(sql`
+          SELECT id, email, name FROM neon_auth."user" WHERE id = ${targetUserIdOrEmail}::uuid
+        `)
+        targetUserRows = ((targetUserResult as any).rows || []) as any[]
+      } catch {
+        // Not a valid UUID, ignore
+      }
     }
 
     if (targetUserRows.length === 0) {
@@ -46,8 +61,8 @@ export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?
 
     const targetUserData = targetUserRows[0]
 
-    // Generate new password
-    const newPassword = generateSecurePassword()
+    // Use custom password if provided, otherwise generate one
+    const newPassword = customPassword || generateSecurePassword()
 
     // Hash the password using bcrypt (same as Better Auth uses internally)
     const hashedPassword = await bcrypt.hash(newPassword, 10)
@@ -139,8 +154,11 @@ export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?
 
         console.log('[v0] Sending reset email via Resend to:', targetUserData.email)
         const resend = new Resend(process.env.RESEND_API_KEY)
+        const fromAddress = process.env.RESEND_FROM_EMAIL
+          ? `HSE System <${process.env.RESEND_FROM_EMAIL}>`
+          : 'HSE System <onboarding@resend.dev>'
         const { data, error } = await resend.emails.send({
-          from: 'HSE System <onboarding@resend.dev>',
+          from: fromAddress,
           to: targetUserData.email,
           subject: 'Your Password Has Been Reset - HSE System',
           html: htmlContent,
