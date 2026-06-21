@@ -7,6 +7,7 @@ import { eq, sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
 import { Resend } from 'resend'
+import bcrypt from 'bcryptjs'
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -48,11 +49,35 @@ export async function resetUserPassword(targetUserIdOrEmail: string, adminEmail?
     // Generate new password
     const newPassword = generateSecurePassword()
 
-    // Hash the password (using bcrypt would be better, but for now we'll store as plaintext)
-    // In production, you'd hash this with bcrypt
-    const hashedPassword = crypto.createHash('sha256').update(newPassword).digest('hex')
+    // Hash the password using bcrypt (same as Better Auth uses internally)
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
 
-    // Record password reset in database
+    // Update the actual password in neon_auth."account" (this is what Better Auth checks at login)
+    const isoNow = new Date().toISOString()
+    const updateResult = await db.execute(sql`
+      UPDATE neon_auth."account"
+      SET password = ${hashedPassword}, "updatedAt" = ${isoNow}
+      WHERE "userId" = ${targetUserData.id}
+      RETURNING id
+    `)
+    const updatedRows = (updateResult as any).rows || []
+    if (!updatedRows || updatedRows.length === 0) {
+      // No account row yet — create one
+      await db.execute(sql`
+        INSERT INTO neon_auth."account" (id, "accountId", "providerId", "userId", password, "createdAt", "updatedAt")
+        VALUES (
+          ${crypto.randomUUID()},
+          ${targetUserData.email},
+          'credential',
+          ${targetUserData.id},
+          ${hashedPassword},
+          ${isoNow},
+          ${isoNow}
+        )
+      `)
+    }
+
+    // Record password reset audit log in database
     await db
       .insert(passwordReset)
       .values({

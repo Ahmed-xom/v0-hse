@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { Resend } from 'resend'
 import crypto from 'crypto'
+import bcrypt from 'bcryptjs'
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -68,17 +69,18 @@ export async function requestPasswordReset(email: string) {
 
     const targetUser = existingUser
     const newPassword = generateSecurePassword()
+    // Hash password with bcrypt (same as Better Auth does internally, 10 rounds)
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
 
     console.log('[v0] Found user:', targetUser.email)
 
     // Update user password in database - passwords are stored in the account table
-    console.log('[v0] Updating password for user:', email)
+    console.log('[v0] Updating hashed password for user:', email)
     
-    // Update password using raw SQL to target neon_auth schema
     try {
       const result = await db.execute(sql`
         UPDATE neon_auth."account" 
-        SET password = ${newPassword}, "updatedAt" = ${new Date().toISOString()}
+        SET password = ${hashedPassword}, "updatedAt" = ${new Date().toISOString()}
         WHERE "userId" = ${targetUser.id}
         RETURNING id
       `)
@@ -86,13 +88,13 @@ export async function requestPasswordReset(email: string) {
       const updatedRows = (result as any).rows || []
       
       if (!updatedRows || updatedRows.length === 0) {
-        // If no account exists, create one
+        // If no account exists, create one with hashed password
         console.log('[v0] Creating new account for user:', targetUser.id)
         await db.execute(sql`
           INSERT INTO neon_auth."account" (
             id, "accountId", "providerId", "userId", password, "createdAt", "updatedAt"
           ) VALUES (
-            ${crypto.randomUUID()}, ${targetUser.id}, 'credential', ${targetUser.id}, ${newPassword}, ${new Date().toISOString()}, ${new Date().toISOString()}
+            ${crypto.randomUUID()}, ${targetUser.id}, 'credential', ${targetUser.id}, ${hashedPassword}, ${new Date().toISOString()}, ${new Date().toISOString()}
           )
         `)
       }

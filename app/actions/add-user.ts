@@ -5,6 +5,7 @@ import { user } from '@/lib/db/schema'
 import crypto from 'crypto'
 import { Resend } from 'resend'
 import { sql } from 'drizzle-orm'
+import bcrypt from 'bcryptjs'
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -43,8 +44,9 @@ export async function addNewUser(userData: {
       return { success: false, error: 'Name and email are required' }
     }
 
-    // Generate temporary password
+    // Generate temporary password and hash it (Better Auth uses bcrypt)
     const temporaryPassword = generateSecurePassword()
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10)
 
     // Create user record in Neon
     const newUserId = crypto.randomUUID()
@@ -67,6 +69,21 @@ export async function addNewUser(userData: {
       
       newUser = newUserResult.rows?.[0] || newUserResult[0]
       console.log('[v0] User created successfully:', newUser)
+
+      // Create account record with hashed password so the user can sign in
+      await db.execute(sql`
+        INSERT INTO neon_auth."account" (id, "accountId", "providerId", "userId", password, "createdAt", "updatedAt")
+        VALUES (
+          ${crypto.randomUUID()},
+          ${cleanEmail},
+          'credential',
+          ${newUserId},
+          ${hashedPassword},
+          ${isoNow},
+          ${isoNow}
+        )
+      `)
+      console.log('[v0] Account record created with hashed password')
     } catch (dbError: any) {
       // Check if it's a unique constraint violation on email
       if (dbError.message?.includes('unique') || dbError.message?.includes('email')) {
