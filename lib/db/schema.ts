@@ -1,9 +1,9 @@
-import { pgTable, text, varchar, timestamp, boolean, integer, decimal, jsonb, index } from 'drizzle-orm/pg-core'
+import { pgTable, text, varchar, timestamp, boolean, integer, decimal, jsonb, index, uuid } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
-// Better Auth Tables
+// Better Auth Tables (in neon_auth schema)
 export const user = pgTable('user', {
-  id: text('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
   name: text('name'),
   email: text('email').notNull().unique(),
   emailVerified: boolean('emailVerified').notNull().default(false),
@@ -14,24 +14,26 @@ export const user = pgTable('user', {
   banReason: text('banReason'),
   banExpires: timestamp('banExpires'),
   role: text('role').default('USER'),
-})
+}, (table) => ({
+  emailIdx: index('user_email_idx').on(table.email),
+}))
 
 export const session = pgTable('session', {
-  id: text('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
   expiresAt: timestamp('expiresAt').notNull(),
   token: text('token').notNull().unique(),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
   ipAddress: text('ipAddress'),
   userAgent: text('userAgent'),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  userId: uuid('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
 })
 
 export const account = pgTable('account', {
-  id: text('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
   accountId: text('accountId').notNull(),
   providerId: text('providerId').notNull(),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  userId: uuid('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
   accessToken: text('accessToken'),
   refreshToken: text('refreshToken'),
   idToken: text('idToken'),

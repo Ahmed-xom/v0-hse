@@ -51,7 +51,7 @@ export const masterCategories: MasterCategory[] = [
       { id: "lagging-indicator", name: "Lagging Indicator LTI", description: "Lost Time Injury indicators", itemCount: 8 },
       { id: "parameter-settings", name: "Parameter Settings", description: "System parameters", itemCount: 15 },
       { id: "ticker-message", name: "Ticker Message", description: "Dashboard ticker messages", itemCount: 3 },
-      { id: "reviewer-approver", name: "Reviewer/Approver", description: "Approval workflow settings", itemCount: 18 },
+      { id: "reviewer-approver", name: "Reviewer/Approver", description: "Approval workflow users (Reviewers & Approvers)", itemCount: 3 },
       { id: "password-setting", name: "Password Setting", description: "Password policy configuration", itemCount: 1 },
       { id: "insights-threshold", name: "Insights Threshold Settings", description: "Analytics threshold config", itemCount: 6 },
       { id: "team-lead", name: "Team Lead", description: "Team leadership assignments", itemCount: 22 },

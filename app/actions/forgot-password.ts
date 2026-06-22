@@ -1,13 +1,10 @@
 'use server'
 
 import { db } from '@/lib/db'
-import { user } from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
-import nodemailer from 'nodemailer'
+import { sql } from 'drizzle-orm'
+import { Resend } from 'resend'
 import crypto from 'crypto'
-
-const EMAIL_USER = process.env.EMAIL_USER || 'hse-system@gmail.com'
-const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
+import bcrypt from 'bcryptjs'
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -31,64 +28,96 @@ export async function requestPasswordReset(email: string) {
     }
 
     // Check if user exists in database
-    const existingUser = await db
-      .select({
-        id: user.id,
-        email: user.email,
-        name: user.name,
+    console.log('[v0] Querying user with email:', email.toLowerCase())
+    let existingUser = null
+    
+    try {
+      // Use raw SQL to query from neon_auth schema
+      const queryResult = await db.execute(sql`
+        SELECT id, email, name FROM neon_auth."user" WHERE email = ${email.toLowerCase()}
+      `)
+      
+      const rows = (queryResult as any).rows || []
+      if (rows && rows.length > 0) {
+        existingUser = {
+          id: rows[0].id,
+          email: rows[0].email,
+          name: rows[0].name,
+        }
+      }
+      
+      console.log('[v0] Query result:', existingUser ? 'User found' : 'User not found')
+    } catch (err: any) {
+      console.error('[v0] Database query error:', {
+        name: err?.name,
+        message: err?.message,
+        code: err?.code,
+        detail: err?.detail,
+        fullError: String(err),
       })
-      .from(user)
-      .where(eq(user.email, email.toLowerCase()))
+      return { 
+        success: false, 
+        error: `Database query failed: ${err?.message || 'Unknown error'}. Please try again later.` 
+      }
+    }
 
-    if (!existingUser || existingUser.length === 0) {
+    if (!existingUser) {
       console.log('[v0] User not found for email:', email)
       // For security, don't reveal if email exists
       return { success: true, message: 'If an account with that email exists, a password reset link has been sent.' }
     }
 
-    const targetUser = existingUser[0]
+    const targetUser = existingUser
     const newPassword = generateSecurePassword()
+    // Hash password with bcrypt (same as Better Auth does internally, 10 rounds)
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
 
     console.log('[v0] Found user:', targetUser.email)
 
-    // Update user password in database
-    console.log('[v0] Updating password for user:', email)
-    await db
-      .update(user)
-      .set({
-        password: newPassword, // In production, this should be hashed, but Better Auth handles this
-        updatedAt: new Date(),
-      })
-      .where(eq(user.email, email.toLowerCase()))
+    // Update user password in database - passwords are stored in the account table
+    console.log('[v0] Updating hashed password for user:', email)
+    
+    try {
+      const result = await db.execute(sql`
+        UPDATE neon_auth."account" 
+        SET password = ${hashedPassword}, "updatedAt" = ${new Date().toISOString()}
+        WHERE "userId" = ${targetUser.id}
+        RETURNING id
+      `)
+      
+      const updatedRows = (result as any).rows || []
+      
+      if (!updatedRows || updatedRows.length === 0) {
+        // If no account exists, create one with hashed password
+        console.log('[v0] Creating new account for user:', targetUser.id)
+        await db.execute(sql`
+          INSERT INTO neon_auth."account" (
+            id, "accountId", "providerId", "userId", password, "createdAt", "updatedAt"
+          ) VALUES (
+            ${crypto.randomUUID()}, ${targetUser.id}, 'credential', ${targetUser.id}, ${hashedPassword}, ${new Date().toISOString()}, ${new Date().toISOString()}
+          )
+        `)
+      }
+    } catch (err: any) {
+      console.error('[v0] Password update error:', err)
+      throw new Error(`Failed to update password: ${err?.message || 'Unknown error'}`)
+    }
 
     console.log('[v0] Password updated in database')
 
-    // Send password reset email
+    // Send password reset email using Resend
     let emailSent = false
     let emailError: string | null = null
 
-    if (!EMAIL_PASSWORD) {
-      emailError = 'Email credentials not configured'
-      console.warn('[v0] Email credentials missing:', { EMAIL_USER, hasPassword: !!EMAIL_PASSWORD })
+    if (!process.env.RESEND_API_KEY) {
+      emailError = 'Resend API key not configured'
+      console.warn('[v0] Resend API key missing - emails disabled')
+      // Log password to console for development/testing
+      console.log('[v0] PASSWORD RESET - Temporary Password:', newPassword)
+      console.log('[v0] PASSWORD RESET - For user:', email)
     } else {
       try {
-        console.log('[v0] Creating email transporter with:', { host: 'smtp.gmail.com', port: 587, user: EMAIL_USER })
-
-        const transporter = nodemailer.createTransport({
-          host: 'smtp.gmail.com',
-          port: 587,
-          secure: false,
-          auth: {
-            user: EMAIL_USER,
-            pass: EMAIL_PASSWORD,
-          },
-        })
-
-        // Verify connection
-        console.log('[v0] Verifying email connection...')
-        await transporter.verify()
-        console.log('[v0] Email connection verified')
-
+        const resend = new Resend(process.env.RESEND_API_KEY)
         const htmlContent = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); padding: 30px; border-radius: 10px 10px 0 0;">
@@ -130,20 +159,42 @@ export async function requestPasswordReset(email: string) {
           </div>
         `
 
-        console.log('[v0] Sending password reset email to:', email)
-        const info = await transporter.sendMail({
-          from: `"HSE System" <${EMAIL_USER}>`,
-          to: email,
-          subject: 'Your Password Has Been Reset - HSE Dashboard',
+        // In Resend test mode, emails can only be sent to the account owner's email.
+        // Set RESEND_TEST_EMAIL to override the recipient during testing.
+        // Once a domain is verified at resend.com/domains, remove RESEND_TEST_EMAIL to send to real users.
+        const recipient = process.env.RESEND_TEST_EMAIL || email
+        console.log('[v0] Sending password reset email via Resend to:', recipient, '(user:', email, ')')
+        const { data, error } = await resend.emails.send({
+          from: 'HSE System <onboarding@resend.dev>',
+          to: recipient,
+          subject: `Password Reset for ${email} - HSE Dashboard`,
           html: htmlContent,
         })
 
-        console.log('[v0] Password reset email sent successfully:', info.messageId)
-        emailSent = true
+        if (error) {
+          const errorMsg = error.message || String(error)
+          emailError = `Email failed: ${errorMsg}`
+          console.error('[v0] Resend email error:', error)
+          
+          // Log password to console if email fails
+          if (errorMsg.includes('invalid') || errorMsg.includes('API')) {
+            console.log('[v0] EMAIL FAILED - Password available in UI')
+            console.log('[v0] TEMPORARY PASSWORD:', newPassword)
+            console.log('[v0] USER EMAIL:', email)
+          }
+        } else {
+          console.log('[v0] Password reset email sent successfully:', data?.id)
+          emailSent = true
+        }
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : String(err)
         console.error('[v0] Email send error:', errMsg)
         emailError = `Email failed: ${errMsg}`
+        
+        // Log password to console if exception occurs
+        console.log('[v0] PASSWORD RESET EXCEPTION - Using console fallback')
+        console.log('[v0] TEMPORARY PASSWORD:', newPassword)
+        console.log('[v0] USER EMAIL:', email)
       }
     }
 

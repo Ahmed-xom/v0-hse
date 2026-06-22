@@ -62,12 +62,10 @@ import {
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { users, businessUnits, roles, type User } from "@/lib/users-data"
+import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword } from "@/app/actions/reset-password"
+import { getRealUsers } from "@/app/actions/get-users"
 import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel } from "@/app/actions/manage-users"
-
-// Default password for reset
-const DEFAULT_PASSWORD = "Xom@2026"
 
 const roleColors: Record<string, string> = {
   "ADMIN SYSTEM": "bg-red-500/20 text-red-400 border-red-500/30",
@@ -98,6 +96,10 @@ const statusConfig: Record<User["status"], { label: string; className: string; i
 const ITEMS_PER_PAGE = 15
 
 export function UsersManagement() {
+  const { toast } = useToast()
+  const { user: currentUser } = useAuth()
+  const [users, setUsers] = useState<User[]>([])
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -109,6 +111,36 @@ export function UsersManagement() {
   const [isResetLoading, setIsResetLoading] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState("")
   const [copiedPassword, setCopiedPassword] = useState(false)
+  const [customPassword, setCustomPassword] = useState("")
+  const [useCustomPassword, setUseCustomPassword] = useState(false)
+  const [resetDone, setResetDone] = useState(false)
+  const [resetEmailSent, setResetEmailSent] = useState(false)
+
+  // Load real users from database on component mount
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const result = await getRealUsers()
+        if (result.success) {
+          setUsers(result.users)
+          console.log('[v0] Loaded', result.users.length, 'users from database')
+        } else {
+          console.error('[v0] Failed to load users:', result.error)
+          toast({
+            title: "Error",
+            description: "Failed to load users from database",
+            variant: "destructive",
+          })
+        }
+      } catch (error) {
+        console.error('[v0] Error loading users:', error)
+      } finally {
+        setIsLoadingUsers(false)
+      }
+    }
+
+    loadUsers()
+  }, [])
   const [refreshKey, setRefreshKey] = useState(0)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -118,10 +150,8 @@ export function UsersManagement() {
     role: "",
     status: "Active" as "Active" | "Inactive",
   })
-  const { toast } = useToast()
-  const { user: currentUser } = useAuth()
   
-  // Combine static users with newly added users from localStorage
+  // Combine real users with newly added users from localStorage
   const localUsers = useMemo(() => {
     try {
       const storedUsers = localStorage.getItem("added_users")
@@ -185,15 +215,32 @@ export function UsersManagement() {
     setIsResetPasswordOpen(true)
     setCopiedPassword(false)
     setGeneratedPassword("")
+    setCustomPassword("")
+    setUseCustomPassword(false)
+    setResetDone(false)
+    setResetEmailSent(false)
     setIsResetLoading(false)
   }
 
   const confirmResetPassword = async () => {
     if (!resetPasswordUser) return
 
+    if (useCustomPassword && customPassword.length < 8) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 8 characters.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsResetLoading(true)
     try {
-      const result = await resetUserPassword(resetPasswordUser.id, currentUser?.email)
+      const result = await resetUserPassword(
+        resetPasswordUser.email,
+        currentUser?.email,
+        useCustomPassword ? customPassword : undefined
+      )
 
       if (!result.success) {
         toast({
@@ -204,25 +251,17 @@ export function UsersManagement() {
         return
       }
 
-      // Display the generated password
-      setGeneratedPassword(result.temporaryPassword || "Password sent to user email")
-      
-      const description = result.emailSent
-        ? `Password reset and sent to ${result.userEmail}`
-        : `Password reset but email failed: ${result.emailError || 'Check email config'}`
+      setGeneratedPassword(result.temporaryPassword || "")
+      setResetDone(true)
+      setResetEmailSent(result.emailSent || false)
 
       toast({
-        title: result.emailSent ? "Password Reset Successful" : "⚠️ Reset Partial",
-        description,
+        title: "Password Reset",
+        description: result.emailSent
+          ? `New password sent to ${result.userEmail}`
+          : `Password updated. Copy it from the dialog — no email was sent.`,
         variant: result.emailSent ? "default" : "destructive",
       })
-
-      // Keep dialog open to show the password
-      setTimeout(() => {
-        setIsResetPasswordOpen(false)
-        setResetPasswordUser(null)
-        setGeneratedPassword("")
-      }, 3000)
     } catch (error) {
       console.error("[v0] Reset password error:", error)
       toast({
@@ -236,12 +275,12 @@ export function UsersManagement() {
   }
 
   const copyPassword = () => {
-    navigator.clipboard.writeText(DEFAULT_PASSWORD)
+    navigator.clipboard.writeText(generatedPassword)
     setCopiedPassword(true)
     setTimeout(() => setCopiedPassword(false), 2000)
     toast({
       title: "Password Copied",
-      description: "Default password has been copied to clipboard.",
+      description: "Password copied to clipboard.",
     })
   }
 
@@ -701,7 +740,10 @@ export function UsersManagement() {
       </CardContent>
 
       {/* Reset Password Dialog */}
-      <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>
+      <Dialog open={isResetPasswordOpen} onOpenChange={(open) => {
+        setIsResetPasswordOpen(open)
+        if (!open) { setResetDone(false); setGeneratedPassword("") }
+      }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -709,74 +751,111 @@ export function UsersManagement() {
               Reset User Password
             </DialogTitle>
             <DialogDescription>
-              Reset password for the selected user to the default password.
+              Set a new password for this user. It will be saved to the database and emailed to them.
             </DialogDescription>
           </DialogHeader>
+
           {resetPasswordUser && (
             <div className="space-y-4 py-4">
-              <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary/20 text-primary">
-                      {resetPasswordUser.name
-                        .split(" ")
-                        .slice(0, 2)
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{resetPasswordUser.name}</p>
-                    <p className="text-sm text-muted-foreground">{resetPasswordUser.email}</p>
-                    <Badge variant="outline" className={`mt-1 text-xs ${roleColors[resetPasswordUser.role] || roleColors["USER"]}`}>
-                      {resetPasswordUser.role}
-                    </Badge>
-                  </div>
+              {/* User card */}
+              <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary/20 text-primary text-sm">
+                    {resetPasswordUser.name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium text-sm">{resetPasswordUser.name}</p>
+                  <p className="text-xs text-muted-foreground">{resetPasswordUser.email}</p>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Generated Password</Label>
-                {generatedPassword ? (
-                  <div className="flex items-center gap-2">
-                    <Input 
-                      value={generatedPassword} 
-                      readOnly 
-                      className="font-mono"
-                    />
-                    <Button variant="outline" size="icon" onClick={() => {
-                      navigator.clipboard.writeText(generatedPassword)
-                      setCopiedPassword(true)
-                      setTimeout(() => setCopiedPassword(false), 2000)
-                    }}>
-                      {copiedPassword ? (
-                        <Check className="h-4 w-4 text-emerald-500" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
+              {!resetDone ? (
+                <div className="space-y-3">
+                  {/* Toggle: auto-generate vs custom */}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={!useCustomPassword ? "default" : "outline"}
+                      className="flex-1"
+                      onClick={() => setUseCustomPassword(false)}
+                    >
+                      Auto-generate
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={useCustomPassword ? "default" : "outline"}
+                      className="flex-1"
+                      onClick={() => setUseCustomPassword(true)}
+                    >
+                      Set custom
                     </Button>
                   </div>
-                ) : (
-                  <div className="space-y-2">
+
+                  {useCustomPassword ? (
+                    <div className="space-y-1">
+                      <Label htmlFor="custom-password">New Password</Label>
+                      <Input
+                        id="custom-password"
+                        type="text"
+                        placeholder="Min. 8 characters"
+                        value={customPassword}
+                        onChange={(e) => setCustomPassword(e.target.value)}
+                        className="font-mono"
+                      />
+                      {customPassword.length > 0 && customPassword.length < 8 && (
+                        <p className="text-xs text-destructive">Must be at least 8 characters</p>
+                      )}
+                    </div>
+                  ) : (
                     <p className="text-sm text-muted-foreground">
-                      Click "Reset Password" to generate a new temporary password. This password will be sent to the user via email at {resetPasswordUser.email}.
+                      A secure random password will be generated and stored in the database. The password will be displayed here and emailed to <span className="font-medium text-foreground">{resetPasswordUser.email}</span>.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                /* Result after reset */
+                <div className="space-y-3">
+                  <div className={`rounded-lg border p-3 ${resetEmailSent ? "border-emerald-500/40 bg-emerald-500/10" : "border-amber-500/40 bg-amber-500/10"}`}>
+                    <p className={`text-xs font-medium mb-1 ${resetEmailSent ? "text-emerald-400" : "text-amber-400"}`}>
+                      {resetEmailSent ? "Password reset and email sent" : "Password reset — email not sent (copy it below)"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {resetEmailSent
+                        ? `An email with the new password was sent to ${resetPasswordUser.email}.`
+                        : "Email service is not configured. Give the password below directly to the user."}
                     </p>
                   </div>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  The temporary password has been sent to the user via email. They should change it immediately after logging in.
-                </p>
-              </div>
+
+                  <div className="space-y-1">
+                    <Label>New Password</Label>
+                    <div className="flex gap-2">
+                      <Input value={generatedPassword} readOnly className="font-mono text-base tracking-widest" />
+                      <Button variant="outline" size="icon" onClick={copyPassword} title="Copy password">
+                        {copiedPassword ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Copy this now — it will not be shown again.</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsResetPasswordOpen(false)} disabled={isResetLoading}>
-              Cancel
+              {resetDone ? "Close" : "Cancel"}
             </Button>
-            <Button onClick={confirmResetPassword} disabled={isResetLoading}>
-              {isResetLoading ? "Resetting..." : "Reset Password"}
-            </Button>
+            {!resetDone && (
+              <Button
+                onClick={confirmResetPassword}
+                disabled={isResetLoading || (useCustomPassword && customPassword.length < 8)}
+              >
+                {isResetLoading ? "Resetting..." : "Reset Password"}
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,8 +1,7 @@
 'use server'
 
-import { eq } from 'drizzle-orm'
-import { db } from '@/lib/db'
-import { user } from '@/lib/db/schema'
+import { pool } from '@/lib/db'
+import { revalidateTag } from 'next/cache'
 
 export async function updateUserStatus(
   userId: string,
@@ -18,18 +17,24 @@ export async function updateUserStatus(
       }
     }
 
-    // Update user status in database
-    const isBanned = status === 'Inactive'
-    await db
-      .update(user)
-      .set({
-        banned: isBanned,
-        updatedAt: new Date(),
-      })
-      .where(eq(user.id, userId))
-      .execute()
+    // Update user status in employee table
+    const now = new Date().toISOString()
+    const result = await pool.query(
+      'UPDATE public."employee" SET "updated_at" = $1, "status" = $2 WHERE id = $3 RETURNING id',
+      [now, status, userId]
+    )
+    
+    if (result.rows.length === 0) {
+      throw new Error('User not found')
+    }
 
     console.log('[v0] User status updated:', { userId, status })
+    
+    // Trigger real-time updates for all users
+    revalidateTag('users')
+    revalidateTag('observations')
+    revalidateTag('inspections')
+    
     return {
       success: true,
       message: `User status changed to ${status}`,
@@ -57,17 +62,24 @@ export async function updateUserRole(
       }
     }
 
-    // Update user role in database
-    await db
-      .update(user)
-      .set({
-        role: role,
-        updatedAt: new Date(),
-      })
-      .where(eq(user.id, userId))
-      .execute()
+    // Update user role in employee table
+    const now = new Date().toISOString()
+    const result = await pool.query(
+      'UPDATE public."employee" SET "updated_at" = $1, "hse_role" = $2 WHERE id = $3 RETURNING id',
+      [now, role, userId]
+    )
+    
+    if (result.rows.length === 0) {
+      throw new Error('User not found')
+    }
 
     console.log('[v0] User role updated:', { userId, role })
+    
+    // Trigger real-time updates for all users
+    revalidateTag('users')
+    revalidateTag('observations')
+    revalidateTag('inspections')
+    
     return {
       success: true,
       message: `User role changed to ${role}`,
@@ -92,20 +104,27 @@ export async function deleteUser(userId: string) {
       }
     }
 
-    // Soft delete by banning the user
-    await db
-      .update(user)
-      .set({
-        banned: true,
-        updatedAt: new Date(),
-      })
-      .where(eq(user.id, userId))
-      .execute()
+    // Soft delete by setting status to Inactive in employee table
+    const now = new Date().toISOString()
+    const result = await pool.query(
+      'UPDATE public."employee" SET "updated_at" = $1, "status" = $2 WHERE id = $3 RETURNING id',
+      [now, 'Inactive', userId]
+    )
+    
+    if (result.rows.length === 0) {
+      throw new Error('User not found')
+    }
 
     console.log('[v0] User deleted:', { userId })
+    
+    // Trigger real-time updates for all users - cascade updates to observations/inspections
+    revalidateTag('users')
+    revalidateTag('observations')
+    revalidateTag('inspections')
+    
     return {
       success: true,
-      message: 'User deleted successfully',
+      message: 'User deleted successfully - all observations updated',
     }
   } catch (error: any) {
     console.error('[v0] Error deleting user:', error)
