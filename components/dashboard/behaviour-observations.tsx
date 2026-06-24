@@ -237,7 +237,11 @@ export function BehaviourObservations() {
 
     setIsSubmitting(true)
     try {
-      const result = await createObservation(formData)
+      const result = await createObservation({
+        ...formData,
+        userId: (currentUser as any)?.id ?? '',
+        observerName: currentUser?.name ?? currentUser?.email ?? '',
+      })
       if (result.success) {
         toast({
           title: "Observation Submitted",

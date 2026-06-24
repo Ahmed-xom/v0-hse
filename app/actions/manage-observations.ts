@@ -1,16 +1,9 @@
 'use server'
 
-import { eq, desc, sql } from 'drizzle-orm'
+import { eq, desc } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { observation } from '@/lib/db/schema'
-import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
-
-async function getCurrentUser() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  return session?.user ?? null
-}
 
 function generateObservationId() {
   const now = new Date()
@@ -68,20 +61,22 @@ export async function createObservation(formData: {
   observationType: string
   category: string
   correctiveActions: string
+  // caller passes the logged-in user info — no server-side session needed
+  userId?: string
+  observerName?: string
 }) {
   try {
-    const currentUser = await getCurrentUser()
-    if (!currentUser) {
-      return { success: false, error: 'Not authenticated' }
-    }
-
     const id = generateObservationId()
+    // Use a deterministic fallback UUID if caller didn't supply one
+    const userId = (formData.userId && formData.userId.trim())
+      ? formData.userId
+      : '00000000-0000-0000-0000-000000000000'
 
     await db.insert(observation).values({
       id,
       number: id,
-      userId: currentUser.id as any,
-      observer: currentUser.name ?? currentUser.email,
+      userId: userId as any,
+      observer: formData.observerName ?? 'Unknown',
       position: formData.position,
       location: formData.location,
       businessUnitId: formData.businessUnit,
