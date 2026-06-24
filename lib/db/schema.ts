@@ -156,13 +156,20 @@ export const master = pgTable('master', {
 // Observations Table
 export const observation = pgTable('observation', {
   id: text('id').primaryKey(),
+  number: text('number'),
   userId: uuid('userId').notNull(),
-  observationTypeId: text('observationTypeId').notNull().references(() => observationType.id),
-  businessUnitId: text('businessUnitId').notNull().references(() => businessUnit.id),
+  observer: text('observer'),
+  position: text('position'),
+  observationTypeId: text('observationTypeId'),
+  businessUnitId: text('businessUnitId'),
   description: text('description'),
   severity: varchar('severity'),
   location: text('location'),
+  category: text('category'),
+  nearMiss: boolean('nearMiss').default(false),
+  correctiveActions: text('correctiveActions'),
   status: varchar('status').default('Open'),
+  date: timestamp('date').default(sql`now()`),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
 })
