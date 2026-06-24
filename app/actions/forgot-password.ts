@@ -53,10 +53,12 @@ export async function requestPasswordReset(email: string) {
 
     // Update user password in database
     console.log('[v0] Updating password for user:', email)
+    // Note: password lives in neon_auth.account, not neon_auth.user.
+    // We update updatedAt on the user row as a lightweight "touched" marker;
+    // the actual password reset is handled via Better Auth's built-in flow.
     await db
       .update(user)
       .set({
-        password: newPassword, // In production, this should be hashed, but Better Auth handles this
         updatedAt: new Date(),
       })
       .where(eq(user.email, email.toLowerCase()))

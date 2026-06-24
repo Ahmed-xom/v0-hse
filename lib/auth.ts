@@ -2,11 +2,9 @@ import { betterAuth } from "better-auth"
 import { pool } from "@/lib/db"
 
 export const auth = betterAuth({
-  database: {
-    db: pool,
-    // All Better Auth tables live in the neon_auth schema (provisioned by Neon Auth integration)
-    schema: "neon_auth",
-  },
+  // Pass the pg Pool directly — Better Auth uses its built-in pg adapter.
+  // The Pool's search_path (set in lib/db/index.ts) routes queries to neon_auth schema.
+  database: pool,
   emailAndPassword: {
     enabled: true,
   },

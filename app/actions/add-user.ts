@@ -68,7 +68,7 @@ export async function addNewUser(userData: {
             RETURNING id, name, email`
       )
       
-      newUser = newUserResult.rows?.[0] || newUserResult[0]
+      newUser = (newUserResult.rows as any[])?.[0] || (newUserResult as any)[0]
       console.log('[v0] User created successfully:', newUser)
     } catch (dbError: any) {
       // Check if it's a unique constraint violation on email
@@ -156,7 +156,7 @@ export async function addNewUser(userData: {
     return {
       success: true,
       message: 'User created successfully',
-      user: newUser[0],
+      user: newUser as { id: string; name: string; email: string },
       temporaryPassword,
       emailSent,
       emailError: emailError || (emailSent ? 'Email sent successfully' : 'Email not sent'),

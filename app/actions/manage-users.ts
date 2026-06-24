@@ -149,8 +149,6 @@ export async function deleteUser(userId: string) {
 
 export async function exportUsersToExcel(users: any[]) {
   try {
-    console.log('[v0] Exporting users to Excel:', users.length, 'users')
-
     if (!users || users.length === 0) {
       return {
         success: false,
@@ -178,7 +176,6 @@ export async function exportUsersToExcel(users: any[]) {
       ),
     ].join('\n')
 
-    console.log('[v0] CSV generated successfully')
     return {
       success: true,
       message: 'Users exported successfully',
