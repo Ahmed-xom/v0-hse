@@ -183,7 +183,7 @@ export function UsersManagement() {
     inactive: localUsers.filter((u) => u.status === "Inactive").length,
     management: localUsers.filter((u) => u.role === "MANAGEMENT" || u.role === "SITE MANAGER" || u.role === "SITE MANAGER - Global").length,
     hse: localUsers.filter((u) => u.role === "HSE" || u.role === "HSE ADMIN").length,
-  }), [])
+  }), [localUsers])
 
   const handleResetPassword = (user: User) => {
     setResetPasswordUser(user)
@@ -556,8 +556,38 @@ export function UsersManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedUsers.map((user) => {
-                const StatusIcon = statusConfig[user.status].icon
+              {isLoadingUsers ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <TableRow key={i} className="border-border/50">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+                        <div className="flex flex-col gap-1.5">
+                          <div className="h-3.5 w-32 bg-muted animate-pulse rounded" />
+                          <div className="h-3 w-44 bg-muted animate-pulse rounded" />
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell"><div className="h-3 w-24 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><div className="h-5 w-20 bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell className="hidden lg:table-cell"><div className="h-3 w-28 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell className="hidden xl:table-cell"><div className="h-3 w-40 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><div className="h-5 w-16 bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell><div className="h-8 w-8 bg-muted animate-pulse rounded" /></TableCell>
+                  </TableRow>
+                ))
+              ) : paginatedUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Users className="h-8 w-8 opacity-40" />
+                      <p className="text-sm font-medium">No users found</p>
+                      <p className="text-xs">Try adjusting your search or filters</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : paginatedUsers.map((user) => {
+                const StatusIcon = statusConfig[user.status]?.icon ?? UserCheck
                 return (
                   <TableRow key={user.id} className="border-border/50">
                     <TableCell>
@@ -654,8 +684,12 @@ export function UsersManagement() {
         {/* Pagination */}
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
-            {filteredUsers.length !== localUsers.length && ` (filtered from ${localUsers.length})`}
+            {isLoadingUsers
+              ? "Loading users..."
+              : filteredUsers.length === 0
+              ? "No users found"
+              : `Showing ${((currentPage - 1) * ITEMS_PER_PAGE) + 1} to ${Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of ${filteredUsers.length} users${filteredUsers.length !== localUsers.length ? ` (filtered from ${localUsers.length})` : ""}`
+            }
           </p>
           <div className="flex items-center gap-2">
             <Button 

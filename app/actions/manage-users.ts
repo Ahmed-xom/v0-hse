@@ -1,37 +1,42 @@
 'use server'
 
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { user } from '@/lib/db/schema'
 
 export async function getUsers() {
   try {
-    const rows = await db
-      .select({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        banned: user.banned,
-        createdAt: user.createdAt,
-      })
-      .from(user)
-      .orderBy(user.createdAt)
+    // Join neon_auth.user with public.employee by email to get designation,
+    // payroll_no and business_unit
+    const rows = await db.execute(sql`
+      SELECT
+        u.id::text          AS id,
+        u.name              AS name,
+        u.email             AS email,
+        u.role              AS role,
+        u.banned            AS banned,
+        u."createdAt"       AS "createdAt",
+        COALESCE(e.payroll_no, '')    AS "payrollNo",
+        COALESCE(e.designation, '')   AS designation,
+        COALESCE(e.business_unit, '') AS "businessUnit"
+      FROM neon_auth.user u
+      LEFT JOIN public.employee e ON lower(e.email) = lower(u.email)
+      ORDER BY u."createdAt" ASC
+    `)
 
     return {
       success: true,
-      data: rows.map((u) => ({
-        id: u.id,
-        name: u.name ?? '',
-        email: u.email,
+      data: (rows.rows as any[]).map((u) => ({
+        id: u.id as string,
+        name: (u.name as string) ?? '',
+        email: u.email as string,
         role: (u.role as string) ?? 'USER',
         status: u.banned ? ('Inactive' as const) : ('Active' as const),
-        banned: u.banned ?? false,
+        banned: Boolean(u.banned),
         createdAt: u.createdAt,
-        // These come from employee table - fall back to empty strings
-        payrollNo: '',
-        designation: '',
-        businessUnit: '',
+        payrollNo: (u.payrollNo as string) ?? '',
+        designation: (u.designation as string) ?? '',
+        businessUnit: (u.businessUnit as string) ?? '',
       })),
     }
   } catch (error: any) {
