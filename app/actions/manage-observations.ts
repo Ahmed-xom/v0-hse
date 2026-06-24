@@ -1,9 +1,16 @@
 'use server'
 
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, and, sql } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { observation } from '@/lib/db/schema'
 import { revalidatePath } from 'next/cache'
+
+const ADMIN_ROLES = ['ADMIN SYSTEM', 'HSE ADMIN', 'MASTER USER', 'ADMIN']
+
+export function isAdminRole(role: string, email?: string) {
+  if (email === 'xom-it-admin@xomoman.com') return true
+  return ADMIN_ROLES.includes((role ?? '').toUpperCase())
+}
 
 function generateObservationId() {
   const now = new Date()
@@ -13,11 +20,18 @@ function generateObservationId() {
   return `OBS-${year}${month}-${rand}`
 }
 
-export async function getObservations() {
+// Pass userEmail to filter to the user's own observations.
+// Pass undefined (or omit) for admins who should see everything.
+export async function getObservations(userEmail?: string) {
   try {
     const rows = await db
       .select()
       .from(observation)
+      .where(
+        userEmail
+          ? sql`lower(${observation.observer}) = lower(${userEmail})`
+          : undefined
+      )
       .orderBy(desc(observation.createdAt))
 
     return {

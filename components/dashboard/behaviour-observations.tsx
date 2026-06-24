@@ -73,7 +73,7 @@ import {
   type Priority,
   type ObservationStatus,
 } from "@/lib/observations-data"
-import { getObservations, createObservation, deleteObservation } from "@/app/actions/manage-observations"
+import { getObservations, createObservation, deleteObservation, isAdminRole } from "@/app/actions/manage-observations"
 
 const statusColors: Record<ObservationStatus, string> = {
   "Open": "bg-blue-500/20 text-blue-400 border-blue-500/30",
@@ -107,6 +107,7 @@ export function BehaviourObservations() {
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null)
   const { toast } = useToast()
   const { user } = useAuth()
+  const isAdmin = isAdminRole(user?.role ?? '', user?.email ?? '')
   const itemsPerPage = 10
 
   // Form state
@@ -129,12 +130,14 @@ export function BehaviourObservations() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
-  // Fetch observations from DB
+  // Fetch observations from DB — admins see all, regular users see only their own
   useEffect(() => {
     async function fetchObservations() {
       setIsLoading(true)
       try {
-        const result = await getObservations()
+        // Pass email for regular users so the DB filters server-side
+        const filterEmail = isAdmin ? undefined : (user?.email ?? undefined)
+        const result = await getObservations(filterEmail)
         if (result.success) {
           setDbObservations(result.data as Observation[])
         }
@@ -145,7 +148,7 @@ export function BehaviourObservations() {
       }
     }
     fetchObservations()
-  }, [refreshKey])
+  }, [refreshKey, isAdmin, user?.email])
 
   // Stats
   const stats = useMemo(() => ({
