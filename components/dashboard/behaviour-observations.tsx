@@ -239,8 +239,8 @@ export function BehaviourObservations() {
     try {
       const result = await createObservation({
         ...formData,
-        userId: (currentUser as any)?.id ?? '',
-        observerName: currentUser?.name ?? currentUser?.email ?? '',
+        userId: (user as any)?.id ?? '',
+        observerName: (user as any)?.name ?? (user as any)?.email ?? '',
       })
       if (result.success) {
         toast({
