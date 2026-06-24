@@ -62,9 +62,9 @@ import {
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { users, businessUnits, roles, type User } from "@/lib/users-data"
+import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword } from "@/app/actions/reset-password"
-import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel } from "@/app/actions/manage-users"
+import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers } from "@/app/actions/manage-users"
 
 // Default password for reset
 const DEFAULT_PASSWORD = "Xom@2026"
@@ -118,19 +118,32 @@ export function UsersManagement() {
     role: "",
     status: "Active" as "Active" | "Inactive",
   })
+  const [dbUsers, setDbUsers] = useState<User[]>([])
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const { toast } = useToast()
   const { user: currentUser } = useAuth()
-  
-  // Combine static users with newly added users from localStorage
-  const localUsers = useMemo(() => {
-    try {
-      const storedUsers = localStorage.getItem("added_users")
-      const addedUsers = storedUsers ? JSON.parse(storedUsers) : []
-      return [...users, ...addedUsers]
-    } catch {
-      return users
+
+  // Fetch real users from the database
+  useEffect(() => {
+    async function fetchUsers() {
+      setIsLoadingUsers(true)
+      try {
+        const result = await getUsers()
+        if (result.success && result.data) {
+          setDbUsers(result.data as User[])
+        } else {
+          console.error("[v0] Failed to load users:", result.error)
+        }
+      } catch (err) {
+        console.error("[v0] Error loading users:", err)
+      } finally {
+        setIsLoadingUsers(false)
+      }
     }
+    fetchUsers()
   }, [refreshKey])
+
+  const localUsers = dbUsers
 
   // Check if current user is admin
   // Only xom-it-admin@xomoman.com can reset passwords
@@ -150,15 +163,7 @@ export function UsersManagement() {
     })
   }, [searchQuery, roleFilter, statusFilter, businessUnitFilter, refreshKey, localUsers])
 
-  // Listen for localStorage changes to refresh user list
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setRefreshKey((prev) => prev + 1)
-    }
-    
-    window.addEventListener("storage", handleStorageChange)
-    return () => window.removeEventListener("storage", handleStorageChange)
-  }, [])
+
 
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)
   const paginatedUsers = useMemo(() => {
@@ -177,7 +182,7 @@ export function UsersManagement() {
     active: localUsers.filter((u) => u.status === "Active").length,
     inactive: localUsers.filter((u) => u.status === "Inactive").length,
     management: localUsers.filter((u) => u.role === "MANAGEMENT" || u.role === "SITE MANAGER" || u.role === "SITE MANAGER - Global").length,
-    hse: users.filter((u) => u.role === "HSE" || u.role === "HSE ADMIN").length,
+    hse: localUsers.filter((u) => u.role === "HSE" || u.role === "HSE ADMIN").length,
   }), [])
 
   const handleResetPassword = (user: User) => {
@@ -376,7 +381,7 @@ export function UsersManagement() {
               <Users className="h-5 w-5 text-primary" />
               Team Members
             </CardTitle>
-            <CardDescription>Manage {users.length} HSE personnel across all business units</CardDescription>
+            <CardDescription>Manage {isLoadingUsers ? '...' : localUsers.length} HSE personnel across all business units</CardDescription>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="gap-2" onClick={handleExportToExcel}>
@@ -650,7 +655,7 @@ export function UsersManagement() {
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
             Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
-            {filteredUsers.length !== users.length && ` (filtered from ${users.length})`}
+            {filteredUsers.length !== localUsers.length && ` (filtered from ${localUsers.length})`}
           </p>
           <div className="flex items-center gap-2">
             <Button 

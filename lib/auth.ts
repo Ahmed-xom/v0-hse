@@ -2,7 +2,11 @@ import { betterAuth } from "better-auth"
 import { pool } from "@/lib/db"
 
 export const auth = betterAuth({
-  database: pool,
+  database: {
+    db: pool,
+    // All Better Auth tables live in the neon_auth schema (provisioned by Neon Auth integration)
+    schema: "neon_auth",
+  },
   emailAndPassword: {
     enabled: true,
   },

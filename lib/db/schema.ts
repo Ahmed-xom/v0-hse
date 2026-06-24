@@ -1,9 +1,11 @@
-import { pgTable, text, varchar, timestamp, boolean, integer, decimal, jsonb, index } from 'drizzle-orm/pg-core'
+import { pgTable, pgSchema, text, varchar, timestamp, boolean, integer, decimal, jsonb, index, uuid } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
-// Better Auth Tables
-export const user = pgTable('user', {
-  id: text('id').primaryKey(),
+// Point Better Auth tables at the neon_auth schema where they actually live
+const neonAuthSchema = pgSchema('neon_auth')
+
+export const user = neonAuthSchema.table('user', {
+  id: uuid('id').primaryKey(),
   name: text('name'),
   email: text('email').notNull().unique(),
   emailVerified: boolean('emailVerified').notNull().default(false),
@@ -16,22 +18,22 @@ export const user = pgTable('user', {
   role: text('role').default('USER'),
 })
 
-export const session = pgTable('session', {
-  id: text('id').primaryKey(),
+export const session = neonAuthSchema.table('session', {
+  id: uuid('id').primaryKey(),
   expiresAt: timestamp('expiresAt').notNull(),
   token: text('token').notNull().unique(),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
   ipAddress: text('ipAddress'),
   userAgent: text('userAgent'),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  userId: uuid('userId').notNull(),
 })
 
-export const account = pgTable('account', {
-  id: text('id').primaryKey(),
+export const account = neonAuthSchema.table('account', {
+  id: uuid('id').primaryKey(),
   accountId: text('accountId').notNull(),
   providerId: text('providerId').notNull(),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  userId: uuid('userId').notNull(),
   accessToken: text('accessToken'),
   refreshToken: text('refreshToken'),
   idToken: text('idToken'),
@@ -43,18 +45,19 @@ export const account = pgTable('account', {
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
 })
 
-export const verification = pgTable('verification', {
-  id: text('id').primaryKey(),
+export const verification = neonAuthSchema.table('verification', {
+  id: uuid('id').primaryKey(),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
   expiresAt: timestamp('expiresAt').notNull(),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
+  updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
 })
 
 // HSE System Users Table - stores app-specific user data
 export const hseUser = pgTable('hse_user', {
   id: text('id').primaryKey(),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  userId: uuid('userId').notNull(),
   payrollNo: varchar('payrollNo').unique(),
   designation: text('designation'),
   businessUnit: text('businessUnit'),
@@ -67,8 +70,8 @@ export const hseUser = pgTable('hse_user', {
 // Password reset tracking
 export const passwordReset = pgTable('password_reset', {
   id: text('id').primaryKey(),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
-  resetBy: text('resetBy').notNull().references(() => user.id),
+  userId: uuid('userId').notNull(),
+  resetBy: uuid('resetBy').notNull(),
   newPassword: text('newPassword').notNull(),
   resetAt: timestamp('resetAt').notNull().default(sql`now()`),
   ipAddress: text('ipAddress'),
@@ -153,7 +156,7 @@ export const master = pgTable('master', {
 // Observations Table
 export const observation = pgTable('observation', {
   id: text('id').primaryKey(),
-  userId: text('userId').notNull().references(() => user.id),
+  userId: uuid('userId').notNull(),
   observationTypeId: text('observationTypeId').notNull().references(() => observationType.id),
   businessUnitId: text('businessUnitId').notNull().references(() => businessUnit.id),
   description: text('description'),
@@ -167,7 +170,7 @@ export const observation = pgTable('observation', {
 // Inspections Table
 export const inspection = pgTable('inspection', {
   id: text('id').primaryKey(),
-  userId: text('userId').notNull().references(() => user.id),
+  userId: uuid('userId').notNull(),
   inspectionTypeId: text('inspectionTypeId').notNull().references(() => inspectionType.id),
   businessUnitId: text('businessUnitId').notNull().references(() => businessUnit.id),
   date: timestamp('date'),

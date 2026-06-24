@@ -4,13 +4,51 @@ import { eq } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { user } from '@/lib/db/schema'
 
+export async function getUsers() {
+  try {
+    const rows = await db
+      .select({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        banned: user.banned,
+        createdAt: user.createdAt,
+      })
+      .from(user)
+      .orderBy(user.createdAt)
+
+    return {
+      success: true,
+      data: rows.map((u) => ({
+        id: u.id,
+        name: u.name ?? '',
+        email: u.email,
+        role: (u.role as string) ?? 'USER',
+        status: u.banned ? ('Inactive' as const) : ('Active' as const),
+        banned: u.banned ?? false,
+        createdAt: u.createdAt,
+        // These come from employee table - fall back to empty strings
+        payrollNo: '',
+        designation: '',
+        businessUnit: '',
+      })),
+    }
+  } catch (error: any) {
+    console.error('[v0] Error fetching users:', error)
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch users',
+      data: [],
+    }
+  }
+}
+
 export async function updateUserStatus(
   userId: string,
   status: 'Active' | 'Inactive'
 ) {
   try {
-    console.log('[v0] Updating user status:', { userId, status })
-
     if (!userId) {
       return {
         success: false,
@@ -29,7 +67,6 @@ export async function updateUserStatus(
       .where(eq(user.id, userId))
       .execute()
 
-    console.log('[v0] User status updated:', { userId, status })
     return {
       success: true,
       message: `User status changed to ${status}`,
@@ -48,8 +85,6 @@ export async function updateUserRole(
   role: string
 ) {
   try {
-    console.log('[v0] Updating user role:', { userId, role })
-
     if (!userId || !role) {
       return {
         success: false,
@@ -67,7 +102,6 @@ export async function updateUserRole(
       .where(eq(user.id, userId))
       .execute()
 
-    console.log('[v0] User role updated:', { userId, role })
     return {
       success: true,
       message: `User role changed to ${role}`,
@@ -83,8 +117,6 @@ export async function updateUserRole(
 
 export async function deleteUser(userId: string) {
   try {
-    console.log('[v0] Deleting user:', userId)
-
     if (!userId) {
       return {
         success: false,
@@ -102,7 +134,6 @@ export async function deleteUser(userId: string) {
       .where(eq(user.id, userId))
       .execute()
 
-    console.log('[v0] User deleted:', { userId })
     return {
       success: true,
       message: 'User deleted successfully',
