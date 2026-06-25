@@ -13,7 +13,7 @@ import { AdminSettings } from "@/components/dashboard/admin-settings"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
-import { isAdminRole } from "@/app/actions/manage-observations"
+import { isAdminRole } from "@/lib/auth-roles"
 
 export default function HSEDashboard() {
   const { currentUser, isLoading } = useAuth()

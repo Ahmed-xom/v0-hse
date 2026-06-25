@@ -73,7 +73,8 @@ import {
   type Priority,
   type ObservationStatus,
 } from "@/lib/observations-data"
-import { getObservations, createObservation, deleteObservation, isAdminRole } from "@/app/actions/manage-observations"
+import { getObservations, createObservation, deleteObservation } from "@/app/actions/manage-observations"
+import { isAdminRole } from "@/lib/auth-roles"
 
 const statusColors: Record<ObservationStatus, string> = {
   "Open": "bg-blue-500/20 text-blue-400 border-blue-500/30",

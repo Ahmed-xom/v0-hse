@@ -5,13 +5,6 @@ import { db } from '@/lib/db'
 import { observation } from '@/lib/db/schema'
 import { revalidatePath } from 'next/cache'
 
-const ADMIN_ROLES = ['ADMIN SYSTEM', 'HSE ADMIN', 'MASTER USER', 'ADMIN']
-
-export function isAdminRole(role: string, email?: string) {
-  if (email === 'xom-it-admin@xomoman.com') return true
-  return ADMIN_ROLES.includes((role ?? '').toUpperCase())
-}
-
 function generateObservationId() {
   const now = new Date()
   const year = now.getFullYear().toString().slice(-2)
