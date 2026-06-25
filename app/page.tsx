@@ -113,52 +113,49 @@ export default function HSEDashboard() {
               </TabsContent>
             </Tabs>
           ) : (
-            <>
-              {/* KPI Cards */}
-              <section aria-label="Key Performance Indicators">
-                <KPICards />
-              </section>
+            <Tabs defaultValue="observations" className="w-full">
+              <TabsList className="grid w-full max-w-sm grid-cols-3">
+                <TabsTrigger value="observations">Observations</TabsTrigger>
+                <TabsTrigger value="inspections">Inspections</TabsTrigger>
+                <TabsTrigger value="reports">Reports</TabsTrigger>
+              </TabsList>
 
-              {/* Incident Statistics */}
-              <section aria-label="Incident Statistics">
-                <IncidentStatistics />
-              </section>
+              {/* Observations — user can add and view only their own */}
+              <TabsContent value="observations" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">My Observations</h2>
+                  <p className="text-sm text-muted-foreground">Submit and track your behaviour-based safety observations.</p>
+                </div>
+                <section aria-label="Behaviour Observations">
+                  <BehaviourObservations />
+                </section>
+              </TabsContent>
 
-              {/* Behaviour Observations */}
-              <section aria-label="Behaviour Observations">
-                <BehaviourObservations />
-              </section>
-
-              {/* Training Matrix */}
-              <section aria-label="Training Matrix">
-                <TrainingMatrix />
-              </section>
-
-              {/* Inspection Reports */}
-              <section aria-label="Inspection Reports">
-                <InspectionReports />
-              </section>
-
-              {/* Inspection Types */}
-              <section aria-label="Inspection Types">
-                <InspectionTypes />
-              </section>
-
-              {/* Business Units */}
-              <section aria-label="Business Units">
-                <BusinessUnits />
-              </section>
-
-              {/* Training Records */}
-              <section aria-label="Training Records">
-                <TrainingRecords />
-              </section>
+              {/* Inspections */}
+              <TabsContent value="inspections" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Inspections</h2>
+                  <p className="text-sm text-muted-foreground">View inspection reports and types.</p>
+                </div>
+                <section aria-label="Inspection Reports">
+                  <InspectionReports />
+                </section>
+                <section aria-label="Inspection Types">
+                  <InspectionTypes />
+                </section>
+              </TabsContent>
 
               {/* Reports */}
-              <section aria-label="Reports">
-                <Reports />
-              </section>
-            </>
+              <TabsContent value="reports" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Reports</h2>
+                  <p className="text-sm text-muted-foreground">HSE performance summaries and exports.</p>
+                </div>
+                <section aria-label="Reports">
+                  <Reports />
+                </section>
+              </TabsContent>
+            </Tabs>
           )}
         </main>
 
