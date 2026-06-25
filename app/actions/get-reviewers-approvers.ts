@@ -49,6 +49,25 @@ export async function getReviewersApprovers(): Promise<{
   }
 }
 
+export async function addReviewerApprover(
+  userId: string,
+  role: "REVIEWER" | "APPROVER",
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!userId) return { success: false, error: "User ID is required" }
+    await db.execute(sql`
+      UPDATE neon_auth."user"
+      SET role = ${role},
+          "emailVerified" = true
+      WHERE id = ${userId}::uuid
+    `)
+    return { success: true }
+  } catch (error) {
+    console.error("[v0] addReviewerApprover error:", error)
+    return { success: false, error: (error as Error).message }
+  }
+}
+
 export async function updateReviewerApproverStatus(
   userId: string,
   status: "active" | "inactive"

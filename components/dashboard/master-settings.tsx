@@ -28,7 +28,7 @@ import {
   UserCheck,
   ShieldCheck,
 } from "lucide-react"
-import { getReviewersApprovers, updateReviewerApproverStatus, type ReviewerApproverUser } from "@/app/actions/get-reviewers-approvers"
+import { getReviewersApprovers, updateReviewerApproverStatus, addReviewerApprover, type ReviewerApproverUser } from "@/app/actions/get-reviewers-approvers"
 import { getUsers } from "@/app/actions/manage-users"
 import type { User } from "@/lib/users-data"
 import { useToast } from "@/hooks/use-toast"
@@ -93,6 +93,8 @@ export function MasterSettings() {
   // All users for the "Add New" dropdown
   const [allUsers, setAllUsers] = useState<User[]>([])
   const [newEntryUser, setNewEntryUser] = useState("")
+  const [newEntryRole, setNewEntryRole] = useState<"REVIEWER" | "APPROVER">("REVIEWER")
+  const [isSaving, setIsSaving] = useState(false)
 
   const currentCategory = masterCategories.find((c) => c.id === selectedCategory)
 
@@ -116,13 +118,46 @@ export function MasterSettings() {
         if (res.success) setAllUsers(res.data as User[])
       })
     }
-    if (!isAddDialogOpen) setNewEntryUser("")
+    if (!isAddDialogOpen) {
+      setNewEntryUser("")
+      setNewEntryRole("REVIEWER")
+    }
   }, [isAddDialogOpen])
 
   const filteredCategories = masterCategories.filter((category) =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     category.items.some((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
   )
+
+  const handleSaveReviewerApprover = async () => {
+    if (!newEntryUser) {
+      toast({ title: "Select a user", description: "Please select a user from the dropdown.", variant: "destructive" })
+      return
+    }
+    const [name, , id] = newEntryUser.split("||")
+    const userId = id || allUsers.find((u) => u.name === name)?.id
+    if (!userId) {
+      toast({ title: "User not found", description: "Could not resolve user ID.", variant: "destructive" })
+      return
+    }
+    setIsSaving(true)
+    try {
+      const result = await addReviewerApprover(userId, newEntryRole)
+      if (!result.success) {
+        toast({ title: "Error", description: result.error, variant: "destructive" })
+        return
+      }
+      toast({ title: "Saved", description: `${name} added as ${newEntryRole}.` })
+      setIsAddDialogOpen(false)
+      // Refresh the reviewer/approver list
+      const res = await getReviewersApprovers()
+      if (res.success) setRaUsers(res.users)
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" })
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   const handleBackToCategories = () => {
     setSelectedCategory(null)
@@ -203,7 +238,7 @@ export function MasterSettings() {
                           </SelectTrigger>
                           <SelectContent>
                             {allUsers.map((u) => (
-                              <SelectItem key={u.id} value={`${u.name}||${u.email}`}>
+                              <SelectItem key={u.id} value={`${u.name}||${u.email}||${u.id}`}>
                                 <div className="flex flex-col">
                                   <span className="font-medium">{u.name}</span>
                                   <span className="text-xs text-muted-foreground">{u.email}</span>
@@ -220,24 +255,44 @@ export function MasterSettings() {
                       <Label htmlFor="description">Description</Label>
                       <Textarea id="description" placeholder="Enter description" rows={3} />
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="status">Status</Label>
-                      <Select defaultValue="active">
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="inactive">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {selectedSection?.id === "reviewer-approver" ? (
+                      <div className="grid gap-2">
+                        <Label htmlFor="role">Role</Label>
+                        <Select value={newEntryRole} onValueChange={(v) => setNewEntryRole(v as "REVIEWER" | "APPROVER")}>
+                          <SelectTrigger id="role">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="REVIEWER">Reviewer</SelectItem>
+                            <SelectItem value="APPROVER">Approver</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : (
+                      <div className="grid gap-2">
+                        <Label htmlFor="status">Status</Label>
+                        <Select defaultValue="active">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isSaving}>
                       Cancel
                     </Button>
-                    <Button onClick={() => setIsAddDialogOpen(false)}>Save</Button>
+                    <Button
+                      onClick={selectedSection?.id === "reviewer-approver" ? handleSaveReviewerApprover : () => setIsAddDialogOpen(false)}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? "Saving..." : "Save"}
+                    </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
