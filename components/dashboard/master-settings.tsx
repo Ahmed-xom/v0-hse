@@ -116,7 +116,12 @@ export function MasterSettings() {
   useEffect(() => {
     if (isAddDialogOpen && selectedSection?.id === "reviewer-approver" && allUsers.length === 0) {
       getUsers().then((res) => {
-        if (res.success) setAllUsers(res.data as User[])
+        if (res.success) {
+          const sorted = [...(res.data as User[])].sort((a, b) =>
+            a.name.localeCompare(b.name)
+          )
+          setAllUsers(sorted)
+        }
       })
     }
     if (!isAddDialogOpen) {
