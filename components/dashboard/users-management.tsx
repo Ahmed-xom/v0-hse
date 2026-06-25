@@ -107,6 +107,31 @@ export function UsersManagement() {
   const [isResetLoading, setIsResetLoading] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState("")
   const [copiedPassword, setCopiedPassword] = useState(false)
+
+  // Clipboard API is blocked in iframes — fall back to execCommand
+  const copyToClipboard = (text: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).catch(() => execCopy(text))
+      } else {
+        execCopy(text)
+      }
+    } catch {
+      execCopy(text)
+    }
+  }
+  const execCopy = (text: string) => {
+    const el = document.createElement('textarea')
+    el.value = text
+    el.style.position = 'fixed'
+    el.style.opacity = '0'
+    document.body.appendChild(el)
+    el.focus()
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
+  }
+
   const [customPassword, setCustomPassword] = useState("")
   const [showCustomPassword, setShowCustomPassword] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -809,7 +834,7 @@ export function UsersManagement() {
                       variant="outline"
                       size="icon"
                       onClick={() => {
-                        navigator.clipboard.writeText(generatedPassword)
+                        copyToClipboard(generatedPassword)
                         setCopiedPassword(true)
                         setTimeout(() => setCopiedPassword(false), 2000)
                       }}
