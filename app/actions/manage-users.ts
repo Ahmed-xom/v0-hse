@@ -1,15 +1,60 @@
 'use server'
 
-import { pool } from '@/lib/db'
+import { eq, sql } from 'drizzle-orm'
+import { db, pool } from '@/lib/db'
+import { user } from '@/lib/db/schema'
 import { revalidateTag } from 'next/cache'
+
+export async function getUsers() {
+  try {
+    // Join neon_auth.user with public.employee by email to get designation,
+    // payroll_no and business_unit
+    const rows = await db.execute(sql`
+      SELECT
+        u.id::text          AS id,
+        u.name              AS name,
+        u.email             AS email,
+        u.role              AS role,
+        u.banned            AS banned,
+        u."createdAt"       AS "createdAt",
+        COALESCE(e.payroll_no, '')    AS "payrollNo",
+        COALESCE(e.designation, '')   AS designation,
+        COALESCE(e.business_unit, '') AS "businessUnit"
+      FROM neon_auth.user u
+      LEFT JOIN public.employee e ON lower(e.email) = lower(u.email)
+      ORDER BY u."createdAt" ASC
+    `)
+
+    return {
+      success: true,
+      data: (rows.rows as any[]).map((u) => ({
+        id: u.id as string,
+        name: (u.name as string) ?? '',
+        email: u.email as string,
+        role: (u.role as string) ?? 'USER',
+        status: u.banned ? ('Inactive' as const) : ('Active' as const),
+        banned: Boolean(u.banned),
+        createdAt: u.createdAt,
+        payrollNo: (u.payrollNo as string) ?? '',
+        designation: (u.designation as string) ?? '',
+        businessUnit: (u.businessUnit as string) ?? '',
+      })),
+    }
+  } catch (error: any) {
+    console.error('[v0] Error fetching users:', error)
+    return {
+      success: false,
+      error: error.message || 'Failed to fetch users',
+      data: [],
+    }
+  }
+}
 
 export async function updateUserStatus(
   userId: string,
   status: 'Active' | 'Inactive'
 ) {
   try {
-    console.log('[v0] Updating user status:', { userId, status })
-
     if (!userId) {
       return {
         success: false,
@@ -28,13 +73,7 @@ export async function updateUserStatus(
       throw new Error('User not found')
     }
 
-    console.log('[v0] User status updated:', { userId, status })
-    
-    // Trigger real-time updates for all users
-    revalidateTag('users')
-    revalidateTag('observations')
-    revalidateTag('inspections')
-    
+    revalidateTag('users', 'max')
     return {
       success: true,
       message: `User status changed to ${status}`,
@@ -53,8 +92,6 @@ export async function updateUserRole(
   role: string
 ) {
   try {
-    console.log('[v0] Updating user role:', { userId, role })
-
     if (!userId || !role) {
       return {
         success: false,
@@ -73,13 +110,7 @@ export async function updateUserRole(
       throw new Error('User not found')
     }
 
-    console.log('[v0] User role updated:', { userId, role })
-    
-    // Trigger real-time updates for all users
-    revalidateTag('users')
-    revalidateTag('observations')
-    revalidateTag('inspections')
-    
+    revalidateTag('users', 'max')
     return {
       success: true,
       message: `User role changed to ${role}`,
@@ -95,8 +126,6 @@ export async function updateUserRole(
 
 export async function deleteUser(userId: string) {
   try {
-    console.log('[v0] Deleting user:', userId)
-
     if (!userId) {
       return {
         success: false,
@@ -115,13 +144,7 @@ export async function deleteUser(userId: string) {
       throw new Error('User not found')
     }
 
-    console.log('[v0] User deleted:', { userId })
-    
-    // Trigger real-time updates for all users - cascade updates to observations/inspections
-    revalidateTag('users')
-    revalidateTag('observations')
-    revalidateTag('inspections')
-    
+    revalidateTag('users', 'max')
     return {
       success: true,
       message: 'User deleted successfully - all observations updated',
@@ -137,8 +160,6 @@ export async function deleteUser(userId: string) {
 
 export async function exportUsersToExcel(users: any[]) {
   try {
-    console.log('[v0] Exporting users to Excel:', users.length, 'users')
-
     if (!users || users.length === 0) {
       return {
         success: false,
@@ -166,7 +187,6 @@ export async function exportUsersToExcel(users: any[]) {
       ),
     ].join('\n')
 
-    console.log('[v0] CSV generated successfully')
     return {
       success: true,
       message: 'Users exported successfully',

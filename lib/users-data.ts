@@ -3,7 +3,7 @@ export interface User {
   payrollNo: string
   name: string
   email: string
-  role: "ADMIN SYSTEM" | "MANAGEMENT" | "SITE MANAGER" | "SITE MANAGER - Global" | "HSE ADMIN" | "HSE" | "HR" | "MASTER USER" | "USER" | "USER - JM" | "REVIEWER" | "APPROVER"
+  role: string
   designation: string
   businessUnit: string
   status: "Active" | "Inactive"
@@ -24,7 +24,7 @@ export const users: User[] = [
   { id: "12", payrollNo: "430974", name: "Rustam Khasanshin", email: "rkhasanshin@xomoman.com", role: "USER", designation: "Measurement & Logging While Drilling Engineer", businessUnit: "XOM Drilling System", status: "Active" },
   { id: "13", payrollNo: "L-XDS-0055", name: "Shaker Al Kathiri", email: "skathiri@xomoman.com", role: "USER", designation: "Directional Driller Trainee", businessUnit: "XOM Drilling System", status: "Active" },
   { id: "14", payrollNo: "L-XOM-0024", name: "Yousuf Mohsen Al-Hashmi", email: "yalhashmi@xomoman.com", role: "USER", designation: "MWD Trainee", businessUnit: "XOM Drilling System", status: "Active" },
-  { id: "15", payrollNo: "L-XOM-0040", name: "Ibrahim Hilal Albusaidi", email: "ibusaidi@xomoman.com", role: "APPROVER", designation: "General Manager", businessUnit: "XOM Oman", status: "Active" },
+  { id: "15", payrollNo: "L-XOM-0040", name: "Ibrahim Hilal Albusaidi (S)", email: "ibusaidi@xomoman.com", role: "USER", designation: "General Manager", businessUnit: "XOM Oman", status: "Active" },
   { id: "16", payrollNo: "L-NSE-0286", name: "Mohammed Hilal Ahmed AlKindi", email: "m.alkindi@falconofs.com", role: "USER - JM", designation: "Workshop Supervisor", businessUnit: "Falcon Oilfield Services", status: "Active" },
   { id: "17", payrollNo: "NSE-0285", name: "Sameh Salim AlHarthy", email: "sharthy@falconofs.com", role: "USER", designation: "Payroll Officer", businessUnit: "Falcon Oilfield Services", status: "Inactive" },
   { id: "18", payrollNo: "L-NSE-0284", name: "Laila Ahmed AlKindi", email: "lkindi@falconofs.com", role: "HR", designation: "Admin and HR", businessUnit: "Falcon Oilfield Services", status: "Active" },
@@ -83,7 +83,7 @@ export const users: User[] = [
   { id: "71", payrollNo: "L-FDS-0056", name: "Ahmed Hamed Al JUFAILI", email: "ajufaily@xomoman.com", role: "USER", designation: "Directional Drilling Engineer", businessUnit: "XOM Drilling System", status: "Active" },
   { id: "72", payrollNo: "L-FDS-0032", name: "Abdullah Sulaiman Al-Aamri", email: "aamri@gmail.com", role: "USER", designation: "Directional Driller Trainee", businessUnit: "XOM Drilling System", status: "Inactive" },
   { id: "73", payrollNo: "XOM-DS-C-006", name: "Ahmed Khalid Ahmed Al Zakwani", email: "azakwani@xomoman.com", role: "USER - JM", designation: "Field Operator", businessUnit: "XOM Drilling System", status: "Inactive" },
-  { id: "74", payrollNo: "XOM-DS-031", name: "Hashim Ali Mubarak Al Farsi", email: "hfarsi@xomoman.com", role: "REVIEWER", designation: "Service Quality", businessUnit: "XOM Drilling System", status: "Active" },
+  { id: "74", payrollNo: "XOM-DS-031", name: "Hashim Ali Mubarak Al Farsi", email: "hfarsi@xomoman.com", role: "SITE MANAGER", designation: "Service Quality", businessUnit: "XOM Drilling System", status: "Active" },
   { id: "75", payrollNo: "E-NSE-0228", name: "Sohail Khan Jadoon", email: "sjadoon@falconstaff.org", role: "USER", designation: "Field Engineer", businessUnit: "Falcon Oilfield Services", status: "Active" },
   { id: "76", payrollNo: "XWM-SUB-004", name: "Suhail Mohammed", email: "suhail.mohammed@barikgroup.com", role: "USER", designation: "3rd Party Contractor", businessUnit: "XOM Well Maintenance", status: "Active" },
   { id: "77", payrollNo: "L-FINT-00019", name: "BASIM Ghasi AL Rahbi", email: "b.rahbi@falconstaff.org", role: "USER", designation: "Field Engineer (Trainee)", businessUnit: "Falcon Oilfield Services", status: "Active" },
@@ -275,7 +275,6 @@ export const users: User[] = [
   { id: "263", payrollNo: "E-FIN-0021", name: "Ahsan Sajjad", email: "ahsan@falconinvs.com", role: "USER", designation: "Accountant", businessUnit: "XOM LLC", status: "Active" },
   { id: "264", payrollNo: "E-NSE-0004", name: "Arunangshu Banerjee", email: "abanerjee@falconofs.com", role: "USER", designation: "Accountant", businessUnit: "Falcon Oilfield Services", status: "Active" },
   { id: "265", payrollNo: "ADMIN", name: "Syed Sadaqat ADMIN", email: "xom-himaya@falconinvs.com", role: "ADMIN SYSTEM", designation: "Accountant Treasury", businessUnit: "XOM Oman", status: "Active" },
-  { id: "266", payrollNo: "L-XOM-0041", name: "Mohammed Al Adawi", email: "madawi@xomoman.com", role: "REVIEWER", designation: "HSE Advisor", businessUnit: "XOM Oman", status: "Active" },
 ]
 
 export const businessUnits = [
@@ -288,8 +287,6 @@ export const businessUnits = [
 
 export const roles = [
   "ADMIN SYSTEM",
-  "APPROVER",
-  "REVIEWER",
   "MANAGEMENT",
   "SITE MANAGER",
   "SITE MANAGER - Global",

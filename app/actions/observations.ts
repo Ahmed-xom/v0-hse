@@ -90,7 +90,7 @@ export async function createObservation(data: {
     console.log('[v0] Observation created:', result.rows[0].id)
     
     // Broadcast update to all users
-    revalidateTag('observations')
+    revalidateTag('observations', 'max')
     
     return {
       success: true,
@@ -122,7 +122,7 @@ export async function updateObservationStatus(observationId: string, status: str
     console.log('[v0] Observation status updated:', observationId)
     
     // Broadcast update to all users
-    revalidateTag('observations')
+    revalidateTag('observations', 'max')
     
     return {
       success: true,

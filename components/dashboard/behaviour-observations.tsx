@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Search,
   Filter,
@@ -22,7 +22,6 @@ import {
   MapPin,
   Building2,
 } from "lucide-react"
-import { createObservation } from "@/app/actions/observations"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -64,7 +63,6 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { businessUnits } from "@/lib/users-data"
 import {
-  observations,
   observationCategories,
   positions,
   locations,
@@ -75,6 +73,8 @@ import {
   type Priority,
   type ObservationStatus,
 } from "@/lib/observations-data"
+import { getObservations, createObservation, deleteObservation } from "@/app/actions/manage-observations"
+import { isAdminRole } from "@/lib/auth-roles"
 
 const statusColors: Record<ObservationStatus, string> = {
   "Open": "bg-blue-500/20 text-blue-400 border-blue-500/30",
@@ -108,6 +108,7 @@ export function BehaviourObservations() {
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null)
   const { toast } = useToast()
   const { user } = useAuth()
+  const isAdmin = isAdminRole(user?.role ?? '', user?.email ?? '')
   const itemsPerPage = 10
 
   // Form state
@@ -125,20 +126,44 @@ export function BehaviourObservations() {
 
   const [actionItems, setActionItems] = useState<Partial<ActionItem>[]>([])
   const [attachments, setAttachments] = useState<File[]>([])
+  const [dbObservations, setDbObservations] = useState<Observation[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  // Fetch observations from DB — admins see all, regular users see only their own
+  useEffect(() => {
+    async function fetchObservations() {
+      setIsLoading(true)
+      try {
+        // Pass email for regular users so the DB filters server-side
+        const filterEmail = isAdmin ? undefined : (user?.email ?? undefined)
+        const result = await getObservations(filterEmail)
+        if (result.success) {
+          setDbObservations(result.data as Observation[])
+        }
+      } catch (err) {
+        console.error("[v0] Failed to load observations:", err)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchObservations()
+  }, [refreshKey, isAdmin, user?.email])
 
   // Stats
   const stats = useMemo(() => ({
-    total: observations.length,
-    safe: observations.filter((o) => o.observationType === "Safe").length,
-    unsafe: observations.filter((o) => o.observationType === "Unsafe").length,
-    atRisk: observations.filter((o) => o.observationType === "At Risk").length,
-    nearMiss: observations.filter((o) => o.nearMiss).length,
-    open: observations.filter((o) => o.status === "Open" || o.status === "In Progress").length,
-  }), [])
+    total: dbObservations.length,
+    safe: dbObservations.filter((o) => o.observationType === "Safe").length,
+    unsafe: dbObservations.filter((o) => o.observationType === "Unsafe").length,
+    atRisk: dbObservations.filter((o) => o.observationType === "At Risk").length,
+    nearMiss: dbObservations.filter((o) => o.nearMiss).length,
+    open: dbObservations.filter((o) => o.status === "Open" || o.status === "In Progress").length,
+  }), [dbObservations])
 
   // Filter observations
   const filteredObservations = useMemo(() => {
-    return observations.filter((obs) => {
+    return dbObservations.filter((obs) => {
       const matchesSearch =
         (obs.number?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
         obs.observer.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -214,39 +239,36 @@ export function BehaviourObservations() {
       return
     }
 
+    setIsSubmitting(true)
     try {
-      // Call server action to save observation
       const result = await createObservation({
-        userId: user?.id || 'unknown',
-        observationTypeId: formData.observationType,
-        businessUnitId: formData.businessUnit,
-        description: formData.description,
-        severity: formData.nearMiss === 'yes' ? 'High' : 'Medium',
-        location: formData.location,
+        ...formData,
+        userId: (user as any)?.id ?? '',
+        observerName: (user as any)?.name ?? (user as any)?.email ?? '',
       })
-
-      if (!result.success) {
+      if (result.success) {
+        toast({
+          title: "Observation Submitted",
+          description: "Your behaviour observation has been saved to the database.",
+        })
+        setIsNewObservationOpen(false)
+        resetForm()
+        setRefreshKey((k) => k + 1)
+      } else {
         toast({
           title: "Error",
-          description: result.error || "Failed to save observation",
+          description: result.error || "Failed to save observation.",
           variant: "destructive",
         })
-        return
       }
-
-      toast({
-        title: "Success",
-        description: "Your behaviour observation has been recorded and saved to database.",
-      })
-      setIsNewObservationOpen(false)
-      resetForm()
-    } catch (error) {
-      console.error("[v0] Error submitting observation:", error)
+    } catch (err: any) {
       toast({
         title: "Error",
-        description: "Failed to submit observation",
+        description: err.message || "An unexpected error occurred.",
         variant: "destructive",
       })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -385,7 +407,25 @@ export function BehaviourObservations() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedObservations.map((obs) => (
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i} className="border-border/50">
+                    {Array.from({ length: 9 }).map((__, j) => (
+                      <TableCell key={j}><div className="h-3 w-full max-w-[120px] bg-muted animate-pulse rounded" /></TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : paginatedObservations.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Eye className="h-8 w-8 opacity-40" />
+                      <p className="text-sm font-medium">No observations found</p>
+                      <p className="text-xs">Click &quot;New Observation&quot; to record one</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : paginatedObservations.map((obs) => (
                 <TableRow key={obs.id} className="border-border/50">
                   <TableCell className="font-medium">{obs.number || obs.id}</TableCell>
                   <TableCell>{new Date(obs.date).toLocaleDateString()}</TableCell>
@@ -428,12 +468,17 @@ export function BehaviourObservations() {
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={async () => {
+                            const result = await deleteObservation(obs.id)
+                            if (result.success) {
+                              setRefreshKey((k) => k + 1)
+                              toast({ title: "Observation deleted" })
+                            }
+                          }}
+                        >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>
@@ -449,9 +494,11 @@ export function BehaviourObservations() {
         {/* Pagination */}
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, filteredObservations.length)} of{" "}
-            {filteredObservations.length} observations
+            {isLoading
+              ? "Loading..."
+              : filteredObservations.length === 0
+              ? "No observations"
+              : `Showing ${(currentPage - 1) * itemsPerPage + 1} to ${Math.min(currentPage * itemsPerPage, filteredObservations.length)} of ${filteredObservations.length} observations`}
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -827,10 +874,12 @@ export function BehaviourObservations() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNewObservationOpen(false)}>
+            <Button variant="outline" onClick={() => setIsNewObservationOpen(false)} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit}>Submit Observation</Button>
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Submit Observation"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

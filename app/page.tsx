@@ -10,16 +10,18 @@ import { UsersManagementWithRefresh } from "@/components/dashboard/users-managem
 import { BusinessUnits } from "@/components/dashboard/business-units"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
 import { AdminSettings } from "@/components/dashboard/admin-settings"
+import { TrainingMatrix } from "@/components/dashboard/training-matrix"
 import { TrainingRecords } from "@/components/dashboard/training-records"
 import { Reports } from "@/components/dashboard/reports"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
-import { users } from "@/lib/users-data"
+import { isAdminRole } from "@/lib/auth-roles"
 
 export default function HSEDashboard() {
   const { currentUser, isLoading } = useAuth()
-  const isAdmin = currentUser?.email === "xom-it-admin@xomoman.com"
+  // Admins: IT admin email OR roles ADMIN SYSTEM / HSE ADMIN / MASTER USER / ADMIN
+  const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
   const [usersRefreshKey, setUsersRefreshKey] = useState(0)
 
   const handleUserAdded = () => {
@@ -65,6 +67,11 @@ export default function HSEDashboard() {
                 {/* Behaviour Observations */}
                 <section aria-label="Behaviour Observations">
                   <BehaviourObservations />
+                </section>
+
+                {/* Training Matrix */}
+                <section aria-label="Training Matrix">
+                  <TrainingMatrix />
                 </section>
 
                 {/* Inspection Reports */}
@@ -122,6 +129,11 @@ export default function HSEDashboard() {
                 <BehaviourObservations />
               </section>
 
+              {/* Training Matrix */}
+              <section aria-label="Training Matrix">
+                <TrainingMatrix />
+              </section>
+
               {/* Inspection Reports */}
               <section aria-label="Inspection Reports">
                 <InspectionReports />
@@ -130,11 +142,6 @@ export default function HSEDashboard() {
               {/* Inspection Types */}
               <section aria-label="Inspection Types">
                 <InspectionTypes />
-              </section>
-
-              {/* Team Members / Users */}
-              <section aria-label="Team Members">
-                <UsersManagementWithRefresh key={usersRefreshKey} />
               </section>
 
               {/* Business Units */}

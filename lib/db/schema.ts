@@ -1,9 +1,11 @@
-import { pgTable, text, varchar, timestamp, boolean, integer, decimal, jsonb, index, uuid } from 'drizzle-orm/pg-core'
+import { pgTable, pgSchema, text, varchar, timestamp, boolean, integer, decimal, jsonb, index, uuid, date } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
-// Better Auth Tables (in neon_auth schema)
-export const user = pgTable('user', {
-  id: uuid('id').primaryKey().defaultRandom(),
+// Point Better Auth tables at the neon_auth schema where they actually live
+const neonAuthSchema = pgSchema('neon_auth')
+
+export const user = neonAuthSchema.table('user', {
+  id: uuid('id').primaryKey(),
   name: text('name'),
   email: text('email').notNull().unique(),
   emailVerified: boolean('emailVerified').notNull().default(false),
@@ -14,26 +16,24 @@ export const user = pgTable('user', {
   banReason: text('banReason'),
   banExpires: timestamp('banExpires'),
   role: text('role').default('USER'),
-}, (table) => ({
-  emailIdx: index('user_email_idx').on(table.email),
-}))
+})
 
-export const session = pgTable('session', {
-  id: uuid('id').primaryKey().defaultRandom(),
+export const session = neonAuthSchema.table('session', {
+  id: uuid('id').primaryKey(),
   expiresAt: timestamp('expiresAt').notNull(),
   token: text('token').notNull().unique(),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
   ipAddress: text('ipAddress'),
   userAgent: text('userAgent'),
-  userId: uuid('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  userId: uuid('userId').notNull(),
 })
 
-export const account = pgTable('account', {
-  id: uuid('id').primaryKey().defaultRandom(),
+export const account = neonAuthSchema.table('account', {
+  id: uuid('id').primaryKey(),
   accountId: text('accountId').notNull(),
   providerId: text('providerId').notNull(),
-  userId: uuid('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  userId: uuid('userId').notNull(),
   accessToken: text('accessToken'),
   refreshToken: text('refreshToken'),
   idToken: text('idToken'),
@@ -45,18 +45,19 @@ export const account = pgTable('account', {
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
 })
 
-export const verification = pgTable('verification', {
-  id: text('id').primaryKey(),
+export const verification = neonAuthSchema.table('verification', {
+  id: uuid('id').primaryKey(),
   identifier: text('identifier').notNull(),
   value: text('value').notNull(),
   expiresAt: timestamp('expiresAt').notNull(),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
+  updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
 })
 
 // HSE System Users Table - stores app-specific user data
 export const hseUser = pgTable('hse_user', {
   id: text('id').primaryKey(),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  userId: uuid('userId').notNull(),
   payrollNo: varchar('payrollNo').unique(),
   designation: text('designation'),
   businessUnit: text('businessUnit'),
@@ -69,8 +70,8 @@ export const hseUser = pgTable('hse_user', {
 // Password reset tracking
 export const passwordReset = pgTable('password_reset', {
   id: text('id').primaryKey(),
-  userId: text('userId').notNull().references(() => user.id, { onDelete: 'cascade' }),
-  resetBy: text('resetBy').notNull().references(() => user.id),
+  userId: uuid('userId').notNull(),
+  resetBy: uuid('resetBy').notNull(),
   newPassword: text('newPassword').notNull(),
   resetAt: timestamp('resetAt').notNull().default(sql`now()`),
   ipAddress: text('ipAddress'),
@@ -155,21 +156,41 @@ export const master = pgTable('master', {
 // Observations Table
 export const observation = pgTable('observation', {
   id: text('id').primaryKey(),
-  userId: text('userId').notNull().references(() => user.id),
-  observationTypeId: text('observationTypeId').notNull().references(() => observationType.id),
-  businessUnitId: text('businessUnitId').notNull().references(() => businessUnit.id),
+  number: text('number'),
+  userId: uuid('userId').notNull(),
+  observer: text('observer'),
+  position: text('position'),
+  observationTypeId: text('observationTypeId'),
+  businessUnitId: text('businessUnitId'),
   description: text('description'),
   severity: varchar('severity'),
   location: text('location'),
+  category: text('category'),
+  nearMiss: boolean('nearMiss').default(false),
+  correctiveActions: text('correctiveActions'),
   status: varchar('status').default('Open'),
+  date: timestamp('date').default(sql`now()`),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
+})
+
+// Training Matrix Table
+export const training = pgTable('training', {
+  id: text('id').primaryKey(),
+  employeeName: text('employee_name').notNull(),
+  employeeCode: text('employee_code').notNull(),
+  courseName: text('course_name').notNull(),
+  status: text('status').notNull().default('Pending'),
+  result: text('result'),
+  completedDate: date('completed_date'),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
 })
 
 // Inspections Table
 export const inspection = pgTable('inspection', {
   id: text('id').primaryKey(),
-  userId: text('userId').notNull().references(() => user.id),
+  userId: uuid('userId').notNull(),
   inspectionTypeId: text('inspectionTypeId').notNull().references(() => inspectionType.id),
   businessUnitId: text('businessUnitId').notNull().references(() => businessUnit.id),
   date: timestamp('date'),

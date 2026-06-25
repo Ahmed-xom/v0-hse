@@ -165,7 +165,9 @@ export async function resetUserPassword(
         const recipient = process.env.RESEND_TEST_EMAIL || targetUserData.email
         console.log('[v0] Sending reset email via Resend to:', recipient, '(user:', targetUserData.email, ')')
         const resend = new Resend(process.env.RESEND_API_KEY)
-        const fromAddress = 'HSE System <onboarding@resend.dev>'
+        const fromAddress = process.env.RESEND_FROM_EMAIL
+          ? `HSE System <${process.env.RESEND_FROM_EMAIL}>`
+          : 'HSE System <onboarding@resend.dev>'
         const { data, error } = await resend.emails.send({
           from: fromAddress,
           to: recipient,

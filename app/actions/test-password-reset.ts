@@ -36,11 +36,10 @@ export async function testPasswordReset(email: string) {
     const newPassword = crypto.randomBytes(12).toString('hex')
     console.log('[v0] Generated password')
 
-    // Update password - use only the columns we're actually updating
+    // Password lives in neon_auth.account, not neon_auth.user — update updatedAt only
     await db
       .update(user)
       .set({
-        password: newPassword,
         updatedAt: new Date(),
       })
       .where(eq(user.id, targetUser.id))

@@ -64,8 +64,8 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword } from "@/app/actions/reset-password"
-import { getRealUsers } from "@/app/actions/get-users"
-import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel } from "@/app/actions/manage-users"
+import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers } from "@/app/actions/manage-users"
+import { isAdminRole } from "@/lib/auth-roles"
 
 const roleColors: Record<string, string> = {
   "ADMIN SYSTEM": "bg-red-500/20 text-red-400 border-red-500/30",
@@ -96,10 +96,6 @@ const statusConfig: Record<User["status"], { label: string; className: string; i
 const ITEMS_PER_PAGE = 15
 
 export function UsersManagement() {
-  const { toast } = useToast()
-  const { user: currentUser } = useAuth()
-  const [users, setUsers] = useState<User[]>([])
-  const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -111,36 +107,33 @@ export function UsersManagement() {
   const [isResetLoading, setIsResetLoading] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState("")
   const [copiedPassword, setCopiedPassword] = useState(false)
-  const [customPassword, setCustomPassword] = useState("")
-  const [useCustomPassword, setUseCustomPassword] = useState(false)
-  const [resetDone, setResetDone] = useState(false)
-  const [resetEmailSent, setResetEmailSent] = useState(false)
 
-  // Load real users from database on component mount
-  useEffect(() => {
-    const loadUsers = async () => {
-      try {
-        const result = await getRealUsers()
-        if (result.success) {
-          setUsers(result.users)
-          console.log('[v0] Loaded', result.users.length, 'users from database')
-        } else {
-          console.error('[v0] Failed to load users:', result.error)
-          toast({
-            title: "Error",
-            description: "Failed to load users from database",
-            variant: "destructive",
-          })
-        }
-      } catch (error) {
-        console.error('[v0] Error loading users:', error)
-      } finally {
-        setIsLoadingUsers(false)
+  // Clipboard API is blocked in iframes — fall back to execCommand
+  const copyToClipboard = (text: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).catch(() => execCopy(text))
+      } else {
+        execCopy(text)
       }
+    } catch {
+      execCopy(text)
     }
+  }
+  const execCopy = (text: string) => {
+    const el = document.createElement('textarea')
+    el.value = text
+    el.style.position = 'fixed'
+    el.style.opacity = '0'
+    document.body.appendChild(el)
+    el.focus()
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
+  }
 
-    loadUsers()
-  }, [])
+  const [customPassword, setCustomPassword] = useState("")
+  const [showCustomPassword, setShowCustomPassword] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -150,21 +143,34 @@ export function UsersManagement() {
     role: "",
     status: "Active" as "Active" | "Inactive",
   })
-  
-  // Combine real users with newly added users from localStorage
-  const localUsers = useMemo(() => {
-    try {
-      const storedUsers = localStorage.getItem("added_users")
-      const addedUsers = storedUsers ? JSON.parse(storedUsers) : []
-      return [...users, ...addedUsers]
-    } catch {
-      return users
+  const [dbUsers, setDbUsers] = useState<User[]>([])
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true)
+  const { toast } = useToast()
+  const { user: currentUser } = useAuth()
+
+  // Fetch real users from the database
+  useEffect(() => {
+    async function fetchUsers() {
+      setIsLoadingUsers(true)
+      try {
+        const result = await getUsers()
+        if (result.success && result.data) {
+          setDbUsers(result.data as User[])
+        } else {
+          console.error("[v0] Failed to load users:", result.error)
+        }
+      } catch (err) {
+        console.error("[v0] Error loading users:", err)
+      } finally {
+        setIsLoadingUsers(false)
+      }
     }
+    fetchUsers()
   }, [refreshKey])
 
-  // Check if current user is admin
-  // Only xom-it-admin@xomoman.com can reset passwords
-  const isAdmin = currentUser?.email === "xom-it-admin@xomoman.com"
+  const localUsers = dbUsers
+
+  const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
 
   const filteredUsers = useMemo(() => {
     return localUsers.filter((user) => {
@@ -180,15 +186,7 @@ export function UsersManagement() {
     })
   }, [searchQuery, roleFilter, statusFilter, businessUnitFilter, refreshKey, localUsers])
 
-  // Listen for localStorage changes to refresh user list
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setRefreshKey((prev) => prev + 1)
-    }
-    
-    window.addEventListener("storage", handleStorageChange)
-    return () => window.removeEventListener("storage", handleStorageChange)
-  }, [])
+
 
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)
   const paginatedUsers = useMemo(() => {
@@ -207,8 +205,8 @@ export function UsersManagement() {
     active: localUsers.filter((u) => u.status === "Active").length,
     inactive: localUsers.filter((u) => u.status === "Inactive").length,
     management: localUsers.filter((u) => u.role === "MANAGEMENT" || u.role === "SITE MANAGER" || u.role === "SITE MANAGER - Global").length,
-    hse: users.filter((u) => u.role === "HSE" || u.role === "HSE ADMIN").length,
-  }), [])
+    hse: localUsers.filter((u) => u.role === "HSE" || u.role === "HSE ADMIN").length,
+  }), [localUsers])
 
   const handleResetPassword = (user: User) => {
     setResetPasswordUser(user)
@@ -216,21 +214,16 @@ export function UsersManagement() {
     setCopiedPassword(false)
     setGeneratedPassword("")
     setCustomPassword("")
-    setUseCustomPassword(false)
-    setResetDone(false)
-    setResetEmailSent(false)
+    setShowCustomPassword(false)
     setIsResetLoading(false)
   }
 
   const confirmResetPassword = async () => {
     if (!resetPasswordUser) return
 
-    if (useCustomPassword && customPassword.length < 8) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 8 characters.",
-        variant: "destructive",
-      })
+    // Validate custom password if provided
+    if (customPassword && customPassword.length < 8) {
+      toast({ title: "Invalid password", description: "Password must be at least 8 characters.", variant: "destructive" })
       return
     }
 
@@ -239,7 +232,7 @@ export function UsersManagement() {
       const result = await resetUserPassword(
         resetPasswordUser.email,
         currentUser?.email,
-        useCustomPassword ? customPassword : undefined
+        customPassword || undefined,
       )
 
       if (!result.success) {
@@ -251,15 +244,15 @@ export function UsersManagement() {
         return
       }
 
+      // Show the new password in the dialog
       setGeneratedPassword(result.temporaryPassword || "")
-      setResetDone(true)
-      setResetEmailSent(result.emailSent || false)
+      setCopiedPassword(false)
 
       toast({
-        title: "Password Reset",
+        title: result.emailSent ? "Password reset — email sent" : "Password reset",
         description: result.emailSent
-          ? `New password sent to ${result.userEmail}`
-          : `Password updated. Copy it from the dialog — no email was sent.`,
+          ? `New password emailed to ${result.userEmail}`
+          : `Password updated in database. Email: ${result.emailError || "not sent"}`,
         variant: result.emailSent ? "default" : "destructive",
       })
     } catch (error) {
@@ -272,16 +265,6 @@ export function UsersManagement() {
     } finally {
       setIsResetLoading(false)
     }
-  }
-
-  const copyPassword = () => {
-    navigator.clipboard.writeText(generatedPassword)
-    setCopiedPassword(true)
-    setTimeout(() => setCopiedPassword(false), 2000)
-    toast({
-      title: "Password Copied",
-      description: "Password copied to clipboard.",
-    })
   }
 
   const handleEditUser = (user: User) => {
@@ -415,7 +398,7 @@ export function UsersManagement() {
               <Users className="h-5 w-5 text-primary" />
               Team Members
             </CardTitle>
-            <CardDescription>Manage {users.length} HSE personnel across all business units</CardDescription>
+            <CardDescription>Manage {isLoadingUsers ? '...' : localUsers.length} HSE personnel across all business units</CardDescription>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="gap-2" onClick={handleExportToExcel}>
@@ -590,8 +573,38 @@ export function UsersManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedUsers.map((user) => {
-                const StatusIcon = statusConfig[user.status].icon
+              {isLoadingUsers ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <TableRow key={i} className="border-border/50">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+                        <div className="flex flex-col gap-1.5">
+                          <div className="h-3.5 w-32 bg-muted animate-pulse rounded" />
+                          <div className="h-3 w-44 bg-muted animate-pulse rounded" />
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell"><div className="h-3 w-24 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><div className="h-5 w-20 bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell className="hidden lg:table-cell"><div className="h-3 w-28 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell className="hidden xl:table-cell"><div className="h-3 w-40 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><div className="h-5 w-16 bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell><div className="h-8 w-8 bg-muted animate-pulse rounded" /></TableCell>
+                  </TableRow>
+                ))
+              ) : paginatedUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Users className="h-8 w-8 opacity-40" />
+                      <p className="text-sm font-medium">No users found</p>
+                      <p className="text-xs">Try adjusting your search or filters</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : paginatedUsers.map((user) => {
+                const StatusIcon = statusConfig[user.status]?.icon ?? UserCheck
                 return (
                   <TableRow key={user.id} className="border-border/50">
                     <TableCell>
@@ -688,8 +701,12 @@ export function UsersManagement() {
         {/* Pagination */}
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
-            {filteredUsers.length !== users.length && ` (filtered from ${users.length})`}
+            {isLoadingUsers
+              ? "Loading users..."
+              : filteredUsers.length === 0
+              ? "No users found"
+              : `Showing ${((currentPage - 1) * ITEMS_PER_PAGE) + 1} to ${Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of ${filteredUsers.length} users${filteredUsers.length !== localUsers.length ? ` (filtered from ${localUsers.length})` : ""}`
+            }
           </p>
           <div className="flex items-center gap-2">
             <Button 
@@ -740,10 +757,7 @@ export function UsersManagement() {
       </CardContent>
 
       {/* Reset Password Dialog */}
-      <Dialog open={isResetPasswordOpen} onOpenChange={(open) => {
-        setIsResetPasswordOpen(open)
-        if (!open) { setResetDone(false); setGeneratedPassword("") }
-      }}>
+      <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -751,109 +765,101 @@ export function UsersManagement() {
               Reset User Password
             </DialogTitle>
             <DialogDescription>
-              Set a new password for this user. It will be saved to the database and emailed to them.
+              Generate or set a new password for this user. The password will be saved to the database and sent to their email.
             </DialogDescription>
           </DialogHeader>
-
           {resetPasswordUser && (
             <div className="space-y-4 py-4">
-              {/* User card */}
-              <div className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-primary/20 text-primary text-sm">
-                    {resetPasswordUser.name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium text-sm">{resetPasswordUser.name}</p>
-                  <p className="text-xs text-muted-foreground">{resetPasswordUser.email}</p>
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-primary/20 text-primary">
+                      {resetPasswordUser.name
+                        .split(" ")
+                        .slice(0, 2)
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{resetPasswordUser.name}</p>
+                    <p className="text-sm text-muted-foreground">{resetPasswordUser.email}</p>
+                    <Badge variant="outline" className={`mt-1 text-xs ${roleColors[resetPasswordUser.role] || roleColors["USER"]}`}>
+                      {resetPasswordUser.role}
+                    </Badge>
+                  </div>
                 </div>
               </div>
 
-              {!resetDone ? (
+              {/* Custom password input — shown before reset */}
+              {!generatedPassword && (
                 <div className="space-y-3">
-                  {/* Toggle: auto-generate vs custom */}
-                  <div className="flex gap-2">
-                    <Button
+                  <div className="flex items-center justify-between">
+                    <Label>Password</Label>
+                    <button
                       type="button"
-                      size="sm"
-                      variant={!useCustomPassword ? "default" : "outline"}
-                      className="flex-1"
-                      onClick={() => setUseCustomPassword(false)}
+                      className="text-xs text-primary underline"
+                      onClick={() => { setShowCustomPassword((v) => !v); setCustomPassword("") }}
                     >
-                      Auto-generate
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant={useCustomPassword ? "default" : "outline"}
-                      className="flex-1"
-                      onClick={() => setUseCustomPassword(true)}
-                    >
-                      Set custom
-                    </Button>
+                      {showCustomPassword ? "Auto-generate instead" : "Set custom password"}
+                    </button>
                   </div>
-
-                  {useCustomPassword ? (
-                    <div className="space-y-1">
-                      <Label htmlFor="custom-password">New Password</Label>
-                      <Input
-                        id="custom-password"
-                        type="text"
-                        placeholder="Min. 8 characters"
-                        value={customPassword}
-                        onChange={(e) => setCustomPassword(e.target.value)}
-                        className="font-mono"
-                      />
-                      {customPassword.length > 0 && customPassword.length < 8 && (
-                        <p className="text-xs text-destructive">Must be at least 8 characters</p>
-                      )}
-                    </div>
+                  {showCustomPassword ? (
+                    <Input
+                      type="text"
+                      placeholder="Enter new password (min. 8 chars)"
+                      value={customPassword}
+                      onChange={(e) => setCustomPassword(e.target.value)}
+                      className="font-mono"
+                    />
                   ) : (
-                    <p className="text-sm text-muted-foreground">
-                      A secure random password will be generated and stored in the database. The password will be displayed here and emailed to <span className="font-medium text-foreground">{resetPasswordUser.email}</span>.
+                    <p className="rounded-md border border-border/50 bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                      A secure random password will be generated automatically.
                     </p>
                   )}
+                  <p className="text-xs text-muted-foreground">
+                    The new password will be saved to the database and emailed to <strong>{resetPasswordUser.email}</strong>.
+                  </p>
                 </div>
-              ) : (
-                /* Result after reset */
-                <div className="space-y-3">
-                  <div className={`rounded-lg border p-3 ${resetEmailSent ? "border-emerald-500/40 bg-emerald-500/10" : "border-amber-500/40 bg-amber-500/10"}`}>
-                    <p className={`text-xs font-medium mb-1 ${resetEmailSent ? "text-emerald-400" : "text-amber-400"}`}>
-                      {resetEmailSent ? "Password reset and email sent" : "Password reset — email not sent (copy it below)"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {resetEmailSent
-                        ? `An email with the new password was sent to ${resetPasswordUser.email}.`
-                        : "Email service is not configured. Give the password below directly to the user."}
-                    </p>
-                  </div>
+              )}
 
-                  <div className="space-y-1">
-                    <Label>New Password</Label>
-                    <div className="flex gap-2">
-                      <Input value={generatedPassword} readOnly className="font-mono text-base tracking-widest" />
-                      <Button variant="outline" size="icon" onClick={copyPassword} title="Copy password">
-                        {copiedPassword ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">Copy this now — it will not be shown again.</p>
+              {/* Result — shown after reset */}
+              {generatedPassword && (
+                <div className="space-y-2">
+                  <Label>New Password (copy before closing)</Label>
+                  <div className="flex items-center gap-2">
+                    <Input value={generatedPassword} readOnly className="font-mono" />
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        copyToClipboard(generatedPassword)
+                        setCopiedPassword(true)
+                        setTimeout(() => setCopiedPassword(false), 2000)
+                      }}
+                    >
+                      {copiedPassword ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                    </Button>
                   </div>
+                  <p className="text-xs text-emerald-500">
+                    Password updated in database and emailed to the user.
+                  </p>
                 </div>
               )}
             </div>
           )}
-
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsResetPasswordOpen(false)} disabled={isResetLoading}>
-              {resetDone ? "Close" : "Cancel"}
+            <Button
+              variant="outline"
+              onClick={() => { setIsResetPasswordOpen(false); setGeneratedPassword(""); setCustomPassword(""); setShowCustomPassword(false) }}
+              disabled={isResetLoading}
+            >
+              {generatedPassword ? "Close" : "Cancel"}
             </Button>
-            {!resetDone && (
-              <Button
-                onClick={confirmResetPassword}
-                disabled={isResetLoading || (useCustomPassword && customPassword.length < 8)}
-              >
-                {isResetLoading ? "Resetting..." : "Reset Password"}
+            {!generatedPassword && (
+              <Button onClick={confirmResetPassword} disabled={isResetLoading}>
+                {isResetLoading ? "Resetting..." : showCustomPassword ? "Set Password & Send Email" : "Generate & Send Email"}
               </Button>
             )}
           </DialogFooter>

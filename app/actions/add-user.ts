@@ -67,7 +67,7 @@ export async function addNewUser(userData: {
             RETURNING id, name, email`
       )
       
-      newUser = newUserResult.rows?.[0] || newUserResult[0]
+      newUser = (newUserResult.rows as any[])?.[0] || (newUserResult as any)[0]
       console.log('[v0] User created successfully:', newUser)
 
       // Create account record with hashed password so the user can sign in
@@ -135,8 +135,11 @@ export async function addNewUser(userData: {
 
         console.log('[v0] Sending welcome email via Resend to:', cleanEmail)
         const resend = new Resend(process.env.RESEND_API_KEY)
+        const fromAddress = process.env.RESEND_FROM_EMAIL
+          ? `HSE System <${process.env.RESEND_FROM_EMAIL}>`
+          : 'HSE System <onboarding@resend.dev>'
         const { data, error } = await resend.emails.send({
-          from: 'HSE System <onboarding@resend.dev>',
+          from: fromAddress,
           to: cleanEmail,
           subject: 'Welcome to HSE System - Account Created',
           html: htmlContent,
@@ -159,7 +162,7 @@ export async function addNewUser(userData: {
     return {
       success: true,
       message: 'User created successfully',
-      user: newUser[0],
+      user: newUser as { id: string; name: string; email: string },
       temporaryPassword,
       emailSent,
       emailError: emailError || (emailSent ? 'Email sent successfully' : 'Email not sent'),
