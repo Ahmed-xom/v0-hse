@@ -310,7 +310,7 @@ export function BehaviourObservations({ viewAll = false }: BehaviourObservations
       Type: obs.observationType,
       Category: obs.category,
       Status: obs.status,
-      Priority: obs.priority,
+      Priority: (obs as any).priority ?? "",
       "Near Miss": obs.nearMiss ? "Yes" : "No",
       Description: obs.description,
       "Corrective Actions": obs.correctiveActions ?? "",
