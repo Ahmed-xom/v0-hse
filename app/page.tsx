@@ -16,12 +16,12 @@ import { Reports } from "@/components/dashboard/reports"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
-import { isAdminRole } from "@/lib/auth-roles"
+import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
 
 export default function HSEDashboard() {
   const { currentUser, isLoading } = useAuth()
-  // Admins: IT admin email OR roles ADMIN SYSTEM / HSE ADMIN / MASTER USER / ADMIN
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
+  const isReviewer = !isAdmin && isReviewerRole(currentUser?.role ?? '')
   const [usersRefreshKey, setUsersRefreshKey] = useState(0)
 
   const handleUserAdded = () => {
@@ -112,7 +112,53 @@ export default function HSEDashboard() {
                 <AdminSettings onUserAdded={handleUserAdded} />
               </TabsContent>
             </Tabs>
+          ) : isReviewer ? (
+            /* ── Reviewer / Approver view ── */
+            <Tabs defaultValue="observations" className="w-full">
+              <TabsList className="grid w-full max-w-sm grid-cols-3">
+                <TabsTrigger value="observations">Observations</TabsTrigger>
+                <TabsTrigger value="inspections">Inspections</TabsTrigger>
+                <TabsTrigger value="reports">Reports</TabsTrigger>
+              </TabsList>
+
+              {/* All observations — read-only + export Excel */}
+              <TabsContent value="observations" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">All Observations</h2>
+                  <p className="text-sm text-muted-foreground">
+                    View and export observations submitted by all employees.
+                  </p>
+                </div>
+                <section aria-label="All Observations">
+                  <BehaviourObservations viewAll />
+                </section>
+              </TabsContent>
+
+              <TabsContent value="inspections" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Inspections</h2>
+                  <p className="text-sm text-muted-foreground">View inspection reports and types.</p>
+                </div>
+                <section aria-label="Inspection Reports">
+                  <InspectionReports />
+                </section>
+                <section aria-label="Inspection Types">
+                  <InspectionTypes />
+                </section>
+              </TabsContent>
+
+              <TabsContent value="reports" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Reports</h2>
+                  <p className="text-sm text-muted-foreground">HSE performance summaries and exports.</p>
+                </div>
+                <section aria-label="Reports">
+                  <Reports />
+                </section>
+              </TabsContent>
+            </Tabs>
           ) : (
+            /* ── Regular user view ── */
             <Tabs defaultValue="observations" className="w-full">
               <TabsList className="grid w-full max-w-sm grid-cols-3">
                 <TabsTrigger value="observations">Observations</TabsTrigger>

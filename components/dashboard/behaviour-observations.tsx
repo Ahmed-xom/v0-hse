@@ -21,7 +21,9 @@ import {
   User,
   MapPin,
   Building2,
+  Download,
 } from "lucide-react"
+import * as XLSX from "xlsx"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -97,7 +99,12 @@ const priorityColors: Record<Priority, string> = {
   "Low": "bg-blue-500/20 text-blue-400 border-blue-500/30",
 }
 
-export function BehaviourObservations() {
+interface BehaviourObservationsProps {
+  /** If true, shows all observations regardless of the logged-in user (for Reviewer/Approver roles) */
+  viewAll?: boolean
+}
+
+export function BehaviourObservations({ viewAll = false }: BehaviourObservationsProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -131,13 +138,14 @@ export function BehaviourObservations() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
-  // Fetch observations from DB — admins see all, regular users see only their own
+  // Fetch observations from DB:
+  // - Admins or viewAll=true → all records (no filter)
+  // - Regular users → only their own (filter by email)
   useEffect(() => {
     async function fetchObservations() {
       setIsLoading(true)
       try {
-        // Pass email for regular users so the DB filters server-side
-        const filterEmail = isAdmin ? undefined : (user?.email ?? undefined)
+        const filterEmail = (isAdmin || viewAll) ? undefined : (user?.email ?? undefined)
         const result = await getObservations(filterEmail)
         if (result.success) {
           setDbObservations(result.data as Observation[])
@@ -149,7 +157,7 @@ export function BehaviourObservations() {
       }
     }
     fetchObservations()
-  }, [refreshKey, isAdmin, user?.email])
+  }, [refreshKey, isAdmin, viewAll, user?.email])
 
   // Stats
   const stats = useMemo(() => ({
@@ -293,6 +301,26 @@ export function BehaviourObservations() {
     setIsViewObservationOpen(true)
   }
 
+  const exportToExcel = () => {
+    const rows = filteredObservations.map((obs) => ({
+      ID: obs.number ?? obs.id,
+      Date: obs.date,
+      Observer: obs.observer,
+      "Business Unit": obs.businessUnit,
+      Type: obs.observationType,
+      Category: obs.category,
+      Status: obs.status,
+      Priority: obs.priority,
+      "Near Miss": obs.nearMiss ? "Yes" : "No",
+      Description: obs.description,
+      "Corrective Actions": obs.correctiveActions ?? "",
+    }))
+    const ws = XLSX.utils.json_to_sheet(rows)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, "Observations")
+    XLSX.writeFile(wb, `observations-${new Date().toISOString().split("T")[0]}.xlsx`)
+  }
+
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur">
       <CardHeader>
@@ -303,13 +331,25 @@ export function BehaviourObservations() {
               Behaviour Observations
             </CardTitle>
             <CardDescription>
-              Record and track safety observations across all business units
+              {viewAll
+                ? "View and export all employees' safety observations"
+                : "Record and track safety observations across all business units"}
             </CardDescription>
           </div>
-          <Button onClick={() => setIsNewObservationOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Observation
-          </Button>
+          <div className="flex items-center gap-2">
+            {(isAdmin || viewAll) && (
+              <Button variant="outline" onClick={exportToExcel}>
+                <Download className="mr-2 h-4 w-4" />
+                Export Excel
+              </Button>
+            )}
+            {!viewAll && (
+              <Button onClick={() => setIsNewObservationOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                New Observation
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
