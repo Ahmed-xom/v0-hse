@@ -10,6 +10,7 @@ import { UsersManagementWithRefresh } from "@/components/dashboard/users-managem
 import { BusinessUnits } from "@/components/dashboard/business-units"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
 import { AdminSettings } from "@/components/dashboard/admin-settings"
+import { TrainingMatrix } from "@/components/dashboard/training-matrix"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
@@ -65,6 +66,11 @@ export default function HSEDashboard() {
                   <BehaviourObservations />
                 </section>
 
+                {/* Training Matrix */}
+                <section aria-label="Training Matrix">
+                  <TrainingMatrix />
+                </section>
+
                 {/* Inspection Reports */}
                 <section aria-label="Inspection Reports">
                   <InspectionReports />
@@ -105,6 +111,11 @@ export default function HSEDashboard() {
               {/* Behaviour Observations */}
               <section aria-label="Behaviour Observations">
                 <BehaviourObservations />
+              </section>
+
+              {/* Training Matrix */}
+              <section aria-label="Training Matrix">
+                <TrainingMatrix />
               </section>
 
               {/* Inspection Reports */}

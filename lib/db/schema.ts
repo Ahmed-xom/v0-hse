@@ -1,4 +1,4 @@
-import { pgTable, pgSchema, text, varchar, timestamp, boolean, integer, decimal, jsonb, index, uuid } from 'drizzle-orm/pg-core'
+import { pgTable, pgSchema, text, varchar, timestamp, boolean, integer, decimal, jsonb, index, uuid, date } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
 // Point Better Auth tables at the neon_auth schema where they actually live
@@ -172,6 +172,19 @@ export const observation = pgTable('observation', {
   date: timestamp('date').default(sql`now()`),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
+})
+
+// Training Matrix Table
+export const training = pgTable('training', {
+  id: text('id').primaryKey(),
+  employeeName: text('employee_name').notNull(),
+  employeeCode: text('employee_code').notNull(),
+  courseName: text('course_name').notNull(),
+  status: text('status').notNull().default('Pending'),
+  result: text('result'),
+  completedDate: date('completed_date'),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
 })
 
 // Inspections Table
