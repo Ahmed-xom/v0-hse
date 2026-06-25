@@ -66,9 +66,7 @@ import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword } from "@/app/actions/reset-password"
 import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers, updateUserApprover } from "@/app/actions/manage-users"
 import { isAdminRole } from "@/lib/auth-roles"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { ChevronsUpDown } from "lucide-react"
+
 
 const roleColors: Record<string, string> = {
   "ADMIN SYSTEM": "bg-red-500/20 text-red-400 border-red-500/30",
@@ -148,8 +146,7 @@ export function UsersManagement() {
     approver: "",
     approverEmail: "",
   })
-  const [approverOpen, setApproverOpen] = useState(false)
-  const [addApproverOpen, setAddApproverOpen] = useState(false)
+
   const [addApprover, setAddApprover] = useState({ name: "", email: "" })
   const [dbUsers, setDbUsers] = useState<User[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
@@ -486,58 +483,34 @@ export function UsersManagement() {
                   </div>
                   <div className="grid gap-2">
                     <Label>Approver</Label>
-                    <Popover open={addApproverOpen} onOpenChange={setAddApproverOpen}>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          aria-expanded={addApproverOpen}
-                          className="w-full justify-between font-normal"
-                        >
-                          {addApprover.name
-                            ? <span className="truncate">{addApprover.name} <span className="text-muted-foreground">— {addApprover.email}</span></span>
-                            : "Select approver..."}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[420px] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search by name or email..." />
-                          <CommandList>
-                            <CommandEmpty>No user found.</CommandEmpty>
-                            <CommandGroup>
-                              <CommandItem
-                                value="__none__"
-                                onSelect={() => {
-                                  setAddApprover({ name: "", email: "" })
-                                  setAddApproverOpen(false)
-                                }}
-                              >
-                                <span className="text-muted-foreground">None</span>
-                              </CommandItem>
-                              {dbUsers.map((u) => (
-                                <CommandItem
-                                  key={u.id}
-                                  value={`${u.name} ${u.email}`}
-                                  onSelect={() => {
-                                    setAddApprover({ name: u.name, email: u.email })
-                                    setAddApproverOpen(false)
-                                  }}
-                                >
-                                  <div className="flex flex-col min-w-0">
-                                    <span className="truncate font-medium">{u.name}</span>
-                                    <span className="text-xs text-muted-foreground truncate">{u.email}</span>
-                                  </div>
-                                  {addApprover.name === u.name && (
-                                    <Check className="ml-auto h-4 w-4 shrink-0 text-primary" />
-                                  )}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                    <Select
+                      value={addApprover.name ? `${addApprover.name}||${addApprover.email}` : "__none__"}
+                      onValueChange={(val) => {
+                        if (val === "__none__") {
+                          setAddApprover({ name: "", email: "" })
+                        } else {
+                          const [name, email] = val.split("||")
+                          setAddApprover({ name, email })
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select approver..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">
+                          <span className="text-muted-foreground">None</span>
+                        </SelectItem>
+                        {dbUsers.map((u) => (
+                          <SelectItem key={u.id} value={`${u.name}||${u.email}`}>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{u.name}</span>
+                              <span className="text-xs text-muted-foreground">{u.email}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <DialogFooter>
@@ -1013,58 +986,34 @@ export function UsersManagement() {
 
                 <div className="grid gap-2">
                   <Label>Approver</Label>
-                  <Popover open={approverOpen} onOpenChange={setApproverOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={approverOpen}
-                        className="w-full justify-between font-normal"
-                      >
-                        {editFormData.approver
-                          ? <span className="truncate">{editFormData.approver} <span className="text-muted-foreground">— {editFormData.approverEmail}</span></span>
-                          : "Select approver..."}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[420px] p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder="Search by name or email..." />
-                        <CommandList>
-                          <CommandEmpty>No user found.</CommandEmpty>
-                          <CommandGroup>
-                            <CommandItem
-                              value="__none__"
-                              onSelect={() => {
-                                setEditFormData({ ...editFormData, approver: "", approverEmail: "" })
-                                setApproverOpen(false)
-                              }}
-                            >
-                              <span className="text-muted-foreground">None</span>
-                            </CommandItem>
-                            {dbUsers.map((u) => (
-                              <CommandItem
-                                key={u.id}
-                                value={`${u.name} ${u.email}`}
-                                onSelect={() => {
-                                  setEditFormData({ ...editFormData, approver: u.name, approverEmail: u.email })
-                                  setApproverOpen(false)
-                                }}
-                              >
-                                <div className="flex flex-col min-w-0">
-                                  <span className="truncate font-medium">{u.name}</span>
-                                  <span className="text-xs text-muted-foreground truncate">{u.email}</span>
-                                </div>
-                                {editFormData.approver === u.name && (
-                                  <Check className="ml-auto h-4 w-4 shrink-0 text-primary" />
-                                )}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                  <Select
+                    value={editFormData.approver ? `${editFormData.approver}||${editFormData.approverEmail}` : "__none__"}
+                    onValueChange={(val) => {
+                      if (val === "__none__") {
+                        setEditFormData({ ...editFormData, approver: "", approverEmail: "" })
+                      } else {
+                        const [name, email] = val.split("||")
+                        setEditFormData({ ...editFormData, approver: name, approverEmail: email })
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select approver..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">
+                        <span className="text-muted-foreground">None</span>
+                      </SelectItem>
+                      {dbUsers.map((u) => (
+                        <SelectItem key={u.id} value={`${u.name}||${u.email}`}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{u.name}</span>
+                            <span className="text-xs text-muted-foreground">{u.email}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
