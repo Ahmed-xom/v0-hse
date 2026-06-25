@@ -146,10 +146,11 @@ export function UsersManagement() {
     role: "",
     status: "Active" as "Active" | "Inactive",
     approver: "",
+    approverEmail: "",
   })
   const [approverOpen, setApproverOpen] = useState(false)
   const [addApproverOpen, setAddApproverOpen] = useState(false)
-  const [addApprover, setAddApprover] = useState("")
+  const [addApprover, setAddApprover] = useState({ name: "", email: "" })
   const [dbUsers, setDbUsers] = useState<User[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const { toast } = useToast()
@@ -281,6 +282,7 @@ export function UsersManagement() {
       role: user.role,
       status: user.status,
       approver: user.approver ?? "",
+      approverEmail: user.approverEmail ?? "",
     })
     setIsEditDialogOpen(true)
   }
@@ -319,8 +321,11 @@ export function UsersManagement() {
       }
 
       // Update approver if changed
-      if (editFormData.approver !== (editingUser.approver ?? "")) {
-        await updateUserApprover(editingUser.id, editFormData.approver)
+      if (
+        editFormData.approver !== (editingUser.approver ?? "") ||
+        editFormData.approverEmail !== (editingUser.approverEmail ?? "")
+      ) {
+        await updateUserApprover(editingUser.id, editFormData.approver, editFormData.approverEmail)
       }
 
       toast({
@@ -489,20 +494,22 @@ export function UsersManagement() {
                           aria-expanded={addApproverOpen}
                           className="w-full justify-between font-normal"
                         >
-                          {addApprover || "Select approver..."}
+                          {addApprover.name
+                            ? <span className="truncate">{addApprover.name} <span className="text-muted-foreground">— {addApprover.email}</span></span>
+                            : "Select approver..."}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-full p-0" align="start">
+                      <PopoverContent className="w-[420px] p-0" align="start">
                         <Command>
-                          <CommandInput placeholder="Search by name..." />
+                          <CommandInput placeholder="Search by name or email..." />
                           <CommandList>
                             <CommandEmpty>No user found.</CommandEmpty>
                             <CommandGroup>
                               <CommandItem
                                 value="__none__"
                                 onSelect={() => {
-                                  setAddApprover("")
+                                  setAddApprover({ name: "", email: "" })
                                   setAddApproverOpen(false)
                                 }}
                               >
@@ -511,18 +518,18 @@ export function UsersManagement() {
                               {dbUsers.map((u) => (
                                 <CommandItem
                                   key={u.id}
-                                  value={u.name}
-                                  onSelect={(val) => {
-                                    setAddApprover(val)
+                                  value={`${u.name} ${u.email}`}
+                                  onSelect={() => {
+                                    setAddApprover({ name: u.name, email: u.email })
                                     setAddApproverOpen(false)
                                   }}
                                 >
-                                  <div className="flex flex-col">
-                                    <span>{u.name}</span>
-                                    <span className="text-xs text-muted-foreground">{u.role}</span>
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="truncate font-medium">{u.name}</span>
+                                    <span className="text-xs text-muted-foreground truncate">{u.email}</span>
                                   </div>
-                                  {addApprover === u.name && (
-                                    <Check className="ml-auto h-4 w-4 text-primary" />
+                                  {addApprover.name === u.name && (
+                                    <Check className="ml-auto h-4 w-4 shrink-0 text-primary" />
                                   )}
                                 </CommandItem>
                               ))}
@@ -534,10 +541,10 @@ export function UsersManagement() {
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => { setIsAddUserOpen(false); setAddApprover("") }}>
+                  <Button variant="outline" onClick={() => { setIsAddUserOpen(false); setAddApprover({ name: "", email: "" }) }}>
                     Cancel
                   </Button>
-                  <Button onClick={() => { setIsAddUserOpen(false); setAddApprover("") }}>Add User</Button>
+                  <Button onClick={() => { setIsAddUserOpen(false); setAddApprover({ name: "", email: "" }) }}>Add User</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -711,7 +718,10 @@ export function UsersManagement() {
                     </TableCell>
                     <TableCell className="hidden xl:table-cell">
                       {user.approver ? (
-                        <span className="text-sm text-muted-foreground truncate max-w-[160px] block">{user.approver}</span>
+                        <div className="flex flex-col max-w-[180px]">
+                          <span className="text-sm truncate">{user.approver}</span>
+                          <span className="text-xs text-muted-foreground truncate">{user.approverEmail}</span>
+                        </div>
                       ) : (
                         <span className="text-xs text-muted-foreground/50 italic">—</span>
                       )}
@@ -1011,20 +1021,22 @@ export function UsersManagement() {
                         aria-expanded={approverOpen}
                         className="w-full justify-between font-normal"
                       >
-                        {editFormData.approver || "Select approver..."}
+                        {editFormData.approver
+                          ? <span className="truncate">{editFormData.approver} <span className="text-muted-foreground">— {editFormData.approverEmail}</span></span>
+                          : "Select approver..."}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-0" align="start">
+                    <PopoverContent className="w-[420px] p-0" align="start">
                       <Command>
-                        <CommandInput placeholder="Search by name..." />
+                        <CommandInput placeholder="Search by name or email..." />
                         <CommandList>
                           <CommandEmpty>No user found.</CommandEmpty>
                           <CommandGroup>
                             <CommandItem
                               value="__none__"
                               onSelect={() => {
-                                setEditFormData({ ...editFormData, approver: "" })
+                                setEditFormData({ ...editFormData, approver: "", approverEmail: "" })
                                 setApproverOpen(false)
                               }}
                             >
@@ -1033,18 +1045,18 @@ export function UsersManagement() {
                             {dbUsers.map((u) => (
                               <CommandItem
                                 key={u.id}
-                                value={u.name}
-                                onSelect={(val) => {
-                                  setEditFormData({ ...editFormData, approver: val })
+                                value={`${u.name} ${u.email}`}
+                                onSelect={() => {
+                                  setEditFormData({ ...editFormData, approver: u.name, approverEmail: u.email })
                                   setApproverOpen(false)
                                 }}
                               >
-                                <div className="flex flex-col">
-                                  <span>{u.name}</span>
-                                  <span className="text-xs text-muted-foreground">{u.role}</span>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="truncate font-medium">{u.name}</span>
+                                  <span className="text-xs text-muted-foreground truncate">{u.email}</span>
                                 </div>
                                 {editFormData.approver === u.name && (
-                                  <Check className="ml-auto h-4 w-4 text-primary" />
+                                  <Check className="ml-auto h-4 w-4 shrink-0 text-primary" />
                                 )}
                               </CommandItem>
                             ))}

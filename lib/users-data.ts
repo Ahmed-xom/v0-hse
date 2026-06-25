@@ -8,6 +8,7 @@ export interface User {
   businessUnit: string
   status: "Active" | "Inactive"
   approver?: string
+  approverEmail?: string
 }
 
 export const users: User[] = [
