@@ -113,7 +113,7 @@ export function MasterSettings() {
   useEffect(() => {
     if (isAddDialogOpen && selectedSection?.id === "reviewer-approver" && allUsers.length === 0) {
       getUsers().then((res) => {
-        if (res.success) setAllUsers(res.users as User[])
+        if (res.success) setAllUsers(res.data as User[])
       })
     }
     if (!isAddDialogOpen) setNewEntryUser("")
