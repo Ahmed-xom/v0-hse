@@ -91,6 +91,43 @@ export async function deleteTrainingRecord(id: string) {
   }
 }
 
+// Bulk create for the matrix builder — ON CONFLICT DO NOTHING
+export async function bulkCreateMatrixRecords(records: {
+  employeeName: string
+  employeeCode: string
+  courseName: string
+  status: string
+  result?: string
+}[]) {
+  try {
+    let inserted = 0
+    let skipped = 0
+    for (const rec of records) {
+      const id = `tr-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+      const res = await db.execute(sql`
+        INSERT INTO public.training (id, employee_name, employee_code, course_name, status, result, created_at, updated_at)
+        VALUES (
+          ${id},
+          ${rec.employeeName},
+          ${rec.employeeCode},
+          ${rec.courseName},
+          ${rec.status},
+          ${rec.result || null},
+          now(), now()
+        )
+        ON CONFLICT (employee_code, course_name) DO NOTHING
+      `)
+      if ((res as any).rowCount > 0) inserted++
+      else skipped++
+    }
+    revalidatePath('/')
+    return { success: true, inserted, skipped }
+  } catch (error: any) {
+    console.error('[v0] Error bulk creating matrix records:', error)
+    return { success: false, error: error.message, inserted: 0, skipped: 0 }
+  }
+}
+
 // Bulk import: upsert by (employee_code + course_name)
 export async function importTrainingRecords(records: {
   employeeName: string

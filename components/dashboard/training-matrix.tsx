@@ -61,12 +61,25 @@ import {
   createTrainingRecord,
   deleteTrainingRecord,
   importTrainingRecords,
+  bulkCreateMatrixRecords,
 } from "@/app/actions/manage-training"
 import Papa from "papaparse"
 
 const STATUSES = ["Pending", "In Progress", "Completed", "Overdue", "Cancelled"]
 const RESULTS = ["Pass", "Fail", "Incomplete", "Exempted"]
 const ITEMS_PER_PAGE = 15
+
+// Derive unique courses and employees from loaded records for the matrix builder
+function getUniqueCourses(records: { courseName: string }[]) {
+  return [...new Set(records.map((r) => r.courseName))].sort()
+}
+function getUniqueEmployees(records: { employeeName: string; employeeCode: string }[]) {
+  const seen = new Set<string>()
+  return records
+    .filter((r) => { const k = r.employeeCode; if (seen.has(k)) return false; seen.add(k); return true })
+    .map((r) => ({ name: r.employeeName, code: r.employeeCode }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+}
 
 type TrainingRecord = {
   id: string
@@ -109,8 +122,31 @@ export function TrainingMatrix() {
   const [currentPage, setCurrentPage] = useState(1)
 
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isMatrixOpen, setIsMatrixOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+
+  // Matrix builder state
+  const [matrixEmployeeSearch, setMatrixEmployeeSearch] = useState("")
+  const [matrixCourseSearch, setMatrixCourseSearch] = useState("")
+  const [selectedEmployees, setSelectedEmployees] = useState<{ name: string; code: string }[]>([])
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([])
+  const [matrixStatus, setMatrixStatus] = useState("Pending")
+
+  const allEmployees = useMemo(() => getUniqueEmployees(records), [records])
+  const allCourses = useMemo(() => getUniqueCourses(records), [records])
+
+  const filteredMatrixEmployees = useMemo(() =>
+    allEmployees.filter((e) =>
+      !matrixEmployeeSearch ||
+      e.name.toLowerCase().includes(matrixEmployeeSearch.toLowerCase()) ||
+      e.code.toLowerCase().includes(matrixEmployeeSearch.toLowerCase())
+    ), [allEmployees, matrixEmployeeSearch])
+
+  const filteredMatrixCourses = useMemo(() =>
+    allCourses.filter((c) =>
+      !matrixCourseSearch || c.toLowerCase().includes(matrixCourseSearch.toLowerCase())
+    ), [allCourses, matrixCourseSearch])
 
   const [form, setForm] = useState({
     employeeName: "",
@@ -184,6 +220,41 @@ export function TrainingMatrix() {
         setRefreshKey((k) => k + 1)
       } else {
         toast({ title: "Error", description: result.error, variant: "destructive" })
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // ── Add Training Matrix (bulk) ──────────────────────────
+  const handleMatrixCreate = async () => {
+    if (selectedEmployees.length === 0 || selectedCourses.length === 0) {
+      toast({ title: "Selection required", description: "Select at least one employee and one course.", variant: "destructive" })
+      return
+    }
+    setIsSubmitting(true)
+    try {
+      const rows = selectedEmployees.flatMap((emp) =>
+        selectedCourses.map((course) => ({
+          employeeName: emp.name,
+          employeeCode: emp.code,
+          courseName: course,
+          status: matrixStatus,
+          result: "",
+        }))
+      )
+      const res = await bulkCreateMatrixRecords(rows)
+      if (res.success) {
+        toast({ title: "Matrix created", description: `${res.inserted} records added (${res.skipped} already existed).` })
+        setIsMatrixOpen(false)
+        setSelectedEmployees([])
+        setSelectedCourses([])
+        setMatrixEmployeeSearch("")
+        setMatrixCourseSearch("")
+        setMatrixStatus("Pending")
+        setRefreshKey((k) => k + 1)
+      } else {
+        toast({ title: "Error", description: res.error, variant: "destructive" })
       }
     } finally {
       setIsSubmitting(false)
@@ -312,6 +383,10 @@ export function TrainingMatrix() {
                   <Button size="sm" className="gap-2" onClick={() => setIsAddOpen(true)}>
                     <Plus className="h-4 w-4" />
                     Add Record
+                  </Button>
+                  <Button size="sm" variant="secondary" className="gap-2" onClick={() => setIsMatrixOpen(true)}>
+                    <BookOpen className="h-4 w-4" />
+                    Add Training Matrix
                   </Button>
                 </>
               )}
@@ -513,6 +588,146 @@ export function TrainingMatrix() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Add Training Matrix Dialog */}
+      <Dialog open={isMatrixOpen} onOpenChange={(open) => { setIsMatrixOpen(open); if (!open) { setSelectedEmployees([]); setSelectedCourses([]) } }}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Training Matrix</DialogTitle>
+            <DialogDescription>
+              Select employees and courses. A training record will be created for every combination ({selectedEmployees.length} employees × {selectedCourses.length} courses = <strong>{selectedEmployees.length * selectedCourses.length}</strong> records).
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 gap-6 py-2 md:grid-cols-2">
+            {/* Employees panel */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">
+                Employees <span className="ml-1 rounded bg-primary/20 px-1.5 py-0.5 text-xs text-primary">{selectedEmployees.length} selected</span>
+              </Label>
+              <Input
+                placeholder="Search employees..."
+                value={matrixEmployeeSearch}
+                onChange={(e) => setMatrixEmployeeSearch(e.target.value)}
+                className="h-8 text-xs"
+              />
+              <div className="flex gap-1 flex-wrap">
+                <button
+                  type="button"
+                  className="text-xs text-primary underline"
+                  onClick={() => setSelectedEmployees(filteredMatrixEmployees)}
+                >Select all {filteredMatrixEmployees.length}</button>
+                <span className="text-muted-foreground text-xs">·</span>
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground underline"
+                  onClick={() => setSelectedEmployees([])}
+                >Clear</button>
+              </div>
+              <div className="h-64 overflow-y-auto rounded border border-border/50 bg-background/30">
+                {filteredMatrixEmployees.map((emp) => {
+                  const checked = selectedEmployees.some((e) => e.code === emp.code)
+                  return (
+                    <label
+                      key={emp.code}
+                      className={`flex cursor-pointer items-center gap-2 border-b border-border/30 px-3 py-2 text-xs last:border-0 hover:bg-muted/30 ${checked ? "bg-primary/5" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        className="h-3.5 w-3.5 accent-primary"
+                        onChange={() =>
+                          setSelectedEmployees((prev) =>
+                            checked ? prev.filter((e) => e.code !== emp.code) : [...prev, emp]
+                          )
+                        }
+                      />
+                      <span className="flex-1 truncate font-medium">{emp.name}</span>
+                      <span className="font-mono text-muted-foreground">{emp.code}</span>
+                    </label>
+                  )
+                })}
+                {filteredMatrixEmployees.length === 0 && (
+                  <p className="py-8 text-center text-xs text-muted-foreground">No employees found</p>
+                )}
+              </div>
+            </div>
+
+            {/* Courses panel */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">
+                Courses <span className="ml-1 rounded bg-primary/20 px-1.5 py-0.5 text-xs text-primary">{selectedCourses.length} selected</span>
+              </Label>
+              <Input
+                placeholder="Search courses..."
+                value={matrixCourseSearch}
+                onChange={(e) => setMatrixCourseSearch(e.target.value)}
+                className="h-8 text-xs"
+              />
+              <div className="flex gap-1 flex-wrap">
+                <button
+                  type="button"
+                  className="text-xs text-primary underline"
+                  onClick={() => setSelectedCourses(filteredMatrixCourses)}
+                >Select all {filteredMatrixCourses.length}</button>
+                <span className="text-muted-foreground text-xs">·</span>
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground underline"
+                  onClick={() => setSelectedCourses([])}
+                >Clear</button>
+              </div>
+              <div className="h-64 overflow-y-auto rounded border border-border/50 bg-background/30">
+                {filteredMatrixCourses.map((course) => {
+                  const checked = selectedCourses.includes(course)
+                  return (
+                    <label
+                      key={course}
+                      className={`flex cursor-pointer items-center gap-2 border-b border-border/30 px-3 py-2 text-xs last:border-0 hover:bg-muted/30 ${checked ? "bg-primary/5" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        className="h-3.5 w-3.5 accent-primary"
+                        onChange={() =>
+                          setSelectedCourses((prev) =>
+                            checked ? prev.filter((c) => c !== course) : [...prev, course]
+                          )
+                        }
+                      />
+                      <span className="flex-1 truncate">{course}</span>
+                    </label>
+                  )
+                })}
+                {filteredMatrixCourses.length === 0 && (
+                  <p className="py-8 text-center text-xs text-muted-foreground">No courses found</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Default status */}
+          <div className="space-y-1.5 pt-2 border-t border-border/50">
+            <Label>Default Status for new records</Label>
+            <Select value={matrixStatus} onValueChange={setMatrixStatus}>
+              <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMatrixOpen(false)} disabled={isSubmitting}>Cancel</Button>
+            <Button
+              onClick={handleMatrixCreate}
+              disabled={isSubmitting || selectedEmployees.length === 0 || selectedCourses.length === 0}
+            >
+              {isSubmitting ? "Creating..." : `Create ${selectedEmployees.length * selectedCourses.length} Records`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Record Dialog */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
