@@ -28,7 +28,9 @@ import {
   UserCheck,
   ShieldCheck,
 } from "lucide-react"
-import { getReviewersApprovers, updateReviewerApproverStatus, type ReviewerApproverUser } from "@/app/actions/get-reviewers-approvers"
+import { getReviewersApprovers, updateReviewerApproverStatus, addReviewerApprover, type ReviewerApproverUser } from "@/app/actions/get-reviewers-approvers"
+import { getUsers } from "@/app/actions/manage-users"
+import type { User } from "@/lib/users-data"
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -88,6 +90,13 @@ export function MasterSettings() {
   const [raLoading, setRaLoading] = useState(false)
   const [raSearch, setRaSearch] = useState("")
 
+  // All users for the "Add New" dropdown
+  const [allUsers, setAllUsers] = useState<User[]>([])
+  const [newEntryUser, setNewEntryUser] = useState("")
+  const [newEntryRole, setNewEntryRole] = useState<"REVIEWER" | "APPROVER">("REVIEWER")
+  const [newEntryName, setNewEntryName] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+
   const currentCategory = masterCategories.find((c) => c.id === selectedCategory)
 
   // Load real reviewer/approver users when that section is opened
@@ -103,10 +112,61 @@ export function MasterSettings() {
     }
   }, [selectedSection])
 
+  // Load all users when the Add dialog opens for reviewer-approver section
+  useEffect(() => {
+    if (isAddDialogOpen && selectedSection?.id === "reviewer-approver" && allUsers.length === 0) {
+      getUsers().then((res) => {
+        if (res.success) {
+          const sorted = [...(res.data as User[])].sort((a, b) =>
+            a.name.localeCompare(b.name)
+          )
+          setAllUsers(sorted)
+        }
+      })
+    }
+    if (!isAddDialogOpen) {
+      setNewEntryUser("")
+      setNewEntryName("")
+      setNewEntryRole("REVIEWER")
+    }
+  }, [isAddDialogOpen])
+
   const filteredCategories = masterCategories.filter((category) =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     category.items.some((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
   )
+
+  const handleSaveReviewerApprover = async () => {
+    if (!newEntryUser) {
+      toast({ title: "Select a user", description: "Please select a user from the dropdown.", variant: "destructive" })
+      return
+    }
+    const [, , id] = newEntryUser.split("||")
+    const resolvedUser = allUsers.find((u) => u.id === id)
+    const userId = id || resolvedUser?.id
+    const name = newEntryName.trim() || resolvedUser?.name || ""
+    if (!userId) {
+      toast({ title: "User not found", description: "Could not resolve user ID.", variant: "destructive" })
+      return
+    }
+    setIsSaving(true)
+    try {
+      const result = await addReviewerApprover(userId, newEntryRole)
+      if (!result.success) {
+        toast({ title: "Error", description: result.error, variant: "destructive" })
+        return
+      }
+      toast({ title: "Saved", description: `${name} added as ${newEntryRole}.` })
+      setIsAddDialogOpen(false)
+      // Refresh the reviewer/approver list
+      const res = await getReviewersApprovers()
+      if (res.success) setRaUsers(res.users)
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" })
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   const handleBackToCategories = () => {
     setSelectedCategory(null)
@@ -178,32 +238,91 @@ export function MasterSettings() {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input id="name" placeholder="Enter name" />
-                    </div>
+                    {selectedSection?.id === "reviewer-approver" ? (
+                      <>
+                        <div className="grid gap-2">
+                          <Label htmlFor="user-dropdown">Select User</Label>
+                          <Select
+                            value={newEntryUser}
+                            onValueChange={(val) => {
+                              setNewEntryUser(val)
+                              const [name] = val.split("||")
+                              setNewEntryName(name)
+                            }}
+                          >
+                            <SelectTrigger id="user-dropdown">
+                              <SelectValue placeholder="Select a user..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allUsers.map((u) => (
+                                <SelectItem key={u.id} value={`${u.name}||${u.email}||${u.id}`}>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{u.name}</span>
+                                    <span className="text-xs text-muted-foreground">{u.email}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="entry-name">Name</Label>
+                          <Input
+                            id="entry-name"
+                            placeholder="Enter name"
+                            value={newEntryName}
+                            onChange={(e) => setNewEntryName(e.target.value)}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="grid gap-2">
+                        <Label htmlFor="name">Name</Label>
+                        <Input id="name" placeholder="Enter name" />
+                      </div>
+                    )}
                     <div className="grid gap-2">
                       <Label htmlFor="description">Description</Label>
                       <Textarea id="description" placeholder="Enter description" rows={3} />
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="status">Status</Label>
-                      <Select defaultValue="active">
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="inactive">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {selectedSection?.id === "reviewer-approver" ? (
+                      <div className="grid gap-2">
+                        <Label htmlFor="role">Role</Label>
+                        <Select value={newEntryRole} onValueChange={(v) => setNewEntryRole(v as "REVIEWER" | "APPROVER")}>
+                          <SelectTrigger id="role">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="REVIEWER">Reviewer</SelectItem>
+                            <SelectItem value="APPROVER">Approver</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : (
+                      <div className="grid gap-2">
+                        <Label htmlFor="status">Status</Label>
+                        <Select defaultValue="active">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isSaving}>
                       Cancel
                     </Button>
-                    <Button onClick={() => setIsAddDialogOpen(false)}>Save</Button>
+                    <Button
+                      onClick={selectedSection?.id === "reviewer-approver" ? handleSaveReviewerApprover : () => setIsAddDialogOpen(false)}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? "Saving..." : "Save"}
+                    </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>

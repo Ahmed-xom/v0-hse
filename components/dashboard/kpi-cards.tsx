@@ -1,6 +1,6 @@
 "use client"
 
-import { ShieldCheck, TrendingDown, TrendingUp, AlertTriangle, ClipboardCheck, Users, HardHat } from "lucide-react"
+import { ShieldCheck, TrendingDown, TrendingUp, ClipboardCheck, Users, HardHat } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface KPICardProps {
@@ -51,14 +51,6 @@ const kpiData: KPICardProps[] = [
     description: "vs last quarter",
   },
   {
-    title: "Total Incidents (YTD)",
-    value: "23",
-    change: "-32%",
-    trend: "up",
-    icon: <AlertTriangle className="h-5 w-5" />,
-    description: "vs same period",
-  },
-  {
     title: "Inspection Compliance",
     value: "94.2%",
     change: "+2.1%",
@@ -86,7 +78,7 @@ const kpiData: KPICardProps[] = [
 
 export function KPICards() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {kpiData.map((kpi, index) => (
         <KPICard key={index} {...kpi} />
       ))}

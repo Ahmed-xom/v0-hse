@@ -17,7 +17,8 @@ export async function getUsers() {
         u.role              AS role,
         u.banned            AS banned,
         u."createdAt"       AS "createdAt",
-        COALESCE(u.approver, '')      AS approver,
+        COALESCE(u.approver, '')       AS approver,
+        COALESCE(u.approver_email, '') AS "approverEmail",
         COALESCE(e.payroll_no, '')    AS "payrollNo",
         COALESCE(e.designation, '')   AS designation,
         COALESCE(e.business_unit, '') AS "businessUnit"
@@ -40,6 +41,7 @@ export async function getUsers() {
         designation: (u.designation as string) ?? '',
         businessUnit: (u.businessUnit as string) ?? '',
         approver: (u.approver as string) ?? '',
+        approverEmail: (u.approverEmail as string) ?? '',
       })),
     }
   } catch (error: any) {
@@ -160,11 +162,17 @@ export async function deleteUser(userId: string) {
   }
 }
 
-export async function updateUserApprover(userId: string, approver: string) {
+export async function updateUserApprover(
+  userId: string,
+  approver: string,
+  approverEmail: string,
+) {
   try {
     if (!userId) return { success: false, error: 'User ID is required' }
     await db.execute(sql`
-      UPDATE neon_auth.user SET approver = ${approver || null}
+      UPDATE neon_auth.user
+      SET approver       = ${approver       || null},
+          approver_email = ${approverEmail  || null}
       WHERE id = ${userId}::uuid
     `)
     revalidateTag('users', 'max')

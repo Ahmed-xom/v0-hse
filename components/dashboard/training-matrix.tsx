@@ -55,14 +55,18 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { isAdminRole } from "@/lib/auth-roles"
+import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
 import {
   getTrainingRecords,
   createTrainingRecord,
+  updateTrainingRecord,
   deleteTrainingRecord,
   importTrainingRecords,
   bulkCreateMatrixRecords,
 } from "@/app/actions/manage-training"
+import { getUsers } from "@/app/actions/manage-users"
+import type { User } from "@/lib/users-data"
+import { Pencil } from "lucide-react"
 import Papa from "papaparse"
 
 const STATUSES = ["Pending", "In Progress", "Completed", "Overdue", "Cancelled"]
@@ -111,7 +115,24 @@ export function TrainingMatrix() {
   const { user } = useAuth()
   const { toast } = useToast()
   const isAdmin = isAdminRole(user?.role ?? "", user?.email ?? "")
+  const isReviewer = !isAdmin && isReviewerRole(user?.role ?? "")
+  const canEdit = isAdmin || isReviewer
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // All DB users for the employee dropdown
+  const [allUsers, setAllUsers] = useState<User[]>([])
+
+  // Edit dialog state
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [editingRecord, setEditingRecord] = useState<TrainingRecord | null>(null)
+  const [editForm, setEditForm] = useState({
+    employeeName: "",
+    employeeCode: "",
+    courseName: "",
+    status: "Pending",
+    result: "",
+    completedDate: "",
+  })
 
   const [records, setRecords] = useState<TrainingRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -156,6 +177,16 @@ export function TrainingMatrix() {
     result: "",
     completedDate: "",
   })
+
+  // Load all users for the employee dropdown (sorted A–Z)
+  useEffect(() => {
+    getUsers().then((res) => {
+      if (res.success) {
+        const sorted = [...(res.data as User[])].sort((a, b) => a.name.localeCompare(b.name))
+        setAllUsers(sorted)
+      }
+    })
+  }, [])
 
   // Fetch records from DB
   useEffect(() => {
@@ -220,6 +251,44 @@ export function TrainingMatrix() {
         setRefreshKey((k) => k + 1)
       } else {
         toast({ title: "Error", description: result.error, variant: "destructive" })
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // ── Edit record ─────────────────────────────────────────
+  const handleOpenEdit = (rec: TrainingRecord) => {
+    setEditingRecord(rec)
+    setEditForm({
+      employeeName: rec.employeeName,
+      employeeCode: rec.employeeCode,
+      courseName: rec.courseName,
+      status: rec.status,
+      result: rec.result ?? "",
+      completedDate: rec.completedDate
+        ? new Date(rec.completedDate).toISOString().split("T")[0]
+        : "",
+    })
+    setIsEditOpen(true)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingRecord) return
+    if (!editForm.employeeName || !editForm.employeeCode || !editForm.courseName) {
+      toast({ title: "Required fields missing", description: "Employee name, code, and course are required.", variant: "destructive" })
+      return
+    }
+    setIsSubmitting(true)
+    try {
+      const result = await updateTrainingRecord(editingRecord.id, editForm)
+      if (result.success) {
+        toast({ title: "Record updated", description: "Training record saved successfully." })
+        setIsEditOpen(false)
+        setEditingRecord(null)
+        setRefreshKey((k) => k + 1)
+      } else {
+        toast({ title: "Error", description: (result as any).error, variant: "destructive" })
       }
     } finally {
       setIsSubmitting(false)
@@ -469,14 +538,14 @@ export function TrainingMatrix() {
                   <TableHead className="text-xs">Status</TableHead>
                   <TableHead className="text-xs">Result</TableHead>
                   <TableHead className="text-xs">Completed</TableHead>
-                  {isAdmin && <TableHead className="w-10 text-xs" />}
+                  {canEdit && <TableHead className="w-10 text-xs" />}
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   Array.from({ length: 8 }).map((_, i) => (
                     <TableRow key={i} className="border-border/50">
-                      {Array.from({ length: isAdmin ? 8 : 7 }).map((__, j) => (
+                      {Array.from({ length: canEdit ? 8 : 7 }).map((__, j) => (
                         <TableCell key={j}>
                           <div className="h-3 w-full max-w-[140px] animate-pulse rounded bg-muted" />
                         </TableCell>
@@ -485,12 +554,12 @@ export function TrainingMatrix() {
                   ))
                 ) : paginated.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={isAdmin ? 8 : 7} className="py-16 text-center">
+                    <TableCell colSpan={canEdit ? 8 : 7} className="py-16 text-center">
                       <div className="flex flex-col items-center gap-2 text-muted-foreground">
                         <BookOpen className="h-8 w-8 opacity-40" />
                         <p className="text-sm font-medium">No training records found</p>
                         <p className="text-xs">
-                          {isAdmin ? 'Click "Add Record" or "Import CSV" to get started' : "No records match your filters"}
+                          {isAdmin ? 'Click "Add Record" or "Import CSV" to get started' : canEdit ? "No records found" : "No records match your filters"}
                         </p>
                       </div>
                     </TableCell>
@@ -524,7 +593,7 @@ export function TrainingMatrix() {
                         <TableCell className="text-xs text-muted-foreground">
                           {rec.completedDate ? new Date(rec.completedDate).toLocaleDateString("en-GB") : "—"}
                         </TableCell>
-                        {isAdmin && (
+                        {canEdit && (
                           <TableCell>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
@@ -533,14 +602,22 @@ export function TrainingMatrix() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive"
-                                  onClick={() => handleDelete(rec.id)}
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Delete
+                                <DropdownMenuItem onClick={() => handleOpenEdit(rec)}>
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Edit
                                 </DropdownMenuItem>
+                                {isAdmin && (
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive"
+                                      onClick={() => handleDelete(rec.id)}
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
@@ -730,6 +807,94 @@ export function TrainingMatrix() {
       </Dialog>
 
       {/* Add Record Dialog */}
+      {/* ── Edit Record Dialog ── */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Training Record</DialogTitle>
+            <DialogDescription>Update the employee and course details below.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5 col-span-2">
+                <Label>Employee Name <span className="text-destructive">*</span></Label>
+                <Select
+                  value={editForm.employeeName ? `${editForm.employeeName}||${editForm.employeeCode}` : ""}
+                  onValueChange={(val) => {
+                    const [name, code] = val.split("||")
+                    setEditForm((f) => ({ ...f, employeeName: name, employeeCode: code ?? "" }))
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select employee..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allUsers.map((u) => (
+                      <SelectItem key={u.id} value={`${u.name}||${u.payrollNo}`}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{u.name}</span>
+                          <span className="text-xs text-muted-foreground">{u.email}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Employee Code <span className="text-destructive">*</span></Label>
+                <Input
+                  placeholder="e.g. EMP-001"
+                  value={editForm.employeeCode}
+                  onChange={(e) => setEditForm((f) => ({ ...f, employeeCode: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Course Name <span className="text-destructive">*</span></Label>
+              <Input
+                placeholder="e.g. Fire Safety Awareness"
+                value={editForm.courseName}
+                onChange={(e) => setEditForm((f) => ({ ...f, courseName: e.target.value }))}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Status</Label>
+                <Select value={editForm.status} onValueChange={(v) => setEditForm((f) => ({ ...f, status: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Result</Label>
+                <Select value={editForm.result} onValueChange={(v) => setEditForm((f) => ({ ...f, result: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select result" /></SelectTrigger>
+                  <SelectContent>
+                    {RESULTS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Completed Date</Label>
+              <Input
+                type="date"
+                value={editForm.completedDate}
+                onChange={(e) => setEditForm((f) => ({ ...f, completedDate: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)} disabled={isSubmitting}>Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -738,13 +903,29 @@ export function TrainingMatrix() {
           </DialogHeader>
           <div className="grid gap-4 py-2">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 col-span-2">
                 <Label>Employee Name <span className="text-destructive">*</span></Label>
-                <Input
-                  placeholder="Full name"
-                  value={form.employeeName}
-                  onChange={(e) => setForm((f) => ({ ...f, employeeName: e.target.value }))}
-                />
+                <Select
+                  value={form.employeeName ? `${form.employeeName}||${form.employeeCode}` : ""}
+                  onValueChange={(val) => {
+                    const [name, code] = val.split("||")
+                    setForm((f) => ({ ...f, employeeName: name, employeeCode: code ?? "" }))
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select employee..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allUsers.map((u) => (
+                      <SelectItem key={u.id} value={`${u.name}||${u.payrollNo}`}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{u.name}</span>
+                          <span className="text-xs text-muted-foreground">{u.email}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-1.5">
                 <Label>Employee Code <span className="text-destructive">*</span></Label>
