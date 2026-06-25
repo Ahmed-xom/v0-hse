@@ -94,6 +94,7 @@ export function MasterSettings() {
   const [allUsers, setAllUsers] = useState<User[]>([])
   const [newEntryUser, setNewEntryUser] = useState("")
   const [newEntryRole, setNewEntryRole] = useState<"REVIEWER" | "APPROVER">("REVIEWER")
+  const [newEntryName, setNewEntryName] = useState("")
   const [isSaving, setIsSaving] = useState(false)
 
   const currentCategory = masterCategories.find((c) => c.id === selectedCategory)
@@ -120,6 +121,7 @@ export function MasterSettings() {
     }
     if (!isAddDialogOpen) {
       setNewEntryUser("")
+      setNewEntryName("")
       setNewEntryRole("REVIEWER")
     }
   }, [isAddDialogOpen])
@@ -134,8 +136,10 @@ export function MasterSettings() {
       toast({ title: "Select a user", description: "Please select a user from the dropdown.", variant: "destructive" })
       return
     }
-    const [name, , id] = newEntryUser.split("||")
-    const userId = id || allUsers.find((u) => u.name === name)?.id
+    const [, , id] = newEntryUser.split("||")
+    const resolvedUser = allUsers.find((u) => u.id === id)
+    const userId = id || resolvedUser?.id
+    const name = newEntryName.trim() || resolvedUser?.name || ""
     if (!userId) {
       toast({ title: "User not found", description: "Could not resolve user ID.", variant: "destructive" })
       return
@@ -229,28 +233,49 @@ export function MasterSettings() {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Name</Label>
-                      {selectedSection?.id === "reviewer-approver" ? (
-                        <Select value={newEntryUser} onValueChange={setNewEntryUser}>
-                          <SelectTrigger id="name">
-                            <SelectValue placeholder="Select a user..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {allUsers.map((u) => (
-                              <SelectItem key={u.id} value={`${u.name}||${u.email}||${u.id}`}>
-                                <div className="flex flex-col">
-                                  <span className="font-medium">{u.name}</span>
-                                  <span className="text-xs text-muted-foreground">{u.email}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
+                    {selectedSection?.id === "reviewer-approver" ? (
+                      <>
+                        <div className="grid gap-2">
+                          <Label htmlFor="user-dropdown">Select User</Label>
+                          <Select
+                            value={newEntryUser}
+                            onValueChange={(val) => {
+                              setNewEntryUser(val)
+                              const [name] = val.split("||")
+                              setNewEntryName(name)
+                            }}
+                          >
+                            <SelectTrigger id="user-dropdown">
+                              <SelectValue placeholder="Select a user..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allUsers.map((u) => (
+                                <SelectItem key={u.id} value={`${u.name}||${u.email}||${u.id}`}>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{u.name}</span>
+                                    <span className="text-xs text-muted-foreground">{u.email}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="entry-name">Name</Label>
+                          <Input
+                            id="entry-name"
+                            placeholder="Enter name"
+                            value={newEntryName}
+                            onChange={(e) => setNewEntryName(e.target.value)}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="grid gap-2">
+                        <Label htmlFor="name">Name</Label>
                         <Input id="name" placeholder="Enter name" />
-                      )}
-                    </div>
+                      </div>
+                    )}
                     <div className="grid gap-2">
                       <Label htmlFor="description">Description</Label>
                       <Textarea id="description" placeholder="Enter description" rows={3} />
