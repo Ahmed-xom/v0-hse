@@ -18,32 +18,25 @@ import {
 } from "recharts"
 
 const incidentTrendData = [
-  { month: "Jan", incidents: 8, nearMisses: 12 },
-  { month: "Feb", incidents: 6, nearMisses: 15 },
-  { month: "Mar", incidents: 4, nearMisses: 18 },
-  { month: "Apr", incidents: 5, nearMisses: 14 },
-  { month: "May", incidents: 3, nearMisses: 20 },
-  { month: "Jun", incidents: 2, nearMisses: 22 },
-  { month: "Jul", incidents: 4, nearMisses: 19 },
-  { month: "Aug", incidents: 3, nearMisses: 25 },
-  { month: "Sep", incidents: 2, nearMisses: 21 },
-  { month: "Oct", incidents: 1, nearMisses: 28 },
-  { month: "Nov", incidents: 2, nearMisses: 24 },
-  { month: "Dec", incidents: 1, nearMisses: 30 },
+  { month: "Jan", incidents: 3, nearMisses: 12 },
+  { month: "Feb", incidents: 2, nearMisses: 14 },
+  { month: "Mar", incidents: 2, nearMisses: 16 },
+  { month: "Apr", incidents: 1, nearMisses: 18 },
+  { month: "May", incidents: 2, nearMisses: 15 },
+  { month: "Jun", incidents: 1, nearMisses: 20 },
 ]
 
 const incidentByTypeData = [
-  { name: "Slips & Falls", value: 35, color: "var(--color-chart-1)" },
-  { name: "Equipment", value: 25, color: "var(--color-chart-2)" },
-  { name: "Chemical", value: 15, color: "var(--color-chart-3)" },
-  { name: "Ergonomic", value: 15, color: "var(--color-chart-4)" },
-  { name: "Other", value: 10, color: "var(--color-chart-5)" },
+  { name: "Lost Time Injury (LTI)", value: 3, color: "var(--color-chart-1)" },
+  { name: "Medical Treatment", value: 5, color: "var(--color-chart-2)" },
+  { name: "First Aid", value: 8, color: "var(--color-chart-3)" },
+  { name: "Near Misses", value: 84, color: "var(--color-chart-4)" },
 ]
 
 const incidentBySeverityData = [
-  { severity: "Minor", count: 15 },
-  { severity: "Moderate", count: 6 },
-  { severity: "Serious", count: 2 },
+  { severity: "Minor (First Aid)", count: 8 },
+  { severity: "Moderate (Medical)", count: 5 },
+  { severity: "Serious (LTI)", count: 3 },
   { severity: "Critical", count: 0 },
 ]
 
@@ -209,24 +202,24 @@ export function IncidentStatistics() {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-lg border border-border/50 bg-secondary/30 p-4">
-              <div className="text-sm text-muted-foreground">TRIR</div>
-              <div className="text-2xl font-bold text-primary">1.2</div>
-              <div className="text-xs text-success">Below industry avg (2.8)</div>
+              <div className="text-sm text-muted-foreground">LTI Count (YTD)</div>
+              <div className="text-2xl font-bold text-primary">3</div>
+              <div className="text-xs text-success">Same as last year</div>
             </div>
             <div className="rounded-lg border border-border/50 bg-secondary/30 p-4">
-              <div className="text-sm text-muted-foreground">LTIR</div>
-              <div className="text-2xl font-bold text-primary">0.4</div>
-              <div className="text-xs text-success">-25% vs last year</div>
+              <div className="text-sm text-muted-foreground">Medical Treatments</div>
+              <div className="text-2xl font-bold text-primary">5</div>
+              <div className="text-xs text-success">-10% vs last year</div>
             </div>
             <div className="rounded-lg border border-border/50 bg-secondary/30 p-4">
-              <div className="text-sm text-muted-foreground">EMR</div>
-              <div className="text-2xl font-bold text-primary">0.85</div>
-              <div className="text-xs text-success">Below benchmark (1.0)</div>
+              <div className="text-sm text-muted-foreground">Near Miss Reports</div>
+              <div className="text-2xl font-bold text-primary">85</div>
+              <div className="text-xs text-success">+15% reporting rate</div>
             </div>
             <div className="rounded-lg border border-border/50 bg-secondary/30 p-4">
-              <div className="text-sm text-muted-foreground">First Aid Cases</div>
-              <div className="text-2xl font-bold text-chart-3">18</div>
-              <div className="text-xs text-muted-foreground">This quarter</div>
+              <div className="text-sm text-muted-foreground">Safety Actions</div>
+              <div className="text-2xl font-bold text-chart-3">127</div>
+              <div className="text-xs text-muted-foreground">Completed this quarter</div>
             </div>
           </div>
         </CardContent>

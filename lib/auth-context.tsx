@@ -90,13 +90,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("hse_user")
   }
 
-  const requestPasswordReset = async (email: string): Promise<{ success: boolean; error?: string }> => {
+  const requestPasswordReset = async (email: string): Promise<any> => {
     // Call server action to handle password reset
     try {
       const result = await requestPasswordResetAction(email)
       
       if (result.success) {
-        return { success: true }
+        return { 
+          success: true,
+          emailSent: result.emailSent || false,
+          temporaryPassword: result.temporaryPassword,
+          emailError: result.emailError
+        }
       } else {
         return { success: false, error: result.error || "Failed to process password reset." }
       }

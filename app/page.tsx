@@ -11,6 +11,8 @@ import { BusinessUnits } from "@/components/dashboard/business-units"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
 import { AdminSettings } from "@/components/dashboard/admin-settings"
 import { TrainingMatrix } from "@/components/dashboard/training-matrix"
+import { TrainingRecords } from "@/components/dashboard/training-records"
+import { Reports } from "@/components/dashboard/reports"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
@@ -45,8 +47,9 @@ export default function HSEDashboard() {
             </div>
           ) : isAdmin ? (
             <Tabs defaultValue="dashboard" className="w-full">
-              <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsList className="grid w-full max-w-lg grid-cols-3">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="reports">Reports</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
@@ -90,6 +93,19 @@ export default function HSEDashboard() {
                 <section aria-label="Business Units">
                   <BusinessUnits />
                 </section>
+
+                {/* Training Records */}
+                <section aria-label="Training Records">
+                  <TrainingRecords />
+                </section>
+              </TabsContent>
+
+              <TabsContent value="reports" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Reports</h2>
+                  <p className="text-muted-foreground text-sm">HSE performance data, summaries, and exports</p>
+                </div>
+                <Reports />
               </TabsContent>
 
               <TabsContent value="settings" className="space-y-6">
@@ -131,6 +147,16 @@ export default function HSEDashboard() {
               {/* Business Units */}
               <section aria-label="Business Units">
                 <BusinessUnits />
+              </section>
+
+              {/* Training Records */}
+              <section aria-label="Training Records">
+                <TrainingRecords />
+              </section>
+
+              {/* Reports */}
+              <section aria-label="Reports">
+                <Reports />
               </section>
             </>
           )}
