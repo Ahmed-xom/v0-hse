@@ -29,6 +29,8 @@ import {
   ShieldCheck,
 } from "lucide-react"
 import { getReviewersApprovers, updateReviewerApproverStatus, type ReviewerApproverUser } from "@/app/actions/get-reviewers-approvers"
+import { getUsers } from "@/app/actions/manage-users"
+import type { User } from "@/lib/users-data"
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -88,6 +90,10 @@ export function MasterSettings() {
   const [raLoading, setRaLoading] = useState(false)
   const [raSearch, setRaSearch] = useState("")
 
+  // All users for the "Add New" dropdown
+  const [allUsers, setAllUsers] = useState<User[]>([])
+  const [newEntryUser, setNewEntryUser] = useState("")
+
   const currentCategory = masterCategories.find((c) => c.id === selectedCategory)
 
   // Load real reviewer/approver users when that section is opened
@@ -102,6 +108,16 @@ export function MasterSettings() {
         .finally(() => setRaLoading(false))
     }
   }, [selectedSection])
+
+  // Load all users when the Add dialog opens for reviewer-approver section
+  useEffect(() => {
+    if (isAddDialogOpen && selectedSection?.id === "reviewer-approver" && allUsers.length === 0) {
+      getUsers().then((res) => {
+        if (res.success) setAllUsers(res.users as User[])
+      })
+    }
+    if (!isAddDialogOpen) setNewEntryUser("")
+  }, [isAddDialogOpen])
 
   const filteredCategories = masterCategories.filter((category) =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -180,7 +196,25 @@ export function MasterSettings() {
                   <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
                       <Label htmlFor="name">Name</Label>
-                      <Input id="name" placeholder="Enter name" />
+                      {selectedSection?.id === "reviewer-approver" ? (
+                        <Select value={newEntryUser} onValueChange={setNewEntryUser}>
+                          <SelectTrigger id="name">
+                            <SelectValue placeholder="Select a user..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {allUsers.map((u) => (
+                              <SelectItem key={u.id} value={`${u.name}||${u.email}`}>
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{u.name}</span>
+                                  <span className="text-xs text-muted-foreground">{u.email}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input id="name" placeholder="Enter name" />
+                      )}
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="description">Description</Label>
