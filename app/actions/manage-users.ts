@@ -17,6 +17,7 @@ export async function getUsers() {
         u.role              AS role,
         u.banned            AS banned,
         u."createdAt"       AS "createdAt",
+        COALESCE(u.approver, '')      AS approver,
         COALESCE(e.payroll_no, '')    AS "payrollNo",
         COALESCE(e.designation, '')   AS designation,
         COALESCE(e.business_unit, '') AS "businessUnit"
@@ -38,6 +39,7 @@ export async function getUsers() {
         payrollNo: (u.payrollNo as string) ?? '',
         designation: (u.designation as string) ?? '',
         businessUnit: (u.businessUnit as string) ?? '',
+        approver: (u.approver as string) ?? '',
       })),
     }
   } catch (error: any) {
@@ -155,6 +157,21 @@ export async function deleteUser(userId: string) {
       success: false,
       error: error.message || 'Failed to delete user',
     }
+  }
+}
+
+export async function updateUserApprover(userId: string, approver: string) {
+  try {
+    if (!userId) return { success: false, error: 'User ID is required' }
+    await db.execute(sql`
+      UPDATE neon_auth.user SET approver = ${approver || null}
+      WHERE id = ${userId}::uuid
+    `)
+    revalidateTag('users', 'max')
+    return { success: true }
+  } catch (error: any) {
+    console.error('[v0] Error updating approver:', error)
+    return { success: false, error: error.message }
   }
 }
 

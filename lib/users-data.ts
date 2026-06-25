@@ -7,6 +7,7 @@ export interface User {
   designation: string
   businessUnit: string
   status: "Active" | "Inactive"
+  approver?: string
 }
 
 export const users: User[] = [

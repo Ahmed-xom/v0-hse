@@ -64,8 +64,11 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword } from "@/app/actions/reset-password"
-import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers } from "@/app/actions/manage-users"
+import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers, updateUserApprover } from "@/app/actions/manage-users"
 import { isAdminRole } from "@/lib/auth-roles"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { ChevronsUpDown } from "lucide-react"
 
 const roleColors: Record<string, string> = {
   "ADMIN SYSTEM": "bg-red-500/20 text-red-400 border-red-500/30",
@@ -142,7 +145,11 @@ export function UsersManagement() {
     name: "",
     role: "",
     status: "Active" as "Active" | "Inactive",
+    approver: "",
   })
+  const [approverOpen, setApproverOpen] = useState(false)
+  const [addApproverOpen, setAddApproverOpen] = useState(false)
+  const [addApprover, setAddApprover] = useState("")
   const [dbUsers, setDbUsers] = useState<User[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const { toast } = useToast()
@@ -273,6 +280,7 @@ export function UsersManagement() {
       name: user.name,
       role: user.role,
       status: user.status,
+      approver: user.approver ?? "",
     })
     setIsEditDialogOpen(true)
   }
@@ -308,6 +316,11 @@ export function UsersManagement() {
           setIsEditLoading(false)
           return
         }
+      }
+
+      // Update approver if changed
+      if (editFormData.approver !== (editingUser.approver ?? "")) {
+        await updateUserApprover(editingUser.id, editFormData.approver)
       }
 
       toast({
@@ -466,12 +479,65 @@ export function UsersManagement() {
                       </Select>
                     </div>
                   </div>
+                  <div className="grid gap-2">
+                    <Label>Approver</Label>
+                    <Popover open={addApproverOpen} onOpenChange={setAddApproverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={addApproverOpen}
+                          className="w-full justify-between font-normal"
+                        >
+                          {addApprover || "Select approver..."}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search by name..." />
+                          <CommandList>
+                            <CommandEmpty>No user found.</CommandEmpty>
+                            <CommandGroup>
+                              <CommandItem
+                                value="__none__"
+                                onSelect={() => {
+                                  setAddApprover("")
+                                  setAddApproverOpen(false)
+                                }}
+                              >
+                                <span className="text-muted-foreground">None</span>
+                              </CommandItem>
+                              {dbUsers.map((u) => (
+                                <CommandItem
+                                  key={u.id}
+                                  value={u.name}
+                                  onSelect={(val) => {
+                                    setAddApprover(val)
+                                    setAddApproverOpen(false)
+                                  }}
+                                >
+                                  <div className="flex flex-col">
+                                    <span>{u.name}</span>
+                                    <span className="text-xs text-muted-foreground">{u.role}</span>
+                                  </div>
+                                  {addApprover === u.name && (
+                                    <Check className="ml-auto h-4 w-4 text-primary" />
+                                  )}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
+                  <Button variant="outline" onClick={() => { setIsAddUserOpen(false); setAddApprover("") }}>
                     Cancel
                   </Button>
-                  <Button onClick={() => setIsAddUserOpen(false)}>Add User</Button>
+                  <Button onClick={() => { setIsAddUserOpen(false); setAddApprover("") }}>Add User</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -566,6 +632,7 @@ export function UsersManagement() {
                 <TableHead className="font-semibold">Role</TableHead>
                 <TableHead className="hidden font-semibold lg:table-cell">Business Unit</TableHead>
                 <TableHead className="hidden font-semibold xl:table-cell">Designation</TableHead>
+                <TableHead className="hidden font-semibold xl:table-cell">Approver</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="w-[50px]">
                   <span className="sr-only">Actions</span>
@@ -641,6 +708,13 @@ export function UsersManagement() {
                     </TableCell>
                     <TableCell className="hidden xl:table-cell">
                       <span className="text-sm text-muted-foreground truncate max-w-[200px] block">{user.designation}</span>
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      {user.approver ? (
+                        <span className="text-sm text-muted-foreground truncate max-w-[160px] block">{user.approver}</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/50 italic">—</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={`gap-1 text-xs ${statusConfig[user.status].className}`}>
@@ -925,6 +999,60 @@ export function UsersManagement() {
                       <SelectItem value="Inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Approver</Label>
+                  <Popover open={approverOpen} onOpenChange={setApproverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={approverOpen}
+                        className="w-full justify-between font-normal"
+                      >
+                        {editFormData.approver || "Select approver..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search by name..." />
+                        <CommandList>
+                          <CommandEmpty>No user found.</CommandEmpty>
+                          <CommandGroup>
+                            <CommandItem
+                              value="__none__"
+                              onSelect={() => {
+                                setEditFormData({ ...editFormData, approver: "" })
+                                setApproverOpen(false)
+                              }}
+                            >
+                              <span className="text-muted-foreground">None</span>
+                            </CommandItem>
+                            {dbUsers.map((u) => (
+                              <CommandItem
+                                key={u.id}
+                                value={u.name}
+                                onSelect={(val) => {
+                                  setEditFormData({ ...editFormData, approver: val })
+                                  setApproverOpen(false)
+                                }}
+                              >
+                                <div className="flex flex-col">
+                                  <span>{u.name}</span>
+                                  <span className="text-xs text-muted-foreground">{u.role}</span>
+                                </div>
+                                {editFormData.approver === u.name && (
+                                  <Check className="ml-auto h-4 w-4 text-primary" />
+                                )}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
             </div>
