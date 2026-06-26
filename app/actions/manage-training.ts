@@ -28,6 +28,13 @@ export async function getTrainingRecords(search?: string) {
   }
 }
 
+function computeExpiryDate(completedDate?: string): string | null {
+  if (!completedDate) return null
+  const d = new Date(completedDate)
+  d.setFullYear(d.getFullYear() + 1)
+  return d.toISOString().split('T')[0]
+}
+
 export async function createTrainingRecord(data: {
   employeeName: string
   employeeCode: string
@@ -35,9 +42,11 @@ export async function createTrainingRecord(data: {
   status: string
   result: string
   completedDate?: string
+  expiryDate?: string
 }) {
   try {
     const id = `tr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const expiryDate = data.expiryDate || computeExpiryDate(data.completedDate)
     await db.insert(training).values({
       id,
       employeeName: data.employeeName,
@@ -46,6 +55,7 @@ export async function createTrainingRecord(data: {
       status: data.status,
       result: data.result || null,
       completedDate: data.completedDate || null,
+      expiryDate: expiryDate || null,
     })
     revalidatePath('/')
     return { success: true }
@@ -62,13 +72,16 @@ export async function updateTrainingRecord(id: string, data: {
   status?: string
   result?: string
   completedDate?: string
+  expiryDate?: string
 }) {
   try {
+    const expiryDate = data.expiryDate || computeExpiryDate(data.completedDate)
     await db
       .update(training)
       .set({
         ...data,
         completedDate: data.completedDate ?? undefined,
+        expiryDate: expiryDate ?? undefined,
         updatedAt: new Date(),
       })
       .where(eq(training.id, id))

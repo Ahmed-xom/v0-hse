@@ -183,8 +183,20 @@ export const training = pgTable('training', {
   status: text('status').notNull().default('Pending'),
   result: text('result'),
   completedDate: date('completed_date'),
+  expiryDate: date('expiry_date'),
   createdAt: timestamp('created_at').notNull().default(sql`now()`),
   updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
+})
+
+// Training Notifications Table
+export const trainingNotification = pgTable('training_notification', {
+  id: text('id').primaryKey(),
+  trainingId: text('training_id').notNull().references(() => training.id, { onDelete: 'cascade' }),
+  recipientEmail: text('recipient_email').notNull(),
+  recipientRole: text('recipient_role').notNull(),
+  message: text('message').notNull(),
+  read: boolean('read').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
 })
 
 // Inspections Table
