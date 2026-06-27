@@ -70,8 +70,8 @@ export const hseUser = pgTable('hse_user', {
 // Password reset tracking
 export const passwordReset = pgTable('password_reset', {
   id: text('id').primaryKey(),
-  userId: uuid('userId').notNull(),
-  resetBy: uuid('resetBy').notNull(),
+  userId: text('userId').notNull(),
+  resetBy: text('resetBy').notNull(),
   newPassword: text('newPassword').notNull(),
   resetAt: timestamp('resetAt').notNull().default(sql`now()`),
   ipAddress: text('ipAddress'),
