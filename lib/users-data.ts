@@ -9,6 +9,7 @@ export interface User {
   status: "Active" | "Inactive"
   approver?: string
   approverEmail?: string
+  journeyAccess?: boolean
 }
 
 export const users: User[] = [

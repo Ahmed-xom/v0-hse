@@ -21,6 +21,7 @@ import {
   KeyRound,
   Copy,
   Check,
+  Route,
 } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -64,7 +65,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword, getPasswordResetHistory } from "@/app/actions/reset-password"
-import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers, updateUserApprover } from "@/app/actions/manage-users"
+import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess } from "@/app/actions/manage-users"
 import { isAdminRole } from "@/lib/auth-roles"
 
 
@@ -179,6 +180,23 @@ export function UsersManagement() {
   const localUsers = dbUsers
 
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
+
+  const handleToggleJourneyAccess = async (u: User) => {
+    const newValue = !u.journeyAccess
+    // Optimistic update
+    setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyAccess: newValue } : x))
+    const result = await updateJourneyAccess(u.id, newValue)
+    if (!result.success) {
+      // Revert on failure
+      setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyAccess: !newValue } : x))
+      toast({ title: "Error", description: result.error, variant: "destructive" })
+    } else {
+      toast({
+        title: newValue ? "Journey Tracker access granted" : "Journey Tracker access revoked",
+        description: `${u.name} ${newValue ? "can now" : "can no longer"} access the Journey Tracker.`,
+      })
+    }
+  }
 
   const filteredUsers = useMemo(() => {
     return localUsers.filter((user) => {
@@ -697,9 +715,17 @@ export function UsersManagement() {
                       <span className="font-mono text-xs text-muted-foreground">{user.payrollNo}</span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`text-xs ${roleColors[user.role] || roleColors["USER"]}`}>
-                        {user.role}
-                      </Badge>
+                      <div className="flex flex-col gap-1">
+                        <Badge variant="outline" className={`text-xs ${roleColors[user.role] || roleColors["USER"]}`}>
+                          {user.role}
+                        </Badge>
+                        {user.journeyAccess && (
+                          <Badge variant="outline" className="gap-1 text-xs bg-cyan-500/10 text-cyan-400 border-cyan-500/30 w-fit">
+                            <Route className="h-2.5 w-2.5" />
+                            Journey
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       <span className="text-sm text-muted-foreground">{user.businessUnit}</span>
@@ -749,6 +775,10 @@ export function UsersManagement() {
                           {isAdmin && (
                             <>
                               <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleToggleJourneyAccess(user)}>
+                                <Route className="mr-2 h-4 w-4" />
+                                {user.journeyAccess ? "Revoke Journey Tracker" : "Grant Journey Tracker"}
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleResetPassword(user)}>
                                 <KeyRound className="mr-2 h-4 w-4" />
                                 Reset Password

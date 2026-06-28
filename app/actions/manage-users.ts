@@ -17,6 +17,7 @@ export async function getUsers() {
         u.role              AS role,
         u.banned            AS banned,
         u."createdAt"       AS "createdAt",
+        COALESCE(u.journey_access, false) AS "journeyAccess",
         COALESCE(u.approver, '')       AS approver,
         COALESCE(u.approver_email, '') AS "approverEmail",
         COALESCE(e.payroll_no, '')    AS "payrollNo",
@@ -42,6 +43,7 @@ export async function getUsers() {
         businessUnit: (u.businessUnit as string) ?? '',
         approver: (u.approver as string) ?? '',
         approverEmail: (u.approverEmail as string) ?? '',
+        journeyAccess: Boolean(u.journeyAccess),
       })),
     }
   } catch (error: any) {
@@ -179,6 +181,22 @@ export async function updateUserApprover(
     return { success: true }
   } catch (error: any) {
     console.error('[v0] Error updating approver:', error)
+    return { success: false, error: error.message }
+  }
+}
+
+export async function updateJourneyAccess(userId: string, grant: boolean) {
+  try {
+    if (!userId) return { success: false, error: 'User ID is required' }
+    await db.execute(sql`
+      UPDATE neon_auth."user"
+      SET journey_access = ${grant}
+      WHERE id = ${userId}::uuid
+    `)
+    revalidateTag('users', 'max')
+    return { success: true }
+  } catch (error: any) {
+    console.error('[manage-users] updateJourneyAccess error:', error)
     return { success: false, error: error.message }
   }
 }
