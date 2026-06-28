@@ -200,6 +200,26 @@ export const trainingNotification = pgTable('training_notification', {
   createdAt: timestamp('created_at').notNull().default(sql`now()`),
 })
 
+// Journey Tracker Table
+export const journey = pgTable('journey', {
+  id: text('id').primaryKey(),
+  userEmail: text('user_email').notNull(),
+  userName: text('user_name').notNull(),
+  origin: text('origin').notNull(),
+  destination: text('destination').notNull(),
+  purpose: text('purpose').notNull(),
+  vehicleType: text('vehicle_type').notNull(),
+  vehiclePlate: text('vehicle_plate'),
+  departureDate: date('departure_date').notNull(),
+  departureTime: text('departure_time').notNull(),
+  estimatedReturn: text('estimated_return'),
+  passengers: integer('passengers').notNull().default(0),
+  status: text('status').notNull().default('Planned'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
+})
+
 // Inspections Table
 export const inspection = pgTable('inspection', {
   id: text('id').primaryKey(),
