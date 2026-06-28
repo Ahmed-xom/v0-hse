@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useState, useCallback, useMemo } from "react"
+import { useEffect, useState, useCallback, useMemo, useRef } from "react"
 import {
   Search, Plus, MoreHorizontal, Route, MapPin,
   CheckCircle2, AlertCircle, Loader2,
   Trash2, Car, CalendarDays, Users, FileText, Download,
+  Paperclip, X, ExternalLink,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -62,6 +63,10 @@ export function JourneyTracker() {
   const [isSaving, setIsSaving]         = useState(false)
   const [form, setForm]                 = useState(emptyForm)
 
+  const [attachedFile, setAttachedFile]     = useState<File | null>(null)
+  const [isUploading, setIsUploading]       = useState(false)
+  const fileInputRef                        = useRef<HTMLInputElement>(null)
+
   const [searchQuery, setSearchQuery]     = useState("")
   const [statusFilter, setStatusFilter]   = useState("all")
   const [purposeFilter, setPurposeFilter] = useState("all")
@@ -111,6 +116,26 @@ export function JourneyTracker() {
     }
     if (!user) return
     setIsSaving(true)
+
+    // Upload attachment if selected
+    let attachmentUrl: string | undefined
+    let attachmentName: string | undefined
+    if (attachedFile) {
+      setIsUploading(true)
+      const fd = new FormData()
+      fd.append('file', attachedFile)
+      const uploadRes = await fetch('/api/journey-upload', { method: 'POST', body: fd })
+      setIsUploading(false)
+      if (!uploadRes.ok) {
+        toast({ title: "Upload failed", description: "Could not upload the attachment.", variant: "destructive" })
+        setIsSaving(false)
+        return
+      }
+      const uploadData = await uploadRes.json()
+      attachmentUrl = uploadData.pathname
+      attachmentName = uploadData.name
+    }
+
     const res = await createJourney({
       userEmail:       user.email,
       userName:        user.name,
@@ -124,12 +149,15 @@ export function JourneyTracker() {
       estimatedReturn: form.estimatedReturn || undefined,
       passengers:      parseInt(form.passengers) || 1,
       notes:           form.notes || undefined,
+      attachmentUrl,
+      attachmentName,
     })
     setIsSaving(false)
     if (res.success) {
       toast({ title: "Journey logged", description: "Your journey has been saved successfully." })
       setIsDialogOpen(false)
       setForm(emptyForm)
+      setAttachedFile(null)
       fetchJourneys()
     } else {
       toast({ title: "Error", description: res.error, variant: "destructive" })
@@ -283,6 +311,7 @@ export function JourneyTracker() {
                   <TableHead className="text-muted-foreground">Vehicle</TableHead>
                   <TableHead className="text-muted-foreground">Passengers</TableHead>
                   <TableHead className="text-muted-foreground">Status</TableHead>
+                  <TableHead className="text-muted-foreground">Attachment</TableHead>
                   <TableHead className="text-right text-muted-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -290,7 +319,7 @@ export function JourneyTracker() {
                 {isFetching ? (
                   Array.from({ length: 4 }).map((_, i) => (
                     <TableRow key={i} className="border-border/50">
-                      {Array.from({ length: 9 }).map((__, j) => (
+                      {Array.from({ length: 10 }).map((__, j) => (
                         <TableCell key={j}>
                           <div className="h-3 w-full max-w-[100px] animate-pulse rounded bg-muted" />
                         </TableCell>
@@ -299,7 +328,7 @@ export function JourneyTracker() {
                   ))
                 ) : filteredJourneys.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="py-16 text-center">
+                    <TableCell colSpan={10} className="py-16 text-center">
                       <div className="flex flex-col items-center gap-2 text-muted-foreground">
                         <Route className="h-10 w-10 opacity-30" />
                         <p className="font-medium">No journeys found</p>
@@ -342,6 +371,22 @@ export function JourneyTracker() {
                           {j.status}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        {j.attachmentUrl ? (
+                          <a
+                            href={`/api/journey-file?pathname=${encodeURIComponent(j.attachmentUrl)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs text-primary underline-offset-2 hover:underline"
+                          >
+                            <Paperclip className="h-3 w-3" />
+                            <span className="max-w-[120px] truncate">{j.attachmentName ?? "File"}</span>
+                            <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+                          </a>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -376,7 +421,7 @@ export function JourneyTracker() {
       </Card>
 
       {/* New Journey Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) setForm(emptyForm) }}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) { setForm(emptyForm); setAttachedFile(null) } }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>New Journey</DialogTitle>
@@ -504,17 +549,54 @@ export function JourneyTracker() {
             </div>
           </div>
 
+          {/* Attachment */}
+          <div className="space-y-1.5 px-1">
+            <Label>Attachment</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+              className="hidden"
+              onChange={(e) => setAttachedFile(e.target.files?.[0] ?? null)}
+            />
+            {attachedFile ? (
+              <div className="flex items-center gap-2 rounded-md border border-border/50 bg-muted/30 px-3 py-2">
+                <Paperclip className="h-4 w-4 shrink-0 text-primary" />
+                <span className="flex-1 truncate text-sm">{attachedFile.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {(attachedFile.size / 1024).toFixed(0)} KB
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { setAttachedFile(null); if (fileInputRef.current) fileInputRef.current.value = "" }}
+                  className="rounded p-0.5 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex w-full items-center gap-2 rounded-md border border-dashed border-border/50 bg-muted/20 px-3 py-3 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+              >
+                <Paperclip className="h-4 w-4" />
+                Click to attach a file (PDF, Word, Excel, Image — max 10 MB)
+              </button>
+            )}
+          </div>
+
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => { setIsDialogOpen(false); setForm(emptyForm) }}
+              onClick={() => { setIsDialogOpen(false); setForm(emptyForm); setAttachedFile(null) }}
               disabled={isSaving}
             >
               Cancel
             </Button>
-            <Button onClick={handleSubmit} disabled={isSaving}>
-              {isSaving
-                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
+            <Button onClick={handleSubmit} disabled={isSaving || isUploading}>
+              {isSaving || isUploading
+                ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{isUploading ? "Uploading..." : "Saving..."}</>
                 : "Log Journey"}
             </Button>
           </DialogFooter>

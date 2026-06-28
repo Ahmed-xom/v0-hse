@@ -216,6 +216,8 @@ export const journey = pgTable('journey', {
   passengers: integer('passengers').notNull().default(0),
   status: text('status').notNull().default('Planned'),
   notes: text('notes'),
+  attachmentUrl: text('attachment_url'),
+  attachmentName: text('attachment_name'),
   createdAt: timestamp('created_at').notNull().default(sql`now()`),
   updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
 })

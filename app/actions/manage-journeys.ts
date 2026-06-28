@@ -20,6 +20,8 @@ export type JourneyRecord = {
   passengers: number
   status: string
   notes: string | null
+  attachmentUrl: string | null
+  attachmentName: string | null
   createdAt: Date
 }
 
@@ -50,6 +52,8 @@ export async function createJourney(data: {
   estimatedReturn?: string
   passengers: number
   notes?: string
+  attachmentUrl?: string
+  attachmentName?: string
 }) {
   try {
     const id = `jrn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
@@ -68,6 +72,8 @@ export async function createJourney(data: {
       passengers: data.passengers,
       status: 'Planned',
       notes: data.notes || null,
+      attachmentUrl: data.attachmentUrl || null,
+      attachmentName: data.attachmentName || null,
     })
     revalidatePath('/journey-tracker')
     return { success: true, id }
