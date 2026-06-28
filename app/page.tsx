@@ -13,6 +13,7 @@ import { AdminSettings } from "@/components/dashboard/admin-settings"
 import { TrainingMatrix } from "@/components/dashboard/training-matrix"
 import { TrainingRecords } from "@/components/dashboard/training-records"
 import { Reports } from "@/components/dashboard/reports"
+import { JourneyTracker } from "@/components/dashboard/journey-tracker"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
@@ -47,9 +48,10 @@ export default function HSEDashboard() {
             </div>
           ) : isAdmin ? (
             <Tabs defaultValue="dashboard" className="w-full">
-              <TabsList className="grid w-full max-w-lg grid-cols-3">
+              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-2xl grid-cols-4" : "max-w-lg grid-cols-3"}`}>
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
+                {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey Tracker</TabsTrigger>}
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
@@ -108,6 +110,12 @@ export default function HSEDashboard() {
                 <Reports />
               </TabsContent>
 
+              {currentUser?.journeyAccess && (
+                <TabsContent value="journey" className="space-y-6">
+                  <JourneyTracker />
+                </TabsContent>
+              )}
+
               <TabsContent value="settings" className="space-y-6">
                 <AdminSettings onUserAdded={handleUserAdded} />
               </TabsContent>
@@ -115,10 +123,11 @@ export default function HSEDashboard() {
           ) : isReviewer ? (
             /* ── Reviewer / Approver view ── */
             <Tabs defaultValue="observations" className="w-full">
-              <TabsList className="grid w-full max-w-sm grid-cols-3">
+              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-lg grid-cols-4" : "max-w-sm grid-cols-3"}`}>
                 <TabsTrigger value="observations">Observations</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
+                {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey Tracker</TabsTrigger>}
               </TabsList>
 
               {/* All observations — read-only + export Excel */}
@@ -156,14 +165,21 @@ export default function HSEDashboard() {
                   <Reports />
                 </section>
               </TabsContent>
+
+              {currentUser?.journeyAccess && (
+                <TabsContent value="journey" className="space-y-6">
+                  <JourneyTracker />
+                </TabsContent>
+              )}
             </Tabs>
           ) : (
             /* ── Regular user view ── */
             <Tabs defaultValue="observations" className="w-full">
-              <TabsList className="grid w-full max-w-sm grid-cols-3">
+              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-lg grid-cols-4" : "max-w-sm grid-cols-3"}`}>
                 <TabsTrigger value="observations">Observations</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
+                {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey Tracker</TabsTrigger>}
               </TabsList>
 
               {/* Observations — user can add and view only their own */}
@@ -201,6 +217,12 @@ export default function HSEDashboard() {
                   <Reports />
                 </section>
               </TabsContent>
+
+              {currentUser?.journeyAccess && (
+                <TabsContent value="journey" className="space-y-6">
+                  <JourneyTracker />
+                </TabsContent>
+              )}
             </Tabs>
           )}
         </main>
