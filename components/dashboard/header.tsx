@@ -26,7 +26,7 @@ import {
   type TrainingNotification,
 } from "@/app/actions/training-notifications"
 
-const navItems = [
+const baseNavItems = [
   { label: "Overview", href: "/", active: true },
   { label: "Incidents", href: "#" },
   { label: "Inspections", href: "#" },
@@ -46,6 +46,11 @@ export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}
   const [notifOpen, setNotifOpen] = useState(false)
   const { user, logout } = useAuth()
   const router = useRouter()
+
+  const navItems = [
+    ...baseNavItems,
+    ...(user?.journeyAccess ? [{ label: "Journey Tracker", href: "/journey-tracker" }] : []),
+  ]
 
   const canReceiveNotifications =
     user && (isAdminRole(user.role, user.email) || isReviewerRole(user.role))
