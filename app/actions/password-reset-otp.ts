@@ -65,7 +65,7 @@ export async function sendPasswordResetOtp(email: string) {
     const from = process.env.RESEND_FROM_EMAIL
       ? `HSE System <${process.env.RESEND_FROM_EMAIL}>`
       : 'HSE System <onboarding@resend.dev>'
-    const to = process.env.RESEND_TEST_EMAIL || email
+    const to = email
 
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:20px">
