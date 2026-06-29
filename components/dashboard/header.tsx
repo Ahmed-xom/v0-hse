@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback, useRef, Suspense } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Bell, Calendar, ChevronDown, LogOut, Menu, Search, Settings, Shield, User, X, CheckCheck, GraduationCap, BarChart2, ClipboardList, ShieldCheck, Route, LayoutDashboard, FileText } from "lucide-react"
@@ -53,6 +53,14 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}) {
+  return (
+    <Suspense fallback={<header className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" />}>
+      <DashboardHeaderInner onDateRangeChange={onDateRangeChange} />
+    </Suspense>
+  )
+}
+
+function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [dateRange, setDateRange] = useState("30days")
   const [notifications, setNotifications] = useState<TrainingNotification[]>([])
