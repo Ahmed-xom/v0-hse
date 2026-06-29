@@ -48,10 +48,10 @@ export default function HSEDashboard() {
             </div>
           ) : isAdmin ? (
             <Tabs defaultValue="dashboard" className="w-full">
-              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-2xl grid-cols-4" : "max-w-lg grid-cols-3"}`}>
+              <TabsList className="grid w-full max-w-2xl grid-cols-4">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
-                {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey Tracker</TabsTrigger>}
+                <TabsTrigger value="journey">Journey Tracker</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
@@ -110,11 +110,9 @@ export default function HSEDashboard() {
                 <Reports journeyAccess={!!currentUser?.journeyAccess} />
               </TabsContent>
 
-              {currentUser?.journeyAccess && (
-                <TabsContent value="journey" className="space-y-6">
-                  <JourneyTracker />
-                </TabsContent>
-              )}
+              <TabsContent value="journey" className="space-y-6">
+                <JourneyTracker />
+              </TabsContent>
 
               <TabsContent value="settings" className="space-y-6">
                 <AdminSettings onUserAdded={handleUserAdded} />
