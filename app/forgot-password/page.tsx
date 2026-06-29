@@ -28,7 +28,6 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading]         = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
   const [error, setError]                 = useState("")
-
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
 
   // Password strength

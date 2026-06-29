@@ -116,7 +116,7 @@ export async function createIncident(data: {
         data.nearMiss ?? false, data.lostTimeDays ?? 0,
       ]
     )
-    revalidateTag('incidents')
+    revalidateTag('incidents', 'max')
     return { success: true, id, referenceNo }
   } catch (error: any) {
     console.error('[manage-incidents] createIncident error:', error)
@@ -184,7 +184,7 @@ export async function updateIncident(id: string, data: Partial<{
       `UPDATE public.incident SET ${fields.join(', ')} WHERE id = $${i}`,
       values
     )
-    revalidateTag('incidents')
+    revalidateTag('incidents', 'max')
     return { success: true }
   } catch (error: any) {
     console.error('[manage-incidents] updateIncident error:', error)
@@ -195,7 +195,7 @@ export async function updateIncident(id: string, data: Partial<{
 export async function deleteIncident(id: string) {
   try {
     await pool.query(`DELETE FROM public.incident WHERE id = $1`, [id])
-    revalidateTag('incidents')
+    revalidateTag('incidents', 'max')
     return { success: true }
   } catch (error: any) {
     console.error('[manage-incidents] deleteIncident error:', error)
