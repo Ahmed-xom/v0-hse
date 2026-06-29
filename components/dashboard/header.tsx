@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { Bell, Calendar, ChevronDown, LogOut, Menu, Search, Settings, Shield, User, X, CheckCheck, GraduationCap, BarChart2, ClipboardList, ShieldCheck, Route, LayoutDashboard, FileText } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -26,12 +26,14 @@ import {
   type TrainingNotification,
 } from "@/app/actions/training-notifications"
 
+// tab= values must match the TabsTrigger values in page.tsx
 const baseNavItems = [
-  { label: "Overview", href: "/", active: true },
-  { label: "Incidents", href: "#" },
-  { label: "Inspections", href: "#" },
-  { label: "Training", href: "#" },
-  { label: "Reports", href: "#" },
+  { label: "Overview",     tab: "dashboard"   },
+  { label: "Incidents",    tab: "dashboard"   },
+  { label: "Inspections",  tab: "inspections" },
+  { label: "Training",     tab: "dashboard"   },
+  { label: "Reports",      tab: "reports"     },
+  { label: "Settings",     tab: "settings"    },
 ]
 
 const SEARCH_ITEMS = [
@@ -62,6 +64,13 @@ export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}
   const searchModalRef = useRef<HTMLDivElement>(null)
   const { user, logout } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const pathname = usePathname()
+  const activeTab = searchParams.get("tab") ?? "dashboard"
+
+  const handleNavClick = (tab: string) => {
+    router.push(`${pathname}?tab=${tab}`)
+  }
 
   const filteredItems = searchQuery.trim().length === 0
     ? SEARCH_ITEMS
@@ -110,7 +119,7 @@ export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}
 
   const navItems = [
     ...baseNavItems,
-    ...(user?.journeyAccess ? [{ label: "Journey Tracker", href: "/journey-tracker" }] : []),
+    ...(user?.journeyAccess ? [{ label: "Journey Tracker", tab: "journey" }] : []),
   ]
 
   const canReceiveNotifications =
@@ -182,30 +191,23 @@ export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}
           {/* Desktop Navigation */}
           <nav className="ml-8 hidden lg:block">
             <ul className="flex items-center gap-1">
-              {navItems.map((item) => (
-                <li key={item.label}>
-                  <Link
-                    href={item.href}
-                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                      item.active
-                        ? "bg-secondary text-foreground"
-                        : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-              {showSettings && (
-                <li>
-                  <Link
-                    href="/settings"
-                    className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground"
-                  >
-                    Settings
-                  </Link>
-                </li>
-              )}
+              {navItems.map((item) => {
+                const isActive = activeTab === item.tab
+                return (
+                  <li key={item.label}>
+                    <button
+                      onClick={() => handleNavClick(item.tab)}
+                      className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-secondary text-foreground"
+                          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  </li>
+                )
+              })}
             </ul>
           </nav>
         </div>
@@ -426,32 +428,23 @@ export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}
       {mobileMenuOpen && (
         <nav className="border-t border-border/50 bg-background p-4 lg:hidden">
           <ul className="space-y-1">
-            {navItems.map((item) => (
-              <li key={item.label}>
-                <Link
-                  href={item.href}
-                  className={`block rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                    item.active
-                      ? "bg-secondary text-foreground"
-                      : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                  }`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-            {showSettings && (
-              <li>
-                <Link
-                  href="/settings"
-                  className="block rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Settings
-                </Link>
-              </li>
-            )}
+            {navItems.map((item) => {
+              const isActive = activeTab === item.tab
+              return (
+                <li key={item.label}>
+                  <button
+                    onClick={() => { handleNavClick(item.tab); setMobileMenuOpen(false) }}
+                    className={`block w-full rounded-md px-3 py-2 text-left text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-secondary text-foreground"
+                        : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                </li>
+              )
+            })}
             <li>
               <button
                 onClick={() => {

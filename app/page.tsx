@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { KPICards } from "@/components/dashboard/kpi-cards"
 import { IncidentStatistics } from "@/components/dashboard/incident-statistics"
@@ -24,6 +25,13 @@ export default function HSEDashboard() {
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
   const isReviewer = !isAdmin && isReviewerRole(currentUser?.role ?? '')
   const [usersRefreshKey, setUsersRefreshKey] = useState(0)
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const activeTab = searchParams.get("tab") ?? "dashboard"
+
+  const handleTabChange = (tab: string) => {
+    router.push(`/?tab=${tab}`)
+  }
 
   const handleUserAdded = () => {
     setUsersRefreshKey((prev) => prev + 1)
@@ -47,7 +55,7 @@ export default function HSEDashboard() {
               <p className="text-muted-foreground">Loading dashboard...</p>
             </div>
           ) : isAdmin ? (
-            <Tabs defaultValue="dashboard" className="w-full">
+            <Tabs value={["dashboard","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
               <TabsList className="grid w-full max-w-2xl grid-cols-4">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
@@ -120,7 +128,7 @@ export default function HSEDashboard() {
             </Tabs>
           ) : isReviewer ? (
             /* ── Reviewer / Approver view ── */
-            <Tabs defaultValue="observations" className="w-full">
+            <Tabs value={["observations","inspections","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
               <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-lg grid-cols-4" : "max-w-sm grid-cols-3"}`}>
                 <TabsTrigger value="observations">Observations</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
@@ -172,7 +180,7 @@ export default function HSEDashboard() {
             </Tabs>
           ) : (
             /* ── Regular user view ── */
-            <Tabs defaultValue="observations" className="w-full">
+            <Tabs value={["observations","inspections","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
               <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-lg grid-cols-4" : "max-w-sm grid-cols-3"}`}>
                 <TabsTrigger value="observations">Observations</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
