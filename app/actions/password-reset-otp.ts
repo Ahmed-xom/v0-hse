@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { passwordResetOtp } from '@/lib/db/schema'
 import { sql, eq, and, gt } from 'drizzle-orm'
 import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 
@@ -51,16 +52,6 @@ export async function sendPasswordResetOtp(email: string) {
       expiresAt,
     })
 
-    // Use env var if valid, otherwise fall back to the known working key
-    const envKey = process.env.RESEND_API_KEY
-    const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
-      ? envKey
-      : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
-
-    const resend = new Resend(apiKey)
-    const from = 'onboarding@resend.dev'
-    const to = email
-
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:20px">
         <div style="background:#0d9488;padding:28px 30px;border-radius:10px 10px 0 0">
@@ -84,9 +75,49 @@ export async function sendPasswordResetOtp(email: string) {
       </div>
     `
 
+    // ── Try SMTP first (works with any email provider) ──────────────────────
+    const smtpHost = process.env.SMTP_HOST
+    const smtpUser = process.env.SMTP_USER
+    const smtpPass = process.env.SMTP_PASS
+
+    if (smtpHost && smtpUser && smtpPass) {
+      try {
+        const transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: Number(process.env.SMTP_PORT ?? 587),
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: { user: smtpUser, pass: smtpPass },
+        })
+        await transporter.sendMail({
+          from: process.env.SMTP_FROM ?? `HSE Dashboard <${smtpUser}>`,
+          to: email,
+          subject: 'Your HSE Dashboard password reset OTP',
+          html,
+        })
+        return { success: true, message: 'OTP sent to your email address.' }
+      } catch (smtpErr: any) {
+        console.error('[password-reset-otp] SMTP error:', smtpErr.message)
+        // fall through to Resend
+      }
+    }
+
+    // ── Fall back to Resend ─────────────────────────────────────────────────
+    const envKey = process.env.RESEND_API_KEY
+    const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
+      ? envKey
+      : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
+
+    const resend = new Resend(apiKey)
+
+    // Use a verified from address if set, otherwise onboarding@resend.dev
+    const fromEnv = (process.env.RESEND_FROM_EMAIL ?? '').trim()
+    const from = fromEnv.includes('@') && !fromEnv.includes('Xom@')
+      ? fromEnv
+      : 'onboarding@resend.dev'
+
     const { error } = await resend.emails.send({
       from,
-      to,
+      to: email,
       subject: 'Your HSE Dashboard password reset OTP',
       html,
     })
@@ -94,7 +125,7 @@ export async function sendPasswordResetOtp(email: string) {
     if (error) {
       console.error('[password-reset-otp] Resend error:', JSON.stringify(error))
       const msg = ((error as any).message ?? JSON.stringify(error)) as string
-      return { success: false, error: `Failed to send OTP: ${msg}` }
+      return { success: false, error: `Email delivery failed. Please ask your administrator to configure SMTP_HOST, SMTP_USER and SMTP_PASS in the project environment variables.` }
     }
 
     return { success: true, message: 'OTP sent to your email address.' }
