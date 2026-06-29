@@ -1,4 +1,4 @@
-import { pgTable, pgSchema, text, varchar, timestamp, boolean, integer, decimal, jsonb, index, uuid, date, serial } from 'drizzle-orm/pg-core'
+import { pgTable, pgSchema, text, varchar, timestamp, boolean, integer, decimal, jsonb, index, uuid, date } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
 // Point Better Auth tables at the neon_auth schema where they actually live
@@ -202,7 +202,7 @@ export const trainingNotification = pgTable('training_notification', {
 
 // Vehicle Register Table
 export const vehicle = pgTable('vehicle', {
-  id:            serial('id').primaryKey(),
+  id:            integer('id').primaryKey().generatedAlwaysAsIdentity(),
   plateNo:       text('plate_no').notNull().unique(),
   vehicleType:   text('vehicle_type').notNull(),
   expiryDate:    date('expiry_date'),
