@@ -4,6 +4,7 @@ import { db } from '@/lib/db'
 import { passwordResetOtp } from '@/lib/db/schema'
 import { sql, eq, and, gt } from 'drizzle-orm'
 import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 
@@ -51,16 +52,6 @@ export async function sendPasswordResetOtp(email: string) {
       expiresAt,
     })
 
-    // Use env var if valid, otherwise fall back to the known working key
-    const envKey = process.env.RESEND_API_KEY
-    const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
-      ? envKey
-      : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
-
-    const resend = new Resend(apiKey)
-    const from = 'onboarding@resend.dev'
-    const to = email
-
     const html = `
       <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:20px">
         <div style="background:#0d9488;padding:28px 30px;border-radius:10px 10px 0 0">
@@ -84,9 +75,57 @@ export async function sendPasswordResetOtp(email: string) {
       </div>
     `
 
-    const { error } = await resend.emails.send({
+    // ── Try SMTP first (works with any email provider) ──────────────────────
+    const smtpHost = process.env.SMTP_HOST
+    const smtpUser = process.env.SMTP_USER
+    const smtpPass = process.env.SMTP_PASS
+
+    if (smtpHost && smtpUser && smtpPass) {
+      try {
+        const transporter = nodemailer.createTransport({
+          host: smtpHost,
+          port: Number(process.env.SMTP_PORT ?? 587),
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: { user: smtpUser, pass: smtpPass },
+        })
+        await transporter.sendMail({
+          from: process.env.SMTP_FROM ?? `HSE Dashboard <${smtpUser}>`,
+          to: email,
+          subject: 'Your HSE Dashboard password reset OTP',
+          html,
+        })
+        return { success: true, message: 'OTP sent to your email address.' }
+      } catch (smtpErr: any) {
+        console.error('[password-reset-otp] SMTP error:', smtpErr.message)
+        // fall through to Resend
+      }
+    }
+
+    // ── Resend API ─────────────────────────────────────────────────────────
+    const envKey = process.env.RESEND_API_KEY
+    const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
+      ? envKey
+      : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
+
+    const resend = new Resend(apiKey)
+
+    // Determine best from address:
+    // - If RESEND_FROM_EMAIL is set and looks like a real domain address, use it
+    // - Otherwise fall back to onboarding@resend.dev (only works for Resend account owner)
+    const fromEnv = (process.env.RESEND_FROM_EMAIL ?? '').trim()
+    const hasCustomDomain = fromEnv.includes('@') &&
+      !fromEnv.toLowerCase().includes('xom@') &&
+      !fromEnv.toLowerCase().includes('outlook.com') &&
+      !fromEnv.toLowerCase().includes('onboarding@resend')
+
+    const from = hasCustomDomain ? fromEnv : 'onboarding@resend.dev'
+
+    // On Resend free plan, onboarding@resend.dev can only deliver to the
+    // Resend account owner's verified email. Try the requested address first;
+    // if it bounces due to domain restriction, surface a clear error.
+    const { data, error } = await resend.emails.send({
       from,
-      to,
+      to: email,
       subject: 'Your HSE Dashboard password reset OTP',
       html,
     })
@@ -94,9 +133,20 @@ export async function sendPasswordResetOtp(email: string) {
     if (error) {
       console.error('[password-reset-otp] Resend error:', JSON.stringify(error))
       const msg = ((error as any).message ?? JSON.stringify(error)) as string
-      return { success: false, error: `Failed to send OTP: ${msg}` }
+
+      // Resend free plan: can only send to verified email
+      if (msg.toLowerCase().includes('can only send to your own email') ||
+          msg.toLowerCase().includes('verify') ||
+          msg.toLowerCase().includes('domain')) {
+        return {
+          success: false,
+          error: 'Email delivery restricted. To send OTP to any address, please verify xomoman.com in your Resend dashboard, or add SMTP_HOST / SMTP_USER / SMTP_PASS environment variables.',
+        }
+      }
+      return { success: false, error: `Email delivery failed: ${msg}` }
     }
 
+    console.log('[password-reset-otp] Email sent, id:', data?.id)
     return { success: true, message: 'OTP sent to your email address.' }
   } catch (err: any) {
     console.error('[password-reset-otp] sendOtp error:', err)

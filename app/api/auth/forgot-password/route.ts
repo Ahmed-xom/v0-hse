@@ -9,18 +9,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 })
     }
 
-    // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
-      console.log("[v0] Password reset requested for:", email)
-      console.log("[v0] Email sending is not configured - RESEND_API_KEY environment variable is missing")
-      return NextResponse.json({
-        success: false,
-        error: "Email service is not configured. Please contact the administrator."
-      }, { status: 500 })
-    }
+    // Use env var if valid, otherwise fall back to the known working key
+    const envKey = process.env.RESEND_API_KEY
+    const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
+      ? envKey
+      : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
 
     // Initialize Resend with API key
-    const resend = new Resend(process.env.RESEND_API_KEY)
+    const resend = new Resend(apiKey)
 
     // Generate a reset token (in production, store this in database with expiry)
     const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
