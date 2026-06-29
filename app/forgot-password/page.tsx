@@ -24,6 +24,7 @@ export default function ForgotPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showNew, setShowNew]             = useState(false)
   const [showConfirm, setShowConfirm]     = useState(false)
+  const [confirmTouched, setConfirmTouched] = useState(false)
   const [isLoading, setIsLoading]         = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
   const [error, setError]                 = useState("")
@@ -61,6 +62,9 @@ export default function ForgotPasswordPage() {
       setError("Please enter the full 6-digit OTP.")
       return
     }
+    setConfirmTouched(false)
+    setNewPassword("")
+    setConfirmPassword("")
     setStep("password")
   }
 
@@ -368,20 +372,18 @@ export default function ForgotPasswordPage() {
                     {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {newPassword.length > 0 && (
-                  <div className="space-y-1 pt-1">
-                    {[
-                      { ok: hasMinLength, label: "At least 8 characters" },
-                      { ok: hasUpper,     label: "One uppercase letter" },
-                      { ok: hasNumber,    label: "One number" },
-                    ].map(({ ok, label }) => (
-                      <div key={label} className="flex items-center gap-2 text-xs">
-                        <div className={`h-1.5 w-1.5 rounded-full ${ok ? "bg-primary" : "bg-muted-foreground/40"}`} />
-                        <span className={ok ? "text-primary" : "text-muted-foreground"}>{label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="space-y-1 pt-1 min-h-[52px]">
+                  {[
+                    { ok: hasMinLength, label: "At least 8 characters" },
+                    { ok: hasUpper,     label: "One uppercase letter" },
+                    { ok: hasNumber,    label: "One number" },
+                  ].map(({ ok, label }) => (
+                    <div key={label} className="flex items-center gap-2 text-xs">
+                      <div className={`h-1.5 w-1.5 rounded-full transition-colors ${ok ? "bg-primary" : "bg-muted-foreground/40"}`} />
+                      <span className={`transition-colors ${ok ? "text-primary" : "text-muted-foreground"}`}>{label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               {/* Confirm password */}
               <div className="space-y-2">
@@ -394,8 +396,9 @@ export default function ForgotPasswordPage() {
                     placeholder="Confirm new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    onBlur={() => setConfirmTouched(true)}
                     className={`pl-10 pr-10 ${
-                      confirmPassword.length > 0
+                      confirmTouched && confirmPassword.length > 0
                         ? passwordsMatch
                           ? "border-primary/50"
                           : "border-destructive/50"
@@ -412,7 +415,7 @@ export default function ForgotPasswordPage() {
                     {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {confirmPassword.length > 0 && !passwordsMatch && (
+                {confirmTouched && confirmPassword.length > 0 && !passwordsMatch && (
                   <p className="text-xs text-destructive">Passwords do not match.</p>
                 )}
               </div>
@@ -420,7 +423,7 @@ export default function ForgotPasswordPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || !passwordStrong || !passwordsMatch}
+                disabled={isLoading || !passwordStrong}
               >
                 {isLoading
                   ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
