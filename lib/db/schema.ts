@@ -1,4 +1,4 @@
-import { pgTable, pgSchema, text, varchar, timestamp, boolean, integer, decimal, jsonb, index, uuid, date } from 'drizzle-orm/pg-core'
+import { pgTable, pgSchema, text, varchar, timestamp, boolean, integer, decimal, jsonb, index, uuid, date, serial } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
 // Point Better Auth tables at the neon_auth schema where they actually live
