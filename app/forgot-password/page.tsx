@@ -372,20 +372,18 @@ export default function ForgotPasswordPage() {
                     {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {newPassword.length > 0 && (
-                  <div className="space-y-1 pt-1">
-                    {[
-                      { ok: hasMinLength, label: "At least 8 characters" },
-                      { ok: hasUpper,     label: "One uppercase letter" },
-                      { ok: hasNumber,    label: "One number" },
-                    ].map(({ ok, label }) => (
-                      <div key={label} className="flex items-center gap-2 text-xs">
-                        <div className={`h-1.5 w-1.5 rounded-full ${ok ? "bg-primary" : "bg-muted-foreground/40"}`} />
-                        <span className={ok ? "text-primary" : "text-muted-foreground"}>{label}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="space-y-1 pt-1 min-h-[52px]">
+                  {[
+                    { ok: hasMinLength, label: "At least 8 characters" },
+                    { ok: hasUpper,     label: "One uppercase letter" },
+                    { ok: hasNumber,    label: "One number" },
+                  ].map(({ ok, label }) => (
+                    <div key={label} className="flex items-center gap-2 text-xs">
+                      <div className={`h-1.5 w-1.5 rounded-full transition-colors ${ok ? "bg-primary" : "bg-muted-foreground/40"}`} />
+                      <span className={`transition-colors ${ok ? "text-primary" : "text-muted-foreground"}`}>{label}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
               {/* Confirm password */}
               <div className="space-y-2">
