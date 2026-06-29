@@ -30,9 +30,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import {
-  getJourneys, createJourney, updateJourneyStatus, deleteJourney,
+  getJourneys, getAllJourneys, createJourney, updateJourneyStatus, deleteJourney,
   type JourneyRecord,
 } from "@/app/actions/manage-journeys"
+import { isAdminRole } from "@/lib/auth-roles"
 import * as XLSX from "xlsx"
 
 const VEHICLE_TYPES = ["Car", "Van", "Bus", "Truck", "Motorcycle", "Other"]
@@ -72,13 +73,15 @@ export function JourneyTracker() {
   const [purposeFilter, setPurposeFilter] = useState("all")
   const [vehicleFilter, setVehicleFilter] = useState("all")
 
+  const isAdmin = !!user && isAdminRole(user.role, user.email)
+
   const fetchJourneys = useCallback(async () => {
     if (!user?.email) return
     setIsFetching(true)
-    const res = await getJourneys(user.email)
+    const res = isAdmin ? await getAllJourneys() : await getJourneys(user.email)
     if (res.success) setJourneys(res.data)
     setIsFetching(false)
-  }, [user?.email])
+  }, [user?.email, isAdmin])
 
   useEffect(() => {
     if (user?.email) fetchJourneys()
@@ -92,7 +95,8 @@ export function JourneyTracker() {
         j.origin.toLowerCase().includes(q) ||
         j.destination.toLowerCase().includes(q) ||
         j.purpose.toLowerCase().includes(q) ||
-        (j.vehiclePlate ?? "").toLowerCase().includes(q)
+        (j.vehiclePlate ?? "").toLowerCase().includes(q) ||
+        j.userName.toLowerCase().includes(q)
       const matchesStatus  = statusFilter  === "all" || j.status      === statusFilter
       const matchesPurpose = purposeFilter === "all" || j.purpose     === purposeFilter
       const matchesVehicle = vehicleFilter === "all" || j.vehicleType === vehicleFilter

@@ -39,6 +39,19 @@ export async function getJourneys(userEmail: string) {
   }
 }
 
+export async function getAllJourneys() {
+  try {
+    const rows = await db
+      .select()
+      .from(journey)
+      .orderBy(desc(journey.createdAt))
+    return { success: true, data: rows as JourneyRecord[] }
+  } catch (error: any) {
+    console.error('[manage-journeys] getAllJourneys error:', error)
+    return { success: false, data: [], error: error.message }
+  }
+}
+
 export async function createJourney(data: {
   userEmail: string
   userName: string
