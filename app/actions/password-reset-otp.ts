@@ -62,9 +62,8 @@ export async function sendPasswordResetOtp(email: string) {
     }
 
     const resend = new Resend(process.env.RESEND_API_KEY)
-    const from = process.env.RESEND_FROM_EMAIL
-      ? `HSE System <${process.env.RESEND_FROM_EMAIL}>`
-      : 'HSE System <onboarding@resend.dev>'
+    const fromEnv = (process.env.RESEND_FROM_EMAIL ?? '').trim()
+    const from = fromEnv.includes('@') ? fromEnv : 'HSE Dashboard <onboarding@resend.dev>'
     const to = email
 
     const html = `
