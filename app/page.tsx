@@ -107,7 +107,7 @@ export default function HSEDashboard() {
                   <h2 className="text-xl font-semibold tracking-tight">Reports</h2>
                   <p className="text-muted-foreground text-sm">HSE performance data, summaries, and exports</p>
                 </div>
-                <Reports />
+                <Reports journeyAccess={!!currentUser?.journeyAccess} />
               </TabsContent>
 
               {currentUser?.journeyAccess && (
@@ -162,7 +162,7 @@ export default function HSEDashboard() {
                   <p className="text-sm text-muted-foreground">HSE performance summaries and exports.</p>
                 </div>
                 <section aria-label="Reports">
-                  <Reports />
+                  <Reports journeyAccess={!!currentUser?.journeyAccess} />
                 </section>
               </TabsContent>
 
@@ -214,7 +214,7 @@ export default function HSEDashboard() {
                   <p className="text-sm text-muted-foreground">HSE performance summaries and exports.</p>
                 </div>
                 <section aria-label="Reports">
-                  <Reports />
+                  <Reports journeyAccess={!!currentUser?.journeyAccess} />
                 </section>
               </TabsContent>
 
