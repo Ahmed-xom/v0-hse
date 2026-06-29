@@ -52,15 +52,15 @@ export async function sendPasswordResetOtp(email: string) {
     })
 
     const apiKey = process.env.RESEND_API_KEY
-    const isDev = process.env.NODE_ENV === 'development'
+    const keyIsValid = !!apiKey && apiKey.startsWith('re_') && apiKey.length > 10
 
-    // If no valid key, fall through to dev mode
-    if (!apiKey || apiKey === 'Xom@2026' || !apiKey.startsWith('re_')) {
-      console.log('[password-reset-otp] No valid RESEND_API_KEY — dev fallback, OTP:', otp)
+    // If no valid key configured, return dev fallback
+    if (!keyIsValid) {
+      console.log('[password-reset-otp] No valid RESEND_API_KEY — OTP:', otp)
       return {
         success: true,
-        message: isDev ? `Email not configured. Your OTP is: ${otp}` : 'OTP sent if email is registered.',
-        _devOtp: isDev ? otp : undefined,
+        message: 'OTP sent if email is registered.',
+        _devOtp: process.env.NODE_ENV === 'development' ? otp : undefined,
       }
     }
 
@@ -100,18 +100,8 @@ export async function sendPasswordResetOtp(email: string) {
 
     if (error) {
       console.error('[password-reset-otp] Resend error:', JSON.stringify(error))
-      const msg = (error as any).message ?? JSON.stringify(error)
-      // In dev, always fall back to showing OTP on screen
-      if (isDev) {
-        return {
-          success: true,
-          message: `Email send failed (${msg}). Your OTP is: ${otp}`,
-          _devOtp: otp,
-        }
-      }
-      if (msg.includes('API key')) return { success: false, error: 'Email service not configured. Please contact your administrator.' }
-      if (msg.includes('domain') || msg.includes('from')) return { success: false, error: 'Email from-address not verified. Please contact your administrator.' }
-      return { success: false, error: `Failed to send OTP email. Please try again.` }
+      const msg = ((error as any).message ?? JSON.stringify(error)) as string
+      return { success: false, error: `Failed to send OTP: ${msg}` }
     }
 
     return { success: true, message: 'OTP sent to your email address.' }
