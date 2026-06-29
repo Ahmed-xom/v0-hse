@@ -17,6 +17,7 @@ export const user = neonAuthSchema.table('user', {
   banExpires: timestamp('banExpires'),
   role: text('role').default('USER'),
   journeyAccess: boolean('journey_access').notNull().default(false),
+  journeyApprover: boolean('journey_approver').notNull().default(false),
 })
 
 export const session = neonAuthSchema.table('session', {
