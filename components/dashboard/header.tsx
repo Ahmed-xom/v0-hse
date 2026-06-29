@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Bell, Calendar, ChevronDown, LogOut, Menu, Search, Settings, Shield, User, X, CheckCheck, GraduationCap } from "lucide-react"
+import { Bell, Calendar, ChevronDown, LogOut, Menu, Search, Settings, Shield, User, X, CheckCheck, GraduationCap, BarChart2, ClipboardList, ShieldCheck, Route, LayoutDashboard, FileText } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,6 +34,18 @@ const baseNavItems = [
   { label: "Reports", href: "#" },
 ]
 
+const SEARCH_ITEMS = [
+  { label: "Dashboard Overview", description: "KPIs, stats, and performance metrics", href: "/", icon: LayoutDashboard, section: "Navigation" },
+  { label: "Incidents", description: "View and manage incident reports", href: "/#incidents", icon: ShieldCheck, section: "Navigation" },
+  { label: "Inspections", description: "Inspection reports and types", href: "/#inspections", icon: ClipboardList, section: "Navigation" },
+  { label: "Training", description: "Training matrix and records", href: "/#training", icon: GraduationCap, section: "Navigation" },
+  { label: "Reports", description: "HSE performance data, summaries and exports", href: "/#reports", icon: BarChart2, section: "Navigation" },
+  { label: "Journey Tracker", description: "Track vehicle journeys and trips", href: "/journey-tracker", icon: Route, section: "Navigation" },
+  { label: "Settings", description: "User management and system settings", href: "/#settings", icon: Settings, section: "Navigation" },
+  { label: "Behaviour Observations", description: "Submit and review BBS observations", href: "/#observations", icon: FileText, section: "Sections" },
+  { label: "Business Units", description: "Manage business units and departments", href: "/#business-units", icon: LayoutDashboard, section: "Sections" },
+]
+
 interface DashboardHeaderProps {
   onDateRangeChange?: (range: string) => void
 }
@@ -44,8 +56,57 @@ export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}
   const [notifications, setNotifications] = useState<TrainingNotification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifOpen, setNotifOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const searchModalRef = useRef<HTMLDivElement>(null)
   const { user, logout } = useAuth()
   const router = useRouter()
+
+  const filteredItems = searchQuery.trim().length === 0
+    ? SEARCH_ITEMS
+    : SEARCH_ITEMS.filter((item) =>
+        item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+
+  const openSearch = () => {
+    setSearchOpen(true)
+    setSearchQuery("")
+    setTimeout(() => searchInputRef.current?.focus(), 50)
+  }
+
+  const closeSearch = () => {
+    setSearchOpen(false)
+    setSearchQuery("")
+  }
+
+  const handleSearchSelect = (href: string) => {
+    closeSearch()
+    router.push(href)
+  }
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault()
+        searchOpen ? closeSearch() : openSearch()
+      }
+      if (e.key === "Escape" && searchOpen) closeSearch()
+    }
+    window.addEventListener("keydown", handleKey)
+    return () => window.removeEventListener("keydown", handleKey)
+  }, [searchOpen])
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchModalRef.current && !searchModalRef.current.contains(e.target as Node)) {
+        closeSearch()
+      }
+    }
+    if (searchOpen) document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [searchOpen])
 
   const navItems = [
     ...baseNavItems,
@@ -151,11 +212,18 @@ export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
-          {/* Search */}
-          <div className="relative hidden md:block">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search..." className="w-64 pl-9" />
-          </div>
+          {/* Search trigger */}
+          <button
+            onClick={openSearch}
+            className="hidden md:flex items-center gap-2 rounded-md border border-border/60 bg-secondary/40 px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground w-56"
+            aria-label="Open search"
+          >
+            <Search className="h-4 w-4 shrink-0" />
+            <span className="flex-1 text-left">Search...</span>
+            <kbd className="pointer-events-none hidden select-none rounded border border-border/60 bg-background px-1.5 py-0.5 text-[10px] font-mono sm:inline-flex">
+              Ctrl K
+            </kbd>
+          </button>
 
           {/* Date Range */}
           <DropdownMenu>
@@ -397,6 +465,87 @@ export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}
             </li>
           </ul>
         </nav>
+      )}
+      {/* Search Modal Overlay */}
+      {searchOpen && (
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+
+          {/* Modal */}
+          <div
+            ref={searchModalRef}
+            className="relative w-full max-w-lg rounded-xl border border-border bg-card shadow-2xl"
+          >
+            {/* Search input row */}
+            <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+              <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search pages, sections..."
+                className="flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && filteredItems.length > 0) {
+                    handleSearchSelect(filteredItems[0].href)
+                  }
+                }}
+              />
+              <button
+                onClick={closeSearch}
+                className="rounded border border-border/60 bg-secondary/40 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground hover:bg-secondary"
+              >
+                ESC
+              </button>
+            </div>
+
+            {/* Results */}
+            <div className="max-h-80 overflow-y-auto py-2">
+              {filteredItems.length === 0 ? (
+                <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                  No results for &ldquo;{searchQuery}&rdquo;
+                </div>
+              ) : (
+                (() => {
+                  const sections = Array.from(new Set(filteredItems.map((i) => i.section)))
+                  return sections.map((section) => (
+                    <div key={section}>
+                      <p className="px-4 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {section}
+                      </p>
+                      {filteredItems
+                        .filter((i) => i.section === section)
+                        .map((item) => (
+                          <button
+                            key={item.href}
+                            onClick={() => handleSearchSelect(item.href)}
+                            className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-secondary/60"
+                          >
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-secondary/40">
+                              <item.icon className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-foreground">{item.label}</p>
+                              <p className="truncate text-xs text-muted-foreground">{item.description}</p>
+                            </div>
+                          </button>
+                        ))}
+                    </div>
+                  ))
+                })()
+              )}
+            </div>
+
+            {/* Footer hint */}
+            <div className="flex items-center gap-3 border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
+              <span><kbd className="font-mono">↵</kbd> to select</span>
+              <span><kbd className="font-mono">ESC</kbd> to close</span>
+              <span><kbd className="font-mono">Ctrl K</kbd> to toggle</span>
+            </div>
+          </div>
+        </div>
       )}
     </header>
   )
