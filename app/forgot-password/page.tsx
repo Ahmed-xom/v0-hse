@@ -24,6 +24,7 @@ export default function ForgotPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showNew, setShowNew]             = useState(false)
   const [showConfirm, setShowConfirm]     = useState(false)
+  const [confirmTouched, setConfirmTouched] = useState(false)
   const [isLoading, setIsLoading]         = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
   const [error, setError]                 = useState("")
@@ -61,6 +62,9 @@ export default function ForgotPasswordPage() {
       setError("Please enter the full 6-digit OTP.")
       return
     }
+    setConfirmTouched(false)
+    setNewPassword("")
+    setConfirmPassword("")
     setStep("password")
   }
 
@@ -394,8 +398,9 @@ export default function ForgotPasswordPage() {
                     placeholder="Confirm new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    onBlur={() => setConfirmTouched(true)}
                     className={`pl-10 pr-10 ${
-                      confirmPassword.length > 0
+                      confirmTouched && confirmPassword.length > 0
                         ? passwordsMatch
                           ? "border-primary/50"
                           : "border-destructive/50"
@@ -412,7 +417,7 @@ export default function ForgotPasswordPage() {
                     {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {confirmPassword.length > 0 && !passwordsMatch && (
+                {confirmTouched && confirmPassword.length > 0 && !passwordsMatch && (
                   <p className="text-xs text-destructive">Passwords do not match.</p>
                 )}
               </div>
@@ -420,7 +425,7 @@ export default function ForgotPasswordPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading || !passwordStrong || !passwordsMatch}
+                disabled={isLoading || !passwordStrong}
               >
                 {isLoading
                   ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
