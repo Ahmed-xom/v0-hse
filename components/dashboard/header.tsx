@@ -29,7 +29,7 @@ import {
 // tab= values must match the TabsTrigger values in page.tsx
 const baseNavItems = [
   { label: "Overview",     tab: "dashboard"   },
-  { label: "Incidents",    tab: "dashboard"   },
+  { label: "Incidents",    tab: "incidents"   },
   { label: "Inspections",  tab: "inspections" },
   { label: "Training",     tab: "dashboard"   },
   { label: "Reports",      tab: "reports"     },

@@ -11,6 +11,7 @@ import { UsersManagementWithRefresh } from "@/components/dashboard/users-managem
 import { BusinessUnits } from "@/components/dashboard/business-units"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
 import { AdminSettings } from "@/components/dashboard/admin-settings"
+import { IncidentManagement } from "@/components/dashboard/incident-management"
 import { TrainingMatrix } from "@/components/dashboard/training-matrix"
 import { TrainingRecords } from "@/components/dashboard/training-records"
 import { Reports } from "@/components/dashboard/reports"
@@ -55,9 +56,10 @@ export default function HSEDashboard() {
               <p className="text-muted-foreground">Loading dashboard...</p>
             </div>
           ) : isAdmin ? (
-            <Tabs value={["dashboard","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full max-w-2xl grid-cols-4">
+            <Tabs value={["dashboard","incidents","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
+              <TabsList className="grid w-full max-w-2xl grid-cols-5">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+                <TabsTrigger value="incidents">Incidents</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
                 <TabsTrigger value="journey">Journey Tracker</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -110,6 +112,14 @@ export default function HSEDashboard() {
                 </section>
               </TabsContent>
 
+              <TabsContent value="incidents" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Incident Management</h2>
+                  <p className="text-muted-foreground text-sm">Record, investigate, and track all HSE incidents and near misses</p>
+                </div>
+                <IncidentManagement />
+              </TabsContent>
+
               <TabsContent value="reports" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">Reports</h2>
@@ -128,9 +138,10 @@ export default function HSEDashboard() {
             </Tabs>
           ) : isReviewer ? (
             /* ── Reviewer / Approver view ── */
-            <Tabs value={["observations","inspections","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-lg grid-cols-4" : "max-w-sm grid-cols-3"}`}>
+            <Tabs value={["observations","incidents","inspections","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
+              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-2xl grid-cols-5" : "max-w-xl grid-cols-4"}`}>
                 <TabsTrigger value="observations">Observations</TabsTrigger>
+                <TabsTrigger value="incidents">Incidents</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
                 {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey Tracker</TabsTrigger>}
@@ -147,6 +158,14 @@ export default function HSEDashboard() {
                 <section aria-label="All Observations">
                   <BehaviourObservations viewAll />
                 </section>
+              </TabsContent>
+
+              <TabsContent value="incidents" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Incident Management</h2>
+                  <p className="text-sm text-muted-foreground">Record, investigate, and track all HSE incidents and near misses.</p>
+                </div>
+                <IncidentManagement />
               </TabsContent>
 
               <TabsContent value="inspections" className="space-y-6">
@@ -180,9 +199,10 @@ export default function HSEDashboard() {
             </Tabs>
           ) : (
             /* ── Regular user view ── */
-            <Tabs value={["observations","inspections","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-lg grid-cols-4" : "max-w-sm grid-cols-3"}`}>
+            <Tabs value={["observations","incidents","inspections","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
+              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-2xl grid-cols-5" : "max-w-xl grid-cols-4"}`}>
                 <TabsTrigger value="observations">Observations</TabsTrigger>
+                <TabsTrigger value="incidents">Incidents</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
                 {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey Tracker</TabsTrigger>}
@@ -197,6 +217,15 @@ export default function HSEDashboard() {
                 <section aria-label="Behaviour Observations">
                   <BehaviourObservations />
                 </section>
+              </TabsContent>
+
+              {/* Incidents */}
+              <TabsContent value="incidents" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Incidents</h2>
+                  <p className="text-sm text-muted-foreground">Report and track HSE incidents and near misses.</p>
+                </div>
+                <IncidentManagement />
               </TabsContent>
 
               {/* Inspections */}

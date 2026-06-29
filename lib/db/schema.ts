@@ -237,6 +237,31 @@ export const journey = pgTable('journey', {
 })
 
 // Inspections Table
+// Incident Management Table
+export const incident = pgTable('incident', {
+  id:               text('id').primaryKey(),
+  referenceNo:      text('reference_no').notNull().unique(),
+  title:            text('title').notNull(),
+  incidentType:     text('incident_type').notNull(),
+  severity:         text('severity').notNull().default('Minor'),
+  status:           text('status').notNull().default('Open'),
+  date:             timestamp('date', { withTimezone: true }).notNull(),
+  location:         text('location'),
+  businessUnit:     text('business_unit'),
+  reportedBy:       text('reported_by'),
+  reportedByEmail:  text('reported_by_email'),
+  injuredPerson:    text('injured_person'),
+  injuryType:       text('injury_type'),
+  description:      text('description'),
+  immediateAction:  text('immediate_action'),
+  rootCause:        text('root_cause'),
+  correctiveAction: text('corrective_action'),
+  lostTimeDays:     integer('lost_time_days').default(0),
+  nearMiss:         boolean('near_miss').notNull().default(false),
+  createdAt:        timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
+  updatedAt:        timestamp('updated_at', { withTimezone: true }).notNull().default(sql`now()`),
+})
+
 // Password Reset OTP Table
 export const passwordResetOtp = pgTable('password_reset_otp', {
   id:        uuid('id').primaryKey().default(sql`gen_random_uuid()`),
