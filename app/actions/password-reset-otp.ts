@@ -98,8 +98,11 @@ export async function sendPasswordResetOtp(email: string) {
     })
 
     if (error) {
-      console.error('[password-reset-otp] Resend error:', error)
-      return { success: false, error: 'Failed to send OTP email. Please try again.' }
+      console.error('[password-reset-otp] Resend error:', JSON.stringify(error))
+      const msg = (error as any).message ?? JSON.stringify(error)
+      if (msg.includes('API key')) return { success: false, error: 'Email service not configured. Please contact your administrator.' }
+      if (msg.includes('domain') || msg.includes('from')) return { success: false, error: 'Email from-address not verified. Please contact your administrator.' }
+      return { success: false, error: `Failed to send OTP email: ${msg}` }
     }
 
     return { success: true, message: 'OTP sent to your email address.' }
