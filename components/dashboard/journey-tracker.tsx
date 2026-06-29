@@ -374,7 +374,7 @@ export function JourneyTracker() {
                       <TableCell>
                         {j.attachmentUrl ? (
                           <a
-                            href={`/api/journey-file?pathname=${encodeURIComponent(j.attachmentUrl)}`}
+                            href={j.attachmentUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-xs text-primary underline-offset-2 hover:underline"

@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
 
     const safeName = `journeys/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`
 
-    const blob = await put(safeName, file, { access: 'private' })
+    const blob = await put(safeName, file, { access: 'public' })
 
-    return NextResponse.json({ pathname: blob.pathname, name: file.name })
+    return NextResponse.json({ pathname: blob.url, name: file.name })
   } catch (error) {
     console.error('[journey-upload] error:', error)
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
