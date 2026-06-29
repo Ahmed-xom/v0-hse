@@ -237,6 +237,16 @@ export const journey = pgTable('journey', {
 })
 
 // Inspections Table
+// Password Reset OTP Table
+export const passwordResetOtp = pgTable('password_reset_otp', {
+  id:        uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  email:     text('email').notNull(),
+  otpHash:   text('otp_hash').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  used:      boolean('used').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
+})
+
 export const inspection = pgTable('inspection', {
   id: text('id').primaryKey(),
   userId: uuid('userId').notNull(),
