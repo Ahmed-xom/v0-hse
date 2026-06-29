@@ -1,9 +1,32 @@
 'use server'
 
 import { db } from '@/lib/db'
-import { journey } from '@/lib/db/schema'
-import { eq, desc } from 'drizzle-orm'
+import { journey, vehicle } from '@/lib/db/schema'
+import { eq, desc, asc } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+
+export type VehicleRecord = {
+  id: number
+  plateNo: string
+  vehicleType: string
+  expiryDate: string | null
+  allowableLoad: string | null
+  kmReading: string | null
+  description: string | null
+}
+
+export async function getVehicles() {
+  try {
+    const rows = await db
+      .select()
+      .from(vehicle)
+      .where(eq(vehicle.isActive, true))
+      .orderBy(asc(vehicle.plateNo))
+    return { success: true, data: rows as VehicleRecord[] }
+  } catch (error: any) {
+    return { success: false, data: [], error: error.message }
+  }
+}
 
 export type JourneyRecord = {
   id: string
