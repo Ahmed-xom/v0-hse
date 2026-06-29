@@ -101,7 +101,7 @@ export async function sendPasswordResetOtp(email: string) {
       }
     }
 
-    // ── Fall back to Resend ─────────────────────────────────────────────────
+    // ── Resend API ─────────────────────────────────────────────────────────
     const envKey = process.env.RESEND_API_KEY
     const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
       ? envKey
@@ -109,13 +109,21 @@ export async function sendPasswordResetOtp(email: string) {
 
     const resend = new Resend(apiKey)
 
-    // Use a verified from address if set, otherwise onboarding@resend.dev
+    // Determine best from address:
+    // - If RESEND_FROM_EMAIL is set and looks like a real domain address, use it
+    // - Otherwise fall back to onboarding@resend.dev (only works for Resend account owner)
     const fromEnv = (process.env.RESEND_FROM_EMAIL ?? '').trim()
-    const from = fromEnv.includes('@') && !fromEnv.includes('Xom@')
-      ? fromEnv
-      : 'onboarding@resend.dev'
+    const hasCustomDomain = fromEnv.includes('@') &&
+      !fromEnv.toLowerCase().includes('xom@') &&
+      !fromEnv.toLowerCase().includes('outlook.com') &&
+      !fromEnv.toLowerCase().includes('onboarding@resend')
 
-    const { error } = await resend.emails.send({
+    const from = hasCustomDomain ? fromEnv : 'onboarding@resend.dev'
+
+    // On Resend free plan, onboarding@resend.dev can only deliver to the
+    // Resend account owner's verified email. Try the requested address first;
+    // if it bounces due to domain restriction, surface a clear error.
+    const { data, error } = await resend.emails.send({
       from,
       to: email,
       subject: 'Your HSE Dashboard password reset OTP',
@@ -125,9 +133,20 @@ export async function sendPasswordResetOtp(email: string) {
     if (error) {
       console.error('[password-reset-otp] Resend error:', JSON.stringify(error))
       const msg = ((error as any).message ?? JSON.stringify(error)) as string
-      return { success: false, error: `Email delivery failed. Please ask your administrator to configure SMTP_HOST, SMTP_USER and SMTP_PASS in the project environment variables.` }
+
+      // Resend free plan: can only send to verified email
+      if (msg.toLowerCase().includes('can only send to your own email') ||
+          msg.toLowerCase().includes('verify') ||
+          msg.toLowerCase().includes('domain')) {
+        return {
+          success: false,
+          error: 'Email delivery restricted. To send OTP to any address, please verify xomoman.com in your Resend dashboard, or add SMTP_HOST / SMTP_USER / SMTP_PASS environment variables.',
+        }
+      }
+      return { success: false, error: `Email delivery failed: ${msg}` }
     }
 
+    console.log('[password-reset-otp] Email sent, id:', data?.id)
     return { success: true, message: 'OTP sent to your email address.' }
   } catch (err: any) {
     console.error('[password-reset-otp] sendOtp error:', err)
