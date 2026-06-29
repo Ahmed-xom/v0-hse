@@ -28,6 +28,7 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading]         = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
   const [error, setError]                 = useState("")
+  const [devOtp, setDevOtp]               = useState<string | undefined>()
 
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -43,10 +44,12 @@ export default function ForgotPasswordPage() {
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setDevOtp(undefined)
     setIsLoading(true)
     const res = await sendPasswordResetOtp(email)
     setIsLoading(false)
     if (res.success) {
+      if ((res as any)._devOtp) setDevOtp((res as any)._devOtp)
       setStep("otp")
       startCooldown()
     } else {
@@ -97,10 +100,12 @@ export default function ForgotPasswordPage() {
   // --- Resend OTP ---
   const handleResend = async () => {
     setError("")
+    setDevOtp(undefined)
     setIsLoading(true)
     const res = await sendPasswordResetOtp(email)
     setIsLoading(false)
     if (res.success) {
+      if ((res as any)._devOtp) setDevOtp((res as any)._devOtp)
       setOtp(Array(OTP_LENGTH).fill(""))
       otpRefs.current[0]?.focus()
       startCooldown()
@@ -266,6 +271,14 @@ export default function ForgotPasswordPage() {
           <CardContent>
             <form onSubmit={handleVerifyOtp} className="space-y-5">
               <ErrorBox />
+              {/* Dev fallback: show OTP directly when email is not configured */}
+              {devOtp && (
+                <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm">
+                  <p className="font-semibold text-amber-400 mb-1">Dev mode — email not sent</p>
+                  <p className="text-muted-foreground text-xs mb-2">Configure RESEND_API_KEY in project settings for production.</p>
+                  <p className="text-foreground font-mono text-lg tracking-widest text-center bg-background rounded p-2 border border-border select-all">{devOtp}</p>
+                </div>
+              )}
               {/* OTP boxes */}
               <div className="space-y-2">
                 <Label className="text-center block">One-Time Password</Label>
