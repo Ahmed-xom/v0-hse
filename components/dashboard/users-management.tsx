@@ -22,6 +22,7 @@ import {
   Copy,
   Check,
   Route,
+  ShieldCheck,
 } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -65,7 +66,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword, getPasswordResetHistory } from "@/app/actions/reset-password"
-import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess } from "@/app/actions/manage-users"
+import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess, updateJourneyApprover } from "@/app/actions/manage-users"
 import { isAdminRole } from "@/lib/auth-roles"
 
 
@@ -183,17 +184,30 @@ export function UsersManagement() {
 
   const handleToggleJourneyAccess = async (u: User) => {
     const newValue = !u.journeyAccess
-    // Optimistic update
     setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyAccess: newValue } : x))
     const result = await updateJourneyAccess(u.id, newValue)
     if (!result.success) {
-      // Revert on failure
       setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyAccess: !newValue } : x))
       toast({ title: "Error", description: result.error, variant: "destructive" })
     } else {
       toast({
         title: newValue ? "Journey Tracker access granted" : "Journey Tracker access revoked",
         description: `${u.name} ${newValue ? "can now" : "can no longer"} access the Journey Tracker.`,
+      })
+    }
+  }
+
+  const handleToggleJourneyApprover = async (u: User) => {
+    const newValue = !(u as any).journeyApprover
+    setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyApprover: newValue } : x))
+    const result = await updateJourneyApprover(u.id, newValue)
+    if (!result.success) {
+      setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyApprover: !newValue } : x))
+      toast({ title: "Error", description: result.error, variant: "destructive" })
+    } else {
+      toast({
+        title: newValue ? "Journey Approver role granted" : "Journey Approver role revoked",
+        description: `${u.name} ${newValue ? "can now approve" : "can no longer approve"} journey requests.`,
       })
     }
   }
@@ -725,6 +739,12 @@ export function UsersManagement() {
                             Journey
                           </Badge>
                         )}
+                        {(user as any).journeyApprover && (
+                          <Badge variant="outline" className="gap-1 text-xs bg-amber-500/10 text-amber-400 border-amber-500/30 w-fit">
+                            <ShieldCheck className="h-2.5 w-2.5" />
+                            J.Approver
+                          </Badge>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
@@ -778,6 +798,10 @@ export function UsersManagement() {
                               <DropdownMenuItem onClick={() => handleToggleJourneyAccess(user)}>
                                 <Route className="mr-2 h-4 w-4" />
                                 {user.journeyAccess ? "Revoke Journey Tracker" : "Grant Journey Tracker"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleToggleJourneyApprover(user)}>
+                                <ShieldCheck className="mr-2 h-4 w-4" />
+                                {(user as any).journeyApprover ? "Revoke Journey Approver" : "Grant Journey Approver"}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleResetPassword(user)}>
                                 <KeyRound className="mr-2 h-4 w-4" />

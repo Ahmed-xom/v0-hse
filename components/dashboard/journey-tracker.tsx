@@ -30,9 +30,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import {
-  getJourneys, createJourney, updateJourneyStatus, deleteJourney,
-  type JourneyRecord,
+  getJourneys, getAllJourneys, createJourney, updateJourneyStatus, deleteJourney,
+  getVehicles,
+  type JourneyRecord, type VehicleRecord,
 } from "@/app/actions/manage-journeys"
+import { isAdminRole } from "@/lib/auth-roles"
 import * as XLSX from "xlsx"
 
 const VEHICLE_TYPES = ["Car", "Van", "Bus", "Truck", "Motorcycle", "Other"]
@@ -63,6 +65,8 @@ export function JourneyTracker() {
   const [isSaving, setIsSaving]         = useState(false)
   const [form, setForm]                 = useState(emptyForm)
 
+  const [vehicles, setVehicles]             = useState<VehicleRecord[]>([])
+
   const [attachedFile, setAttachedFile]     = useState<File | null>(null)
   const [isUploading, setIsUploading]       = useState(false)
   const fileInputRef                        = useRef<HTMLInputElement>(null)
@@ -72,17 +76,23 @@ export function JourneyTracker() {
   const [purposeFilter, setPurposeFilter] = useState("all")
   const [vehicleFilter, setVehicleFilter] = useState("all")
 
+  const isAdmin = !!user && isAdminRole(user.role, user.email)
+
   const fetchJourneys = useCallback(async () => {
     if (!user?.email) return
     setIsFetching(true)
-    const res = await getJourneys(user.email)
+    const res = isAdmin ? await getAllJourneys() : await getJourneys(user.email)
     if (res.success) setJourneys(res.data)
     setIsFetching(false)
-  }, [user?.email])
+  }, [user?.email, isAdmin])
 
   useEffect(() => {
     if (user?.email) fetchJourneys()
   }, [user?.email, fetchJourneys])
+
+  useEffect(() => {
+    getVehicles().then((res) => { if (res.success) setVehicles(res.data) })
+  }, [])
 
   const filteredJourneys = useMemo(() => {
     return journeys.filter((j) => {
@@ -92,7 +102,8 @@ export function JourneyTracker() {
         j.origin.toLowerCase().includes(q) ||
         j.destination.toLowerCase().includes(q) ||
         j.purpose.toLowerCase().includes(q) ||
-        (j.vehiclePlate ?? "").toLowerCase().includes(q)
+        (j.vehiclePlate ?? "").toLowerCase().includes(q) ||
+        j.userName.toLowerCase().includes(q)
       const matchesStatus  = statusFilter  === "all" || j.status      === statusFilter
       const matchesPurpose = purposeFilter === "all" || j.purpose     === purposeFilter
       const matchesVehicle = vehicleFilter === "all" || j.vehicleType === vehicleFilter
@@ -110,7 +121,7 @@ export function JourneyTracker() {
   }), [journeys])
 
   const handleSubmit = async () => {
-    if (!form.origin || !form.destination || !form.vehicleType || !form.departureDate || !form.departureTime || !form.purpose) {
+    if (!form.origin || !form.destination || !form.vehiclePlate || !form.departureDate || !form.departureTime || !form.purpose) {
       toast({ title: "Required fields missing", description: "Please fill in all required fields.", variant: "destructive" })
       return
     }
@@ -466,28 +477,46 @@ export function JourneyTracker() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label>Vehicle Type <span className="text-destructive">*</span></Label>
-                <Select value={form.vehicleType} onValueChange={(v) => setForm((f) => ({ ...f, vehicleType: v }))}>
-                  <SelectTrigger><SelectValue placeholder="Select vehicle..." /></SelectTrigger>
-                  <SelectContent>
-                    {VEHICLE_TYPES.map((v) => <SelectItem key={v} value={v}>{v}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Plate Number</Label>
-                <div className="relative">
-                  <Car className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="e.g. ABC 1234"
-                    className="pl-8"
-                    value={form.vehiclePlate}
-                    onChange={(e) => setForm((f) => ({ ...f, vehiclePlate: e.target.value }))}
-                  />
-                </div>
-              </div>
+            <div className="space-y-1.5">
+              <Label>Vehicle <span className="text-destructive">*</span></Label>
+              <Select
+                value={form.vehiclePlate}
+                onValueChange={(plateNo) => {
+                  const v = vehicles.find((v) => v.plateNo === plateNo)
+                  setForm((f) => ({
+                    ...f,
+                    vehiclePlate: plateNo,
+                    vehicleType: v?.vehicleType ?? "",
+                  }))
+                }}
+              >
+                <SelectTrigger>
+                  <Car className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <SelectValue placeholder="Select vehicle (plate no.)..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-64">
+                  {vehicles.map((v) => (
+                    <SelectItem key={v.id} value={v.plateNo}>
+                      <span className="font-mono font-semibold">{v.plateNo}</span>
+                      <span className="ml-2 text-muted-foreground">— {v.vehicleType}</span>
+                      {v.allowableLoad && (
+                        <span className="ml-1 text-xs text-muted-foreground">({v.allowableLoad})</span>
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.vehicleType && (
+                <p className="text-xs text-muted-foreground">
+                  Type: <span className="text-foreground">{form.vehicleType}</span>
+                  {vehicles.find(v => v.plateNo === form.vehiclePlate)?.allowableLoad &&
+                    <> &middot; Load: <span className="text-foreground">{vehicles.find(v => v.plateNo === form.vehiclePlate)?.allowableLoad}</span></>
+                  }
+                  {vehicles.find(v => v.plateNo === form.vehiclePlate)?.description &&
+                    <> &middot; {vehicles.find(v => v.plateNo === form.vehiclePlate)?.description}</>
+                  }
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

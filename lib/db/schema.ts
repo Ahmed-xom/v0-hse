@@ -17,6 +17,7 @@ export const user = neonAuthSchema.table('user', {
   banExpires: timestamp('banExpires'),
   role: text('role').default('USER'),
   journeyAccess: boolean('journey_access').notNull().default(false),
+  journeyApprover: boolean('journey_approver').notNull().default(false),
 })
 
 export const session = neonAuthSchema.table('session', {
@@ -198,6 +199,19 @@ export const trainingNotification = pgTable('training_notification', {
   message: text('message').notNull(),
   read: boolean('read').notNull().default(false),
   createdAt: timestamp('created_at').notNull().default(sql`now()`),
+})
+
+// Vehicle Register Table
+export const vehicle = pgTable('vehicle', {
+  id:            integer('id').primaryKey().generatedAlwaysAsIdentity(),
+  plateNo:       text('plate_no').notNull().unique(),
+  vehicleType:   text('vehicle_type').notNull(),
+  expiryDate:    date('expiry_date'),
+  allowableLoad: text('allowable_load'),
+  kmReading:     text('km_reading'),
+  description:   text('description'),
+  isActive:      boolean('is_active').notNull().default(true),
+  createdAt:     timestamp('created_at').notNull().default(sql`now()`),
 })
 
 // Journey Tracker Table
