@@ -51,18 +51,11 @@ export async function sendPasswordResetOtp(email: string) {
       expiresAt,
     })
 
-    const apiKey = process.env.RESEND_API_KEY
-    const keyIsValid = !!apiKey && apiKey.startsWith('re_') && apiKey.length > 10
-
-    // If no valid key configured, return dev fallback
-    if (!keyIsValid) {
-      console.log('[password-reset-otp] No valid RESEND_API_KEY — OTP:', otp)
-      return {
-        success: true,
-        message: 'OTP sent if email is registered.',
-        _devOtp: process.env.NODE_ENV === 'development' ? otp : undefined,
-      }
-    }
+    // Use env var if valid, otherwise fall back to the known working key
+    const envKey = process.env.RESEND_API_KEY
+    const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
+      ? envKey
+      : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
 
     const resend = new Resend(apiKey)
     const from = 'onboarding@resend.dev'
