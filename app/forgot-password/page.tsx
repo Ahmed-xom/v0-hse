@@ -2,33 +2,60 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Shield, Loader2, Mail, ArrowLeft, CheckCircle2 } from "lucide-react"
-import { useAuth } from "@/lib/auth-context"
+import { Shield, Loader2, Mail, ArrowLeft, CheckCircle2, Lock, Eye, EyeOff, KeyRound } from "lucide-react"
+import { requestPasswordReset } from "@/app/actions/forgot-password"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
+type Step = "form" | "success"
+
 export default function ForgotPasswordPage() {
+  const [step, setStep] = useState<Step>("form")
+
   const [email, setEmail] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [showNew, setShowNew] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [success, setSuccess] = useState(false)
-  const [resetData, setResetData] = useState<any>(null)
-  const { requestPasswordReset } = useAuth()
+
+  // Password strength
+  const hasMinLength = newPassword.length >= 8
+  const hasUpper = /[A-Z]/.test(newPassword)
+  const hasNumber = /[0-9]/.test(newPassword)
+  const passwordStrong = hasMinLength && hasUpper && hasNumber
+  const passwordsMatch = newPassword === confirmPassword && confirmPassword !== ""
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    setIsLoading(true)
 
+    if (!passwordStrong) {
+      setError("Password must be at least 8 characters and include an uppercase letter and a number.")
+      return
+    }
+    if (!passwordsMatch) {
+      setError("Passwords do not match.")
+      return
+    }
+
+    setIsLoading(true)
     try {
       const result = await requestPasswordReset(email)
-      if (result.success) {
-        setSuccess(true)
-        setResetData(result)
+      // requestPasswordReset generates a temp password — we instead call the
+      // underlying reset action with the user-chosen password directly.
+      // We re-use the existing forgot-password action which already updates the DB.
+      // To save the user-chosen password, call resetUserPassword with customPassword.
+      const { resetUserPassword } = await import("@/app/actions/reset-password")
+      const res = await resetUserPassword(email, undefined, newPassword)
+      if (res.success) {
+        setStep("success")
       } else {
-        setError(result.error || "Failed to send reset email")
+        setError(res.error || "Failed to reset password. Please check your email and try again.")
       }
     } catch {
       setError("An unexpected error occurred. Please try again.")
@@ -37,24 +64,22 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  if (success) {
+  if (step === "success") {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        {/* Background Pattern */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
         </div>
 
         <div className="w-full max-w-md relative z-10">
-          {/* Logo */}
           <div className="flex items-center justify-center gap-3 mb-8">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
               <Shield className="h-7 w-7 text-primary-foreground" />
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">HSE Dashboard</h1>
-              <p className="text-sm text-muted-foreground">Health, Safety & Environment</p>
+              <p className="text-sm text-muted-foreground">Health, Safety &amp; Environment</p>
             </div>
           </div>
 
@@ -65,52 +90,18 @@ export default function ForgotPasswordPage() {
                   <CheckCircle2 className="h-8 w-8 text-primary" />
                 </div>
               </div>
-              <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
+              <CardTitle className="text-2xl font-bold">Password updated</CardTitle>
               <CardDescription className="text-base">
-                We&apos;ve sent a password reset link to
+                Your password has been saved successfully. You can now sign in with your new password.
               </CardDescription>
-              <p className="font-medium text-foreground">{email}</p>
             </CardHeader>
             <CardContent className="space-y-4">
-              {resetData?.emailSent ? (
-                <p className="text-sm text-muted-foreground text-center">
-                  Click the link in the email to reset your password. If you don&apos;t see the email, check your spam folder.
-                </p>
-              ) : (
-                <div className="space-y-3">
-                  <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-4">
-                    <p className="text-sm font-semibold text-yellow-900 mb-2">Temporary Password:</p>
-                    <div className="bg-white border border-yellow-300 rounded p-3 font-mono text-center text-lg font-bold text-yellow-900 break-all">
-                      {resetData?.temporaryPassword}
-                    </div>
-                    <p className="text-xs text-yellow-800 mt-2">
-                      Copy this password and use it to sign in. Change it immediately after logging in.
-                    </p>
-                  </div>
-                  <p className="text-sm text-muted-foreground text-center">
-                    Email sending failed, but your password has been reset successfully. Use the temporary password above to sign in.
-                  </p>
-                </div>
-              )}
-
-              <div className="flex flex-col gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSuccess(false)
-                    setEmail("")
-                  }}
-                  className="w-full"
-                >
-                  Try another email
+              <Link href="/sign-in" className="block">
+                <Button className="w-full">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Sign In
                 </Button>
-                <Link href="/sign-in" className="w-full">
-                  <Button variant="ghost" className="w-full">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Sign In
-                  </Button>
-                </Link>
-              </div>
+              </Link>
             </CardContent>
           </Card>
         </div>
@@ -120,7 +111,6 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      {/* Background Pattern */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
@@ -134,15 +124,20 @@ export default function ForgotPasswordPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">HSE Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Health, Safety & Environment</p>
+            <p className="text-sm text-muted-foreground">Health, Safety &amp; Environment</p>
           </div>
         </div>
 
         <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
           <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-bold">Forgot password?</CardTitle>
+            <div className="flex justify-center mb-2">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <KeyRound className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold">Reset password</CardTitle>
             <CardDescription>
-              Enter your email address and we&apos;ll send you a link to reset your password.
+              Enter your email address and choose a new password.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -153,6 +148,7 @@ export default function ForgotPasswordPage() {
                 </div>
               )}
 
+              {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 <div className="relative">
@@ -170,14 +166,95 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              {/* New Password */}
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="new-password"
+                    type={showNew ? "text" : "password"}
+                    placeholder="Enter new password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="pl-10 pr-10"
+                    required
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNew(!showNew)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+
+                {/* Strength indicators */}
+                {newPassword.length > 0 && (
+                  <div className="space-y-1 pt-1">
+                    {[
+                      { ok: hasMinLength, label: "At least 8 characters" },
+                      { ok: hasUpper,     label: "At least one uppercase letter" },
+                      { ok: hasNumber,    label: "At least one number" },
+                    ].map(({ ok, label }) => (
+                      <div key={label} className="flex items-center gap-2 text-xs">
+                        <div className={`h-1.5 w-1.5 rounded-full ${ok ? "bg-primary" : "bg-muted-foreground/40"}`} />
+                        <span className={ok ? "text-primary" : "text-muted-foreground"}>{label}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="confirm-password"
+                    type={showConfirm ? "text" : "password"}
+                    placeholder="Confirm new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className={`pl-10 pr-10 ${
+                      confirmPassword.length > 0
+                        ? passwordsMatch
+                          ? "border-primary/50 focus-visible:ring-primary/30"
+                          : "border-destructive/50 focus-visible:ring-destructive/30"
+                        : ""
+                    }`}
+                    required
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {confirmPassword.length > 0 && !passwordsMatch && (
+                  <p className="text-xs text-destructive">Passwords do not match.</p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading || !passwordStrong || !passwordsMatch}
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Sending...
+                    Saving...
                   </>
                 ) : (
-                  "Send Reset Link"
+                  "Save New Password"
                 )}
               </Button>
 

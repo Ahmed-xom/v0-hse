@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { users } from "./users-data"
 import { requestPasswordReset as requestPasswordResetAction } from "@/app/actions/forgot-password"
 import { getUserJourneyAccess } from "@/app/actions/manage-users"
+import { verifyUserPassword } from "@/app/actions/verify-password"
 
 export type UserRole = "ADMIN SYSTEM" | "MANAGEMENT" | "SITE MANAGER" | "HSE ADMIN" | "HSE" | "HR" | "MASTER USER" | "USER" | "USER - JM"
 
@@ -28,9 +29,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-// Default password for all users (in production, this would be hashed in a database)
-const DEFAULT_PASSWORD = "Xom@2026"
 
 // Admin user
 const ADMIN_EMAIL = "xom-it-admin@xomoman.com"
@@ -66,8 +64,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: "Your account is inactive. Please contact your administrator." }
     }
 
-    // Check password (in production, this would verify against hashed password)
-    if (password !== DEFAULT_PASSWORD) {
+    // Verify password against the hashed value stored in neon_auth.account
+    const passwordValid = await verifyUserPassword(email, password)
+    if (!passwordValid) {
       return { success: false, error: "Invalid password. Please try again." }
     }
 
