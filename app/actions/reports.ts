@@ -51,6 +51,24 @@ export interface TrainingReportRow {
   completedDate: string
 }
 
+export interface JourneyReportRow {
+  id: string
+  userName: string
+  userEmail: string
+  origin: string
+  destination: string
+  purpose: string
+  vehicleType: string
+  vehiclePlate: string | null
+  departureDate: string
+  departureTime: string
+  estimatedReturn: string | null
+  passengers: number
+  status: string
+  notes: string | null
+  createdAt: string
+}
+
 function getDateFilter(range: DateRange): string {
   if (range === 'all') return ''
   const days = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 }[range]
@@ -165,6 +183,64 @@ export async function getObservationsReport(
         status: r.status,
         createdAt: r.createdAt,
         businessUnit: r.businessUnit,
+      })),
+    }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
+export async function getJourneysReport(
+  range: DateRange = 'all',
+  status?: string,
+  purpose?: string,
+): Promise<{ success: boolean; data?: JourneyReportRow[]; error?: string }> {
+  try {
+    let where = 'WHERE 1=1'
+    const params: any[] = []
+    let idx = 1
+
+    if (range !== 'all') {
+      const days = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 }[range]
+      where += ` AND created_at >= NOW() - INTERVAL '${days} days'`
+    }
+    if (status && status !== 'all') {
+      where += ` AND status = $${idx++}`
+      params.push(status)
+    }
+    if (purpose && purpose !== 'all') {
+      where += ` AND purpose = $${idx++}`
+      params.push(purpose)
+    }
+
+    const res = await pool.query(
+      `SELECT id, user_name, user_email, origin, destination, purpose,
+              vehicle_type, vehicle_plate, departure_date, departure_time,
+              estimated_return, passengers, status, notes, created_at
+       FROM public.journey
+       ${where}
+       ORDER BY created_at DESC`,
+      params,
+    )
+
+    return {
+      success: true,
+      data: res.rows.map((r) => ({
+        id: r.id,
+        userName: r.user_name,
+        userEmail: r.user_email,
+        origin: r.origin,
+        destination: r.destination,
+        purpose: r.purpose,
+        vehicleType: r.vehicle_type,
+        vehiclePlate: r.vehicle_plate,
+        departureDate: r.departure_date,
+        departureTime: r.departure_time,
+        estimatedReturn: r.estimated_return,
+        passengers: r.passengers,
+        status: r.status,
+        notes: r.notes,
+        createdAt: r.created_at,
       })),
     }
   } catch (error: any) {

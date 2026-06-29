@@ -93,6 +93,7 @@ type TrainingRecord = {
   status: string
   result: string | null
   completedDate: string | null
+  expiryDate: string | null
   createdAt: Date | string
 }
 
@@ -132,6 +133,7 @@ export function TrainingMatrix() {
     status: "Pending",
     result: "",
     completedDate: "",
+    expiryDate: "",
   })
 
   const [records, setRecords] = useState<TrainingRecord[]>([])
@@ -176,6 +178,7 @@ export function TrainingMatrix() {
     status: "Pending",
     result: "",
     completedDate: "",
+    expiryDate: "",
   })
 
   // Load all users for the employee dropdown (sorted A–Z)
@@ -247,7 +250,7 @@ export function TrainingMatrix() {
       if (result.success) {
         toast({ title: "Record added", description: "Training record saved to database." })
         setIsAddOpen(false)
-        setForm({ employeeName: "", employeeCode: "", courseName: "", status: "Pending", result: "", completedDate: "" })
+        setForm({ employeeName: "", employeeCode: "", courseName: "", status: "Pending", result: "", completedDate: "", expiryDate: "" })
         setRefreshKey((k) => k + 1)
       } else {
         toast({ title: "Error", description: result.error, variant: "destructive" })
@@ -268,6 +271,9 @@ export function TrainingMatrix() {
       result: rec.result ?? "",
       completedDate: rec.completedDate
         ? new Date(rec.completedDate).toISOString().split("T")[0]
+        : "",
+      expiryDate: rec.expiryDate
+        ? new Date(rec.expiryDate).toISOString().split("T")[0]
         : "",
     })
     setIsEditOpen(true)
@@ -877,13 +883,24 @@ export function TrainingMatrix() {
                 </Select>
               </div>
             </div>
-            <div className="space-y-1.5">
-              <Label>Completed Date</Label>
-              <Input
-                type="date"
-                value={editForm.completedDate}
-                onChange={(e) => setEditForm((f) => ({ ...f, completedDate: e.target.value }))}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Completed Date</Label>
+                <Input
+                  type="date"
+                  value={editForm.completedDate}
+                  onChange={(e) => setEditForm((f) => ({ ...f, completedDate: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Expiry Date</Label>
+                <Input
+                  type="date"
+                  value={editForm.expiryDate}
+                  placeholder="Auto-computed if blank"
+                  onChange={(e) => setEditForm((f) => ({ ...f, expiryDate: e.target.value }))}
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -964,13 +981,24 @@ export function TrainingMatrix() {
                 </Select>
               </div>
             </div>
-            <div className="space-y-1.5">
-              <Label>Completed Date</Label>
-              <Input
-                type="date"
-                value={form.completedDate}
-                onChange={(e) => setForm((f) => ({ ...f, completedDate: e.target.value }))}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Completed Date</Label>
+                <Input
+                  type="date"
+                  value={form.completedDate}
+                  onChange={(e) => setForm((f) => ({ ...f, completedDate: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Expiry Date</Label>
+                <Input
+                  type="date"
+                  value={form.expiryDate}
+                  placeholder="Auto-computed if blank"
+                  onChange={(e) => setForm((f) => ({ ...f, expiryDate: e.target.value }))}
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>

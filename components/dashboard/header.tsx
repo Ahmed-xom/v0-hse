@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Bell, Calendar, ChevronDown, LogOut, Menu, Search, Settings, Shield, User, X } from "lucide-react"
+import { Bell, Calendar, ChevronDown, LogOut, Menu, Search, Settings, Shield, User, X, CheckCheck, GraduationCap } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,8 +17,16 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { useAuth, isMasterUser } from "@/lib/auth-context"
+import { isReviewerRole, isAdminRole } from "@/lib/auth-roles"
+import {
+  getMyTrainingNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  generateTrainingNotifications,
+  type TrainingNotification,
+} from "@/app/actions/training-notifications"
 
-const navItems = [
+const baseNavItems = [
   { label: "Overview", href: "/", active: true },
   { label: "Incidents", href: "#" },
   { label: "Inspections", href: "#" },
@@ -33,8 +41,49 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [dateRange, setDateRange] = useState("30days")
+  const [notifications, setNotifications] = useState<TrainingNotification[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [notifOpen, setNotifOpen] = useState(false)
   const { user, logout } = useAuth()
   const router = useRouter()
+
+  const navItems = [
+    ...baseNavItems,
+    ...(user?.journeyAccess ? [{ label: "Journey Tracker", href: "/journey-tracker" }] : []),
+  ]
+
+  const canReceiveNotifications =
+    user && (isAdminRole(user.role, user.email) || isReviewerRole(user.role))
+
+  const fetchNotifications = useCallback(async () => {
+    if (!user?.email || !canReceiveNotifications) return
+    await generateTrainingNotifications()
+    const res = await getMyTrainingNotifications(user.email)
+    if (res.success) {
+      setNotifications(res.notifications)
+      setUnreadCount(res.unreadCount)
+    }
+  }, [user?.email, canReceiveNotifications])
+
+  useEffect(() => {
+    fetchNotifications()
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchNotifications, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [fetchNotifications])
+
+  const handleMarkRead = async (id: string) => {
+    await markNotificationRead(id)
+    setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n))
+    setUnreadCount((c) => Math.max(0, c - 1))
+  }
+
+  const handleMarkAllRead = async () => {
+    if (!user?.email) return
+    await markAllNotificationsRead(user.email)
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+    setUnreadCount(0)
+  }
 
   const handleLogout = () => {
     logout()
@@ -162,31 +211,84 @@ export function DashboardHeader({ onDateRangeChange }: DashboardHeaderProps = {}
           </DropdownMenu>
 
           {/* Notifications */}
-          <DropdownMenu>
+          <DropdownMenu open={notifOpen} onOpenChange={setNotifOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-                  3
-                </span>
+                {unreadCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
                 <span className="sr-only">Notifications</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+            <DropdownMenuContent align="end" className="w-96">
+              <div className="flex items-center justify-between px-3 py-2">
+                <DropdownMenuLabel className="p-0 text-sm font-semibold">
+                  Training Notifications
+                  {unreadCount > 0 && (
+                    <Badge variant="destructive" className="ml-2 text-[10px] px-1.5 py-0">
+                      {unreadCount} new
+                    </Badge>
+                  )}
+                </DropdownMenuLabel>
+                {unreadCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 gap-1 text-xs text-muted-foreground"
+                    onClick={(e) => { e.preventDefault(); handleMarkAllRead() }}
+                  >
+                    <CheckCheck className="h-3.5 w-3.5" />
+                    Mark all read
+                  </Button>
+                )}
+              </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <span className="font-medium">Overdue Inspection Alert</span>
-                <span className="text-sm text-muted-foreground">Chemical Storage Inspection is 3 days overdue</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <span className="font-medium">Training Reminder</span>
-                <span className="text-sm text-muted-foreground">12 employees have pending safety training</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <span className="font-medium">New Incident Report</span>
-                <span className="text-sm text-muted-foreground">Minor incident reported at Warehouse C</span>
-              </DropdownMenuItem>
+              {notifications.length === 0 ? (
+                <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
+                  <GraduationCap className="h-8 w-8 opacity-40" />
+                  <p className="text-sm">No training notifications</p>
+                </div>
+              ) : (
+                <div className="max-h-[360px] overflow-y-auto">
+                  {notifications.map((n) => {
+                    const isOverdue = n.daysUntilExpiry < 0
+                    const isUrgent = n.daysUntilExpiry >= 0 && n.daysUntilExpiry <= 7
+                    return (
+                      <DropdownMenuItem
+                        key={n.id}
+                        className={`flex flex-col items-start gap-1 px-3 py-3 cursor-pointer ${!n.read ? "bg-muted/40" : ""}`}
+                        onClick={() => !n.read && handleMarkRead(n.id)}
+                      >
+                        <div className="flex w-full items-start gap-2">
+                          <div className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${
+                            isOverdue ? "bg-destructive" : isUrgent ? "bg-orange-500" : "bg-yellow-500"
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm leading-snug ${!n.read ? "font-medium" : "font-normal"}`}>
+                              {n.message}
+                            </p>
+                            <div className="mt-1 flex items-center gap-2">
+                              <span className={`text-xs font-medium ${
+                                isOverdue ? "text-destructive" : isUrgent ? "text-orange-500" : "text-yellow-600"
+                              }`}>
+                                {isOverdue
+                                  ? `Overdue by ${Math.abs(n.daysUntilExpiry)} day(s)`
+                                  : `Expires in ${n.daysUntilExpiry} day(s)`}
+                              </span>
+                              {!n.read && (
+                                <span className="text-[10px] text-muted-foreground">• unread</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </DropdownMenuItem>
+                    )
+                  })}
+                </div>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 

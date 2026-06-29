@@ -21,6 +21,7 @@ import {
   KeyRound,
   Copy,
   Check,
+  Route,
 } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -63,8 +64,8 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { businessUnits, roles, type User } from "@/lib/users-data"
-import { resetUserPassword } from "@/app/actions/reset-password"
-import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers, updateUserApprover } from "@/app/actions/manage-users"
+import { resetUserPassword, getPasswordResetHistory } from "@/app/actions/reset-password"
+import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess } from "@/app/actions/manage-users"
 import { isAdminRole } from "@/lib/auth-roles"
 
 
@@ -108,6 +109,9 @@ export function UsersManagement() {
   const [isResetLoading, setIsResetLoading] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState("")
   const [copiedPassword, setCopiedPassword] = useState(false)
+  const [resetHistory, setResetHistory] = useState<{ id: string; resetBy: string; resetAt: Date | null; ipAddress: string | null }[]>([])
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const [resetTab, setResetTab] = useState<"reset" | "history">("reset")
 
   // Clipboard API is blocked in iframes — fall back to execCommand
   const copyToClipboard = (text: string) => {
@@ -177,6 +181,23 @@ export function UsersManagement() {
 
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
 
+  const handleToggleJourneyAccess = async (u: User) => {
+    const newValue = !u.journeyAccess
+    // Optimistic update
+    setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyAccess: newValue } : x))
+    const result = await updateJourneyAccess(u.id, newValue)
+    if (!result.success) {
+      // Revert on failure
+      setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyAccess: !newValue } : x))
+      toast({ title: "Error", description: result.error, variant: "destructive" })
+    } else {
+      toast({
+        title: newValue ? "Journey Tracker access granted" : "Journey Tracker access revoked",
+        description: `${u.name} ${newValue ? "can now" : "can no longer"} access the Journey Tracker.`,
+      })
+    }
+  }
+
   const filteredUsers = useMemo(() => {
     return localUsers.filter((user) => {
       const matchesSearch =
@@ -221,6 +242,14 @@ export function UsersManagement() {
     setCustomPassword("")
     setShowCustomPassword(false)
     setIsResetLoading(false)
+    setResetTab("reset")
+    setResetHistory([])
+    // Fetch history in background
+    setIsLoadingHistory(true)
+    getPasswordResetHistory(user.id).then((res) => {
+      if (res.success) setResetHistory(res.history)
+      setIsLoadingHistory(false)
+    })
   }
 
   const confirmResetPassword = async () => {
@@ -257,11 +286,18 @@ export function UsersManagement() {
         title: result.emailSent ? "Password reset — email sent" : "Password reset",
         description: result.emailSent
           ? `New password emailed to ${result.userEmail}`
-          : `Password updated in database. Email: ${result.emailError || "not sent"}`,
+          : `Password updated in database. ${result.emailError || ""}`,
         variant: result.emailSent ? "default" : "destructive",
       })
+
+      // Refresh history list
+      if (resetPasswordUser) {
+        getPasswordResetHistory(resetPasswordUser.id).then((res) => {
+          if (res.success) setResetHistory(res.history)
+        })
+      }
     } catch (error) {
-      console.error("[v0] Reset password error:", error)
+      console.error("[reset-password] Error:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to reset password",
@@ -679,9 +715,17 @@ export function UsersManagement() {
                       <span className="font-mono text-xs text-muted-foreground">{user.payrollNo}</span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`text-xs ${roleColors[user.role] || roleColors["USER"]}`}>
-                        {user.role}
-                      </Badge>
+                      <div className="flex flex-col gap-1">
+                        <Badge variant="outline" className={`text-xs ${roleColors[user.role] || roleColors["USER"]}`}>
+                          {user.role}
+                        </Badge>
+                        {user.journeyAccess && (
+                          <Badge variant="outline" className="gap-1 text-xs bg-cyan-500/10 text-cyan-400 border-cyan-500/30 w-fit">
+                            <Route className="h-2.5 w-2.5" />
+                            Journey
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       <span className="text-sm text-muted-foreground">{user.businessUnit}</span>
@@ -731,6 +775,10 @@ export function UsersManagement() {
                           {isAdmin && (
                             <>
                               <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleToggleJourneyAccess(user)}>
+                                <Route className="mr-2 h-4 w-4" />
+                                {user.journeyAccess ? "Revoke Journey Tracker" : "Grant Journey Tracker"}
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleResetPassword(user)}>
                                 <KeyRound className="mr-2 h-4 w-4" />
                                 Reset Password
@@ -826,22 +874,18 @@ export function UsersManagement() {
             </DialogDescription>
           </DialogHeader>
           {resetPasswordUser && (
-            <div className="space-y-4 py-4">
-              <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
+            <div className="space-y-4 py-2">
+              {/* User card */}
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary/20 text-primary">
-                      {resetPasswordUser.name
-                        .split(" ")
-                        .slice(0, 2)
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()}
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-primary/20 text-primary text-sm">
+                      {resetPasswordUser.name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{resetPasswordUser.name}</p>
-                    <p className="text-sm text-muted-foreground">{resetPasswordUser.email}</p>
+                    <p className="font-medium leading-none">{resetPasswordUser.name}</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">{resetPasswordUser.email}</p>
                     <Badge variant="outline" className={`mt-1 text-xs ${roleColors[resetPasswordUser.role] || roleColors["USER"]}`}>
                       {resetPasswordUser.role}
                     </Badge>
@@ -849,59 +893,103 @@ export function UsersManagement() {
                 </div>
               </div>
 
-              {/* Custom password input — shown before reset */}
-              {!generatedPassword && (
+              {/* Tab switcher */}
+              <div className="flex gap-1 rounded-lg border border-border/50 bg-muted/30 p-1">
+                <button
+                  type="button"
+                  onClick={() => setResetTab("reset")}
+                  className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    resetTab === "reset" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Reset Password
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setResetTab("history")}
+                  className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    resetTab === "history" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  History {resetHistory.length > 0 && <span className="ml-1 text-xs text-muted-foreground">({resetHistory.length})</span>}
+                </button>
+              </div>
+
+              {/* Reset tab */}
+              {resetTab === "reset" && (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label>Password</Label>
-                    <button
-                      type="button"
-                      className="text-xs text-primary underline"
-                      onClick={() => { setShowCustomPassword((v) => !v); setCustomPassword("") }}
-                    >
-                      {showCustomPassword ? "Auto-generate instead" : "Set custom password"}
-                    </button>
-                  </div>
-                  {showCustomPassword ? (
-                    <Input
-                      type="text"
-                      placeholder="Enter new password (min. 8 chars)"
-                      value={customPassword}
-                      onChange={(e) => setCustomPassword(e.target.value)}
-                      className="font-mono"
-                    />
+                  {!generatedPassword ? (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <Label>Password</Label>
+                        <button
+                          type="button"
+                          className="text-xs text-primary underline"
+                          onClick={() => { setShowCustomPassword((v) => !v); setCustomPassword("") }}
+                        >
+                          {showCustomPassword ? "Auto-generate instead" : "Set custom password"}
+                        </button>
+                      </div>
+                      {showCustomPassword ? (
+                        <Input
+                          type="text"
+                          placeholder="Enter new password (min. 8 chars)"
+                          value={customPassword}
+                          onChange={(e) => setCustomPassword(e.target.value)}
+                          className="font-mono"
+                        />
+                      ) : (
+                        <p className="rounded-md border border-border/50 bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                          A secure random password will be generated and saved to the database.
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        The new password will be saved to the database and emailed to <strong>{resetPasswordUser.email}</strong>.
+                      </p>
+                    </>
                   ) : (
-                    <p className="rounded-md border border-border/50 bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-                      A secure random password will be generated automatically.
-                    </p>
+                    <div className="space-y-2">
+                      <Label>New Password — copy before closing</Label>
+                      <div className="flex items-center gap-2">
+                        <Input value={generatedPassword} readOnly className="font-mono" />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => { copyToClipboard(generatedPassword); setCopiedPassword(true); setTimeout(() => setCopiedPassword(false), 2000) }}
+                        >
+                          {copiedPassword ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-emerald-500">Password saved to database successfully.</p>
+                    </div>
                   )}
-                  <p className="text-xs text-muted-foreground">
-                    The new password will be saved to the database and emailed to <strong>{resetPasswordUser.email}</strong>.
-                  </p>
                 </div>
               )}
 
-              {/* Result — shown after reset */}
-              {generatedPassword && (
+              {/* History tab */}
+              {resetTab === "history" && (
                 <div className="space-y-2">
-                  <Label>New Password (copy before closing)</Label>
-                  <div className="flex items-center gap-2">
-                    <Input value={generatedPassword} readOnly className="font-mono" />
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        copyToClipboard(generatedPassword)
-                        setCopiedPassword(true)
-                        setTimeout(() => setCopiedPassword(false), 2000)
-                      }}
-                    >
-                      {copiedPassword ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                  <p className="text-xs text-emerald-500">
-                    Password updated in database and emailed to the user.
-                  </p>
+                  {isLoadingHistory ? (
+                    <p className="py-4 text-center text-sm text-muted-foreground">Loading history...</p>
+                  ) : resetHistory.length === 0 ? (
+                    <p className="py-4 text-center text-sm text-muted-foreground">No password resets recorded for this user.</p>
+                  ) : (
+                    <div className="max-h-[220px] overflow-y-auto rounded-lg border border-border/50">
+                      {resetHistory.map((h, i) => (
+                        <div key={h.id} className={`flex items-start justify-between gap-3 px-4 py-3 text-sm ${i !== 0 ? "border-t border-border/40" : ""}`}>
+                          <div className="min-w-0">
+                            <p className="font-medium">Reset by <span className="text-primary">{h.resetBy}</span></p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              IP: {h.ipAddress || "unknown"}
+                            </p>
+                          </div>
+                          <p className="shrink-0 text-xs text-muted-foreground">
+                            {h.resetAt ? new Date(h.resetAt).toLocaleString() : "—"}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -914,9 +1002,9 @@ export function UsersManagement() {
             >
               {generatedPassword ? "Close" : "Cancel"}
             </Button>
-            {!generatedPassword && (
+            {resetTab === "reset" && !generatedPassword && (
               <Button onClick={confirmResetPassword} disabled={isResetLoading}>
-                {isResetLoading ? "Resetting..." : showCustomPassword ? "Set Password & Send Email" : "Generate & Send Email"}
+                {isResetLoading ? "Resetting..." : showCustomPassword ? "Set Password" : "Generate & Reset"}
               </Button>
             )}
           </DialogFooter>

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
 import { users } from "./users-data"
 import { requestPasswordReset as requestPasswordResetAction } from "@/app/actions/forgot-password"
+import { getUserJourneyAccess } from "@/app/actions/manage-users"
 
 export type UserRole = "ADMIN SYSTEM" | "MANAGEMENT" | "SITE MANAGER" | "HSE ADMIN" | "HSE" | "HR" | "MASTER USER" | "USER" | "USER - JM"
 
@@ -14,6 +15,7 @@ export interface AuthUser {
   designation: string
   businessUnit: string
   status: string
+  journeyAccess: boolean
 }
 
 interface AuthContextType {
@@ -69,6 +71,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: "Invalid password. Please try again." }
     }
 
+    // Fetch journey access flag from DB
+    const journeyAccess = await getUserJourneyAccess(email)
+
     const authUser: AuthUser = {
       payrollNumber: foundUser.payrollNo,
       name: foundUser.name,
@@ -77,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       designation: foundUser.designation,
       businessUnit: foundUser.businessUnit,
       status: foundUser.status,
+      journeyAccess,
     }
 
     setUser(authUser)

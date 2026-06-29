@@ -16,6 +16,7 @@ export const user = neonAuthSchema.table('user', {
   banReason: text('banReason'),
   banExpires: timestamp('banExpires'),
   role: text('role').default('USER'),
+  journeyAccess: boolean('journey_access').notNull().default(false),
 })
 
 export const session = neonAuthSchema.table('session', {
@@ -70,8 +71,8 @@ export const hseUser = pgTable('hse_user', {
 // Password reset tracking
 export const passwordReset = pgTable('password_reset', {
   id: text('id').primaryKey(),
-  userId: uuid('userId').notNull(),
-  resetBy: uuid('resetBy').notNull(),
+  userId: text('userId').notNull(),
+  resetBy: text('resetBy').notNull(),
   newPassword: text('newPassword').notNull(),
   resetAt: timestamp('resetAt').notNull().default(sql`now()`),
   ipAddress: text('ipAddress'),
@@ -183,6 +184,40 @@ export const training = pgTable('training', {
   status: text('status').notNull().default('Pending'),
   result: text('result'),
   completedDate: date('completed_date'),
+  expiryDate: date('expiry_date'),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
+})
+
+// Training Notifications Table
+export const trainingNotification = pgTable('training_notification', {
+  id: text('id').primaryKey(),
+  trainingId: text('training_id').notNull().references(() => training.id, { onDelete: 'cascade' }),
+  recipientEmail: text('recipient_email').notNull(),
+  recipientRole: text('recipient_role').notNull(),
+  message: text('message').notNull(),
+  read: boolean('read').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+})
+
+// Journey Tracker Table
+export const journey = pgTable('journey', {
+  id: text('id').primaryKey(),
+  userEmail: text('user_email').notNull(),
+  userName: text('user_name').notNull(),
+  origin: text('origin').notNull(),
+  destination: text('destination').notNull(),
+  purpose: text('purpose').notNull(),
+  vehicleType: text('vehicle_type').notNull(),
+  vehiclePlate: text('vehicle_plate'),
+  departureDate: date('departure_date').notNull(),
+  departureTime: text('departure_time').notNull(),
+  estimatedReturn: text('estimated_return'),
+  passengers: integer('passengers').notNull().default(0),
+  status: text('status').notNull().default('Planned'),
+  notes: text('notes'),
+  attachmentUrl: text('attachment_url'),
+  attachmentName: text('attachment_name'),
   createdAt: timestamp('created_at').notNull().default(sql`now()`),
   updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
 })

@@ -17,6 +17,7 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  Route,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -43,9 +44,11 @@ import {
   getReportSummary,
   getObservationsReport,
   getTrainingReport,
+  getJourneysReport,
   type ReportSummary,
   type ObservationReportRow,
   type TrainingReportRow,
+  type JourneyReportRow,
   type DateRange,
 } from '@/app/actions/reports'
 
@@ -338,7 +341,7 @@ function SummaryPanel({ summary }: { summary: ReportSummary }) {
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export function Reports() {
+export function Reports({ journeyAccess = false }: { journeyAccess?: boolean }) {
   const [activeTab, setActiveTab] = useState('summary')
   const [dateRange, setDateRange] = useState<DateRange>('all')
   const [isLoading, setIsLoading] = useState(true)
@@ -360,24 +363,35 @@ export function Reports() {
   const [trainResult, setTrainResult] = useState('all')
   const [trainPage, setTrainPage] = useState(1)
 
+  // Journey tab
+  const [journeys, setJourneys] = useState<JourneyReportRow[]>([])
+  const [journeySearch, setJourneySearch] = useState('')
+  const [journeyStatus, setJourneyStatus] = useState('all')
+  const [journeyPurpose, setJourneyPurpose] = useState('all')
+  const [journeyPage, setJourneyPage] = useState(1)
+
   const loadAll = useCallback(async () => {
     setIsRefreshing(true)
     try {
-      const [sumRes, obsRes, trainRes] = await Promise.all([
+      const fetches: Promise<any>[] = [
         getReportSummary(),
         getObservationsReport(dateRange, obsSeverity, obsStatus),
         getTrainingReport(dateRange, trainResult),
-      ])
+      ]
+      if (journeyAccess) fetches.push(getJourneysReport(dateRange, journeyStatus, journeyPurpose))
+      const [sumRes, obsRes, trainRes, jrnRes] = await Promise.all(fetches)
       if (sumRes.success && sumRes.data) setSummary(sumRes.data)
       if (obsRes.success && obsRes.data) setObservations(obsRes.data)
       if (trainRes.success && trainRes.data) setTraining(trainRes.data)
+      if (jrnRes?.success && jrnRes.data) setJourneys(jrnRes.data)
     } finally {
       setIsLoading(false)
       setIsRefreshing(false)
       setObsPage(1)
       setTrainPage(1)
+      setJourneyPage(1)
     }
-  }, [dateRange, obsSeverity, obsStatus, trainResult])
+  }, [dateRange, obsSeverity, obsStatus, trainResult, journeyAccess, journeyStatus, journeyPurpose])
 
   useEffect(() => {
     loadAll()
@@ -391,6 +405,19 @@ export function Reports() {
       o.location.toLowerCase().includes(obsSearch.toLowerCase()),
   )
   const pagedObs = filteredObs.slice((obsPage - 1) * ITEMS_PER_PAGE, obsPage * ITEMS_PER_PAGE)
+
+  // Filtered journeys
+  const filteredJourneys = journeys.filter(
+    (j) =>
+      journeySearch === '' ||
+      j.userName.toLowerCase().includes(journeySearch.toLowerCase()) ||
+      j.origin.toLowerCase().includes(journeySearch.toLowerCase()) ||
+      j.destination.toLowerCase().includes(journeySearch.toLowerCase()),
+  )
+  const pagedJourneys = filteredJourneys.slice(
+    (journeyPage - 1) * ITEMS_PER_PAGE,
+    journeyPage * ITEMS_PER_PAGE,
+  )
 
   // Filtered training
   const filteredTrain = training.filter(
@@ -469,7 +496,7 @@ export function Reports() {
 
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-6 grid w-full max-w-sm grid-cols-3">
+          <TabsList className={`mb-6 grid w-full ${journeyAccess ? 'max-w-lg grid-cols-4' : 'max-w-sm grid-cols-3'}`}>
             <TabsTrigger value="summary" className="gap-1.5 text-xs">
               <BarChart3 className="h-3.5 w-3.5" />
               Summary
@@ -482,6 +509,12 @@ export function Reports() {
               <BookOpen className="h-3.5 w-3.5" />
               Training
             </TabsTrigger>
+            {journeyAccess && (
+              <TabsTrigger value="journeys" className="gap-1.5 text-xs">
+                <Route className="h-3.5 w-3.5" />
+                Journeys
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* SUMMARY TAB */}
@@ -708,6 +741,149 @@ export function Reports() {
               />
             </div>
           </TabsContent>
+          {/* JOURNEYS TAB */}
+          {journeyAccess && (
+            <TabsContent value="journeys">
+              <div className="space-y-4">
+                {/* Filters */}
+                <div className="flex flex-wrap gap-2">
+                  <div className="relative flex-1 min-w-[180px]">
+                    <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      placeholder="Search driver, origin or destination..."
+                      value={journeySearch}
+                      onChange={(e) => { setJourneySearch(e.target.value); setJourneyPage(1) }}
+                      className="h-8 pl-8 text-xs"
+                    />
+                  </div>
+                  <Select value={journeyStatus} onValueChange={(v) => { setJourneyStatus(v); setJourneyPage(1) }}>
+                    <SelectTrigger className="h-8 w-[130px] text-xs">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All statuses</SelectItem>
+                      <SelectItem value="Planned">Planned</SelectItem>
+                      <SelectItem value="In Progress">In Progress</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
+                      <SelectItem value="Flagged">Flagged</SelectItem>
+                      <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={journeyPurpose} onValueChange={(v) => { setJourneyPurpose(v); setJourneyPage(1) }}>
+                    <SelectTrigger className="h-8 w-[130px] text-xs">
+                      <SelectValue placeholder="Purpose" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All purposes</SelectItem>
+                      <SelectItem value="Site Visit">Site Visit</SelectItem>
+                      <SelectItem value="Client Meeting">Client Meeting</SelectItem>
+                      <SelectItem value="Delivery">Delivery</SelectItem>
+                      <SelectItem value="Inspection">Inspection</SelectItem>
+                      <SelectItem value="Emergency">Emergency</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-3 text-xs ml-auto"
+                    onClick={() =>
+                      exportToCSV(
+                        filteredJourneys.map((j) => ({
+                          ID: j.id,
+                          Driver: j.userName,
+                          Email: j.userEmail,
+                          Origin: j.origin,
+                          Destination: j.destination,
+                          Purpose: j.purpose,
+                          'Vehicle Type': j.vehicleType,
+                          'Plate Number': j.vehiclePlate ?? '',
+                          'Departure Date': j.departureDate,
+                          'Departure Time': j.departureTime,
+                          'Estimated Return': j.estimatedReturn ?? '',
+                          Passengers: j.passengers,
+                          Status: j.status,
+                          Notes: j.notes ?? '',
+                          'Created At': new Date(j.createdAt).toLocaleDateString(),
+                        })),
+                        `journeys-report-${new Date().toISOString().slice(0, 10)}.csv`,
+                      )
+                    }
+                    disabled={filteredJourneys.length === 0}
+                  >
+                    <Download className="mr-1.5 h-3.5 w-3.5" />
+                    Export CSV
+                  </Button>
+                </div>
+
+                {/* Table */}
+                <div className="overflow-x-auto rounded-lg border border-border/50">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-border/50 hover:bg-transparent">
+                        <TableHead className="text-xs text-muted-foreground">Driver</TableHead>
+                        <TableHead className="text-xs text-muted-foreground">Route</TableHead>
+                        <TableHead className="text-xs text-muted-foreground">Purpose</TableHead>
+                        <TableHead className="text-xs text-muted-foreground">Vehicle</TableHead>
+                        <TableHead className="text-xs text-muted-foreground">Departure</TableHead>
+                        <TableHead className="text-xs text-muted-foreground">Passengers</TableHead>
+                        <TableHead className="text-xs text-muted-foreground">Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pagedJourneys.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
+                            No journey records found
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        pagedJourneys.map((j) => (
+                          <TableRow key={j.id} className="border-border/50 hover:bg-secondary/30">
+                            <TableCell className="text-sm font-medium">{j.userName}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {j.origin} → {j.destination}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">{j.purpose}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {j.vehicleType}{j.vehiclePlate ? ` · ${j.vehiclePlate}` : ''}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {new Date(j.departureDate).toLocaleDateString('en-GB', {
+                                day: '2-digit', month: 'short', year: 'numeric',
+                              })}
+                              {' '}
+                              {j.departureTime}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground text-center">
+                              {j.passengers}
+                            </TableCell>
+                            <TableCell>
+                              <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${
+                                j.status === 'Completed' ? 'bg-success/15 text-success border-success/30' :
+                                j.status === 'In Progress' ? 'bg-warning/15 text-warning border-warning/30' :
+                                j.status === 'Flagged' ? 'bg-destructive/15 text-destructive border-destructive/30' :
+                                j.status === 'Cancelled' ? 'bg-secondary text-muted-foreground border-border' :
+                                'bg-primary/10 text-primary border-primary/20'
+                              }`}>
+                                {j.status}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+                <Pagination
+                  page={journeyPage}
+                  total={filteredJourneys.length}
+                  perPage={ITEMS_PER_PAGE}
+                  onChange={setJourneyPage}
+                />
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </CardContent>
     </Card>
