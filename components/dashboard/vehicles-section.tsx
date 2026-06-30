@@ -64,10 +64,11 @@ export function VehiclesSection() {
 
   useEffect(() => { load() }, [])
 
+  const q = search.toLowerCase()
   const filtered = vehicles.filter((v) =>
-    v.plate_no.toLowerCase().includes(search.toLowerCase()) ||
-    v.vehicle_type.toLowerCase().includes(search.toLowerCase()) ||
-    v.description.toLowerCase().includes(search.toLowerCase())
+    (v.plate_no ?? "").toLowerCase().includes(q) ||
+    (v.vehicle_type ?? "").toLowerCase().includes(q) ||
+    (v.description ?? "").toLowerCase().includes(q)
   )
 
   const openAdd = () => {
