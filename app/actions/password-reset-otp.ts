@@ -119,7 +119,7 @@ export async function sendPasswordResetOtp(email: string) {
     const envResendKey = process.env.RESEND_API_KEY
     const resendKey = (isReal(envResendKey) && envResendKey!.startsWith('re_'))
       ? envResendKey!
-      : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
+      : 're_R6qRD5C4_Dthy79ZUMtjsW7GQBq2NmpuG'
 
     const resend = new Resend(resendKey)
 
