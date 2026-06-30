@@ -4,8 +4,6 @@ import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 
-const DEFAULT_PASSWORD = 'Xom@2026'
-
 export async function verifyUserPassword(email: string, password: string): Promise<boolean> {
   try {
     // Look up the hashed password from neon_auth.account for this user
@@ -25,10 +23,9 @@ export async function verifyUserPassword(email: string, password: string): Promi
       return bcrypt.compare(password, rows[0].password)
     }
 
-    // No hashed password in DB yet — fall back to the default password
-    return password === DEFAULT_PASSWORD
+    // No account record found — deny access
+    return false
   } catch {
-    // On any error fall back to the default password so existing users aren't locked out
-    return password === DEFAULT_PASSWORD
+    return false
   }
 }
