@@ -76,12 +76,15 @@ export async function sendPasswordResetOtp(email: string) {
       </div>
     `
 
-    // 1. SendGrid (primary) ────────────────────────────────────────────────
+    // Helper: check if a value is a real credential (not a placeholder)
+    const isReal = (v?: string) => !!v && v.length > 6 && v !== 'Xom@2026' && !v.toLowerCase().startsWith('your')
+
+    // 1. SendGrid ─────────────────────────────────────────────────────────
     const sgKey = process.env.SENDGRID_API_KEY
-    if (sgKey && sgKey.startsWith('SG.')) {
+    if (isReal(sgKey) && sgKey!.startsWith('SG.')) {
       try {
-        sgMail.setApiKey(sgKey)
-        const sgFrom = (process.env.SENDGRID_FROM_EMAIL ?? '').trim() || 'noreply@xomoman.com'
+        sgMail.setApiKey(sgKey!)
+        const sgFrom = isReal(process.env.SENDGRID_FROM_EMAIL) ? process.env.SENDGRID_FROM_EMAIL! : 'noreply@xomoman.com'
         await sgMail.send({ from: sgFrom, to: email, subject: 'Your HSE Dashboard OTP', html })
         return { success: true, message: 'OTP sent to your email address.' }
       } catch (e: any) {
@@ -89,14 +92,15 @@ export async function sendPasswordResetOtp(email: string) {
       }
     }
 
-    // ── 2. SMTP (Office 365 / Gmail / Exchange) ────────────────────────────
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    // 2. SMTP ─────────────────────────────────────────────────────────────
+    const smtpPass = process.env.SMTP_PASS
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && isReal(smtpPass)) {
       try {
         const t = nodemailer.createTransport({
           host: process.env.SMTP_HOST,
           port: Number(process.env.SMTP_PORT ?? 587),
           secure: process.env.SMTP_SECURE === 'true',
-          auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+          auth: { user: process.env.SMTP_USER, pass: smtpPass },
         })
         await t.sendMail({
           from: process.env.SMTP_FROM ?? `HSE Dashboard <${process.env.SMTP_USER}>`,
@@ -110,13 +114,18 @@ export async function sendPasswordResetOtp(email: string) {
       }
     }
 
-    // ── 3. Resend (requires verified domain for arbitrary recipients) ──────
-    const envKey = process.env.RESEND_API_KEY
-    const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
-      ? envKey : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
-    const resend = new Resend(apiKey)
+    // 3. Resend ───────────────────────────────────────────────────────────
+    // Always use the known working API key — ignore env placeholder values
+    const envResendKey = process.env.RESEND_API_KEY
+    const resendKey = (isReal(envResendKey) && envResendKey!.startsWith('re_'))
+      ? envResendKey!
+      : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
+
+    const resend = new Resend(resendKey)
+
+    // Use a verified custom from-address if configured, else onboarding@resend.dev
     const fromEnv = (process.env.RESEND_FROM_EMAIL ?? '').trim()
-    const from = (fromEnv.includes('@') && !fromEnv.includes('Xom@') && !fromEnv.includes('onboarding@resend'))
+    const from = (isReal(fromEnv) && fromEnv.includes('@') && !fromEnv.includes('onboarding@resend'))
       ? fromEnv : 'onboarding@resend.dev'
 
     const { data, error } = await resend.emails.send({
@@ -134,7 +143,7 @@ export async function sendPasswordResetOtp(email: string) {
       }
     }
 
-    console.log('[password-reset-otp] Sent via Resend, id:', data?.id)
+    console.log('[password-reset-otp] Sent via Resend id:', data?.id, 'to:', email)
     return { success: true, message: 'OTP sent to your email address.' }
   } catch (err: any) {
     console.error('[password-reset-otp] sendOtp error:', err)
