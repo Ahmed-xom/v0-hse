@@ -34,7 +34,6 @@ const baseNavItems = [
   { label: "Inspections",  tab: "inspections" },
   { label: "Training",     tab: "dashboard"   },
   { label: "Reports",      tab: "reports"     },
-  { label: "Settings",     tab: "settings"    },
 ]
 
 const SEARCH_ITEMS = [
@@ -130,6 +129,7 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
   const navItems = [
     ...baseNavItems,
     ...(user?.journeyAccess ? [{ label: "Journey Tracker", tab: "journey" }] : []),
+    ...(user && isMasterUser(user.role) ? [{ label: "Users", tab: "settings" }] : []),
   ]
 
   const canReceiveNotifications =
