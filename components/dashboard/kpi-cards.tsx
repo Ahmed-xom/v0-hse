@@ -2,6 +2,7 @@
 
 import { ShieldCheck, TrendingDown, TrendingUp, ClipboardCheck, Users, HardHat } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import type { DashboardStats } from "@/app/actions/get-dashboard-stats"
 
 interface KPICardProps {
   title: string
@@ -41,42 +42,51 @@ function KPICard({ title, value, change, trend, icon, description }: KPICardProp
   )
 }
 
-const kpiData: KPICardProps[] = [
-  {
-    title: "Days Without Incident",
-    value: "127",
-    change: "+15%",
-    trend: "up",
-    icon: <ShieldCheck className="h-5 w-5" />,
-    description: "vs last quarter",
-  },
-  {
-    title: "Inspection Compliance",
-    value: "94.2%",
-    change: "+2.1%",
-    trend: "up",
-    icon: <ClipboardCheck className="h-5 w-5" />,
-    description: "this month",
-  },
-  {
-    title: "Training Completion",
-    value: "89%",
-    change: "-3%",
-    trend: "down",
-    icon: <Users className="h-5 w-5" />,
-    description: "target: 95%",
-  },
-  {
-    title: "Near Misses Reported",
-    value: "47",
-    change: "+18%",
-    trend: "up",
-    icon: <HardHat className="h-5 w-5" />,
-    description: "good reporting",
-  },
-]
+interface KPICardsProps {
+  stats?: DashboardStats
+}
 
-export function KPICards() {
+export function KPICards({ stats }: KPICardsProps) {
+  const parseTrend = (change: string): "up" | "down" | "neutral" => {
+    if (!change || change === "—") return "neutral"
+    return change.startsWith("+") ? "up" : "down"
+  }
+
+  const kpiData: KPICardProps[] = [
+    {
+      title: "Days Without Incident",
+      value: stats ? String(stats.daysWithoutIncident) : "—",
+      change: stats?.daysWithoutIncidentChange ?? "—",
+      trend: stats ? parseTrend(stats.daysWithoutIncidentChange) : "neutral",
+      icon: <ShieldCheck className="h-5 w-5" />,
+      description: "vs last quarter",
+    },
+    {
+      title: "Inspection Compliance",
+      value: stats?.inspectionCompliance ?? "—",
+      change: stats?.inspectionComplianceChange ?? "—",
+      trend: stats ? parseTrend(stats.inspectionComplianceChange) : "neutral",
+      icon: <ClipboardCheck className="h-5 w-5" />,
+      description: "this month",
+    },
+    {
+      title: "Training Completion",
+      value: stats?.trainingCompletion ?? "—",
+      change: stats?.trainingCompletionChange ?? "—",
+      trend: stats ? parseTrend(stats.trainingCompletionChange) : "neutral",
+      icon: <Users className="h-5 w-5" />,
+      description: "target: 95%",
+    },
+    {
+      title: "Near Misses Reported",
+      value: stats ? String(stats.nearMissesReported) : "—",
+      change: stats?.nearMissesChange ?? "—",
+      trend: stats ? parseTrend(stats.nearMissesChange) : "neutral",
+      icon: <HardHat className="h-5 w-5" />,
+      description: "good reporting",
+    },
+  ]
+
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {kpiData.map((kpi, index) => (
