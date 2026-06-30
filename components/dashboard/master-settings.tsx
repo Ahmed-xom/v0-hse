@@ -62,6 +62,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { masterCategories, getTotalMasterItems, getTotalSections, type MasterSection } from "@/lib/masters-data"
+import { VehiclesSection } from "./vehicles-section"
 
 const iconMap: Record<string, React.ReactNode> = {
   settings: <Settings className="h-5 w-5" />,
@@ -222,7 +223,7 @@ export function MasterSettings() {
                 </div>
               </div>
             )}
-            {selectedSection && (
+            {selectedSection && selectedSection.id !== "vehicle-details" && selectedSection.id !== "jm-vehicle-detail" && (
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="bg-primary hover:bg-primary/90">
@@ -565,6 +566,9 @@ export function MasterSettings() {
               </div>
             )}
           </div>
+        ) : selectedSection.id === "vehicle-details" || selectedSection.id === "jm-vehicle-detail" ? (
+          // ── Real Vehicles section ─────────────────────────────────────────
+          <VehiclesSection />
         ) : (
           // ── Generic mock detail view (all other sections) ─────────────────
           <div className="p-6">
