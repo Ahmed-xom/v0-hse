@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { Bell, Calendar, ChevronDown, LogOut, Menu, Search, Settings, Shield, User, X, CheckCheck, GraduationCap, BarChart2, ClipboardList, ShieldCheck, Route, LayoutDashboard, FileText } from "lucide-react"
+import { Bell, Calendar, ChevronDown, LogOut, Menu, Moon, Search, Settings, Shield, Sun, User, X, CheckCheck, GraduationCap, BarChart2, ClipboardList, ShieldCheck, Route, LayoutDashboard, FileText } from "lucide-react"
+import { useTheme } from "next-themes"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -71,6 +72,7 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchModalRef = useRef<HTMLDivElement>(null)
   const { user, logout } = useAuth()
+  const { theme, setTheme } = useTheme()
   const router = useRouter()
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -369,6 +371,18 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Theme toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            aria-label="Toggle theme"
+          >
+            <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+            <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            <span className="sr-only">Toggle theme</span>
+          </Button>
 
           {/* Settings (only for master users) */}
           {showSettings && (

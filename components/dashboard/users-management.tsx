@@ -66,7 +66,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword, getPasswordResetHistory } from "@/app/actions/reset-password"
-import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess, updateJourneyApprover } from "@/app/actions/manage-users"
+import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess, updateJourneyApprover, createUser } from "@/app/actions/manage-users"
 import { isAdminRole } from "@/lib/auth-roles"
 
 
@@ -153,6 +153,9 @@ export function UsersManagement() {
   })
 
   const [addApprover, setAddApprover] = useState({ name: "", email: "" })
+  const [addForm, setAddForm] = useState({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "" })
+  const [isAddLoading, setIsAddLoading] = useState(false)
+  const [addTempPassword, setAddTempPassword] = useState("")
   const [dbUsers, setDbUsers] = useState<User[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const { toast } = useToast()
@@ -485,89 +488,124 @@ export function UsersManagement() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="payroll">Payroll No</Label>
-                      <Input id="payroll" placeholder="L-XXX-0000" />
+                  {addTempPassword ? (
+                    <div className="rounded-lg border border-primary/30 bg-primary/10 p-4 space-y-2">
+                      <p className="text-sm font-medium text-primary">User created successfully!</p>
+                      <p className="text-xs text-muted-foreground">Share this temporary password with the user. It will not be shown again.</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <code className="flex-1 rounded bg-secondary px-3 py-2 font-mono text-sm tracking-widest">{addTempPassword}</code>
+                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => { copyToClipboard(addTempPassword); toast({ title: "Copied!", description: "Password copied to clipboard." }) }}>
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" placeholder="Enter full name" />
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="email@company.com" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="designation">Designation</Label>
-                    <Input id="designation" placeholder="Job title" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="role">Role</Label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {roles.map((role) => (
-                            <SelectItem key={role} value={role}>{role}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="businessUnit">Business Unit</Label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select unit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {businessUnits.map((unit) => (
-                            <SelectItem key={unit} value={unit}>{unit}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Approver</Label>
-                    <Select
-                      value={addApprover.name ? `${addApprover.name}||${addApprover.email}` : "__none__"}
-                      onValueChange={(val) => {
-                        if (val === "__none__") {
-                          setAddApprover({ name: "", email: "" })
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="add-payroll">Payroll No</Label>
+                          <Input id="add-payroll" placeholder="L-XXX-0000" value={addForm.payrollNo} onChange={e => setAddForm(f => ({ ...f, payrollNo: e.target.value }))} />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="add-name">Full Name *</Label>
+                          <Input id="add-name" placeholder="Enter full name" value={addForm.name} onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))} />
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="add-email">Email *</Label>
+                        <Input id="add-email" type="email" placeholder="email@company.com" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="add-designation">Designation</Label>
+                        <Input id="add-designation" placeholder="Job title" value={addForm.designation} onChange={e => setAddForm(f => ({ ...f, designation: e.target.value }))} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label>Role</Label>
+                          <Select value={addForm.role} onValueChange={val => setAddForm(f => ({ ...f, role: val }))}>
+                            <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
+                            <SelectContent>
+                              {roles.map((role) => (
+                                <SelectItem key={role} value={role}>{role}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Business Unit</Label>
+                          <Select value={addForm.businessUnit} onValueChange={val => setAddForm(f => ({ ...f, businessUnit: val }))}>
+                            <SelectTrigger><SelectValue placeholder="Select unit" /></SelectTrigger>
+                            <SelectContent>
+                              {businessUnits.map((unit) => (
+                                <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Approver</Label>
+                        <Select
+                          value={addApprover.name ? `${addApprover.name}||${addApprover.email}` : "__none__"}
+                          onValueChange={(val) => {
+                            if (val === "__none__") { setAddApprover({ name: "", email: "" }) }
+                            else { const [name, email] = val.split("||"); setAddApprover({ name, email }) }
+                          }}
+                        >
+                          <SelectTrigger><SelectValue placeholder="Select approver..." /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__"><span className="text-muted-foreground">None</span></SelectItem>
+                            {dbUsers.map((u) => (
+                              <SelectItem key={u.id} value={`${u.name}||${u.email}`}>
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{u.name}</span>
+                                  <span className="text-xs text-muted-foreground">{u.email}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => {
+                    setIsAddUserOpen(false)
+                    setAddApprover({ name: "", email: "" })
+                    setAddForm({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "" })
+                    setAddTempPassword("")
+                  }}>
+                    {addTempPassword ? "Close" : "Cancel"}
+                  </Button>
+                  {!addTempPassword && (
+                    <Button
+                      disabled={isAddLoading || !addForm.name || !addForm.email}
+                      onClick={async () => {
+                        setIsAddLoading(true)
+                        const res = await createUser({
+                          name: addForm.name,
+                          email: addForm.email,
+                          payrollNo: addForm.payrollNo,
+                          designation: addForm.designation,
+                          role: addForm.role || "USER",
+                          businessUnit: addForm.businessUnit,
+                          approverName: addApprover.name,
+                          approverEmail: addApprover.email,
+                        })
+                        setIsAddLoading(false)
+                        if (res.success) {
+                          setAddTempPassword((res as any).tempPassword ?? "")
+                          setRefreshKey(k => k + 1)
+                          toast({ title: "User created", description: `${addForm.name} has been added successfully.` })
                         } else {
-                          const [name, email] = val.split("||")
-                          setAddApprover({ name, email })
+                          toast({ title: "Error", description: res.error ?? "Failed to create user.", variant: "destructive" })
                         }
                       }}
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select approver..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__none__">
-                          <span className="text-muted-foreground">None</span>
-                        </SelectItem>
-                        {dbUsers.map((u) => (
-                          <SelectItem key={u.id} value={`${u.name}||${u.email}`}>
-                            <div className="flex flex-col">
-                              <span className="font-medium">{u.name}</span>
-                              <span className="text-xs text-muted-foreground">{u.email}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => { setIsAddUserOpen(false); setAddApprover({ name: "", email: "" }) }}>
-                    Cancel
-                  </Button>
-                  <Button onClick={() => { setIsAddUserOpen(false); setAddApprover({ name: "", email: "" }) }}>Add User</Button>
+                      {isAddLoading ? "Creating..." : "Add User"}
+                    </Button>
+                  )}
                 </DialogFooter>
               </DialogContent>
             </Dialog>

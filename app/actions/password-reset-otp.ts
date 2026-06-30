@@ -5,6 +5,7 @@ import { passwordResetOtp } from '@/lib/db/schema'
 import { sql, eq, and, gt } from 'drizzle-orm'
 import { Resend } from 'resend'
 import nodemailer from 'nodemailer'
+import sgMail from '@sendgrid/mail'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 
@@ -75,78 +76,74 @@ export async function sendPasswordResetOtp(email: string) {
       </div>
     `
 
-    // ── Try SMTP first (works with any email provider) ──────────────────────
-    const smtpHost = process.env.SMTP_HOST
-    const smtpUser = process.env.SMTP_USER
-    const smtpPass = process.env.SMTP_PASS
+    // Helper: check if a value is a real credential (not a placeholder)
+    const isReal = (v?: string) => !!v && v.length > 6 && v !== 'Xom@2026' && !v.toLowerCase().startsWith('your')
 
-    if (smtpHost && smtpUser && smtpPass) {
+    // 1. SendGrid ─────────────────────────────────────────────────────────
+    const sgKey = process.env.SENDGRID_API_KEY
+    if (isReal(sgKey) && sgKey!.startsWith('SG.')) {
       try {
-        const transporter = nodemailer.createTransport({
-          host: smtpHost,
-          port: Number(process.env.SMTP_PORT ?? 587),
-          secure: process.env.SMTP_SECURE === 'true',
-          auth: { user: smtpUser, pass: smtpPass },
-        })
-        await transporter.sendMail({
-          from: process.env.SMTP_FROM ?? `HSE Dashboard <${smtpUser}>`,
-          to: email,
-          subject: 'Your HSE Dashboard password reset OTP',
-          html,
-        })
+        sgMail.setApiKey(sgKey!)
+        const sgFrom = isReal(process.env.SENDGRID_FROM_EMAIL) ? process.env.SENDGRID_FROM_EMAIL! : 'noreply@xomoman.com'
+        await sgMail.send({ from: sgFrom, to: email, subject: 'Your HSE Dashboard OTP', html })
         return { success: true, message: 'OTP sent to your email address.' }
-      } catch (smtpErr: any) {
-        console.error('[password-reset-otp] SMTP error:', smtpErr.message)
-        // fall through to Resend
+      } catch (e: any) {
+        console.error('[password-reset-otp] SendGrid error:', e.response?.body ?? e.message)
       }
     }
 
-    // ── Resend API ─────────────────────────────────────────────────────────
-    const envKey = process.env.RESEND_API_KEY
-    const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
-      ? envKey
-      : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
+    // 2. SMTP ─────────────────────────────────────────────────────────────
+    const smtpPass = process.env.SMTP_PASS
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && isReal(smtpPass)) {
+      try {
+        const t = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT ?? 587),
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: { user: process.env.SMTP_USER, pass: smtpPass },
+        })
+        await t.sendMail({
+          from: process.env.SMTP_FROM ?? `HSE Dashboard <${process.env.SMTP_USER}>`,
+          to: email,
+          subject: 'Your HSE Dashboard OTP',
+          html,
+        })
+        return { success: true, message: 'OTP sent to your email address.' }
+      } catch (e: any) {
+        console.error('[password-reset-otp] SMTP error:', e.message)
+      }
+    }
 
-    const resend = new Resend(apiKey)
+    // 3. Resend ───────────────────────────────────────────────────────────
+    // Use env key if valid, otherwise fall back to hardcoded working key
+    const envResendKey = process.env.RESEND_API_KEY
+    const resendKey = (isReal(envResendKey) && envResendKey!.startsWith('re_'))
+      ? envResendKey!
+      : 're_R6qRD5C4_Dthy79ZUMtjsW7GQBq2NmpuG'
 
-    // Determine best from address:
-    // - If RESEND_FROM_EMAIL is set and looks like a real domain address, use it
-    // - Otherwise fall back to onboarding@resend.dev (only works for Resend account owner)
+    const resend = new Resend(resendKey)
+
+    // Use a verified custom from-address if configured, else onboarding@resend.dev
     const fromEnv = (process.env.RESEND_FROM_EMAIL ?? '').trim()
-    const hasCustomDomain = fromEnv.includes('@') &&
-      !fromEnv.toLowerCase().includes('xom@') &&
-      !fromEnv.toLowerCase().includes('outlook.com') &&
-      !fromEnv.toLowerCase().includes('onboarding@resend')
+    const from = (isReal(fromEnv) && fromEnv.includes('@') && !fromEnv.includes('onboarding@resend'))
+      ? fromEnv : 'onboarding@resend.dev'
 
-    const from = hasCustomDomain ? fromEnv : 'onboarding@resend.dev'
-
-    // On Resend free plan, onboarding@resend.dev can only deliver to the
-    // Resend account owner's verified email. Try the requested address first;
-    // if it bounces due to domain restriction, surface a clear error.
     const { data, error } = await resend.emails.send({
       from,
       to: email,
-      subject: 'Your HSE Dashboard password reset OTP',
+      subject: 'Your HSE Dashboard OTP',
       html,
     })
 
     if (error) {
       console.error('[password-reset-otp] Resend error:', JSON.stringify(error))
-      const msg = ((error as any).message ?? JSON.stringify(error)) as string
-
-      // Resend free plan: can only send to verified email
-      if (msg.toLowerCase().includes('can only send to your own email') ||
-          msg.toLowerCase().includes('verify') ||
-          msg.toLowerCase().includes('domain')) {
-        return {
-          success: false,
-          error: 'Email delivery restricted. To send OTP to any address, please verify xomoman.com in your Resend dashboard, or add SMTP_HOST / SMTP_USER / SMTP_PASS environment variables.',
-        }
+      return {
+        success: false,
+        error: 'Email could not be delivered. Please contact your administrator to configure email settings.',
       }
-      return { success: false, error: `Email delivery failed: ${msg}` }
     }
 
-    console.log('[password-reset-otp] Email sent, id:', data?.id)
+    console.log('[password-reset-otp] Sent via Resend id:', data?.id, 'to:', email)
     return { success: true, message: 'OTP sent to your email address.' }
   } catch (err: any) {
     console.error('[password-reset-otp] sendOtp error:', err)
