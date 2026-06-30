@@ -115,7 +115,7 @@ export async function sendPasswordResetOtp(email: string) {
     }
 
     // 3. Resend ───────────────────────────────────────────────────────────
-    // Always use the known working API key — ignore env placeholder values
+    // Use env key if valid, otherwise fall back to hardcoded working key
     const envResendKey = process.env.RESEND_API_KEY
     const resendKey = (isReal(envResendKey) && envResendKey!.startsWith('re_'))
       ? envResendKey!
