@@ -76,23 +76,21 @@ export async function sendPasswordResetOtp(email: string) {
       </div>
     `
 
-    let emailSent = false
-
-    // ── 1. SendGrid ────────────────────────────────────────────────────────
+    // ── 1. SendGrid (primary) ──────────────────────────────────────────────
     const sgKey = process.env.SENDGRID_API_KEY
     if (sgKey && sgKey.startsWith('SG.')) {
       try {
         sgMail.setApiKey(sgKey)
         const sgFrom = (process.env.SENDGRID_FROM_EMAIL ?? '').trim() || 'noreply@xomoman.com'
         await sgMail.send({ from: sgFrom, to: email, subject: 'Your HSE Dashboard OTP', html })
-        emailSent = true
+        return { success: true, message: 'OTP sent to your email address.' }
       } catch (e: any) {
         console.error('[password-reset-otp] SendGrid error:', e.response?.body ?? e.message)
       }
     }
 
     // ── 2. SMTP (Office 365 / Gmail / Exchange) ────────────────────────────
-    if (!emailSent && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
       try {
         const t = nodemailer.createTransport({
           host: process.env.SMTP_HOST,
@@ -102,45 +100,41 @@ export async function sendPasswordResetOtp(email: string) {
         })
         await t.sendMail({
           from: process.env.SMTP_FROM ?? `HSE Dashboard <${process.env.SMTP_USER}>`,
-          to: email, subject: 'Your HSE Dashboard OTP', html,
+          to: email,
+          subject: 'Your HSE Dashboard OTP',
+          html,
         })
-        emailSent = true
+        return { success: true, message: 'OTP sent to your email address.' }
       } catch (e: any) {
         console.error('[password-reset-otp] SMTP error:', e.message)
       }
     }
 
-    // ── 3. Resend ──────────────────────────────────────────────────────────
-    if (!emailSent) {
-      try {
-        const envKey = process.env.RESEND_API_KEY
-        const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
-          ? envKey : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
-        const resend = new Resend(apiKey)
-        const fromEnv = (process.env.RESEND_FROM_EMAIL ?? '').trim()
-        const from = (fromEnv.includes('@') && !fromEnv.includes('Xom@') && !fromEnv.includes('onboarding@resend'))
-          ? fromEnv : 'onboarding@resend.dev'
-        const { error } = await resend.emails.send({ from, to: email, subject: 'Your HSE Dashboard OTP', html })
-        if (!error) emailSent = true
-        else console.error('[password-reset-otp] Resend error:', JSON.stringify(error))
-      } catch (e: any) {
-        console.error('[password-reset-otp] Resend exception:', e.message)
-      }
-    }
+    // ── 3. Resend (requires verified domain for arbitrary recipients) ──────
+    const envKey = process.env.RESEND_API_KEY
+    const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
+      ? envKey : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
+    const resend = new Resend(apiKey)
+    const fromEnv = (process.env.RESEND_FROM_EMAIL ?? '').trim()
+    const from = (fromEnv.includes('@') && !fromEnv.includes('Xom@') && !fromEnv.includes('onboarding@resend'))
+      ? fromEnv : 'onboarding@resend.dev'
 
-    // ── 4. Always succeed — OTP is stored in DB, user can get it from admin ─
-    // Even if all email providers fail, the OTP is valid in the database.
-    // Return success so user can proceed; admin can look up the code if needed.
-    if (!emailSent) {
-      console.warn('[password-reset-otp] All email providers failed. OTP stored in DB for:', email, '| OTP:', otp)
-      // Return the OTP in the response for admin use / direct display
+    const { data, error } = await resend.emails.send({
+      from,
+      to: email,
+      subject: 'Your HSE Dashboard OTP',
+      html,
+    })
+
+    if (error) {
+      console.error('[password-reset-otp] Resend error:', JSON.stringify(error))
       return {
-        success: true,
-        message: `Email delivery unavailable. Your OTP code is: ${otp}`,
-        otp,
+        success: false,
+        error: 'Email could not be delivered. Please contact your administrator to configure email settings.',
       }
     }
 
+    console.log('[password-reset-otp] Sent via Resend, id:', data?.id)
     return { success: true, message: 'OTP sent to your email address.' }
   } catch (err: any) {
     console.error('[password-reset-otp] sendOtp error:', err)

@@ -28,7 +28,6 @@ export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading]         = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
   const [error, setError]                 = useState("")
-  const [fallbackOtp, setFallbackOtp]     = useState("")
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
 
   // Password strength
@@ -43,12 +42,10 @@ export default function ForgotPasswordPage() {
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-    setFallbackOtp("")
     setIsLoading(true)
     const res = await sendPasswordResetOtp(email)
     setIsLoading(false)
     if (res.success) {
-      if ((res as any).otp) setFallbackOtp((res as any).otp)
       setStep("otp")
       startCooldown()
     } else {
@@ -99,12 +96,10 @@ export default function ForgotPasswordPage() {
   // --- Resend OTP ---
   const handleResend = async () => {
     setError("")
-    setFallbackOtp("")
     setIsLoading(true)
     const res = await sendPasswordResetOtp(email)
     setIsLoading(false)
     if (res.success) {
-      if ((res as any).otp) setFallbackOtp((res as any).otp)
       setOtp(Array(OTP_LENGTH).fill(""))
       otpRefs.current[0]?.focus()
       startCooldown()
@@ -270,14 +265,6 @@ export default function ForgotPasswordPage() {
           <CardContent>
             <form onSubmit={handleVerifyOtp} className="space-y-5">
               <ErrorBox />
-              {/* Show OTP on screen when email delivery is unavailable */}
-              {fallbackOtp && (
-                <div className="rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-center space-y-1">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Email unavailable — your code</p>
-                  <p className="text-3xl font-mono font-bold tracking-[0.4em] text-primary select-all">{fallbackOtp}</p>
-                  <p className="text-xs text-muted-foreground">Enter this code below to continue</p>
-                </div>
-              )}
               {/* OTP boxes */}
               <div className="space-y-2">
                 <Label className="text-center block">One-Time Password</Label>
