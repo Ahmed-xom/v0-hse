@@ -1,10 +1,10 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { users } from "./users-data"
 import { requestPasswordReset as requestPasswordResetAction } from "@/app/actions/forgot-password"
 import { getUserJourneyAccess } from "@/app/actions/manage-users"
 import { verifyUserPassword } from "@/app/actions/verify-password"
+import { getUserByEmail } from "@/app/actions/get-user-by-email"
 
 export type UserRole = "ADMIN SYSTEM" | "MANAGEMENT" | "SITE MANAGER" | "HSE ADMIN" | "HSE" | "HR" | "MASTER USER" | "USER" | "USER - JM"
 
@@ -51,13 +51,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    // Find user by email
-    const foundUser = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    )
+    // Look up user directly from the database (covers both static and dynamically added users)
+    const foundUser = await getUserByEmail(email)
 
     if (!foundUser) {
       return { success: false, error: "User not found. Please check your email address." }
+    }
+
+    if (foundUser.banned) {
+      return { success: false, error: "Your account has been suspended. Please contact your administrator." }
     }
 
     if (foundUser.status !== "Active") {
