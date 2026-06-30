@@ -28,6 +28,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ExcelDataViewer } from "./excel-data-viewer"
 import { addNewUser } from "@/app/actions/add-user"
+import { UsersManagementWithRefresh } from "./users-management-with-refresh"
 import { resetUserPassword } from "@/app/actions/reset-password"
 
 const ROLES = [
@@ -192,7 +193,7 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
         <h2 className="text-xl font-semibold">Admin Settings</h2>
       </div>
 
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs defaultValue="users" className="w-full">
         <TabsList className="grid w-full max-w-2xl grid-cols-3">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
@@ -254,171 +255,7 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
 
         {/* User Management Tab */}
         <TabsContent value="users" className="space-y-6">
-          {/* Add User Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
-                  <div>
-                    <CardTitle>User Management</CardTitle>
-                    <CardDescription>Add or manage system users</CardDescription>
-                  </div>
-                </div>
-                <Button onClick={() => setIsAddUserOpen(true)} size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-              Add New User
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Use the button above to add new users to the system. All new users will receive a welcome email with their temporary password.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Email Configuration */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            <div>
-              <CardTitle>Email Configuration</CardTitle>
-              <CardDescription>Password reset email settings</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label>SMTP Server</Label>
-            <Input value="smtp-mail.outlook.com" disabled />
-          </div>
-          <div>
-            <Label>SMTP Port</Label>
-            <Input value="587" disabled />
-          </div>
-          <div>
-            <Label>From Email</Label>
-            <Input value="hsesystem.xom@outlook.com" disabled />
-          </div>
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3">
-            <p className="text-sm text-emerald-700 font-medium">✓ Email service is configured and ready</p>
-            <p className="text-xs text-emerald-600 mt-1">Password reset emails will be sent automatically to users</p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Add User Dialog */}
-      <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Add New User
-            </DialogTitle>
-            <DialogDescription>
-              Create a new user account. A temporary password will be emailed to them.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div>
-              <Label>Full Name *</Label>
-              <Input
-                placeholder="Enter full name"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label>Email Address *</Label>
-              <Input
-                type="email"
-                placeholder="user@xomoman.com"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label>Payroll Number</Label>
-              <Input
-                placeholder="E.g., XOM-001"
-                value={formData.payrollNo}
-                onChange={(e) => handleInputChange("payrollNo", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label>Designation</Label>
-              <Input
-                placeholder="Job title or position"
-                value={formData.designation}
-                onChange={(e) => handleInputChange("designation", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label>Business Unit</Label>
-              <Select value={formData.businessUnit} onValueChange={(v) => handleInputChange("businessUnit", v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {BUSINESS_UNITS.map((unit) => (
-                    <SelectItem key={unit} value={unit}>
-                      {unit}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Role</Label>
-              <Select value={formData.role} onValueChange={(v) => handleInputChange("role", v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ROLES.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {role}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label>Status</Label>
-              <Select value={formData.status} onValueChange={(v) => handleInputChange("status", v as "Active" | "Inactive")}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUSES.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddUserOpen(false)} disabled={isLoading}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddUser} disabled={isLoading}>
-              {isLoading ? "Adding..." : "Add User"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <UsersManagementWithRefresh />
         </TabsContent>
 
         {/* Excel Data Tab */}
