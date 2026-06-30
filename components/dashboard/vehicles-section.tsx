@@ -82,7 +82,7 @@ export function VehiclesSection() {
     setForm({
       plate_no: v.plate_no,
       vehicle_type: v.vehicle_type,
-      expiry_date: v.expiry_date ? v.expiry_date.split("T")[0] : "",
+      expiry_date: v.expiry_date ? new Date(v.expiry_date).toISOString().split("T")[0] : "",
       allowable_load: v.allowable_load,
       km_reading: v.km_reading,
       description: v.description,
