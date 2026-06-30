@@ -4,6 +4,75 @@ import { eq, sql } from 'drizzle-orm'
 import { db, pool } from '@/lib/db'
 import { user } from '@/lib/db/schema'
 import { revalidateTag } from 'next/cache'
+import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
+
+export async function createUser(input: {
+  name: string
+  email: string
+  payrollNo: string
+  designation: string
+  role: string
+  businessUnit: string
+  approverName: string
+  approverEmail: string
+}) {
+  try {
+    const { name, email, payrollNo, designation, role, businessUnit, approverName, approverEmail } = input
+
+    if (!name || !email) return { success: false, error: 'Name and email are required' }
+
+    // Check if email already exists
+    const existing = await pool.query(
+      `SELECT id FROM neon_auth.user WHERE lower(email) = lower($1) LIMIT 1`,
+      [email]
+    )
+    if (existing.rows.length > 0) return { success: false, error: 'A user with this email already exists' }
+
+    // Generate a temporary password
+    const tempPassword = crypto.randomBytes(8).toString('hex')
+    const passwordHash = await bcrypt.hash(tempPassword, 10)
+    const newUserId = crypto.randomUUID()
+    const now = new Date().toISOString()
+
+    // 1. Insert into neon_auth.user
+    await pool.query(
+      `INSERT INTO neon_auth.user
+         (id, name, email, role, "emailVerified", "createdAt", "updatedAt", banned,
+          approver, approver_email, journey_access, journey_approver)
+       VALUES ($1,$2,$3,$4,false,$5,$5,false,$6,$7,false,false)`,
+      [newUserId, name, email, role || 'USER', now,
+       approverName || null, approverEmail || null]
+    )
+
+    // 2. Insert into neon_auth.account (stores the hashed password)
+    await pool.query(
+      `INSERT INTO neon_auth.account
+         (id, "userId", "accountId", "providerId", password, "createdAt", "updatedAt")
+       VALUES ($1,$2,$3,'credential',$4,$5,$5)`,
+      [crypto.randomUUID(), newUserId, email, passwordHash, now]
+    )
+
+    // 3. Upsert into public.employee
+    await pool.query(
+      `INSERT INTO public.employee
+         (id, name, email, payroll_no, designation, business_unit, hse_role, status, created_at, updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,'Active',$8,$8)
+       ON CONFLICT (id) DO NOTHING`,
+      [newUserId, name, email, payrollNo || '', designation || '', businessUnit || '', role || 'USER', now]
+    )
+
+    revalidateTag('users', 'max')
+    return {
+      success: true,
+      message: `User created successfully.`,
+      tempPassword,
+    }
+  } catch (error: any) {
+    console.error('[manage-users] createUser error:', error)
+    return { success: false, error: error.message || 'Failed to create user' }
+  }
+}
 
 export async function getUsers() {
   try {
