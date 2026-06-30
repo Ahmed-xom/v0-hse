@@ -1,5 +1,5 @@
 "use client"
-
+// v2 — removed all fallbackOtp/devOtp code; OTP sent only via email
 import { useState, useRef } from "react"
 import Link from "next/link"
 import {
