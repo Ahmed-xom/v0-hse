@@ -17,28 +17,26 @@ type Step = "email" | "otp" | "password" | "success"
 const OTP_LENGTH = 6
 
 export default function ForgotPasswordPage() {
-  const [step, setStep]                   = useState<Step>("email")
-  const [email, setEmail]                 = useState("")
-  const [otp, setOtp]                     = useState<string[]>(Array(OTP_LENGTH).fill(""))
-  const [newPassword, setNewPassword]     = useState("")
+  const [step, setStep]                       = useState<Step>("email")
+  const [email, setEmail]                     = useState("")
+  const [otp, setOtp]                         = useState<string[]>(Array(OTP_LENGTH).fill(""))
+  const [newPassword, setNewPassword]         = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [showNew, setShowNew]             = useState(false)
-  const [showConfirm, setShowConfirm]     = useState(false)
-  const [confirmTouched, setConfirmTouched] = useState(false)
-  const [isLoading, setIsLoading]         = useState(false)
-  const [resendCooldown, setResendCooldown] = useState(0)
-  const [error, setError]                 = useState("")
+  const [showNew, setShowNew]                 = useState(false)
+  const [showConfirm, setShowConfirm]         = useState(false)
+  const [confirmTouched, setConfirmTouched]   = useState(false)
+  const [isLoading, setIsLoading]             = useState(false)
+  const [resendCooldown, setResendCooldown]   = useState(0)
+  const [error, setError]                     = useState("")
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
 
-  // Password strength
-  const hasMinLength = newPassword.length >= 8
-  const hasUpper     = /[A-Z]/.test(newPassword)
-  const hasNumber    = /[0-9]/.test(newPassword)
-  const passwordStrong  = hasMinLength && hasUpper && hasNumber
-  const passwordsMatch  = newPassword === confirmPassword && confirmPassword !== ""
-  const otpValue        = otp.join("")
+  const hasMinLength   = newPassword.length >= 8
+  const hasUpper       = /[A-Z]/.test(newPassword)
+  const hasNumber      = /[0-9]/.test(newPassword)
+  const passwordStrong = hasMinLength && hasUpper && hasNumber
+  const passwordsMatch = newPassword === confirmPassword && confirmPassword !== ""
+  const otpValue       = otp.join("")
 
-  // --- Step 1: send OTP ---
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -53,7 +51,6 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  // --- Step 2: verify OTP ---
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -67,7 +64,6 @@ export default function ForgotPasswordPage() {
     setStep("password")
   }
 
-  // --- Step 3: set new password ---
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
@@ -86,14 +82,12 @@ export default function ForgotPasswordPage() {
       setStep("success")
     } else {
       setError(res.error ?? "Failed to reset password.")
-      // If OTP is bad, send back to OTP step
       if (res.error?.toLowerCase().includes("otp") || res.error?.toLowerCase().includes("expired")) {
         setStep("otp")
       }
     }
   }
 
-  // --- Resend OTP ---
   const handleResend = async () => {
     setError("")
     setIsLoading(true)
@@ -118,7 +112,6 @@ export default function ForgotPasswordPage() {
     }, 1000)
   }
 
-  // --- OTP input box handling ---
   const handleOtpChange = (index: number, value: string) => {
     const cleaned = value.replace(/\D/g, "").slice(-1)
     const next = [...otp]
@@ -145,7 +138,6 @@ export default function ForgotPasswordPage() {
     otpRefs.current[nextFocus]?.focus()
   }
 
-  // Shared layout wrapper
   const Shell = ({ children }: { children: React.ReactNode }) => (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -171,14 +163,13 @@ export default function ForgotPasswordPage() {
     </div>
   )
 
-  // Step indicator dots
   const StepDots = ({ current }: { current: number }) => (
     <div className="flex items-center justify-center gap-2 mb-4">
       {[0, 1, 2].map((i) => (
         <div
           key={i}
           className={`h-2 rounded-full transition-all duration-300 ${
-            i < current ? "w-6 bg-primary" : i === current ? "w-6 bg-primary" : "w-2 bg-muted-foreground/30"
+            i <= current ? "w-6 bg-primary" : "w-2 bg-muted-foreground/30"
           }`}
         />
       ))}
@@ -192,7 +183,6 @@ export default function ForgotPasswordPage() {
       </div>
     ) : null
 
-  // ── Step: email ──────────────────────────────────────────────
   if (step === "email") {
     return (
       <Shell>
@@ -230,7 +220,10 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
               <Button type="submit" className="w-full" disabled={isLoading || !email}>
-                {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending OTP...</> : "Send OTP"}
+                {isLoading
+                  ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending OTP...</>
+                  : "Send OTP"
+                }
               </Button>
               <Link href="/sign-in">
                 <Button variant="ghost" className="w-full">
@@ -244,7 +237,6 @@ export default function ForgotPasswordPage() {
     )
   }
 
-  // ── Step: OTP ────────────────────────────────────────────────
   if (step === "otp") {
     return (
       <Shell>
@@ -258,14 +250,14 @@ export default function ForgotPasswordPage() {
             <StepDots current={1} />
             <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
             <CardDescription>
-              We sent a 6-digit code to <span className="font-medium text-foreground">{email}</span>.
+              We sent a 6-digit code to{" "}
+              <span className="font-medium text-foreground">{email}</span>.
               It expires in 10 minutes.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleVerifyOtp} className="space-y-5">
               <ErrorBox />
-              {/* OTP boxes */}
               <div className="space-y-2">
                 <Label className="text-center block">One-Time Password</Label>
                 <div className="flex justify-center gap-2" onPaste={handleOtpPaste}>
@@ -289,20 +281,13 @@ export default function ForgotPasswordPage() {
                   ))}
                 </div>
               </div>
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={otpValue.length < OTP_LENGTH}
-              >
+              <Button type="submit" className="w-full" disabled={otpValue.length < OTP_LENGTH}>
                 Verify OTP
               </Button>
-
-              {/* Resend */}
               <div className="text-center text-sm text-muted-foreground">
                 {"Didn't receive the code? "}
                 {resendCooldown > 0 ? (
-                  <span className="text-muted-foreground">Resend in {resendCooldown}s</span>
+                  <span>Resend in {resendCooldown}s</span>
                 ) : (
                   <button
                     type="button"
@@ -314,7 +299,6 @@ export default function ForgotPasswordPage() {
                   </button>
                 )}
               </div>
-
               <button
                 type="button"
                 onClick={() => { setStep("email"); setOtp(Array(OTP_LENGTH).fill("")); setError("") }}
@@ -329,7 +313,6 @@ export default function ForgotPasswordPage() {
     )
   }
 
-  // ── Step: new password ───────────────────────────────────────
   if (step === "password") {
     return (
       <Shell>
@@ -347,7 +330,6 @@ export default function ForgotPasswordPage() {
           <CardContent>
             <form onSubmit={handleResetPassword} className="space-y-4">
               <ErrorBox />
-              {/* New password */}
               <div className="space-y-2">
                 <Label htmlFor="new-password">New Password</Label>
                 <div className="relative">
@@ -371,7 +353,7 @@ export default function ForgotPasswordPage() {
                     {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                <div className="space-y-1 pt-1 min-h-[52px]">
+                <div className="space-y-1 pt-1">
                   {[
                     { ok: hasMinLength, label: "At least 8 characters" },
                     { ok: hasUpper,     label: "One uppercase letter" },
@@ -384,7 +366,6 @@ export default function ForgotPasswordPage() {
                   ))}
                 </div>
               </div>
-              {/* Confirm password */}
               <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirm Password</Label>
                 <div className="relative">
@@ -398,9 +379,7 @@ export default function ForgotPasswordPage() {
                     onBlur={() => setConfirmTouched(true)}
                     className={`pl-10 pr-10 ${
                       confirmTouched && confirmPassword.length > 0
-                        ? passwordsMatch
-                          ? "border-primary/50"
-                          : "border-destructive/50"
+                        ? passwordsMatch ? "border-primary/50" : "border-destructive/50"
                         : ""
                     }`}
                     required
@@ -418,12 +397,7 @@ export default function ForgotPasswordPage() {
                   <p className="text-xs text-destructive">Passwords do not match.</p>
                 )}
               </div>
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading || !passwordStrong}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading || !passwordStrong}>
                 {isLoading
                   ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
                   : "Save New Password"
@@ -436,7 +410,6 @@ export default function ForgotPasswordPage() {
     )
   }
 
-  // ── Step: success ────────────────────────────────────────────
   return (
     <Shell>
       <Card className="border-border/50 bg-card/50 backdrop-blur-sm">

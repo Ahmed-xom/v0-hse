@@ -76,7 +76,7 @@ export async function sendPasswordResetOtp(email: string) {
       </div>
     `
 
-    // ── 1. SendGrid (primary) ──────────────────────────────────────────────
+    // 1. SendGrid (primary) ────────────────────────────────────────────────
     const sgKey = process.env.SENDGRID_API_KEY
     if (sgKey && sgKey.startsWith('SG.')) {
       try {
