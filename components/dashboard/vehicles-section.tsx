@@ -1,11 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, RefreshCw, Truck, CheckCircle, XCircle, Search } from "lucide-react"
+import { Plus, Edit, Trash2, RefreshCw, Truck, CheckCircle, XCircle, Search, CalendarIcon } from "lucide-react"
+import { format, parseISO } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 import {
   Dialog,
   DialogContent,
@@ -259,8 +263,36 @@ export function VehiclesSection() {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="expiry_date">Expiry Date</Label>
-              <Input id="expiry_date" type="date" value={form.expiry_date} onChange={(e) => setForm((f) => ({ ...f, expiry_date: e.target.value }))} />
+              <Label>Expiry Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !form.expiry_date && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {form.expiry_date
+                      ? format(parseISO(form.expiry_date), "dd MMM yyyy")
+                      : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={form.expiry_date ? parseISO(form.expiry_date) : undefined}
+                    onSelect={(date) =>
+                      setForm((f) => ({
+                        ...f,
+                        expiry_date: date ? format(date, "yyyy-MM-dd") : "",
+                      }))
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
           <DialogFooter>
