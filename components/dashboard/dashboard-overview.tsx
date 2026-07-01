@@ -1,20 +1,21 @@
 "use client"
 
-import useSWR from "swr"
+import { useState, useEffect } from "react"
 import { KPICards } from "./kpi-cards"
 import { IncidentStatistics } from "./incident-statistics"
 import { getDashboardStats } from "@/app/actions/get-dashboard-stats"
 import type { DashboardStats } from "@/app/actions/get-dashboard-stats"
 
-async function fetchStats(): Promise<DashboardStats> {
-  return getDashboardStats()
-}
-
 export function DashboardOverview() {
-  const { data: stats, isLoading } = useSWR<DashboardStats>("dashboard-stats", fetchStats, {
-    revalidateOnFocus: false,
-    dedupingInterval: 60000, // re-fetch at most once per minute
-  })
+  const [stats, setStats] = useState<DashboardStats | undefined>(undefined)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    getDashboardStats().then((s) => {
+      setStats(s)
+      setIsLoading(false)
+    })
+  }, [])
 
   return (
     <>
