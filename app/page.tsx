@@ -3,8 +3,7 @@
 import { Suspense, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { DashboardHeader } from "@/components/dashboard/header"
-import { KPICards } from "@/components/dashboard/kpi-cards"
-import { IncidentStatistics } from "@/components/dashboard/incident-statistics"
+import { DashboardOverview } from "@/components/dashboard/dashboard-overview"
 import { InspectionReports } from "@/components/dashboard/inspection-reports"
 import { InspectionTypes } from "@/components/dashboard/inspection-types"
 import { UsersManagementWithRefresh } from "@/components/dashboard/users-management-with-refresh"
@@ -78,15 +77,8 @@ function HSEDashboardInner() {
               </TabsList>
 
               <TabsContent value="dashboard" className="space-y-6">
-                {/* KPI Cards */}
-                <section aria-label="Key Performance Indicators">
-                  <KPICards />
-                </section>
-
-                {/* Incident Statistics */}
-                <section aria-label="Incident Statistics">
-                  <IncidentStatistics />
-                </section>
+                {/* KPI Cards + Incident Statistics (live DB) */}
+                <DashboardOverview />
 
                 {/* Behaviour Observations */}
                 <section aria-label="Behaviour Observations">
