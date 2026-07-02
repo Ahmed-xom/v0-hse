@@ -87,6 +87,56 @@ export function observationCreatedHtml(obs: {
     </div>`
 }
 
+export function incompleteTrainingHtml(opts: {
+  supervisorName: string
+  records: { employeeName: string; employeeCode: string; courseName: string; status: string; expiryDate?: string }[]
+  generatedAt: string
+}): string {
+  const rows = opts.records.map((r) => `
+    <tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#1e293b;">${r.employeeName}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#64748b;">${r.employeeCode ?? '—'}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#1e293b;">${r.courseName}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;">
+        <span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:10px;font-size:12px;">${r.status}</span>
+      </td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e2e8f0;color:#64748b;">${r.expiryDate ?? '—'}</td>
+    </tr>`).join('')
+
+  return `
+    <div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto;padding:20px;">
+      <div style="background:#0d9488;padding:24px 30px;border-radius:10px 10px 0 0;">
+        <h1 style="color:#fff;margin:0;font-size:22px;">HSE System — Incomplete Training Alert</h1>
+        <p style="color:rgba(255,255,255,.85);margin:6px 0 0;">Generated: ${opts.generatedAt}</p>
+      </div>
+      <div style="background:#f8fafc;padding:30px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px;">
+        <p style="color:#475569;font-size:15px;margin:0 0 20px;">Dear ${opts.supervisorName},</p>
+        <p style="color:#475569;font-size:14px;margin:0 0 20px;line-height:1.6;">
+          The following training records are <strong>not yet completed</strong>. Please follow up with the relevant employees to ensure compliance.
+        </p>
+        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:10px 14px;margin-bottom:20px;">
+          <strong style="color:#856404;">Total Incomplete Records: ${opts.records.length}</strong>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;">
+          <thead>
+            <tr style="background:#e2e8f0;">
+              <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:600;">Employee</th>
+              <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:600;">Code</th>
+              <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:600;">Course</th>
+              <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:600;">Status</th>
+              <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:600;">Expiry</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <br/>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://hse.dash.xomoman.com'}" style="display:inline-block;background:#0d9488;color:#fff;padding:10px 22px;border-radius:6px;text-decoration:none;font-size:14px;">View Training in HSE System</a>
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:25px 0 10px;"/>
+        <p style="color:#94a3b8;font-size:12px;margin:0;">This is an automated notification from the HSE System. Do not reply to this email.</p>
+      </div>
+    </div>`
+}
+
 export function observationStatusUpdatedHtml(obs: {
   number: string
   oldStatus: string

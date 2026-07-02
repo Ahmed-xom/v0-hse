@@ -16,6 +16,7 @@ import {
   XCircle,
   AlertCircle,
   GraduationCap,
+  Bell,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -66,6 +67,7 @@ import {
 } from "@/app/actions/manage-training"
 import { getUsers } from "@/app/actions/manage-users"
 import { getCourses } from "@/app/actions/get-courses"
+import { notifyIncompleteTraining } from "@/app/actions/training-notifications"
 import type { Course } from "@/app/actions/get-courses"
 import type { User } from "@/lib/users-data"
 import { Pencil } from "lucide-react"
@@ -150,6 +152,7 @@ export function TrainingMatrix() {
   const [isMatrixOpen, setIsMatrixOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [isSendingNotification, setIsSendingNotification] = useState(false)
 
   // Matrix builder state
   const [matrixEmployeeSearch, setMatrixEmployeeSearch] = useState("")
@@ -471,6 +474,32 @@ export function TrainingMatrix() {
                   <Button size="sm" variant="secondary" className="gap-2" onClick={() => setIsMatrixOpen(true)}>
                     <BookOpen className="h-4 w-4" />
                     Add Training Matrix
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-2 border-amber-500 text-amber-600 hover:bg-amber-50"
+                    disabled={isSendingNotification}
+                    onClick={async () => {
+                      setIsSendingNotification(true)
+                      const res = await notifyIncompleteTraining()
+                      setIsSendingNotification(false)
+                      if (res.success) {
+                        toast({
+                          title: "Supervisors notified",
+                          description: `${res.emailsSent} email(s) sent for ${res.incompleteCount} incomplete record(s).`,
+                        })
+                      } else {
+                        toast({
+                          title: "Notification failed",
+                          description: res.error ?? "Could not send notifications.",
+                          variant: "destructive",
+                        })
+                      }
+                    }}
+                  >
+                    <Bell className="h-4 w-4" />
+                    {isSendingNotification ? "Sending..." : "Notify Supervisors"}
                   </Button>
                 </>
               )}
