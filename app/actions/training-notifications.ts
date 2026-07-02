@@ -2,8 +2,79 @@
 
 import { db } from '@/lib/db'
 import { training, trainingNotification } from '@/lib/db/schema'
-import { sql, eq, and, isNotNull, lte, gte } from 'drizzle-orm'
+import { sql, eq, and, isNotNull, lte, gte, notInArray } from 'drizzle-orm'
 import { REVIEWER_ROLES } from '@/lib/auth-roles'
+import { sendEmail, incompleteTrainingHtml } from '@/lib/send-email'
+
+// Notify supervisors and HSE staff of all incomplete training records.
+// "Incomplete" = status not in Completed/Passed/PASSED/COMPLETED.
+export async function notifyIncompleteTraining(): Promise<{
+  success: boolean
+  emailsSent: number
+  incompleteCount: number
+  error?: string
+}> {
+  try {
+    const DONE_STATUSES = ['Completed', 'COMPLETED', 'Passed', 'PASSED', 'completed', 'passed']
+
+    // Fetch all incomplete records
+    const incompleteRecords = await db
+      .select()
+      .from(training)
+      .where(notInArray(training.status, DONE_STATUSES))
+      .orderBy(training.employeeName)
+
+    if (incompleteRecords.length === 0) {
+      return { success: true, emailsSent: 0, incompleteCount: 0 }
+    }
+
+    // Fetch supervisor / HSE admin emails from employee table
+    const recipientRows = await db.execute<{ name: string; email: string }>(sql`
+      SELECT name, email
+      FROM public.employee
+      WHERE hse_role IN ('HSE', 'HSE ADMIN', 'ADMIN SYSTEM', 'MASTER USER', 'MANAGEMENT', 'SITE MANAGER')
+        AND status = 'Active'
+        AND email IS NOT NULL
+        AND email <> ''
+    `)
+
+    const recipients: { name: string; email: string }[] = (recipientRows as any).rows ?? []
+    if (recipients.length === 0) {
+      return { success: true, emailsSent: 0, incompleteCount: incompleteRecords.length }
+    }
+
+    const generatedAt = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Muscat' })
+    const records = incompleteRecords.map((r) => ({
+      employeeName: r.employeeName,
+      employeeCode: r.employeeCode ?? '',
+      courseName: r.courseName,
+      status: r.status,
+      expiryDate: r.expiryDate
+        ? new Date(r.expiryDate).toLocaleDateString('en-GB')
+        : undefined,
+    }))
+
+    let emailsSent = 0
+    for (const recipient of recipients) {
+      const html = incompleteTrainingHtml({
+        supervisorName: recipient.name,
+        records,
+        generatedAt,
+      })
+      const result = await sendEmail({
+        to: recipient.email,
+        subject: `HSE Training Alert — ${incompleteRecords.length} Incomplete Training Record(s)`,
+        html,
+      })
+      if (result.sent) emailsSent++
+    }
+
+    return { success: true, emailsSent, incompleteCount: incompleteRecords.length }
+  } catch (error: any) {
+    console.error('[v0] notifyIncompleteTraining error:', error)
+    return { success: false, emailsSent: 0, incompleteCount: 0, error: error.message }
+  }
+}
 
 export interface TrainingNotification {
   id: string

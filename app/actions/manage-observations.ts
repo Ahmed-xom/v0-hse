@@ -1,9 +1,26 @@
 'use server'
 
-import { eq, desc, and, sql } from 'drizzle-orm'
+import { eq, desc, sql } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { observation } from '@/lib/db/schema'
 import { revalidatePath } from 'next/cache'
+import { sendEmail, observationCreatedHtml, observationStatusUpdatedHtml } from '@/lib/send-email'
+
+// Fetch emails of HSE staff / management to notify on new observations
+async function getHseNotifyEmails(): Promise<string[]> {
+  try {
+    const result = await db.execute(sql`
+      SELECT email FROM public.employee
+      WHERE hse_role IN ('HSE STAFF', 'ADMIN SYSTEM', 'MASTER USER', 'MANAGEMENT')
+        AND status = 'Active'
+        AND email IS NOT NULL
+        AND email <> ''
+    `)
+    return ((result as any).rows ?? []).map((r: any) => r.email as string)
+  } catch {
+    return []
+  }
+}
 
 function generateObservationId() {
   const now = new Date()
@@ -71,6 +88,7 @@ export async function createObservation(formData: {
   // caller passes the logged-in user info — no server-side session needed
   userId?: string
   observerName?: string
+  observerEmail?: string
 }) {
   try {
     const id = generateObservationId()
@@ -100,6 +118,34 @@ export async function createObservation(formData: {
     })
 
     revalidatePath('/')
+
+    // Send email notifications (fire-and-forget — don't block the response)
+    const notifyEmails = await getHseNotifyEmails()
+    const observerEmail = formData.observerEmail ?? ''
+    const allRecipients = Array.from(
+      new Set([...notifyEmails, ...(observerEmail ? [observerEmail] : [])].filter(Boolean))
+    )
+
+    if (allRecipients.length > 0) {
+      const html = observationCreatedHtml({
+        number: id,
+        date: formData.date,
+        businessUnit: formData.businessUnit,
+        observer: formData.observerName ?? 'Unknown',
+        location: formData.location,
+        category: formData.category,
+        severity: formData.observationType,
+        nearMiss: formData.nearMiss === 'yes',
+        description: formData.description,
+        correctiveActions: formData.correctiveActions,
+      })
+      sendEmail({
+        to: allRecipients,
+        subject: `New Observation Raised — ${id}${formData.nearMiss === 'yes' ? ' [NEAR MISS]' : ''}`,
+        html,
+      }).catch((e) => console.error('[observations] email error:', e))
+    }
+
     return { success: true, id }
   } catch (error: any) {
     console.error('[v0] Error creating observation:', error)
@@ -107,14 +153,55 @@ export async function createObservation(formData: {
   }
 }
 
-export async function updateObservationStatus(id: string, status: string) {
+export async function updateObservationStatus(
+  id: string,
+  status: string,
+  opts?: { oldStatus?: string; updatedBy?: string; observerEmail?: string }
+) {
   try {
+    // Fetch old status before updating if not provided
+    let oldStatus = opts?.oldStatus ?? ''
+    let observerEmail = opts?.observerEmail ?? ''
+
+    if (!oldStatus || !observerEmail) {
+      const existing = await db
+        .select()
+        .from(observation)
+        .where(eq(observation.id, id))
+        .limit(1)
+      if (existing.length > 0) {
+        oldStatus = oldStatus || (existing[0].status ?? '')
+        observerEmail = observerEmail || (existing[0].observer ?? '')
+      }
+    }
+
     await db
       .update(observation)
       .set({ status, updatedAt: new Date() })
       .where(eq(observation.id, id))
 
     revalidatePath('/')
+
+    // Notify observer + HSE staff of status change
+    const notifyEmails = await getHseNotifyEmails()
+    const allRecipients = Array.from(
+      new Set([...notifyEmails, ...(observerEmail ? [observerEmail] : [])].filter(Boolean))
+    )
+
+    if (allRecipients.length > 0 && oldStatus !== status) {
+      const html = observationStatusUpdatedHtml({
+        number: id,
+        oldStatus,
+        newStatus: status,
+        updatedBy: opts?.updatedBy,
+      })
+      sendEmail({
+        to: allRecipients,
+        subject: `Observation ${id} — Status Updated to ${status}`,
+        html,
+      }).catch((e) => console.error('[observations] status email error:', e))
+    }
+
     return { success: true }
   } catch (error: any) {
     console.error('[v0] Error updating observation status:', error)

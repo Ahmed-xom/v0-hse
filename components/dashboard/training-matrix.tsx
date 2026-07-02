@@ -16,6 +16,7 @@ import {
   XCircle,
   AlertCircle,
   GraduationCap,
+  Bell,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -65,6 +66,9 @@ import {
   bulkCreateMatrixRecords,
 } from "@/app/actions/manage-training"
 import { getUsers } from "@/app/actions/manage-users"
+import { getCourses } from "@/app/actions/get-courses"
+import { notifyIncompleteTraining } from "@/app/actions/training-notifications"
+import type { Course } from "@/app/actions/get-courses"
 import type { User } from "@/lib/users-data"
 import { Pencil } from "lucide-react"
 import Papa from "papaparse"
@@ -148,6 +152,7 @@ export function TrainingMatrix() {
   const [isMatrixOpen, setIsMatrixOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
+  const [isSendingNotification, setIsSendingNotification] = useState(false)
 
   // Matrix builder state
   const [matrixEmployeeSearch, setMatrixEmployeeSearch] = useState("")
@@ -157,7 +162,13 @@ export function TrainingMatrix() {
   const [matrixStatus, setMatrixStatus] = useState("Pending")
 
   const allEmployees = useMemo(() => getUniqueEmployees(records), [records])
-  const allCourses = useMemo(() => getUniqueCourses(records), [records])
+  const [masterCourses, setMasterCourses] = useState<Course[]>([])
+  const allCourses = useMemo(
+    () => masterCourses.length > 0
+      ? masterCourses.map((c) => c.name)
+      : getUniqueCourses(records),
+    [masterCourses, records]
+  )
 
   const filteredMatrixEmployees = useMemo(() =>
     allEmployees.filter((e) =>
@@ -181,7 +192,7 @@ export function TrainingMatrix() {
     expiryDate: "",
   })
 
-  // Load all users for the employee dropdown (sorted A–Z)
+  // Load all users and master courses on mount
   useEffect(() => {
     getUsers().then((res) => {
       if (res.success) {
@@ -189,6 +200,7 @@ export function TrainingMatrix() {
         setAllUsers(sorted)
       }
     })
+    getCourses().then((courses) => setMasterCourses(courses))
   }, [])
 
   // Fetch records from DB
@@ -462,6 +474,32 @@ export function TrainingMatrix() {
                   <Button size="sm" variant="secondary" className="gap-2" onClick={() => setIsMatrixOpen(true)}>
                     <BookOpen className="h-4 w-4" />
                     Add Training Matrix
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-2 border-amber-500 text-amber-600 hover:bg-amber-50"
+                    disabled={isSendingNotification}
+                    onClick={async () => {
+                      setIsSendingNotification(true)
+                      const res = await notifyIncompleteTraining()
+                      setIsSendingNotification(false)
+                      if (res.success) {
+                        toast({
+                          title: "Supervisors notified",
+                          description: `${res.emailsSent} email(s) sent for ${res.incompleteCount} incomplete record(s).`,
+                        })
+                      } else {
+                        toast({
+                          title: "Notification failed",
+                          description: res.error ?? "Could not send notifications.",
+                          variant: "destructive",
+                        })
+                      }
+                    }}
+                  >
+                    <Bell className="h-4 w-4" />
+                    {isSendingNotification ? "Sending..." : "Notify Supervisors"}
                   </Button>
                 </>
               )}
@@ -857,11 +895,19 @@ export function TrainingMatrix() {
             </div>
             <div className="space-y-1.5">
               <Label>Course Name <span className="text-destructive">*</span></Label>
-              <Input
-                placeholder="e.g. Fire Safety Awareness"
+              <Select
                 value={editForm.courseName}
-                onChange={(e) => setEditForm((f) => ({ ...f, courseName: e.target.value }))}
-              />
+                onValueChange={(v) => setEditForm((f) => ({ ...f, courseName: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select course..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-64">
+                  {allCourses.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
@@ -955,11 +1001,19 @@ export function TrainingMatrix() {
             </div>
             <div className="space-y-1.5">
               <Label>Course Name <span className="text-destructive">*</span></Label>
-              <Input
-                placeholder="e.g. Fire Safety Awareness"
+              <Select
                 value={form.courseName}
-                onChange={(e) => setForm((f) => ({ ...f, courseName: e.target.value }))}
-              />
+                onValueChange={(v) => setForm((f) => ({ ...f, courseName: v }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select course..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-64">
+                  {allCourses.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
