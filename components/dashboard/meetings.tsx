@@ -36,8 +36,9 @@ import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
 import {
   getMeetings, getMeetingWithAttendees, createMeeting, updateMeeting,
   deleteMeeting, toggleAttendance,
-  type Meeting, type MeetingAttendee, type MeetingStatus, MEETING_TYPES,
+  type Meeting, type MeetingAttendee, type MeetingStatus,
 } from "@/app/actions/manage-meetings"
+import { MEETING_TYPES } from "@/lib/meeting-types"
 
 const STATUS_COLORS: Record<string, string> = {
   Completed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
