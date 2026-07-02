@@ -5,9 +5,6 @@ import { revalidatePath } from 'next/cache'
 import type { Meeting, MeetingAttendee, MeetingStatus } from '@/lib/meeting-types'
 import { sendEmail, meetingInviteHtml } from '@/lib/send-email'
 
-// Re-export types so callers can import from one place (type-only, safe in use server files)
-export type { Meeting, MeetingAttendee, MeetingStatus }
-
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
 export async function getMeetings(filter?: {
