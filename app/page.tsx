@@ -7,6 +7,7 @@ import { DashboardOverview } from "@/components/dashboard/dashboard-overview"
 import { InspectionReports } from "@/components/dashboard/inspection-reports"
 import { InspectionTypes } from "@/components/dashboard/inspection-types"
 import { Meetings } from "@/components/dashboard/meetings"
+import { ServiceQuality } from "@/components/dashboard/service-quality"
 import { UsersManagementWithRefresh } from "@/components/dashboard/users-management-with-refresh"
 import { BusinessUnits } from "@/components/dashboard/business-units"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
@@ -68,12 +69,13 @@ function HSEDashboardInner() {
               <p className="text-muted-foreground">Loading dashboard...</p>
             </div>
           ) : isAdmin ? (
-            <Tabs value={["dashboard","incidents","inspections","meetings","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full max-w-3xl grid-cols-7">
+            <Tabs value={["dashboard","incidents","inspections","meetings","service-quality","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
+              <TabsList className="grid w-full max-w-4xl grid-cols-8">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="incidents">Incidents</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
                 <TabsTrigger value="meetings">Meetings</TabsTrigger>
+                <TabsTrigger value="service-quality">Service Quality</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
                 <TabsTrigger value="journey">Journey</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -143,6 +145,14 @@ function HSEDashboardInner() {
                 <Meetings />
               </TabsContent>
 
+              <TabsContent value="service-quality" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Service Quality Reports</h2>
+                  <p className="text-muted-foreground text-sm">Evaluate and track contractor and service quality performance</p>
+                </div>
+                <ServiceQuality />
+              </TabsContent>
+
               <TabsContent value="reports" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">Reports</h2>
@@ -161,12 +171,13 @@ function HSEDashboardInner() {
             </Tabs>
           ) : isReviewer ? (
             /* ── Reviewer / Approver view ── */
-            <Tabs value={["observations","incidents","inspections","meetings","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-3xl grid-cols-6" : "max-w-2xl grid-cols-5"}`}>
+            <Tabs value={["observations","incidents","inspections","meetings","service-quality","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
+              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-4xl grid-cols-7" : "max-w-3xl grid-cols-6"}`}>
                 <TabsTrigger value="observations">Observations</TabsTrigger>
                 <TabsTrigger value="incidents">Incidents</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
                 <TabsTrigger value="meetings">Meetings</TabsTrigger>
+                <TabsTrigger value="service-quality">Service Quality</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
                 {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
               </TabsList>
@@ -203,6 +214,14 @@ function HSEDashboardInner() {
                 <Meetings />
               </TabsContent>
 
+              <TabsContent value="service-quality" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Service Quality Reports</h2>
+                  <p className="text-sm text-muted-foreground">Evaluate and track contractor and service quality performance.</p>
+                </div>
+                <ServiceQuality />
+              </TabsContent>
+
               <TabsContent value="reports" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">Reports</h2>
@@ -219,12 +238,13 @@ function HSEDashboardInner() {
             </Tabs>
           ) : (
             /* ── Regular user view ── */
-            <Tabs value={["observations","incidents","inspections","meetings","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-3xl grid-cols-6" : "max-w-2xl grid-cols-5"}`}>
+            <Tabs value={["observations","incidents","inspections","meetings","service-quality","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
+              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-4xl grid-cols-7" : "max-w-3xl grid-cols-6"}`}>
                 <TabsTrigger value="observations">Observations</TabsTrigger>
                 <TabsTrigger value="incidents">Incidents</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
                 <TabsTrigger value="meetings">Meetings</TabsTrigger>
+                <TabsTrigger value="service-quality">Service Quality</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
                 {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
               </TabsList>
@@ -259,6 +279,14 @@ function HSEDashboardInner() {
                   <p className="text-sm text-muted-foreground">View HSE meeting records, agendas, and attendees.</p>
                 </div>
                 <Meetings readOnly />
+              </TabsContent>
+
+              <TabsContent value="service-quality" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Service Quality Reports</h2>
+                  <p className="text-sm text-muted-foreground">View contractor and service quality evaluations.</p>
+                </div>
+                <ServiceQuality readOnly />
               </TabsContent>
 
               <TabsContent value="reports" className="space-y-6">
