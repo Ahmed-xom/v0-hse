@@ -137,6 +137,43 @@ export function incompleteTrainingHtml(opts: {
     </div>`
 }
 
+export function meetingInviteHtml(meeting: {
+  ref_no: string
+  title: string
+  meeting_type: string
+  date: string
+  location: string
+  business_unit: string
+  chairperson: string
+  agenda: string
+}): string {
+  return `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+      <div style="background:#0d9488;padding:24px 30px;border-radius:10px 10px 0 0;">
+        <h1 style="color:#fff;margin:0;font-size:22px;">HSE System — Meeting Invitation</h1>
+        <p style="color:rgba(255,255,255,.85);margin:6px 0 0;">${meeting.ref_no} &nbsp;|&nbsp; ${meeting.meeting_type}</p>
+      </div>
+      <div style="background:#f8fafc;padding:30px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px;">
+        <h2 style="margin:0 0 20px;color:#1e293b;font-size:18px;">${meeting.title}</h2>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;">
+          <tr><td style="padding:8px 0;color:#64748b;width:140px;">Date &amp; Time</td><td style="padding:8px 0;color:#1e293b;font-weight:600;">${meeting.date}</td></tr>
+          <tr><td style="padding:8px 0;color:#64748b;">Location</td><td style="padding:8px 0;color:#1e293b;">${meeting.location || '—'}</td></tr>
+          <tr><td style="padding:8px 0;color:#64748b;">Business Unit</td><td style="padding:8px 0;color:#1e293b;">${meeting.business_unit || '—'}</td></tr>
+          <tr><td style="padding:8px 0;color:#64748b;">Chairperson</td><td style="padding:8px 0;color:#1e293b;">${meeting.chairperson || '—'}</td></tr>
+        </table>
+        ${meeting.agenda ? `
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;"/>
+        <p style="color:#64748b;font-size:13px;margin:0 0 6px;font-weight:600;">Agenda</p>
+        <p style="color:#1e293b;font-size:14px;margin:0;line-height:1.7;white-space:pre-wrap;">${meeting.agenda}</p>` : ''}
+        <div style="margin-top:24px;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://hse.dash.xomoman.com'}/?tab=meetings" style="display:inline-block;background:#0d9488;color:#fff;padding:10px 22px;border-radius:6px;text-decoration:none;font-size:14px;">View Meeting in HSE System</a>
+        </div>
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:25px 0 10px;"/>
+        <p style="color:#94a3b8;font-size:12px;margin:0;">You are receiving this because you were added as an attendee. Do not reply to this email.</p>
+      </div>
+    </div>`
+}
+
 export function observationStatusUpdatedHtml(obs: {
   number: string
   oldStatus: string

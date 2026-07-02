@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import {
   Plus, Search, RefreshCw, Eye, Edit, Trash2, UserPlus,
   Users, CalendarDays, ChevronDown, CheckCircle2, Clock,
-  ClipboardList, X,
+  ClipboardList, X, Mail,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,7 +35,7 @@ import { useAuth } from "@/lib/auth-context"
 import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
 import {
   getMeetings, getMeetingWithAttendees, createMeeting, updateMeeting,
-  deleteMeeting, toggleAttendance,
+  deleteMeeting, toggleAttendance, sendMeetingInvites,
   type Meeting, type MeetingAttendee, type MeetingStatus,
 } from "@/app/actions/manage-meetings"
 import { MEETING_TYPES } from "@/lib/meeting-types"
@@ -200,6 +200,16 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
     const res = await deleteMeeting(id)
     if (res.success) { toast({ title: "Meeting deleted" }); load() }
     else toast({ title: "Error", description: res.error, variant: "destructive" })
+  }
+
+  const handleSendInvites = async (id: string) => {
+    toast({ title: "Sending invites..." })
+    const res = await sendMeetingInvites(id)
+    if (res.success) {
+      toast({ title: res.sent > 0 ? `Invites sent to ${res.sent} attendee(s)` : "No attendees with email addresses found" })
+    } else {
+      toast({ title: "Failed to send invites", variant: "destructive" })
+    }
   }
 
   // Stats
@@ -432,6 +442,9 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
                         <>
                           <DropdownMenuItem onClick={() => openEdit(r)}>
                             <Edit className="mr-2 h-4 w-4" />Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSendInvites(r.id)}>
+                            <Mail className="mr-2 h-4 w-4" />Send Email Invites
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(r.id)}>

@@ -8,6 +8,9 @@ import { InspectionReports } from "@/components/dashboard/inspection-reports"
 import { InspectionTypes } from "@/components/dashboard/inspection-types"
 import { Meetings } from "@/components/dashboard/meetings"
 import { ServiceQuality } from "@/components/dashboard/service-quality"
+import { PermitToWork } from "@/components/dashboard/permit-to-work"
+import { ManagementOfChange } from "@/components/dashboard/moc"
+import { DocumentsLibrary } from "@/components/dashboard/documents-library"
 import { UsersManagementWithRefresh } from "@/components/dashboard/users-management-with-refresh"
 import { BusinessUnits } from "@/components/dashboard/business-units"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
@@ -69,13 +72,16 @@ function HSEDashboardInner() {
               <p className="text-muted-foreground">Loading dashboard...</p>
             </div>
           ) : isAdmin ? (
-            <Tabs value={["dashboard","incidents","inspections","meetings","service-quality","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full max-w-4xl grid-cols-8">
+            <Tabs value={["dashboard","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
+              <TabsList className="flex w-full flex-wrap gap-1 h-auto p-1">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="incidents">Incidents</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
                 <TabsTrigger value="meetings">Meetings</TabsTrigger>
                 <TabsTrigger value="service-quality">Service Quality</TabsTrigger>
+                <TabsTrigger value="ptw">Permit to Work</TabsTrigger>
+                <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>
+                <TabsTrigger value="documents">Documents</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
                 <TabsTrigger value="journey">Journey</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -153,6 +159,30 @@ function HSEDashboardInner() {
                 <ServiceQuality />
               </TabsContent>
 
+              <TabsContent value="ptw" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Permit to Work</h2>
+                  <p className="text-muted-foreground text-sm">Manage and issue work permits for controlled and hazardous activities</p>
+                </div>
+                <PermitToWork />
+              </TabsContent>
+
+              <TabsContent value="moc" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Management of Change & Exemptions</h2>
+                  <p className="text-muted-foreground text-sm">Track and control changes, deviations, and exemptions from standards</p>
+                </div>
+                <ManagementOfChange />
+              </TabsContent>
+
+              <TabsContent value="documents" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Documents Library</h2>
+                  <p className="text-muted-foreground text-sm">Policies, standards, procedures, guidelines, and forms</p>
+                </div>
+                <DocumentsLibrary />
+              </TabsContent>
+
               <TabsContent value="reports" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">Reports</h2>
@@ -171,13 +201,16 @@ function HSEDashboardInner() {
             </Tabs>
           ) : isReviewer ? (
             /* ── Reviewer / Approver view ── */
-            <Tabs value={["observations","incidents","inspections","meetings","service-quality","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-4xl grid-cols-7" : "max-w-3xl grid-cols-6"}`}>
+            <Tabs value={["observations","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
+              <TabsList className="flex w-full flex-wrap gap-1 h-auto p-1">
                 <TabsTrigger value="observations">Observations</TabsTrigger>
                 <TabsTrigger value="incidents">Incidents</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
                 <TabsTrigger value="meetings">Meetings</TabsTrigger>
                 <TabsTrigger value="service-quality">Service Quality</TabsTrigger>
+                <TabsTrigger value="ptw">Permit to Work</TabsTrigger>
+                <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>
+                <TabsTrigger value="documents">Documents</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
                 {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
               </TabsList>
@@ -220,6 +253,30 @@ function HSEDashboardInner() {
                   <p className="text-sm text-muted-foreground">Evaluate and track contractor and service quality performance.</p>
                 </div>
                 <ServiceQuality />
+              </TabsContent>
+
+              <TabsContent value="ptw" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Permit to Work</h2>
+                  <p className="text-sm text-muted-foreground">Manage and issue work permits for controlled and hazardous activities.</p>
+                </div>
+                <PermitToWork />
+              </TabsContent>
+
+              <TabsContent value="moc" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Management of Change & Exemptions</h2>
+                  <p className="text-sm text-muted-foreground">Track and control changes, deviations, and exemptions from standards.</p>
+                </div>
+                <ManagementOfChange />
+              </TabsContent>
+
+              <TabsContent value="documents" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Documents Library</h2>
+                  <p className="text-sm text-muted-foreground">Policies, standards, procedures, guidelines, and forms.</p>
+                </div>
+                <DocumentsLibrary />
               </TabsContent>
 
               <TabsContent value="reports" className="space-y-6">

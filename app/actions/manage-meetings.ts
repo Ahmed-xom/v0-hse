@@ -3,6 +3,7 @@
 import { Pool } from 'pg'
 import { revalidatePath } from 'next/cache'
 import type { Meeting, MeetingAttendee, MeetingStatus } from '@/lib/meeting-types'
+import { sendEmail, meetingInviteHtml } from '@/lib/send-email'
 
 // Re-export types so callers can import from one place (type-only, safe in use server files)
 export type { Meeting, MeetingAttendee, MeetingStatus }
@@ -198,5 +199,51 @@ export async function toggleAttendance(
     return { success: true }
   } catch (e: any) {
     return { success: false }
+  }
+}
+
+export async function sendMeetingInvites(meetingId: string): Promise<{ success: boolean; sent: number; failed: number }> {
+  try {
+    const m = await pool.query('SELECT * FROM public.meeting WHERE id = $1', [meetingId])
+    if (!m.rows.length) return { success: false, sent: 0, failed: 0 }
+    const meeting = m.rows[0]
+
+    const att = await pool.query(
+      'SELECT * FROM public.meeting_attendee WHERE meeting_id = $1 AND email IS NOT NULL AND email <> \'\'',
+      [meetingId]
+    )
+
+    if (!att.rows.length) return { success: true, sent: 0, failed: 0 }
+
+    const dateStr = meeting.date
+      ? new Date(meeting.date).toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' })
+      : '—'
+
+    const html = meetingInviteHtml({
+      ref_no: meeting.ref_no ?? '',
+      title: meeting.title,
+      meeting_type: meeting.meeting_type,
+      date: dateStr,
+      location: meeting.location ?? '',
+      business_unit: meeting.business_unit ?? '',
+      chairperson: meeting.chairperson ?? '',
+      agenda: meeting.agenda ?? '',
+    })
+
+    let sent = 0, failed = 0
+    for (const a of att.rows) {
+      const result = await sendEmail({
+        to: a.email,
+        subject: `Meeting Invitation: ${meeting.title} — ${dateStr}`,
+        html,
+      })
+      if (result.sent) sent++
+      else failed++
+    }
+
+    return { success: true, sent, failed }
+  } catch (e: any) {
+    console.error('[meetings] sendInvites error:', e.message)
+    return { success: false, sent: 0, failed: 0 }
   }
 }
