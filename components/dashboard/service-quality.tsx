@@ -55,12 +55,12 @@ import {
   createServiceQualityReport,
   updateServiceQualityReport,
   deleteServiceQualityReport,
-  SERVICE_CATEGORIES,
   type ServiceQualityReport,
   type ServiceQualityFormData,
   type ServiceQualityStatus,
   type ServiceQualityPriority,
 } from '@/app/actions/manage-service-quality'
+import { SERVICE_CATEGORIES } from '@/lib/hse-constants'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const STATUSES: ServiceQualityStatus[] = ['Open', 'In Progress', 'Closed', 'Cancelled']

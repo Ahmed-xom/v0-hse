@@ -26,6 +26,12 @@ import {
   generateTrainingNotifications,
   type TrainingNotification,
 } from "@/app/actions/training-notifications"
+import {
+  getNotifications,
+  markNotificationRead as markMeetingNotifRead,
+  markAllNotificationsRead as markAllMeetingNotifsRead,
+  type AppNotification,
+} from "@/app/actions/notifications"
 
 // tab= values must match the TabsTrigger values in page.tsx
 const baseNavItems = [
@@ -66,6 +72,8 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
   const [notifications, setNotifications] = useState<TrainingNotification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [notifOpen, setNotifOpen] = useState(false)
+  const [meetingNotifs, setMeetingNotifs] = useState<AppNotification[]>([])
+  const [meetingUnread, setMeetingUnread] = useState(0)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -136,13 +144,19 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
     user && (isAdminRole(user.role, user.email) || isReviewerRole(user.role))
 
   const fetchNotifications = useCallback(async () => {
-    if (!user?.email || !canReceiveNotifications) return
-    await generateTrainingNotifications()
-    const res = await getMyTrainingNotifications(user.email)
-    if (res.success) {
-      setNotifications(res.notifications)
-      setUnreadCount(res.unreadCount)
+    if (!user?.email) return
+    if (canReceiveNotifications) {
+      await generateTrainingNotifications()
+      const res = await getMyTrainingNotifications(user.email)
+      if (res.success) {
+        setNotifications(res.notifications)
+        setUnreadCount(res.unreadCount)
+      }
     }
+    // All users get meeting notifications
+    const mn = await getNotifications(user.email)
+    setMeetingNotifs(mn)
+    setMeetingUnread(mn.filter((n) => !n.read).length)
   }, [user?.email, canReceiveNotifications])
 
   useEffect(() => {
@@ -157,6 +171,21 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
     setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n))
     setUnreadCount((c) => Math.max(0, c - 1))
   }
+
+  const handleMarkMeetingRead = async (id: string) => {
+    await markMeetingNotifRead(id)
+    setMeetingNotifs((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n))
+    setMeetingUnread((c) => Math.max(0, c - 1))
+  }
+
+  const handleMarkAllMeetingRead = async () => {
+    if (!user?.email) return
+    await markAllMeetingNotifsRead(user.email)
+    setMeetingNotifs((prev) => prev.map((n) => ({ ...n, read: true })))
+    setMeetingUnread(0)
+  }
+
+  const totalUnread = unreadCount + meetingUnread
 
   const handleMarkAllRead = async () => {
     if (!user?.email) return
@@ -305,9 +334,9 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
+                {totalUnread > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-                    {unreadCount > 9 ? "9+" : unreadCount}
+                    {totalUnread > 9 ? "9+" : totalUnread}
                   </span>
                 )}
                 <span className="sr-only">Notifications</span>
@@ -316,19 +345,19 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
             <DropdownMenuContent align="end" className="w-96">
               <div className="flex items-center justify-between px-3 py-2">
                 <DropdownMenuLabel className="p-0 text-sm font-semibold">
-                  Training Notifications
-                  {unreadCount > 0 && (
+                  Notifications
+                  {totalUnread > 0 && (
                     <Badge variant="destructive" className="ml-2 text-[10px] px-1.5 py-0">
-                      {unreadCount} new
+                      {totalUnread} new
                     </Badge>
                   )}
                 </DropdownMenuLabel>
-                {unreadCount > 0 && (
+                {totalUnread > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
                     className="h-7 gap-1 text-xs text-muted-foreground"
-                    onClick={(e) => { e.preventDefault(); handleMarkAllRead() }}
+                    onClick={(e) => { e.preventDefault(); handleMarkAllRead(); handleMarkAllMeetingRead() }}
                   >
                     <CheckCheck className="h-3.5 w-3.5" />
                     Mark all read
@@ -336,47 +365,86 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
                 )}
               </div>
               <DropdownMenuSeparator />
-              {notifications.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
-                  <GraduationCap className="h-8 w-8 opacity-40" />
-                  <p className="text-sm">No training notifications</p>
-                </div>
-              ) : (
-                <div className="max-h-[360px] overflow-y-auto">
-                  {notifications.map((n) => {
-                    const isOverdue = n.daysUntilExpiry < 0
-                    const isUrgent = n.daysUntilExpiry >= 0 && n.daysUntilExpiry <= 7
-                    return (
+
+              {/* Meeting notifications */}
+              {meetingNotifs.length > 0 && (
+                <>
+                  <div className="px-3 py-1.5 flex items-center gap-1.5">
+                    <Calendar className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Meetings</span>
+                    {meetingUnread > 0 && <Badge variant="destructive" className="ml-auto text-[10px] px-1.5 py-0">{meetingUnread}</Badge>}
+                  </div>
+                  <div className="max-h-[200px] overflow-y-auto">
+                    {meetingNotifs.slice(0, 8).map((n) => (
                       <DropdownMenuItem
                         key={n.id}
-                        className={`flex flex-col items-start gap-1 px-3 py-3 cursor-pointer ${!n.read ? "bg-muted/40" : ""}`}
-                        onClick={() => !n.read && handleMarkRead(n.id)}
+                        className={`flex flex-col items-start gap-0.5 px-3 py-2.5 cursor-pointer ${!n.read ? "bg-primary/5" : ""}`}
+                        onClick={() => { if (!n.read) handleMarkMeetingRead(n.id); if (n.link) window.location.href = n.link }}
                       >
                         <div className="flex w-full items-start gap-2">
-                          <div className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${
-                            isOverdue ? "bg-destructive" : isUrgent ? "bg-orange-500" : "bg-yellow-500"
-                          }`} />
+                          <div className={`mt-1 h-2 w-2 shrink-0 rounded-full ${!n.read ? "bg-primary" : "bg-muted-foreground/30"}`} />
                           <div className="flex-1 min-w-0">
-                            <p className={`text-sm leading-snug ${!n.read ? "font-medium" : "font-normal"}`}>
-                              {n.message}
+                            <p className={`text-sm leading-snug ${!n.read ? "font-medium" : "font-normal"}`}>{n.title}</p>
+                            {n.body && <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{n.body}</p>}
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              {new Date(n.created_at).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' })}
                             </p>
-                            <div className="mt-1 flex items-center gap-2">
-                              <span className={`text-xs font-medium ${
-                                isOverdue ? "text-destructive" : isUrgent ? "text-orange-500" : "text-yellow-600"
-                              }`}>
-                                {isOverdue
-                                  ? `Overdue by ${Math.abs(n.daysUntilExpiry)} day(s)`
-                                  : `Expires in ${n.daysUntilExpiry} day(s)`}
-                              </span>
-                              {!n.read && (
-                                <span className="text-[10px] text-muted-foreground">• unread</span>
-                              )}
-                            </div>
                           </div>
                         </div>
                       </DropdownMenuItem>
-                    )
-                  })}
+                    ))}
+                  </div>
+                  <DropdownMenuSeparator />
+                </>
+              )}
+
+              {/* Training notifications */}
+              {canReceiveNotifications && (
+                <>
+                  <div className="px-3 py-1.5 flex items-center gap-1.5">
+                    <GraduationCap className="h-3.5 w-3.5 text-yellow-500" />
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Training</span>
+                  </div>
+                  {notifications.length === 0 ? (
+                    <div className="flex flex-col items-center gap-2 py-6 text-muted-foreground">
+                      <p className="text-sm">No training notifications</p>
+                    </div>
+                  ) : (
+                    <div className="max-h-[200px] overflow-y-auto">
+                      {notifications.map((n) => {
+                        const isOverdue = n.daysUntilExpiry < 0
+                        const isUrgent = n.daysUntilExpiry >= 0 && n.daysUntilExpiry <= 7
+                        return (
+                          <DropdownMenuItem
+                            key={n.id}
+                            className={`flex flex-col items-start gap-1 px-3 py-3 cursor-pointer ${!n.read ? "bg-muted/40" : ""}`}
+                            onClick={() => !n.read && handleMarkRead(n.id)}
+                          >
+                            <div className="flex w-full items-start gap-2">
+                              <div className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${
+                                isOverdue ? "bg-destructive" : isUrgent ? "bg-orange-500" : "bg-yellow-500"
+                              }`} />
+                              <div className="flex-1 min-w-0">
+                                <p className={`text-sm leading-snug ${!n.read ? "font-medium" : "font-normal"}`}>{n.message}</p>
+                                <span className={`text-xs font-medium ${
+                                  isOverdue ? "text-destructive" : isUrgent ? "text-orange-500" : "text-yellow-600"
+                                }`}>
+                                  {isOverdue ? `Overdue by ${Math.abs(n.daysUntilExpiry)} day(s)` : `Expires in ${n.daysUntilExpiry} day(s)`}
+                                </span>
+                              </div>
+                            </div>
+                          </DropdownMenuItem>
+                        )
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {meetingNotifs.length === 0 && (!canReceiveNotifications || notifications.length === 0) && (
+                <div className="flex flex-col items-center gap-2 py-8 text-muted-foreground">
+                  <Bell className="h-8 w-8 opacity-40" />
+                  <p className="text-sm">No notifications</p>
                 </div>
               )}
             </DropdownMenuContent>
