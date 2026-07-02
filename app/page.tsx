@@ -6,6 +6,7 @@ import { DashboardHeader } from "@/components/dashboard/header"
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview"
 import { InspectionReports } from "@/components/dashboard/inspection-reports"
 import { InspectionTypes } from "@/components/dashboard/inspection-types"
+import { Meetings } from "@/components/dashboard/meetings"
 import { UsersManagementWithRefresh } from "@/components/dashboard/users-management-with-refresh"
 import { BusinessUnits } from "@/components/dashboard/business-units"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
@@ -67,12 +68,14 @@ function HSEDashboardInner() {
               <p className="text-muted-foreground">Loading dashboard...</p>
             </div>
           ) : isAdmin ? (
-            <Tabs value={["dashboard","incidents","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full max-w-2xl grid-cols-5">
+            <Tabs value={["dashboard","incidents","inspections","meetings","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
+              <TabsList className="grid w-full max-w-3xl grid-cols-7">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="incidents">Incidents</TabsTrigger>
+                <TabsTrigger value="inspections">Inspections</TabsTrigger>
+                <TabsTrigger value="meetings">Meetings</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
-                <TabsTrigger value="journey">Journey Tracker</TabsTrigger>
+                <TabsTrigger value="journey">Journey</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
@@ -124,6 +127,22 @@ function HSEDashboardInner() {
                 <IncidentManagement />
               </TabsContent>
 
+              <TabsContent value="inspections" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Inspections</h2>
+                  <p className="text-muted-foreground text-sm">Management visits, audits, HSE and site inspections</p>
+                </div>
+                <InspectionReports />
+              </TabsContent>
+
+              <TabsContent value="meetings" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Meetings</h2>
+                  <p className="text-muted-foreground text-sm">HSE committee meetings, toolbox talks, safety stand-downs and more</p>
+                </div>
+                <Meetings />
+              </TabsContent>
+
               <TabsContent value="reports" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">Reports</h2>
@@ -142,26 +161,22 @@ function HSEDashboardInner() {
             </Tabs>
           ) : isReviewer ? (
             /* ── Reviewer / Approver view ── */
-            <Tabs value={["observations","incidents","inspections","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-2xl grid-cols-5" : "max-w-xl grid-cols-4"}`}>
+            <Tabs value={["observations","incidents","inspections","meetings","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
+              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-3xl grid-cols-6" : "max-w-2xl grid-cols-5"}`}>
                 <TabsTrigger value="observations">Observations</TabsTrigger>
                 <TabsTrigger value="incidents">Incidents</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
+                <TabsTrigger value="meetings">Meetings</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
-                {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey Tracker</TabsTrigger>}
+                {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
               </TabsList>
 
-              {/* All observations — read-only + export Excel */}
               <TabsContent value="observations" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">All Observations</h2>
-                  <p className="text-sm text-muted-foreground">
-                    View and export observations submitted by all employees.
-                  </p>
+                  <p className="text-sm text-muted-foreground">View and export observations submitted by all employees.</p>
                 </div>
-                <section aria-label="All Observations">
-                  <BehaviourObservations viewAll />
-                </section>
+                <BehaviourObservations viewAll />
               </TabsContent>
 
               <TabsContent value="incidents" className="space-y-6">
@@ -175,14 +190,17 @@ function HSEDashboardInner() {
               <TabsContent value="inspections" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">Inspections</h2>
-                  <p className="text-sm text-muted-foreground">View inspection reports and types.</p>
+                  <p className="text-sm text-muted-foreground">Management visits, audits, HSE and site inspections.</p>
                 </div>
-                <section aria-label="Inspection Reports">
-                  <InspectionReports />
-                </section>
-                <section aria-label="Inspection Types">
-                  <InspectionTypes />
-                </section>
+                <InspectionReports />
+              </TabsContent>
+
+              <TabsContent value="meetings" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Meetings</h2>
+                  <p className="text-sm text-muted-foreground">HSE committee meetings, toolbox talks, safety stand-downs and more.</p>
+                </div>
+                <Meetings />
               </TabsContent>
 
               <TabsContent value="reports" className="space-y-6">
@@ -190,9 +208,7 @@ function HSEDashboardInner() {
                   <h2 className="text-xl font-semibold tracking-tight">Reports</h2>
                   <p className="text-sm text-muted-foreground">HSE performance summaries and exports.</p>
                 </div>
-                <section aria-label="Reports">
-                  <Reports journeyAccess={!!currentUser?.journeyAccess} />
-                </section>
+                <Reports journeyAccess={!!currentUser?.journeyAccess} />
               </TabsContent>
 
               {currentUser?.journeyAccess && (
@@ -203,27 +219,24 @@ function HSEDashboardInner() {
             </Tabs>
           ) : (
             /* ── Regular user view ── */
-            <Tabs value={["observations","incidents","inspections","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-2xl grid-cols-5" : "max-w-xl grid-cols-4"}`}>
+            <Tabs value={["observations","incidents","inspections","meetings","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
+              <TabsList className={`grid w-full ${currentUser?.journeyAccess ? "max-w-3xl grid-cols-6" : "max-w-2xl grid-cols-5"}`}>
                 <TabsTrigger value="observations">Observations</TabsTrigger>
                 <TabsTrigger value="incidents">Incidents</TabsTrigger>
                 <TabsTrigger value="inspections">Inspections</TabsTrigger>
+                <TabsTrigger value="meetings">Meetings</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
-                {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey Tracker</TabsTrigger>}
+                {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
               </TabsList>
 
-              {/* Observations — all users see all observations (read-only) */}
               <TabsContent value="observations" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">Observations</h2>
                   <p className="text-sm text-muted-foreground">View all behaviour-based safety observations across all business units.</p>
                 </div>
-                <section aria-label="Behaviour Observations">
-                  <BehaviourObservations viewAll readOnly />
-                </section>
+                <BehaviourObservations viewAll readOnly />
               </TabsContent>
 
-              {/* Incidents */}
               <TabsContent value="incidents" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">Incidents</h2>
@@ -232,29 +245,28 @@ function HSEDashboardInner() {
                 <IncidentManagement />
               </TabsContent>
 
-              {/* Inspections */}
               <TabsContent value="inspections" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">Inspections</h2>
-                  <p className="text-sm text-muted-foreground">View inspection reports and types.</p>
+                  <p className="text-sm text-muted-foreground">View inspection and audit reports.</p>
                 </div>
-                <section aria-label="Inspection Reports">
-                  <InspectionReports />
-                </section>
-                <section aria-label="Inspection Types">
-                  <InspectionTypes />
-                </section>
+                <InspectionReports readOnly />
               </TabsContent>
 
-              {/* Reports */}
+              <TabsContent value="meetings" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">Meetings</h2>
+                  <p className="text-sm text-muted-foreground">View HSE meeting records, agendas, and attendees.</p>
+                </div>
+                <Meetings readOnly />
+              </TabsContent>
+
               <TabsContent value="reports" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">Reports</h2>
                   <p className="text-sm text-muted-foreground">HSE performance summaries and exports.</p>
                 </div>
-                <section aria-label="Reports">
-                  <Reports journeyAccess={!!currentUser?.journeyAccess} />
-                </section>
+                <Reports journeyAccess={!!currentUser?.journeyAccess} />
               </TabsContent>
 
               {currentUser?.journeyAccess && (
