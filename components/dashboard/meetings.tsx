@@ -54,6 +54,7 @@ type FormData = {
   meeting_type: string
   title: string
   date: string
+  time: string
   location: string
   business_unit: string
   chairperson: string
@@ -68,6 +69,7 @@ const EMPTY_FORM: FormData = {
   meeting_type: "HSE Committee Meeting",
   title: "",
   date: new Date().toISOString().split("T")[0],
+  time: "09:00",
   location: "",
   business_unit: "",
   chairperson: "",
@@ -145,10 +147,12 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
   const openEdit = async (r: Meeting) => {
     const full = await getMeetingWithAttendees(r.id)
     setSelected(full ?? r)
+    const dt = r.date ? new Date(r.date) : null
     setForm({
       meeting_type: r.meeting_type,
       title: r.title,
-      date: r.date ? new Date(r.date).toISOString().split("T")[0] : "",
+      date: dt ? dt.toISOString().split("T")[0] : "",
+      time: dt ? `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}` : "09:00",
       location: r.location ?? "",
       business_unit: r.business_unit ?? "",
       chairperson: r.chairperson ?? "",
@@ -181,13 +185,27 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
     if (!form.title.trim()) { toast({ title: "Title is required", variant: "destructive" }); return }
     if (!form.date) { toast({ title: "Date is required", variant: "destructive" }); return }
     setIsSaving(true)
+    // Combine date + time into a full ISO datetime string
+    const [hours, minutes] = (form.time || "00:00").split(":").map(Number)
+    const dt = new Date(form.date)
+    dt.setHours(hours, minutes, 0, 0)
+    const combinedDate = dt.toISOString()
+    const { time: _time, ...formWithoutTime } = form
     const validAttendees = attendees.filter((a) => a.name.trim())
     const res = isEdit && selected
-      ? await updateMeeting(selected.id, { ...form, updated_at: undefined }, validAttendees)
-      : await createMeeting({ ...form, created_by: currentUser?.name }, validAttendees)
+      ? await updateMeeting(selected.id, { ...formWithoutTime, date: combinedDate, updated_at: undefined }, validAttendees)
+      : await createMeeting({ ...formWithoutTime, date: combinedDate, created_by: currentUser?.name }, validAttendees)
     setIsSaving(false)
     if (res.success) {
-      toast({ title: isEdit ? "Meeting updated" : "Meeting created" })
+      const emailsSent = (res as any).emailsSent ?? 0
+      toast({
+        title: isEdit ? "Meeting updated" : "Meeting created",
+        description: !isEdit && emailsSent > 0
+          ? `Email invitations sent to ${emailsSent} attendee(s).`
+          : !isEdit && validAttendees.filter(a => a.email).length === 0
+          ? "No attendee emails provided — invitations not sent."
+          : undefined,
+      })
       setIsAddOpen(false); setIsEditOpen(false)
       load()
     } else {
@@ -249,8 +267,17 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
           <Label>Meeting Title <span className="text-destructive">*</span></Label>
           <Input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} placeholder="e.g. Monthly HSE Committee Meeting – July 2025" />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <DateField label="Date of Meeting" value={form.date} onChange={(v) => setForm((f) => ({ ...f, date: v }))} />
+        <div className="grid grid-cols-3 gap-4">
+          <DateField label="Date of Meeting *" value={form.date} onChange={(v) => setForm((f) => ({ ...f, date: v }))} />
+          <div className="space-y-1.5">
+            <Label>Time <span className="text-destructive">*</span></Label>
+            <Input
+              type="time"
+              value={form.time}
+              onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))}
+              className="block"
+            />
+          </div>
           <div className="space-y-1.5">
             <Label>Location / Venue</Label>
             <Input value={form.location} onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} placeholder="Conference room, site office, etc." />
@@ -417,7 +444,12 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">{r.meeting_type}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {r.date ? format(parseISO(r.date), "dd MMM yyyy") : "—"}
+                  {r.date ? (
+                    <div>
+                      <p>{format(parseISO(r.date), "dd MMM yyyy")}</p>
+                      <p className="text-xs opacity-70">{format(parseISO(r.date), "HH:mm")}</p>
+                    </div>
+                  ) : "—"}
                 </TableCell>
                 <TableCell className="text-sm">{r.chairperson ?? "—"}</TableCell>
                 <TableCell className="text-sm text-muted-foreground">{r.location ?? "—"}</TableCell>

@@ -83,7 +83,7 @@ export async function createMeeting(
     created_by?: string
   },
   attendees?: { name: string; email?: string; role?: string; department?: string }[]
-): Promise<{ success: boolean; id?: string; error?: string }> {
+): Promise<{ success: boolean; id?: string; emailsSent?: number; error?: string }> {
   const client = await pool.connect()
   try {
     await client.query('BEGIN')
@@ -123,14 +123,52 @@ export async function createMeeting(
     }
 
     await client.query('COMMIT')
+    client.release()
+
+    // Auto-send email invites + in-app notifications to all attendees with emails
     revalidatePath('/')
-    return { success: true, id: meetingId }
+    let emailsSent = 0
+    if (attendees?.length) {
+      const withEmail = attendees.filter((a) => a.email?.trim())
+      if (withEmail.length) {
+        const dateStr = data.date
+          ? new Date(data.date).toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' })
+          : '—'
+        const html = meetingInviteHtml({
+          ref_no: ref_no,
+          title: data.title,
+          meeting_type: data.meeting_type,
+          date: dateStr,
+          location: data.location ?? '',
+          business_unit: data.business_unit ?? '',
+          chairperson: data.chairperson ?? '',
+          agenda: data.agenda ?? '',
+        })
+        for (const a of withEmail) {
+          const r = await sendEmail({
+            to: a.email!,
+            subject: `Meeting Invitation: ${data.title} — ${dateStr}`,
+            html,
+          })
+          if (r.sent) emailsSent++
+          // Insert in-app notification
+          await pool.query(
+            `INSERT INTO public.notification (user_email, type, title, body, link)
+             VALUES ($1, 'meeting', $2, $3, '/?tab=meetings')`,
+            [
+              a.email,
+              `Meeting Invitation: ${data.title}`,
+              `You have been invited to ${data.meeting_type} on ${dateStr}${data.location ? ' at ' + data.location : ''}.`,
+            ]
+          )
+        }
+      }
+    }
+    return { success: true, id: meetingId, emailsSent }
   } catch (e: any) {
-    await client.query('ROLLBACK')
+    await pool.query('ROLLBACK').catch(() => {})
     console.error('[v0] createMeeting error:', e.message)
     return { success: false, error: e.message }
-  } finally {
-    client.release()
   }
 }
 
