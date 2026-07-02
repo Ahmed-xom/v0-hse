@@ -1,5 +1,3 @@
-'use server'
-
 import { Resend } from 'resend'
 
 function getResend(): Resend {
