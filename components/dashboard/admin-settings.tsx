@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Settings, Users, Mail, Plus, Eye, EyeOff, Database } from "lucide-react"
+import { Settings, Users, Mail, Plus, Eye, EyeOff, Database, LifeBuoy, PhoneCall } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -251,6 +251,43 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
               </CardContent>
             </Card>
           </div>
+          {/* Support Contact */}
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <LifeBuoy className="h-5 w-5 text-primary" />
+                IT Support Contact
+              </CardTitle>
+              <CardDescription>
+                For system issues, access requests, or technical assistance, reach out to the IT support team.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg bg-muted/50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">IT Admin Support</p>
+                    <a
+                      href="mailto:xom-it-admin@xomoman.com"
+                      className="text-sm text-primary hover:underline break-all"
+                    >
+                      xom-it-admin@xomoman.com
+                    </a>
+                  </div>
+                </div>
+                <a
+                  href="mailto:xom-it-admin@xomoman.com?subject=HSE System Support Request"
+                  className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shrink-0"
+                >
+                  <PhoneCall className="h-4 w-4" />
+                  Contact Support
+                </a>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* User Management Tab */}

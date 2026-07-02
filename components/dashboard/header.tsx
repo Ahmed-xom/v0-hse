@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { Bell, Calendar, ChevronDown, LogOut, Menu, Moon, Search, Settings, Shield, Sun, User, X, CheckCheck, GraduationCap, BarChart2, ClipboardList, ShieldCheck, Route, LayoutDashboard, FileText } from "lucide-react"
+import { Bell, Calendar, ChevronDown, LogOut, Menu, Moon, Search, Settings, Shield, Sun, User, X, CheckCheck, GraduationCap, BarChart2, ClipboardList, ShieldCheck, Route, LayoutDashboard, FileText, LifeBuoy } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -289,6 +289,16 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Support */}
+          <a
+            href="mailto:xom-it-admin@xomoman.com?subject=HSE System Support Request"
+            title="Contact IT Support: xom-it-admin@xomoman.com"
+            aria-label="Contact IT Support"
+            className="inline-flex items-center justify-center rounded-md h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
+            <LifeBuoy className="h-5 w-5" />
+          </a>
 
           {/* Notifications */}
           <DropdownMenu open={notifOpen} onOpenChange={setNotifOpen}>
