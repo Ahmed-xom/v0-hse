@@ -100,11 +100,13 @@ const priorityColors: Record<Priority, string> = {
 }
 
 interface BehaviourObservationsProps {
-  /** If true, shows all observations regardless of the logged-in user (for Reviewer/Approver roles) */
+  /** If true, shows all observations regardless of the logged-in user */
   viewAll?: boolean
+  /** If true, hides the New Observation button and delete actions (view-only mode) */
+  readOnly?: boolean
 }
 
-export function BehaviourObservations({ viewAll = false }: BehaviourObservationsProps) {
+export function BehaviourObservations({ viewAll = false, readOnly = false }: BehaviourObservationsProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
@@ -337,13 +339,11 @@ export function BehaviourObservations({ viewAll = false }: BehaviourObservations
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            {(isAdmin || viewAll) && (
-              <Button variant="outline" onClick={exportToExcel}>
-                <Download className="mr-2 h-4 w-4" />
-                Export Excel
-              </Button>
-            )}
-            {!viewAll && (
+            <Button variant="outline" onClick={exportToExcel}>
+              <Download className="mr-2 h-4 w-4" />
+              Export Excel
+            </Button>
+            {!readOnly && (
               <Button onClick={() => setIsNewObservationOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 New Observation
@@ -508,20 +508,24 @@ export function BehaviourObservations({ viewAll = false }: BehaviourObservations
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={async () => {
-                            const result = await deleteObservation(obs.id)
-                            if (result.success) {
-                              setRefreshKey((k) => k + 1)
-                              toast({ title: "Observation deleted" })
-                            }
-                          }}
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
+                        {!readOnly && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={async () => {
+                                const result = await deleteObservation(obs.id)
+                                if (result.success) {
+                                  setRefreshKey((k) => k + 1)
+                                  toast({ title: "Observation deleted" })
+                                }
+                              }}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
