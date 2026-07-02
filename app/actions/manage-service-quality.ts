@@ -6,20 +6,6 @@ import { revalidatePath } from 'next/cache'
 export type ServiceQualityStatus = 'Open' | 'In Progress' | 'Closed' | 'Cancelled'
 export type ServiceQualityPriority = 'Low' | 'Medium' | 'High' | 'Critical'
 
-export const SERVICE_CATEGORIES = [
-  'Camp Services',
-  'Catering',
-  'Cleaning & Housekeeping',
-  'Equipment Maintenance',
-  'HSE Services',
-  'IT Services',
-  'Logistics & Transport',
-  'Medical Services',
-  'Security',
-  'Waste Management',
-  'Other',
-] as const
-
 export interface ServiceQualityReport {
   id: string
   ref_no: string | null

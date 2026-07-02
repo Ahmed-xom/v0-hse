@@ -29,19 +29,6 @@ export interface HSEDocument {
   updated_at: string
 }
 
-export const DOCUMENT_CATEGORIES = [
-  'Policy',
-  'Standard',
-  'Procedure',
-  'Guideline',
-  'Form / Template',
-  'Report',
-  'HSE Plan',
-  'Legal / Regulatory',
-  'Training Material',
-  'Other',
-]
-
 export async function getDocuments(): Promise<HSEDocument[]> {
   try {
     const res = await pool.query('SELECT * FROM public.document ORDER BY category, title')

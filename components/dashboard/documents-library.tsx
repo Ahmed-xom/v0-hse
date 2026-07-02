@@ -31,8 +31,9 @@ import { useAuth } from "@/lib/auth-context"
 import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
 import {
   getDocuments, createDocument, updateDocument, deleteDocument,
-  DOCUMENT_CATEGORIES, type HSEDocument,
+  type HSEDocument,
 } from "@/app/actions/manage-documents"
+import { DOCUMENT_CATEGORIES } from "@/lib/hse-constants"
 
 const STATUS_STYLES: Record<string, string> = {
   Active: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
