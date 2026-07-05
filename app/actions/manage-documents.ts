@@ -1,7 +1,7 @@
 'use server'
 
 import { Pool } from 'pg'
-import { del } from '@vercel/blob'
+import { put, del } from '@vercel/blob'
 import { revalidatePath } from 'next/cache'
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
@@ -32,6 +32,26 @@ export interface HSEDocument {
   allowed_emails: string[]
   created_at: string
   updated_at: string
+}
+
+// Upload a file to Vercel Blob via server action (avoids client-side CORS issues in preview)
+export async function uploadFileAction(
+  formData: FormData
+): Promise<{ success: boolean; url?: string; pathname?: string; error?: string }> {
+  try {
+    const file = formData.get('file') as File | null
+    if (!file || file.size === 0) return { success: false, error: 'No file provided' }
+    if (file.size > 50 * 1024 * 1024) return { success: false, error: 'File exceeds 50 MB limit' }
+
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+    const pathname = `hse-files/${Date.now()}-${safeName}`
+    const blob = await put(pathname, file, { access: 'public' })
+
+    return { success: true, url: blob.url, pathname: blob.pathname }
+  } catch (e: any) {
+    console.error('[documents] uploadFileAction error:', e.message)
+    return { success: false, error: e.message ?? 'Upload failed' }
+  }
 }
 
 // Returns documents visible to the given user email.

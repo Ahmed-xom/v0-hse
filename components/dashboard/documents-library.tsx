@@ -35,7 +35,7 @@ import { useAuth } from "@/lib/auth-context"
 import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
 import {
   getDocuments, createDocument, updateDocument, deleteDocument,
-  updateDocumentAccess, getAllUserEmails,
+  updateDocumentAccess, getAllUserEmails, uploadFileAction,
   type HSEDocument,
 } from "@/app/actions/manage-documents"
 import { DOCUMENT_CATEGORIES } from "@/lib/hse-constants"
@@ -183,21 +183,19 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
   const uploadToBlob = async (): Promise<{ url: string; pathname: string } | null> => {
     if (!uploadFile) return null
     setUploading(true)
-    setUploadProgress(10)
-
-    const fd = new FormData()
-    fd.append('file', uploadFile)
+    setUploadProgress(20)
 
     try {
-      const res = await fetch('/api/hse-files/upload', { method: 'POST', body: fd })
-      setUploadProgress(90)
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error ?? 'Upload failed')
-      }
-      const data = await res.json()
+      // Use server action to avoid CORS/iframe origin issues in the preview environment
+      const fd = new FormData()
+      fd.append('file', uploadFile)
+      setUploadProgress(50)
+      const result = await uploadFileAction(fd)
       setUploadProgress(100)
-      return { url: data.url, pathname: data.pathname }
+      if (!result.success || !result.url) {
+        throw new Error(result.error ?? 'Upload failed')
+      }
+      return { url: result.url, pathname: result.pathname! }
     } catch (e: any) {
       toast({ title: 'Upload failed', description: e.message, variant: 'destructive' })
       return null
