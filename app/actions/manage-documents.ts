@@ -73,10 +73,16 @@ export async function getDocuments(userEmail?: string, isAdmin?: boolean): Promi
       params = []
     }
     const res = await pool.query(query, params)
+    const toStr = (v: unknown) => (v instanceof Date ? v.toISOString() : (v as string | null) ?? null)
     return res.rows.map(r => ({
       ...r,
       tags: r.tags ?? [],
       allowed_emails: r.allowed_emails ?? [],
+      // pg returns TIMESTAMPTZ columns as Date objects — convert to ISO strings
+      created_at: toStr(r.created_at) ?? '',
+      updated_at: toStr(r.updated_at) ?? '',
+      review_date: toStr(r.review_date),
+      expiry_date: toStr(r.expiry_date),
     }))
   } catch (e: any) {
     console.error('[documents] getDocuments error:', e.message)
