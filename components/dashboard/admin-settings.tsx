@@ -30,6 +30,7 @@ import { ExcelDataViewer } from "./excel-data-viewer"
 import { addNewUser } from "@/app/actions/add-user"
 import { UsersManagementWithRefresh } from "./users-management-with-refresh"
 import { resetUserPassword } from "@/app/actions/reset-password"
+import { TabAccessSettings } from "./tab-access-settings"
 
 const ROLES = [
   "ADMIN SYSTEM",
@@ -194,9 +195,10 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
       </div>
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+        <TabsList className="grid w-full max-w-2xl grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="tab-access">Tab Access</TabsTrigger>
           <TabsTrigger value="data">Excel Data</TabsTrigger>
         </TabsList>
 
@@ -293,6 +295,11 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
         {/* User Management Tab */}
         <TabsContent value="users" className="space-y-6">
           <UsersManagementWithRefresh />
+        </TabsContent>
+
+        {/* Tab Access Tab */}
+        <TabsContent value="tab-access" className="space-y-6">
+          <TabAccessSettings />
         </TabsContent>
 
         {/* Excel Data Tab */}
