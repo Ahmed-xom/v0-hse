@@ -170,34 +170,122 @@ export async function updateUserRole(
 ) {
   try {
     if (!userId || !role) {
-      return {
-        success: false,
-        error: 'User ID and role are required',
-      }
+      return { success: false, error: 'User ID and role are required' }
     }
 
-    // Update user role in employee table
     const now = new Date().toISOString()
-    const result = await pool.query(
-      'UPDATE public."employee" SET "updated_at" = $1, "hse_role" = $2 WHERE id = $3 RETURNING id',
-      [now, role, userId]
+
+    // Update role in neon_auth.user (used by auth/login)
+    await pool.query(
+      `UPDATE neon_auth."user" SET role = $1, "updatedAt" = $2 WHERE id = $3::uuid`,
+      [role, now, userId]
     )
-    
-    if (result.rows.length === 0) {
-      throw new Error('User not found')
-    }
+
+    // Also sync to public.employee.hse_role
+    await pool.query(
+      `UPDATE public.employee SET hse_role = $1, updated_at = $2 WHERE id = $3`,
+      [role, now, userId]
+    )
 
     revalidateTag('users', 'max')
-    return {
-      success: true,
-      message: `User role changed to ${role}`,
-    }
+    return { success: true, message: `User role changed to ${role}` }
   } catch (error: any) {
-    console.error('[v0] Error updating user role:', error)
-    return {
-      success: false,
-      error: error.message || 'Failed to update user role',
+    console.error('[manage-users] updateUserRole error:', error)
+    return { success: false, error: error.message || 'Failed to update user role' }
+  }
+}
+
+export async function updateUser(
+  userId: string,
+  input: {
+    name?: string
+    email?: string
+    role?: string
+    designation?: string
+    payrollNo?: string
+    businessUnit?: string
+  }
+) {
+  try {
+    if (!userId) return { success: false, error: 'User ID is required' }
+
+    const now = new Date().toISOString()
+
+    // Update neon_auth.user (name, email, role) — this is what login reads
+    await pool.query(
+      `UPDATE neon_auth."user"
+       SET name = COALESCE($1, name),
+           email = COALESCE($2, email),
+           role  = COALESCE($3, role),
+           "updatedAt" = $4
+       WHERE id = $5::uuid`,
+      [input.name ?? null, input.email ?? null, input.role ?? null, now, userId]
+    )
+
+    // Sync email on neon_auth.account.accountId as well
+    if (input.email) {
+      await pool.query(
+        `UPDATE neon_auth."account" SET "accountId" = $1, "updatedAt" = $2 WHERE "userId" = $3::uuid`,
+        [input.email, now, userId]
+      )
     }
+
+    // Update public.employee profile fields
+    await pool.query(
+      `UPDATE public.employee
+       SET name         = COALESCE($1, name),
+           email        = COALESCE($2, email),
+           designation  = COALESCE($3, designation),
+           payroll_no   = COALESCE($4, payroll_no),
+           business_unit= COALESCE($5, business_unit),
+           hse_role     = COALESCE($6, hse_role),
+           updated_at   = $7
+       WHERE id = $8`,
+      [input.name ?? null, input.email ?? null, input.designation ?? null,
+       input.payrollNo ?? null, input.businessUnit ?? null, input.role ?? null, now, userId]
+    )
+
+    revalidateTag('users', 'max')
+    return { success: true }
+  } catch (error: any) {
+    console.error('[manage-users] updateUser error:', error)
+    return { success: false, error: error.message || 'Failed to update user' }
+  }
+}
+
+// Repairs users who have a neon_auth.user row but no credential account row.
+// Creates a temporary password for them so they can log in and reset it.
+export async function fixMissingAccounts(): Promise<{ fixed: number; error?: string }> {
+  try {
+    const orphans = await pool.query(`
+      SELECT u.id, u.email
+      FROM neon_auth."user" u
+      LEFT JOIN neon_auth."account" a
+        ON a."userId" = u.id AND a."providerId" = 'credential'
+      WHERE a.id IS NULL
+    `)
+
+    if (orphans.rows.length === 0) return { fixed: 0 }
+
+    let fixed = 0
+    for (const row of orphans.rows) {
+      const tempPw = crypto.randomBytes(8).toString('hex')
+      const hash = await bcrypt.hash(tempPw, 10)
+      const now = new Date().toISOString()
+      await pool.query(
+        `INSERT INTO neon_auth."account"
+           (id, "accountId", "providerId", "userId", password, "createdAt", "updatedAt")
+         VALUES ($1, $2, 'credential', $3::uuid, $4, $5, $5)
+         ON CONFLICT DO NOTHING`,
+        [crypto.randomUUID(), row.email, row.id, hash, now]
+      )
+      fixed++
+    }
+
+    return { fixed }
+  } catch (error: any) {
+    console.error('[manage-users] fixMissingAccounts error:', error)
+    return { fixed: 0, error: error.message }
   }
 }
 
