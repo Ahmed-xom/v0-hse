@@ -9,12 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import {
-  getAllUserTabAccess,
-  setUserTabAccess,
-  ALL_TABS,
-  type TabKey,
-} from "@/app/actions/tab-access"
+import { getAllUserTabAccess, setUserTabAccess } from "@/app/actions/tab-access"
+import { ALL_TABS, DEFAULT_TABS, type TabKey } from "@/lib/tab-access-config"
 import { getUsers } from "@/app/actions/manage-users"
 
 type UserRow = {
@@ -25,8 +21,7 @@ type UserRow = {
   dirty: boolean
 }
 
-const ALL_TAB_KEYS = ALL_TABS.map(t => t.key)
-const DEFAULT_ALL: TabKey[] = [...ALL_TAB_KEYS]
+const DEFAULT_ALL: TabKey[] = [...DEFAULT_TABS]
 
 export function TabAccessSettings() {
   const { toast } = useToast()

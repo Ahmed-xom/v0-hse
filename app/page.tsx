@@ -24,7 +24,8 @@ import { ProtectedRoute } from "@/components/protected-route"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
 import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
-import { getUserTabAccess, ALL_TABS, type TabKey } from "@/app/actions/tab-access"
+import { getUserTabAccess } from "@/app/actions/tab-access"
+import { ALL_TABS, type TabKey } from "@/lib/tab-access-config"
 import { useEffect, useRef } from "react"
 
 export default function HSEDashboard() {

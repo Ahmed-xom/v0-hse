@@ -2,25 +2,12 @@
 
 import { Pool } from 'pg'
 import { revalidatePath } from 'next/cache'
+import { ALL_TABS, DEFAULT_TABS, type TabKey } from '@/lib/tab-access-config'
+
+export type { TabKey }
+export { ALL_TABS }
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
-
-export const ALL_TABS = [
-  { key: 'observations',     label: 'Observations' },
-  { key: 'incidents',        label: 'Incidents' },
-  { key: 'inspections',      label: 'Inspections' },
-  { key: 'meetings',         label: 'Meetings' },
-  { key: 'service-quality',  label: 'Service Quality' },
-  { key: 'ptw',              label: 'Permit to Work' },
-  { key: 'moc',              label: 'MOC / Exemptions' },
-  { key: 'documents',        label: 'Documents' },
-  { key: 'reports',          label: 'Reports' },
-  { key: 'journey',          label: 'Journey Tracker' },
-] as const
-
-export type TabKey = typeof ALL_TABS[number]['key']
-
-const DEFAULT_TABS: TabKey[] = ALL_TABS.map(t => t.key)
 
 async function ensureTable() {
   await pool.query(`
