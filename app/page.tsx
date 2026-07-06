@@ -24,6 +24,8 @@ import { ProtectedRoute } from "@/components/protected-route"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
 import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
+import { getUserTabAccess, ALL_TABS, type TabKey } from "@/app/actions/tab-access"
+import { useEffect, useRef } from "react"
 
 export default function HSEDashboard() {
   return (
@@ -42,9 +44,21 @@ function HSEDashboardInner() {
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
   const isReviewer = !isAdmin && isReviewerRole(currentUser?.role ?? '')
   const [usersRefreshKey, setUsersRefreshKey] = useState(0)
+  const [allowedTabs, setAllowedTabs] = useState<TabKey[]>(ALL_TABS.map(t => t.key))
+  const fetchedEmail = useRef<string | null>(null)
   const searchParams = useSearchParams()
   const router = useRouter()
   const activeTab = searchParams.get("tab") ?? "dashboard"
+
+  // Fetch the current user's allowed tabs (non-admins only)
+  useEffect(() => {
+    if (!currentUser?.email || isAdmin) return
+    if (fetchedEmail.current === currentUser.email) return
+    fetchedEmail.current = currentUser.email
+    getUserTabAccess(currentUser.email).then(setAllowedTabs)
+  }, [currentUser?.email, isAdmin])
+
+  const hasTab = (tab: TabKey) => isAdmin || allowedTabs.includes(tab)
 
   const handleTabChange = (tab: string) => {
     router.push(`/?tab=${tab}`)
@@ -203,16 +217,16 @@ function HSEDashboardInner() {
             /* ── Reviewer / Approver view ── */
             <Tabs value={["observations","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
               <TabsList className="flex w-full flex-wrap gap-1 h-auto p-1">
-                <TabsTrigger value="observations">Observations</TabsTrigger>
-                <TabsTrigger value="incidents">Incidents</TabsTrigger>
-                <TabsTrigger value="inspections">Inspections</TabsTrigger>
-                <TabsTrigger value="meetings">Meetings</TabsTrigger>
-                <TabsTrigger value="service-quality">Service Quality</TabsTrigger>
-                <TabsTrigger value="ptw">Permit to Work</TabsTrigger>
-                <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>
-                <TabsTrigger value="documents">Documents</TabsTrigger>
-                <TabsTrigger value="reports">Reports</TabsTrigger>
-                {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
+                {hasTab('observations') && <TabsTrigger value="observations">Observations</TabsTrigger>}
+                {hasTab('incidents') && <TabsTrigger value="incidents">Incidents</TabsTrigger>}
+                {hasTab('inspections') && <TabsTrigger value="inspections">Inspections</TabsTrigger>}
+                {hasTab('meetings') && <TabsTrigger value="meetings">Meetings</TabsTrigger>}
+                {hasTab('service-quality') && <TabsTrigger value="service-quality">Service Quality</TabsTrigger>}
+                {hasTab('ptw') && <TabsTrigger value="ptw">Permit to Work</TabsTrigger>}
+                {hasTab('moc') && <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>}
+                {hasTab('documents') && <TabsTrigger value="documents">Documents</TabsTrigger>}
+                {hasTab('reports') && <TabsTrigger value="reports">Reports</TabsTrigger>}
+                {hasTab('journey') && currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
               </TabsList>
 
               <TabsContent value="observations" className="space-y-6">
@@ -297,16 +311,16 @@ function HSEDashboardInner() {
             /* ── Regular user view ── */
             <Tabs value={["observations","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
               <TabsList className="flex w-full flex-wrap gap-1 h-auto p-1">
-                <TabsTrigger value="observations">Observations</TabsTrigger>
-                <TabsTrigger value="incidents">Incidents</TabsTrigger>
-                <TabsTrigger value="inspections">Inspections</TabsTrigger>
-                <TabsTrigger value="meetings">Meetings</TabsTrigger>
-                <TabsTrigger value="service-quality">Service Quality</TabsTrigger>
-                <TabsTrigger value="ptw">Permit to Work</TabsTrigger>
-                <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>
-                <TabsTrigger value="documents">Documents</TabsTrigger>
-                <TabsTrigger value="reports">Reports</TabsTrigger>
-                {currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
+                {hasTab('observations') && <TabsTrigger value="observations">Observations</TabsTrigger>}
+                {hasTab('incidents') && <TabsTrigger value="incidents">Incidents</TabsTrigger>}
+                {hasTab('inspections') && <TabsTrigger value="inspections">Inspections</TabsTrigger>}
+                {hasTab('meetings') && <TabsTrigger value="meetings">Meetings</TabsTrigger>}
+                {hasTab('service-quality') && <TabsTrigger value="service-quality">Service Quality</TabsTrigger>}
+                {hasTab('ptw') && <TabsTrigger value="ptw">Permit to Work</TabsTrigger>}
+                {hasTab('moc') && <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>}
+                {hasTab('documents') && <TabsTrigger value="documents">Documents</TabsTrigger>}
+                {hasTab('reports') && <TabsTrigger value="reports">Reports</TabsTrigger>}
+                {hasTab('journey') && currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
               </TabsList>
 
               <TabsContent value="observations" className="space-y-6">
