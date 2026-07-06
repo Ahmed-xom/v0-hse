@@ -312,9 +312,9 @@ function HSEDashboardInner() {
               <TabsContent value="observations" className="space-y-6">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-xl font-semibold tracking-tight">Observations</h2>
-                  <p className="text-sm text-muted-foreground">View all behaviour-based safety observations across all business units.</p>
+                  <p className="text-sm text-muted-foreground">Submit and track your behaviour-based safety observations.</p>
                 </div>
-                <BehaviourObservations viewAll readOnly />
+                <BehaviourObservations />
               </TabsContent>
 
               <TabsContent value="incidents" className="space-y-6">
