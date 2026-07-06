@@ -254,7 +254,8 @@ export function BehaviourObservations({ viewAll = false, readOnly = false }: Beh
       const result = await createObservation({
         ...formData,
         userId: (user as any)?.id ?? '',
-        observerName: (user as any)?.name ?? (user as any)?.email ?? '',
+        observerName: user?.name ?? user?.email ?? '',
+        observerEmail: user?.email ?? '',
       })
       if (result.success) {
         toast({
