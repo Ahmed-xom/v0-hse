@@ -139,22 +139,24 @@ export async function updateUserStatus(
       }
     }
 
-    // Update user status in employee table
     const now = new Date().toISOString()
+    const isActive = status === 'Active'
+
+    // Update public.employee status (used by login check)
     const result = await pool.query(
-      'UPDATE public."employee" SET "updated_at" = $1, "status" = $2 WHERE id = $3 RETURNING id',
+      `UPDATE public.employee SET updated_at = $1, status = $2 WHERE id = $3 RETURNING id`,
       [now, status, userId]
     )
-    
-    if (result.rows.length === 0) {
-      throw new Error('User not found')
-    }
+    if (result.rows.length === 0) throw new Error('User not found')
+
+    // Sync to neon_auth.user.banned so inactive users are also blocked at auth level
+    await pool.query(
+      `UPDATE neon_auth."user" SET banned = $1, "updatedAt" = $2 WHERE id = $3::uuid`,
+      [!isActive, now, userId]
+    )
 
     revalidateTag('users', 'max')
-    return {
-      success: true,
-      message: `User status changed to ${status}`,
-    }
+    return { success: true, message: `User status changed to ${status}` }
   } catch (error: any) {
     console.error('[v0] Error updating user status:', error)
     return {
@@ -263,6 +265,28 @@ export async function fixMissingAccounts(): Promise<{ fixed: number; error?: str
       LEFT JOIN neon_auth."account" a
         ON a."userId" = u.id AND a."providerId" = 'credential'
       WHERE a.id IS NULL
+    `)
+
+    // Also upsert employee rows for any neon_auth.user with no employee record
+    await pool.query(`
+      INSERT INTO public.employee (id, name, email, payroll_no, designation, business_unit, hse_role, status, created_at, updated_at)
+      SELECT u.id::text, COALESCE(u.name,''), COALESCE(u.email,''), '', '', '',
+             COALESCE(u.role,'USER'), 'Active', NOW(), NOW()
+      FROM neon_auth."user" u
+      LEFT JOIN public.employee e ON lower(e.email) = lower(u.email)
+      WHERE e.id IS NULL
+      ON CONFLICT DO NOTHING
+    `)
+
+    // Activate any employee rows that were incorrectly left as Inactive
+    // (only for users that were never explicitly deactivated by an admin action)
+    await pool.query(`
+      UPDATE public.employee SET status = 'Active', updated_at = NOW()
+      WHERE status != 'Active'
+        AND id IN (
+          SELECT u.id::text FROM neon_auth."user" u
+          WHERE COALESCE(u.banned, false) = false
+        )
     `)
 
     if (orphans.rows.length === 0) return { fixed: 0 }
