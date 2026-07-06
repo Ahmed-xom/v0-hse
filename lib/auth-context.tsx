@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { requestPasswordReset as requestPasswordResetAction } from "@/app/actions/forgot-password"
 import { getUserJourneyAccess } from "@/app/actions/manage-users"
 import { verifyUserPassword } from "@/app/actions/verify-password"
 import { getUserByEmail } from "@/app/actions/get-user-by-email"
@@ -25,7 +24,6 @@ interface AuthContextType {
   isLoading: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
-  requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -97,29 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("hse_user")
   }
 
-  const requestPasswordReset = async (email: string): Promise<any> => {
-    // Call server action to handle password reset
-    try {
-      const result = await requestPasswordResetAction(email)
-      
-      if (result.success) {
-        return { 
-          success: true,
-          emailSent: result.emailSent || false,
-          temporaryPassword: result.temporaryPassword,
-          emailError: result.emailError
-        }
-      } else {
-        return { success: false, error: result.error || "Failed to process password reset." }
-      }
-    } catch (error) {
-      console.error('[v0] Password reset error:', error)
-      return { success: false, error: "An unexpected error occurred. Please try again." }
-    }
-  }
-
   return (
-    <AuthContext.Provider value={{ user, currentUser: user, isLoading, login, logout, requestPasswordReset }}>
+    <AuthContext.Provider value={{ user, currentUser: user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
