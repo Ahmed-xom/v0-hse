@@ -66,7 +66,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword, getPasswordResetHistory } from "@/app/actions/reset-password"
-import { updateUserStatus, updateUserRole, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess, updateJourneyApprover, createUser } from "@/app/actions/manage-users"
+import { updateUserStatus, updateUserRole, updateUser, fixMissingAccounts, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess, updateJourneyApprover, createUser } from "@/app/actions/manage-users"
 import { isAdminRole } from "@/lib/auth-roles"
 
 
@@ -146,10 +146,14 @@ export function UsersManagement() {
   const [isEditLoading, setIsEditLoading] = useState(false)
   const [editFormData, setEditFormData] = useState({
     name: "",
+    email: "",
     role: "",
     status: "Active" as "Active" | "Inactive",
     approver: "",
     approverEmail: "",
+    designation: "",
+    payrollNo: "",
+    businessUnit: "",
   })
 
   const [addApprover, setAddApprover] = useState({ name: "", email: "" })
@@ -161,11 +165,15 @@ export function UsersManagement() {
   const { toast } = useToast()
   const { user: currentUser } = useAuth()
 
-  // Fetch real users from the database
+  // Fetch real users from the database; also repair any orphaned users on first load
   useEffect(() => {
     async function fetchUsers() {
       setIsLoadingUsers(true)
       try {
+        // Repair users missing a credential account row (so they can log in)
+        if (refreshKey === 0) {
+          await fixMissingAccounts()
+        }
         const result = await getUsers()
         if (result.success && result.data) {
           setDbUsers(result.data as User[])
@@ -329,10 +337,14 @@ export function UsersManagement() {
     setEditingUser(user)
     setEditFormData({
       name: user.name,
+      email: user.email,
       role: user.role,
       status: user.status,
       approver: user.approver ?? "",
       approverEmail: user.approverEmail ?? "",
+      designation: user.designation ?? "",
+      payrollNo: user.payrollNo ?? "",
+      businessUnit: user.businessUnit ?? "",
     })
     setIsEditDialogOpen(true)
   }
@@ -342,29 +354,27 @@ export function UsersManagement() {
 
     setIsEditLoading(true)
     try {
+      // Single call: update name, email, role, designation, payrollNo, businessUnit
+      // in both neon_auth.user and public.employee atomically
+      const profileResult = await updateUser(editingUser.id, {
+        name: editFormData.name,
+        email: editFormData.email,
+        role: editFormData.role,
+        designation: editFormData.designation,
+        payrollNo: editFormData.payrollNo,
+        businessUnit: editFormData.businessUnit,
+      })
+      if (!profileResult.success) {
+        toast({ title: "Error", description: profileResult.error, variant: "destructive" })
+        setIsEditLoading(false)
+        return
+      }
+
       // Update status if changed
       if (editFormData.status !== editingUser.status) {
         const statusResult = await updateUserStatus(editingUser.id, editFormData.status)
         if (!statusResult.success) {
-          toast({
-            title: "Error",
-            description: statusResult.error,
-            variant: "destructive",
-          })
-          setIsEditLoading(false)
-          return
-        }
-      }
-
-      // Update role if changed
-      if (editFormData.role !== editingUser.role) {
-        const roleResult = await updateUserRole(editingUser.id, editFormData.role)
-        if (!roleResult.success) {
-          toast({
-            title: "Error",
-            description: roleResult.error,
-            variant: "destructive",
-          })
+          toast({ title: "Error", description: statusResult.error, variant: "destructive" })
           setIsEditLoading(false)
           return
         }
@@ -378,18 +388,11 @@ export function UsersManagement() {
         await updateUserApprover(editingUser.id, editFormData.approver, editFormData.approverEmail)
       }
 
-      toast({
-        title: "Success",
-        description: "User updated successfully",
-      })
+      toast({ title: "User updated successfully" })
       setIsEditDialogOpen(false)
       setRefreshKey(refreshKey + 1)
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update user",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: "Failed to update user", variant: "destructive" })
     } finally {
       setIsEditLoading(false)
     }
@@ -1107,6 +1110,59 @@ export function UsersManagement() {
               </div>
 
               <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-name">Full Name</Label>
+                    <Input
+                      id="edit-name"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-email">Email</Label>
+                    <Input
+                      id="edit-email"
+                      type="email"
+                      value={editFormData.email}
+                      onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-designation">Designation</Label>
+                    <Input
+                      id="edit-designation"
+                      value={editFormData.designation}
+                      onChange={(e) => setEditFormData({ ...editFormData, designation: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-payroll">Payroll No.</Label>
+                    <Input
+                      id="edit-payroll"
+                      value={editFormData.payrollNo}
+                      onChange={(e) => setEditFormData({ ...editFormData, payrollNo: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-bu">Business Unit</Label>
+                  <Select value={editFormData.businessUnit} onValueChange={(value) => setEditFormData({ ...editFormData, businessUnit: value })}>
+                    <SelectTrigger id="edit-bu">
+                      <SelectValue placeholder="Select business unit..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {businessUnits.map((bu) => (
+                        <SelectItem key={bu} value={bu}>{bu}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="grid gap-2">
                   <Label htmlFor="edit-role">Role</Label>
                   <Select value={editFormData.role} onValueChange={(value) => setEditFormData({ ...editFormData, role: value })}>
