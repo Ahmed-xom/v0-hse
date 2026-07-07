@@ -2,7 +2,8 @@
 
 import { Pool } from 'pg'
 import { revalidatePath } from 'next/cache'
-import { ALL_TABS, DEFAULT_TABS, type TabKey } from '@/lib/tab-access-config'
+import { ALL_TABS, DEFAULT_TABS } from '@/lib/tab-access-config'
+import type { TabKey } from '@/lib/tab-access-config'
 
 export type { TabKey }
 export { ALL_TABS }
@@ -22,7 +23,7 @@ async function ensureTable() {
 }
 
 /** Get the allowed tabs for a specific user email. Returns all tabs if no record exists. */
-export async function getUserTabAccess(email: string): Promise<TabKey[]> {
+export async function getUserTabAccess(email: string): Promise<string[]> {
   try {
     await ensureTable()
     const r = await pool.query(
@@ -30,7 +31,7 @@ export async function getUserTabAccess(email: string): Promise<TabKey[]> {
       [email.toLowerCase()]
     )
     if (r.rows.length === 0) return DEFAULT_TABS
-    return (r.rows[0].allowed_tabs ?? DEFAULT_TABS) as TabKey[]
+    return (r.rows[0].allowed_tabs ?? DEFAULT_TABS) as string[]
   } catch {
     return DEFAULT_TABS
   }
@@ -38,7 +39,7 @@ export async function getUserTabAccess(email: string): Promise<TabKey[]> {
 
 /** Get tab access settings for every user (for the admin UI). */
 export async function getAllUserTabAccess(): Promise<
-  { userEmail: string; allowedTabs: TabKey[] }[]
+  { userEmail: string; allowedTabs: string[] }[]
 > {
   try {
     await ensureTable()
@@ -47,7 +48,7 @@ export async function getAllUserTabAccess(): Promise<
     )
     return r.rows.map(row => ({
       userEmail: row.user_email,
-      allowedTabs: (row.allowed_tabs ?? DEFAULT_TABS) as TabKey[],
+      allowedTabs: (row.allowed_tabs ?? DEFAULT_TABS) as string[],
     }))
   } catch {
     return []
@@ -57,7 +58,7 @@ export async function getAllUserTabAccess(): Promise<
 /** Upsert the allowed tabs for a user. */
 export async function setUserTabAccess(
   email: string,
-  allowedTabs: TabKey[]
+  allowedTabs: string[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await ensureTable()
@@ -78,7 +79,7 @@ export async function setUserTabAccess(
 
 /** Bulk-set tab access for multiple users at once. */
 export async function bulkSetUserTabAccess(
-  rows: { email: string; allowedTabs: TabKey[] }[]
+  rows: { email: string; allowedTabs: string[] }[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await ensureTable()
