@@ -87,7 +87,7 @@ function HSEDashboardInner() {
               <p className="text-muted-foreground">Loading dashboard...</p>
             </div>
           ) : isAdmin ? (
-            <Tabs value={["dashboard","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
+            <Tabs value={["dashboard","observations","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
               <TabsList className="flex w-full flex-wrap gap-1 h-auto p-1">
                 <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
                 <TabsTrigger value="incidents">Incidents</TabsTrigger>
@@ -99,6 +99,7 @@ function HSEDashboardInner() {
                 <TabsTrigger value="documents">Documents</TabsTrigger>
                 <TabsTrigger value="reports">Reports</TabsTrigger>
                 <TabsTrigger value="journey">Journey</TabsTrigger>
+                <TabsTrigger value="observations">Observations</TabsTrigger>
                 <TabsTrigger value="settings">Settings</TabsTrigger>
               </TabsList>
 
@@ -208,6 +209,14 @@ function HSEDashboardInner() {
 
               <TabsContent value="journey" className="space-y-6">
                 <JourneyTracker />
+              </TabsContent>
+
+              <TabsContent value="observations" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">All Observations</h2>
+                  <p className="text-sm text-muted-foreground">View and manage behaviour-based safety observations across all business units.</p>
+                </div>
+                <BehaviourObservations viewAll />
               </TabsContent>
 
               <TabsContent value="settings" className="space-y-6">
