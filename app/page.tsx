@@ -88,20 +88,9 @@ function HSEDashboardInner() {
             </div>
           ) : isAdmin ? (
             <Tabs value={["dashboard","observations","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="flex w-full flex-wrap gap-1 h-auto p-1">
-                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                <TabsTrigger value="incidents">Incidents</TabsTrigger>
-                <TabsTrigger value="inspections">Inspections</TabsTrigger>
-                <TabsTrigger value="meetings">Meetings</TabsTrigger>
-                <TabsTrigger value="service-quality">Service Quality</TabsTrigger>
-                <TabsTrigger value="ptw">Permit to Work</TabsTrigger>
-                <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>
-                <TabsTrigger value="documents">Documents</TabsTrigger>
-                <TabsTrigger value="reports">Reports</TabsTrigger>
-                <TabsTrigger value="journey">Journey</TabsTrigger>
-                <TabsTrigger value="observations">Observations</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-              </TabsList>
+              <div className="flex gap-6 items-start">
+                {/* Content — left side */}
+                <div className="flex-1 min-w-0">
 
               <TabsContent value="dashboard" className="space-y-6">
                 {/* KPI Cards + Incident Statistics (live DB) */}
@@ -222,22 +211,32 @@ function HSEDashboardInner() {
               <TabsContent value="settings" className="space-y-6">
                 <AdminSettings onUserAdded={handleUserAdded} />
               </TabsContent>
+                </div>{/* end content */}
+
+                {/* Right-side vertical nav */}
+                <TabsList className="flex flex-col h-auto w-44 shrink-0 sticky top-6 gap-0.5 p-1.5 rounded-lg bg-muted/60">
+                  <TabsTrigger value="dashboard"      className="w-full justify-start text-sm px-3 py-2">Dashboard</TabsTrigger>
+                  <TabsTrigger value="incidents"      className="w-full justify-start text-sm px-3 py-2">Incidents</TabsTrigger>
+                  <TabsTrigger value="inspections"    className="w-full justify-start text-sm px-3 py-2">Inspections</TabsTrigger>
+                  <TabsTrigger value="meetings"       className="w-full justify-start text-sm px-3 py-2">Meetings</TabsTrigger>
+                  <TabsTrigger value="service-quality" className="w-full justify-start text-sm px-3 py-2">Service Quality</TabsTrigger>
+                  <TabsTrigger value="ptw"            className="w-full justify-start text-sm px-3 py-2">Permit to Work</TabsTrigger>
+                  <TabsTrigger value="moc"            className="w-full justify-start text-sm px-3 py-2">MOC / Exemptions</TabsTrigger>
+                  <TabsTrigger value="documents"      className="w-full justify-start text-sm px-3 py-2">Documents</TabsTrigger>
+                  <TabsTrigger value="reports"        className="w-full justify-start text-sm px-3 py-2">Reports</TabsTrigger>
+                  <TabsTrigger value="journey"        className="w-full justify-start text-sm px-3 py-2">Journey</TabsTrigger>
+                  <TabsTrigger value="observations"   className="w-full justify-start text-sm px-3 py-2">Observations</TabsTrigger>
+                  <div className="my-1 h-px bg-border/60" />
+                  <TabsTrigger value="settings"       className="w-full justify-start text-sm px-3 py-2">Settings</TabsTrigger>
+                </TabsList>
+              </div>{/* end flex row */}
             </Tabs>
           ) : isReviewer ? (
             /* ── Reviewer / Approver view ── */
             <Tabs value={["observations","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="flex w-full flex-wrap gap-1 h-auto p-1">
-                {hasTab('observations') && <TabsTrigger value="observations">Observations</TabsTrigger>}
-                {hasTab('incidents') && <TabsTrigger value="incidents">Incidents</TabsTrigger>}
-                {hasTab('inspections') && <TabsTrigger value="inspections">Inspections</TabsTrigger>}
-                {hasTab('meetings') && <TabsTrigger value="meetings">Meetings</TabsTrigger>}
-                {hasTab('service-quality') && <TabsTrigger value="service-quality">Service Quality</TabsTrigger>}
-                {hasTab('ptw') && <TabsTrigger value="ptw">Permit to Work</TabsTrigger>}
-                {hasTab('moc') && <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>}
-                {hasTab('documents') && <TabsTrigger value="documents">Documents</TabsTrigger>}
-                {hasTab('reports') && <TabsTrigger value="reports">Reports</TabsTrigger>}
-                {hasTab('journey') && currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
-              </TabsList>
+              <div className="flex gap-6 items-start">
+                {/* Content — left side */}
+                <div className="flex-1 min-w-0">
 
               <TabsContent value="observations" className="space-y-6">
                 <div className="flex flex-col gap-1">
@@ -316,22 +315,29 @@ function HSEDashboardInner() {
                   <JourneyTracker />
                 </TabsContent>
               )}
+                </div>{/* end content */}
+
+                {/* Right-side vertical nav */}
+                <TabsList className="flex flex-col h-auto w-44 shrink-0 sticky top-6 gap-0.5 p-1.5 rounded-lg bg-muted/60">
+                  {hasTab('observations') && <TabsTrigger value="observations"    className="w-full justify-start text-sm px-3 py-2">Observations</TabsTrigger>}
+                  {hasTab('incidents') && <TabsTrigger value="incidents"          className="w-full justify-start text-sm px-3 py-2">Incidents</TabsTrigger>}
+                  {hasTab('inspections') && <TabsTrigger value="inspections"      className="w-full justify-start text-sm px-3 py-2">Inspections</TabsTrigger>}
+                  {hasTab('meetings') && <TabsTrigger value="meetings"            className="w-full justify-start text-sm px-3 py-2">Meetings</TabsTrigger>}
+                  {hasTab('service-quality') && <TabsTrigger value="service-quality" className="w-full justify-start text-sm px-3 py-2">Service Quality</TabsTrigger>}
+                  {hasTab('ptw') && <TabsTrigger value="ptw"                      className="w-full justify-start text-sm px-3 py-2">Permit to Work</TabsTrigger>}
+                  {hasTab('moc') && <TabsTrigger value="moc"                      className="w-full justify-start text-sm px-3 py-2">MOC / Exemptions</TabsTrigger>}
+                  {hasTab('documents') && <TabsTrigger value="documents"          className="w-full justify-start text-sm px-3 py-2">Documents</TabsTrigger>}
+                  {hasTab('reports') && <TabsTrigger value="reports"              className="w-full justify-start text-sm px-3 py-2">Reports</TabsTrigger>}
+                  {hasTab('journey') && currentUser?.journeyAccess && <TabsTrigger value="journey" className="w-full justify-start text-sm px-3 py-2">Journey</TabsTrigger>}
+                </TabsList>
+              </div>{/* end flex row */}
             </Tabs>
           ) : (
             /* ── Regular user view ── */
             <Tabs value={["observations","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="flex w-full flex-wrap gap-1 h-auto p-1">
-                {hasTab('observations') && <TabsTrigger value="observations">Observations</TabsTrigger>}
-                {hasTab('incidents') && <TabsTrigger value="incidents">Incidents</TabsTrigger>}
-                {hasTab('inspections') && <TabsTrigger value="inspections">Inspections</TabsTrigger>}
-                {hasTab('meetings') && <TabsTrigger value="meetings">Meetings</TabsTrigger>}
-                {hasTab('service-quality') && <TabsTrigger value="service-quality">Service Quality</TabsTrigger>}
-                {hasTab('ptw') && <TabsTrigger value="ptw">Permit to Work</TabsTrigger>}
-                {hasTab('moc') && <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>}
-                {hasTab('documents') && <TabsTrigger value="documents">Documents</TabsTrigger>}
-                {hasTab('reports') && <TabsTrigger value="reports">Reports</TabsTrigger>}
-                {hasTab('journey') && currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
-              </TabsList>
+              <div className="flex gap-6 items-start">
+                {/* Content — left side */}
+                <div className="flex-1 min-w-0">
 
               <TabsContent value="observations" className="space-y-6">
                 <div className="flex flex-col gap-1">
@@ -410,6 +416,22 @@ function HSEDashboardInner() {
                   <JourneyTracker />
                 </TabsContent>
               )}
+                </div>{/* end content */}
+
+                {/* Right-side vertical nav */}
+                <TabsList className="flex flex-col h-auto w-44 shrink-0 sticky top-6 gap-0.5 p-1.5 rounded-lg bg-muted/60">
+                  {hasTab('observations') && <TabsTrigger value="observations"    className="w-full justify-start text-sm px-3 py-2">Observations</TabsTrigger>}
+                  {hasTab('incidents') && <TabsTrigger value="incidents"          className="w-full justify-start text-sm px-3 py-2">Incidents</TabsTrigger>}
+                  {hasTab('inspections') && <TabsTrigger value="inspections"      className="w-full justify-start text-sm px-3 py-2">Inspections</TabsTrigger>}
+                  {hasTab('meetings') && <TabsTrigger value="meetings"            className="w-full justify-start text-sm px-3 py-2">Meetings</TabsTrigger>}
+                  {hasTab('service-quality') && <TabsTrigger value="service-quality" className="w-full justify-start text-sm px-3 py-2">Service Quality</TabsTrigger>}
+                  {hasTab('ptw') && <TabsTrigger value="ptw"                      className="w-full justify-start text-sm px-3 py-2">Permit to Work</TabsTrigger>}
+                  {hasTab('moc') && <TabsTrigger value="moc"                      className="w-full justify-start text-sm px-3 py-2">MOC / Exemptions</TabsTrigger>}
+                  {hasTab('documents') && <TabsTrigger value="documents"          className="w-full justify-start text-sm px-3 py-2">Documents</TabsTrigger>}
+                  {hasTab('reports') && <TabsTrigger value="reports"              className="w-full justify-start text-sm px-3 py-2">Reports</TabsTrigger>}
+                  {hasTab('journey') && currentUser?.journeyAccess && <TabsTrigger value="journey" className="w-full justify-start text-sm px-3 py-2">Journey</TabsTrigger>}
+                </TabsList>
+              </div>{/* end flex row */}
             </Tabs>
           )}
         </main>
