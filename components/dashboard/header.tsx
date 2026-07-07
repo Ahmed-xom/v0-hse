@@ -35,11 +35,17 @@ import {
 
 // tab= values must match the TabsTrigger values in page.tsx
 const baseNavItems = [
-  { label: "Overview",     tab: "dashboard"   },
-  { label: "Incidents",    tab: "incidents"   },
-  { label: "Inspections",  tab: "inspections" },
-  { label: "Training",     tab: "dashboard"   },
-  { label: "Reports",      tab: "reports"     },
+  { label: "Dashboard",        tab: "dashboard"       },
+  { label: "Incidents",        tab: "incidents"       },
+  { label: "Inspections",      tab: "inspections"     },
+  { label: "Meetings",         tab: "meetings"        },
+  { label: "Service Quality",  tab: "service-quality" },
+  { label: "Permit to Work",   tab: "ptw"             },
+  { label: "MOC / Exemptions", tab: "moc"             },
+  { label: "Documents",        tab: "documents"       },
+  { label: "Reports",          tab: "reports"         },
+  { label: "Journey",          tab: "journey"         },
+  { label: "Observations",     tab: "observations"    },
 ]
 
 const SEARCH_ITEMS = [
@@ -231,20 +237,28 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
                 <ChevronDown className="hidden sm:block h-3.5 w-3.5 text-muted-foreground ml-0.5" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-52">
-              <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">Quick navigation</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {navItems.map((item) => (
-                <DropdownMenuItem
-                  key={item.label}
-                  onClick={() => handleNavClick(item.tab)}
-                  className={activeTab === item.tab ? "bg-secondary font-medium" : ""}
-                >
-                  {item.label}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => handleNavClick("settings")}>
+            <DropdownMenuContent align="start" sideOffset={8} className="w-56 py-1.5">
+              <DropdownMenuLabel className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-3 py-1.5">
+                Navigation
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="mb-1" />
+              {navItems.map((item) => {
+                const isActive = activeTab === item.tab
+                return (
+                  <DropdownMenuItem
+                    key={item.label}
+                    onClick={() => handleNavClick(item.tab)}
+                    className={`cursor-pointer px-3 py-2 text-sm ${isActive ? "bg-primary/10 text-primary font-medium" : ""}`}
+                  >
+                    {item.label}
+                  </DropdownMenuItem>
+                )
+              })}
+              <DropdownMenuSeparator className="my-1" />
+              <DropdownMenuItem
+                onClick={() => handleNavClick("settings")}
+                className={`cursor-pointer px-3 py-2 text-sm ${activeTab === "settings" ? "bg-primary/10 text-primary font-medium" : ""}`}
+              >
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </DropdownMenuItem>
