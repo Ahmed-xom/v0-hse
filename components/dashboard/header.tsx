@@ -265,28 +265,7 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Desktop Navigation */}
-          <nav className="ml-8 hidden lg:block">
-            <ul className="flex items-center gap-1">
-              {navItems.map((item) => {
-                const isActive = activeTab === item.tab
-                return (
-                  <li key={item.label}>
-                    <button
-                      onClick={() => handleNavClick(item.tab)}
-                      className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                        isActive
-                          ? "bg-secondary text-foreground"
-                          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          </nav>
+
         </div>
 
         {/* Right Section */}
