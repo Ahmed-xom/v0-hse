@@ -2,11 +2,7 @@
 
 import { Pool } from 'pg'
 import { revalidatePath } from 'next/cache'
-import { ALL_TABS, DEFAULT_TABS } from '@/lib/tab-access-config'
-import type { TabKey } from '@/lib/tab-access-config'
-
-export type { TabKey }
-export { ALL_TABS }
+import { DEFAULT_TABS } from '@/lib/tab-access-config'
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
