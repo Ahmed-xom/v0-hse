@@ -35,11 +35,17 @@ import {
 
 // tab= values must match the TabsTrigger values in page.tsx
 const baseNavItems = [
-  { label: "Overview",     tab: "dashboard"   },
-  { label: "Incidents",    tab: "incidents"   },
-  { label: "Inspections",  tab: "inspections" },
-  { label: "Training",     tab: "dashboard"   },
-  { label: "Reports",      tab: "reports"     },
+  { label: "Dashboard",        tab: "dashboard"       },
+  { label: "Incidents",        tab: "incidents"       },
+  { label: "Inspections",      tab: "inspections"     },
+  { label: "Meetings",         tab: "meetings"        },
+  { label: "Service Quality",  tab: "service-quality" },
+  { label: "Permit to Work",   tab: "ptw"             },
+  { label: "MOC / Exemptions", tab: "moc"             },
+  { label: "Documents",        tab: "documents"       },
+  { label: "Reports",          tab: "reports"         },
+  { label: "Journey",          tab: "journey"         },
+  { label: "Observations",     tab: "observations"    },
 ]
 
 const SEARCH_ITEMS = [
@@ -215,40 +221,51 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
       <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo and Brand */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <Shield className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-lg font-semibold">XOM Oman</span>
-              <Badge variant="secondary" className="ml-2 text-xs">
-                HSE
-              </Badge>
-            </div>
-          </div>
-
-          {/* Desktop Navigation */}
-          <nav className="ml-8 hidden lg:block">
-            <ul className="flex items-center gap-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 rounded-lg px-1 py-1 transition-colors hover:bg-secondary/60 focus:outline-none">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+                  <Shield className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div className="hidden sm:flex flex-col items-start">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-lg font-semibold leading-none">XOM Oman</span>
+                    <Badge variant="secondary" className="text-xs">HSE</Badge>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground leading-none mt-0.5">Health, Safety &amp; Environment</span>
+                </div>
+                <ChevronDown className="hidden sm:block h-3.5 w-3.5 text-muted-foreground ml-0.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" sideOffset={8} className="w-56 py-1.5">
+              <DropdownMenuLabel className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-3 py-1.5">
+                Navigation
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="mb-1" />
               {navItems.map((item) => {
                 const isActive = activeTab === item.tab
                 return (
-                  <li key={item.label}>
-                    <button
-                      onClick={() => handleNavClick(item.tab)}
-                      className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                        isActive
-                          ? "bg-secondary text-foreground"
-                          : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  </li>
+                  <DropdownMenuItem
+                    key={item.label}
+                    onClick={() => handleNavClick(item.tab)}
+                    className={`cursor-pointer px-3 py-2 text-sm ${isActive ? "bg-primary/10 text-primary font-medium" : ""}`}
+                  >
+                    {item.label}
+                  </DropdownMenuItem>
                 )
               })}
-            </ul>
-          </nav>
+              <DropdownMenuSeparator className="my-1" />
+              <DropdownMenuItem
+                onClick={() => handleNavClick("settings")}
+                className={`cursor-pointer px-3 py-2 text-sm ${activeTab === "settings" ? "bg-primary/10 text-primary font-medium" : ""}`}
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+
         </div>
 
         {/* Right Section */}

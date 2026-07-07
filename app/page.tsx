@@ -24,7 +24,8 @@ import { ProtectedRoute } from "@/components/protected-route"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
 import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
-import { getUserTabAccess, ALL_TABS, type TabKey } from "@/app/actions/tab-access"
+import { getUserTabAccess } from "@/app/actions/tab-access"
+import { ALL_TABS, type TabKey } from "@/lib/tab-access-config"
 import { useEffect, useRef } from "react"
 
 export default function HSEDashboard() {
@@ -86,20 +87,7 @@ function HSEDashboardInner() {
               <p className="text-muted-foreground">Loading dashboard...</p>
             </div>
           ) : isAdmin ? (
-            <Tabs value={["dashboard","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="flex w-full flex-wrap gap-1 h-auto p-1">
-                <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-                <TabsTrigger value="incidents">Incidents</TabsTrigger>
-                <TabsTrigger value="inspections">Inspections</TabsTrigger>
-                <TabsTrigger value="meetings">Meetings</TabsTrigger>
-                <TabsTrigger value="service-quality">Service Quality</TabsTrigger>
-                <TabsTrigger value="ptw">Permit to Work</TabsTrigger>
-                <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>
-                <TabsTrigger value="documents">Documents</TabsTrigger>
-                <TabsTrigger value="reports">Reports</TabsTrigger>
-                <TabsTrigger value="journey">Journey</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-              </TabsList>
+            <Tabs value={["dashboard","observations","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey","settings"].includes(activeTab) ? activeTab : "dashboard"} onValueChange={handleTabChange} className="w-full">
 
               <TabsContent value="dashboard" className="space-y-6">
                 {/* KPI Cards + Incident Statistics (live DB) */}
@@ -209,6 +197,14 @@ function HSEDashboardInner() {
                 <JourneyTracker />
               </TabsContent>
 
+              <TabsContent value="observations" className="space-y-6">
+                <div className="flex flex-col gap-1">
+                  <h2 className="text-xl font-semibold tracking-tight">All Observations</h2>
+                  <p className="text-sm text-muted-foreground">View and manage behaviour-based safety observations across all business units.</p>
+                </div>
+                <BehaviourObservations viewAll />
+              </TabsContent>
+
               <TabsContent value="settings" className="space-y-6">
                 <AdminSettings onUserAdded={handleUserAdded} />
               </TabsContent>
@@ -216,18 +212,6 @@ function HSEDashboardInner() {
           ) : isReviewer ? (
             /* ── Reviewer / Approver view ── */
             <Tabs value={["observations","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="flex w-full flex-wrap gap-1 h-auto p-1">
-                {hasTab('observations') && <TabsTrigger value="observations">Observations</TabsTrigger>}
-                {hasTab('incidents') && <TabsTrigger value="incidents">Incidents</TabsTrigger>}
-                {hasTab('inspections') && <TabsTrigger value="inspections">Inspections</TabsTrigger>}
-                {hasTab('meetings') && <TabsTrigger value="meetings">Meetings</TabsTrigger>}
-                {hasTab('service-quality') && <TabsTrigger value="service-quality">Service Quality</TabsTrigger>}
-                {hasTab('ptw') && <TabsTrigger value="ptw">Permit to Work</TabsTrigger>}
-                {hasTab('moc') && <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>}
-                {hasTab('documents') && <TabsTrigger value="documents">Documents</TabsTrigger>}
-                {hasTab('reports') && <TabsTrigger value="reports">Reports</TabsTrigger>}
-                {hasTab('journey') && currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
-              </TabsList>
 
               <TabsContent value="observations" className="space-y-6">
                 <div className="flex flex-col gap-1">
@@ -310,18 +294,6 @@ function HSEDashboardInner() {
           ) : (
             /* ── Regular user view ── */
             <Tabs value={["observations","incidents","inspections","meetings","service-quality","ptw","moc","documents","reports","journey"].includes(activeTab) ? activeTab : "observations"} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="flex w-full flex-wrap gap-1 h-auto p-1">
-                {hasTab('observations') && <TabsTrigger value="observations">Observations</TabsTrigger>}
-                {hasTab('incidents') && <TabsTrigger value="incidents">Incidents</TabsTrigger>}
-                {hasTab('inspections') && <TabsTrigger value="inspections">Inspections</TabsTrigger>}
-                {hasTab('meetings') && <TabsTrigger value="meetings">Meetings</TabsTrigger>}
-                {hasTab('service-quality') && <TabsTrigger value="service-quality">Service Quality</TabsTrigger>}
-                {hasTab('ptw') && <TabsTrigger value="ptw">Permit to Work</TabsTrigger>}
-                {hasTab('moc') && <TabsTrigger value="moc">MOC / Exemptions</TabsTrigger>}
-                {hasTab('documents') && <TabsTrigger value="documents">Documents</TabsTrigger>}
-                {hasTab('reports') && <TabsTrigger value="reports">Reports</TabsTrigger>}
-                {hasTab('journey') && currentUser?.journeyAccess && <TabsTrigger value="journey">Journey</TabsTrigger>}
-              </TabsList>
 
               <TabsContent value="observations" className="space-y-6">
                 <div className="flex flex-col gap-1">
