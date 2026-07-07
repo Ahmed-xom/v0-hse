@@ -215,17 +215,41 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
       <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo and Brand */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <Shield className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <div className="hidden sm:block">
-              <span className="text-lg font-semibold">XOM Oman</span>
-              <Badge variant="secondary" className="ml-2 text-xs">
-                HSE
-              </Badge>
-            </div>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 rounded-lg px-1 py-1 transition-colors hover:bg-secondary/60 focus:outline-none">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
+                  <Shield className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div className="hidden sm:flex flex-col items-start">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-lg font-semibold leading-none">XOM Oman</span>
+                    <Badge variant="secondary" className="text-xs">HSE</Badge>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground leading-none mt-0.5">Health, Safety &amp; Environment</span>
+                </div>
+                <ChevronDown className="hidden sm:block h-3.5 w-3.5 text-muted-foreground ml-0.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-52">
+              <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">Quick navigation</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {navItems.map((item) => (
+                <DropdownMenuItem
+                  key={item.label}
+                  onClick={() => handleNavClick(item.tab)}
+                  className={activeTab === item.tab ? "bg-secondary font-medium" : ""}
+                >
+                  {item.label}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleNavClick("settings")}>
+                <Settings className="mr-2 h-4 w-4" />
+                Settings
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Desktop Navigation */}
           <nav className="ml-8 hidden lg:block">
