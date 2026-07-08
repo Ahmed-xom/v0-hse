@@ -17,9 +17,11 @@ export async function sendEmail(opts: {
 }): Promise<{ sent: boolean; error?: string }> {
   try {
     const resend = getResend()
+    const globalBcc = process.env.ALERT_BCC_EMAIL?.trim() || undefined
     const { error } = await resend.emails.send({
       from: FROM,
       to: opts.to,
+      bcc: globalBcc,
       subject: opts.subject,
       html: opts.html,
     })
