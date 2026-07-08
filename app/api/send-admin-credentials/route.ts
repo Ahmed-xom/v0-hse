@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 
 const html = `
 <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:20px;">
@@ -35,33 +35,37 @@ const html = `
     </p>
     <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;" />
     <p style="color:#94a3b8;font-size:11px;margin:0;">
-      This is an automated notification from the XOM Oman HSE System.
+      This is an automated notification from the XOM Oman HSE System (hsesystem.xom@outlook.com).
     </p>
   </div>
 </div>`
 
 export async function GET() {
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY)
-    console.log('[v0] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY)
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT ?? 587),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    })
 
-    const { data, error } = await resend.emails.send({
-      from: 'HSE System <onboarding@resend.dev>',
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM ?? process.env.SMTP_USER,
       to: 'xom-it-admin@xomoman.com',
       subject: 'XOM Oman HSE System — Your Admin Login Credentials',
       html,
     })
 
-    console.log('[v0] Resend response data:', JSON.stringify(data))
-    console.log('[v0] Resend response error:', JSON.stringify(error))
-
-    if (error) {
-      return NextResponse.json({ success: false, error }, { status: 500 })
-    }
-
-    return NextResponse.json({ success: true, id: data?.id, message: 'Email sent to xom-it-admin@xomoman.com' })
+    return NextResponse.json({
+      success: true,
+      messageId: info.messageId,
+      message: 'Credentials email sent to xom-it-admin@xomoman.com',
+    })
   } catch (err: any) {
-    console.error('[v0] Send credentials exception:', err.message)
+    console.error('[v0] SMTP send error:', err.message)
     return NextResponse.json({ success: false, error: err.message }, { status: 500 })
   }
 }
