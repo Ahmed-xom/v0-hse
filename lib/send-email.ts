@@ -8,7 +8,7 @@ function getResend(): Resend {
   return new Resend(key)
 }
 
-const FROM = 'HSE System <hsesystem.xom@outlook.com>'
+const FROM = 'HSE System <onboarding@resend.dev>'
 
 export async function sendEmail(opts: {
   to: string | string[]

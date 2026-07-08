@@ -1,13 +1,11 @@
-'use server'
 import { NextResponse } from 'next/server'
-import { sendEmail } from '@/lib/send-email'
+import { Resend } from 'resend'
 
-export async function GET() {
-  const html = `
+const html = `
 <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:20px;">
   <div style="background:#0f766e;padding:24px 30px;border-radius:10px 10px 0 0;">
     <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/logo-vHrWHaXI9ba92huTDLKeBtYeO6j0ov.webp"
-         alt="XOM" style="height:36px;width:auto;object-fit:contain;background:#fff;padding:4px 8px;border-radius:6px;" />
+         alt="XOM" style="height:36px;width:auto;background:#fff;padding:4px 8px;border-radius:6px;" />
     <h1 style="color:#fff;margin:14px 0 0;font-size:20px;">HSE System — Login Credentials</h1>
   </div>
   <div style="background:#f8fafc;padding:30px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px;">
@@ -37,21 +35,33 @@ export async function GET() {
     </p>
     <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0;" />
     <p style="color:#94a3b8;font-size:11px;margin:0;">
-      This is an automated notification from the XOM Oman HSE System (hsesystem.xom@outlook.com).
-      Do not reply to this email.
+      This is an automated notification from the XOM Oman HSE System.
     </p>
   </div>
 </div>`
 
-  const result = await sendEmail({
-    to: 'xom-it-admin@xomoman.com',
-    subject: 'XOM Oman HSE System — Your Admin Login Credentials',
-    html,
-  })
+export async function GET() {
+  try {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    console.log('[v0] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY)
 
-  if (!result.sent) {
-    return NextResponse.json({ success: false, error: result.error }, { status: 500 })
+    const { data, error } = await resend.emails.send({
+      from: 'HSE System <onboarding@resend.dev>',
+      to: 'xom-it-admin@xomoman.com',
+      subject: 'XOM Oman HSE System — Your Admin Login Credentials',
+      html,
+    })
+
+    console.log('[v0] Resend response data:', JSON.stringify(data))
+    console.log('[v0] Resend response error:', JSON.stringify(error))
+
+    if (error) {
+      return NextResponse.json({ success: false, error }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true, id: data?.id, message: 'Email sent to xom-it-admin@xomoman.com' })
+  } catch (err: any) {
+    console.error('[v0] Send credentials exception:', err.message)
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 })
   }
-
-  return NextResponse.json({ success: true, message: 'Credentials email sent to xom-it-admin@xomoman.com' })
 }
