@@ -225,9 +225,9 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 rounded-lg px-1 py-1 transition-colors hover:bg-secondary/60 focus:outline-none">
                 <img
-                  src="/xom-logo.png"
-                  alt="XOM LLC"
-                  className="h-10 w-auto object-contain"
+                  src="/xom-logo.webp"
+                  alt="XOM"
+                  className="h-8 w-auto object-contain"
                 />
                 <div className="hidden sm:flex flex-col items-start">
                   <Badge variant="secondary" className="text-xs">HSE</Badge>
