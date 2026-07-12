@@ -17,9 +17,11 @@ export async function sendEmail(opts: {
 }): Promise<{ sent: boolean; error?: string }> {
   try {
     const resend = getResend()
+    const globalBcc = process.env.ALERT_BCC_EMAIL?.trim() || undefined
     const { error } = await resend.emails.send({
       from: FROM,
       to: opts.to,
+      bcc: globalBcc,
       subject: opts.subject,
       html: opts.html,
     })
@@ -172,6 +174,89 @@ export function meetingInviteHtml(meeting: {
         <p style="color:#94a3b8;font-size:12px;margin:0;">You are receiving this because you were added as an attendee. Do not reply to this email.</p>
       </div>
     </div>`
+}
+
+export function trainingExpiryHtml(opts: {
+  supervisorName: string
+  alertType: '3month' | '1month'
+  records: {
+    employeeName: string
+    employeeCode: string
+    courseName: string
+    status: string
+    completedDate?: string
+    expiryDate?: string
+    daysUntilExpiry: number | null
+  }[]
+  generatedAt: string
+}): string {
+  const isUrgent = opts.alertType === '1month'
+  const headerColor = isUrgent ? '#dc2626' : '#f97316'
+  const alertTitle  = isUrgent
+    ? 'URGENT: Training Expiring Within 1 Month'
+    : 'Training Expiring Within 3 Months — Action Required'
+  const bannerColor = isUrgent ? '#fef2f2' : '#fff7ed'
+  const bannerBorder = isUrgent ? '#fca5a5' : '#fdba74'
+  const bannerText  = isUrgent ? '#991b1b' : '#9a3412'
+
+  const rows = opts.records.map(r => {
+    const urgencyColor = (r.daysUntilExpiry !== null && r.daysUntilExpiry <= 30) ? '#dc2626' : '#f97316'
+    return `
+    <tr>
+      <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;color:#1e293b;">${r.employeeName}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;color:#64748b;font-size:12px;">${r.employeeCode || '—'}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;color:#1e293b;">${r.courseName}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;color:#64748b;">${r.completedDate || '—'}</td>
+      <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;">
+        <span style="color:${urgencyColor};font-weight:600;">${r.expiryDate || '—'}</span>
+      </td>
+      <td style="padding:9px 12px;border-bottom:1px solid #e2e8f0;text-align:center;">
+        <span style="background:${urgencyColor};color:#fff;padding:2px 9px;border-radius:10px;font-size:12px;">
+          ${r.daysUntilExpiry !== null ? `${r.daysUntilExpiry}d` : '—'}
+        </span>
+      </td>
+    </tr>`
+  }).join('')
+
+  return `
+  <div style="font-family:Arial,sans-serif;max-width:750px;margin:0 auto;padding:20px;">
+    <div style="background:${headerColor};padding:24px 30px;border-radius:10px 10px 0 0;">
+      <h1 style="color:#fff;margin:0;font-size:21px;">HSE System — Training Expiry Alert</h1>
+      <p style="color:rgba(255,255,255,.9);margin:6px 0 0;font-size:13px;">Generated: ${opts.generatedAt}</p>
+    </div>
+    <div style="background:#f8fafc;padding:30px;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 10px 10px;">
+      <p style="color:#475569;font-size:15px;margin:0 0 16px;">Dear ${opts.supervisorName},</p>
+      <div style="background:${bannerColor};border:1px solid ${bannerBorder};border-radius:6px;padding:12px 16px;margin-bottom:22px;">
+        <strong style="color:${bannerText};font-size:14px;">${alertTitle}</strong><br/>
+        <span style="color:${bannerText};font-size:13px;">
+          ${opts.records.length} training record${opts.records.length > 1 ? 's' : ''} under your supervision require${opts.records.length === 1 ? 's' : ''} renewal.
+          Please ensure employees complete their training before expiry.
+        </span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:#e2e8f0;">
+            <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:600;">Employee</th>
+            <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:600;">Code</th>
+            <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:600;">Course</th>
+            <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:600;">Completed</th>
+            <th style="padding:10px 12px;text-align:left;color:#475569;font-weight:600;">Expires</th>
+            <th style="padding:10px 12px;text-align:center;color:#475569;font-weight:600;">Days Left</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <br/>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL ?? 'https://hse.dash.xomoman.com'}/?tab=training"
+         style="display:inline-block;background:${headerColor};color:#fff;padding:10px 22px;border-radius:6px;text-decoration:none;font-size:14px;">
+        View Training Records
+      </a>
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:25px 0 10px;"/>
+      <p style="color:#94a3b8;font-size:12px;margin:0;">
+        This is an automated notification from the HSE System (hsesystem.xom@outlook.com). Do not reply to this email.
+      </p>
+    </div>
+  </div>`
 }
 
 export function observationStatusUpdatedHtml(obs: {

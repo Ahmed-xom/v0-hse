@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { Bell, Calendar, ChevronDown, LogOut, Menu, Moon, Search, Settings, Shield, Sun, User, X, CheckCheck, GraduationCap, BarChart2, ClipboardList, ShieldCheck, Route, LayoutDashboard, FileText, LifeBuoy } from "lucide-react"
+import { Bell, Calendar, ChevronDown, LogOut, Menu, Moon, Search, Settings, Sun, User, X, CheckCheck, GraduationCap, BarChart2, ClipboardList, ShieldCheck, Route, LayoutDashboard, FileText, LifeBuoy } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -224,14 +224,13 @@ function DashboardHeaderInner({ onDateRangeChange }: DashboardHeaderProps = {}) 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 rounded-lg px-1 py-1 transition-colors hover:bg-secondary/60 focus:outline-none">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                  <Shield className="h-5 w-5 text-primary-foreground" />
-                </div>
+                <img
+                  src="/xom-logo.webp"
+                  alt="XOM"
+                  className="h-8 w-auto object-contain"
+                />
                 <div className="hidden sm:flex flex-col items-start">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-lg font-semibold leading-none">XOM Oman</span>
-                    <Badge variant="secondary" className="text-xs">HSE</Badge>
-                  </div>
+                  <Badge variant="secondary" className="text-xs">HSE</Badge>
                   <span className="text-[11px] text-muted-foreground leading-none mt-0.5">Health, Safety &amp; Environment</span>
                 </div>
                 <ChevronDown className="hidden sm:block h-3.5 w-3.5 text-muted-foreground ml-0.5" />

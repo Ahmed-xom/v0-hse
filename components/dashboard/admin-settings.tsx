@@ -31,6 +31,7 @@ import { addNewUser } from "@/app/actions/add-user"
 import { UsersManagementWithRefresh } from "./users-management-with-refresh"
 import { resetUserPassword } from "@/app/actions/reset-password"
 import { TabAccessSettings } from "./tab-access-settings"
+import { SupervisorSettings } from "./supervisor-settings"
 
 const ROLES = [
   "ADMIN SYSTEM",
@@ -195,9 +196,10 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
       </div>
 
       <Tabs defaultValue="users" className="w-full">
-        <TabsList className="grid w-full max-w-2xl grid-cols-4">
+        <TabsList className="grid w-full max-w-3xl grid-cols-5">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="supervisors">Supervisors</TabsTrigger>
           <TabsTrigger value="tab-access">Tab Access</TabsTrigger>
           <TabsTrigger value="data">Excel Data</TabsTrigger>
         </TabsList>
@@ -295,6 +297,18 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
         {/* User Management Tab */}
         <TabsContent value="users" className="space-y-6">
           <UsersManagementWithRefresh />
+        </TabsContent>
+
+        {/* Supervisors Tab */}
+        <TabsContent value="supervisors" className="space-y-6">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-lg font-semibold">Supervisor Assignments</h3>
+            <p className="text-sm text-muted-foreground">
+              Assign supervisors to employees and send automated training expiry email alerts.
+              Emails are sent from <span className="font-medium text-foreground">hsesystem.xom@outlook.com</span>.
+            </p>
+          </div>
+          <SupervisorSettings />
         </TabsContent>
 
         {/* Tab Access Tab */}
