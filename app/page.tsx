@@ -20,7 +20,7 @@ export default function HSEDashboard() {
         <main className="mx-auto max-w-[1600px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
           {/* Page Title */}
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">HSE Dashboard</h1>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">AMNKO HSE</h1>
             <p className="text-muted-foreground">
               Health, Safety & Environment performance overview
             </p>
@@ -77,7 +77,7 @@ export default function HSEDashboard() {
           <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
               <p className="text-sm text-muted-foreground">
-                © 2024 XOM Oman. All rights reserved.
+                © 2024 AMNKO HSE. All rights reserved.
               </p>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <a href="#" className="transition-colors hover:text-foreground">Privacy Policy</a>
