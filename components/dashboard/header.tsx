@@ -59,7 +59,7 @@ export function DashboardHeader() {
               alt="AMNKO HSE logo"
               width={44}
               height={44}
-              className="size-11 rounded-md object-contain"
+              className="logo-adaptive size-11 object-contain"
               priority
             />
             <div className="hidden sm:block">

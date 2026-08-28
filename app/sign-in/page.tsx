@@ -55,7 +55,7 @@ export default function SignInPage() {
             alt="AMNKO HSE logo"
             width={150}
             height={150}
-            className="size-36 object-contain drop-shadow-sm"
+            className="logo-adaptive size-36 object-contain drop-shadow-sm"
             priority
           />
           <div className="flex flex-col items-center gap-1">

@@ -134,4 +134,15 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Keep the transparent logo legible on either background. */
+  .logo-adaptive {
+    filter: grayscale(1) brightness(0) invert(1);
+  }
+
+  @media (prefers-color-scheme: light) {
+    .logo-adaptive {
+      filter: grayscale(1) brightness(0);
+    }
+  }
 }
