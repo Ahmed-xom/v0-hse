@@ -3,7 +3,8 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff, Shield, Loader2, Mail, Lock } from "lucide-react"
+import Image from "next/image"
+import { Eye, EyeOff, Loader2, Mail, Lock } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -48,13 +49,19 @@ export default function SignInPage() {
 
       <div className="w-full max-w-md relative z-10">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <Shield className="h-7 w-7 text-primary-foreground" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">HSE Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Health, Safety & Environment</p>
+        <div className="mb-8 flex flex-col items-center justify-center gap-3 text-center">
+          <Image
+            src="/amnko-hse-logo.png"
+            alt="AMNKO HSE logo"
+            width={150}
+            height={150}
+            className="size-36 object-contain drop-shadow-sm"
+            priority
+          />
+          <div className="flex flex-col items-center gap-1">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">AMNKO HSE</h1>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-primary">Health · Safety · Environment</p>
+            <p className="text-sm text-muted-foreground">Protect · Prevent · Improve</p>
           </div>
         </div>
 
