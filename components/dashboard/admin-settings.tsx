@@ -1,0 +1,326 @@
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { Settings, Users, Mail, Plus, Eye, EyeOff, Database, LifeBuoy, PhoneCall } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/auth-context"
+import { users, type User } from "@/lib/users-data"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ExcelDataViewer } from "./excel-data-viewer"
+import { addNewUser } from "@/app/actions/add-user"
+import { UsersManagementWithRefresh } from "./users-management-with-refresh"
+import { resetUserPassword } from "@/app/actions/reset-password"
+import { TabAccessSettings } from "./tab-access-settings"
+import { SupervisorSettings } from "./supervisor-settings"
+
+const ROLES = [
+  "ADMIN SYSTEM",
+  "MANAGEMENT",
+  "SITE MANAGER",
+  "SITE MANAGER - Global",
+  "HSE ADMIN",
+  "HSE",
+  "HR",
+  "MASTER USER",
+  "USER",
+  "USER - JM",
+]
+
+const BUSINESS_UNITS = [
+  "XOM Drilling System",
+  "Falcon Oilfield Services",
+  "XOM Oman",
+]
+
+const STATUSES = ["Active", "Inactive"]
+
+export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
+  const router = useRouter()
+  const { toast } = useToast()
+  const { user: currentUser } = useAuth()
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    payrollNo: "",
+    role: "USER",
+    designation: "",
+    businessUnit: "XOM Oman",
+    status: "Active" as "Active" | "Inactive",
+  })
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleAddUser = async () => {
+    if (!formData.name || !formData.email) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in name and email fields",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      // Trim and validate email
+      const cleanEmail = formData.email.trim().toLowerCase()
+      
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(cleanEmail)) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address",
+          variant: "destructive",
+        })
+        setIsLoading(false)
+        return
+      }
+
+      const result = await addNewUser({
+        name: formData.name,
+        email: cleanEmail,
+        payrollNo: formData.payrollNo || `P${Date.now()}`,
+        designation: formData.designation,
+        businessUnit: formData.businessUnit,
+        hseRole: formData.role,
+        status: formData.status,
+        adminEmail: currentUser?.email,
+      })
+
+      if (!result.success) {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to add user",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const description = result.emailSent
+        ? `User ${formData.name} created! Password sent to ${formData.email}.`
+        : `User created but email failed: ${result.emailError || 'Unknown error'}. Check environment variables.`
+
+      toast({
+        title: result.emailSent ? "Success" : "⚠️ Partial Success",
+        description,
+        variant: result.emailSent ? "default" : "destructive",
+      })
+
+      // Save new user to localStorage for UI update
+      try {
+        const storedUsers = localStorage.getItem("added_users") || "[]"
+        const addedUsers = JSON.parse(storedUsers)
+        const newUser = {
+          id: result.user?.id || `added_${Date.now()}`,
+          name: formData.name,
+          email: formData.email,
+          payrollNo: formData.payrollNo,
+          role: formData.role,
+          designation: formData.designation,
+          businessUnit: formData.businessUnit,
+          status: formData.status === "Active" ? "Active" : "Inactive",
+        }
+        addedUsers.push(newUser)
+        localStorage.setItem("added_users", JSON.stringify(addedUsers))
+      } catch (storageError) {
+        console.error("[v0] Failed to save user to localStorage:", storageError)
+      }
+
+      // Call callback to refresh user list
+      if (onUserAdded) {
+        onUserAdded()
+      }
+
+      // Refresh the page to reload users from database
+      router.refresh()
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        payrollNo: "",
+        role: "USER",
+        designation: "",
+        businessUnit: "XOM Oman",
+        status: "Active",
+      })
+
+      setIsAddUserOpen(false)
+    } catch (error) {
+      console.error("[v0] Error adding user:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add user",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-2">
+        <Settings className="h-5 w-5" />
+        <h2 className="text-xl font-semibold">Admin Settings</h2>
+      </div>
+
+      <Tabs defaultValue="users" className="w-full">
+        <TabsList className="grid w-full max-w-3xl grid-cols-5">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="supervisors">Supervisors</TabsTrigger>
+          <TabsTrigger value="tab-access">Tab Access</TabsTrigger>
+          <TabsTrigger value="data">Excel Data</TabsTrigger>
+        </TabsList>
+
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-6">
+          {/* Quick Stats */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Total Users
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">{users.length}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Active: {users.filter((u) => u.status === "Active").length}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Admin Accounts
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">
+                  {users.filter((u) => u.role === "ADMIN SYSTEM").length}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  System administrators
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Email Service
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                  Configured
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  hsesystem.xom@outlook.com
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+          {/* Support Contact */}
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <LifeBuoy className="h-5 w-5 text-primary" />
+                IT Support Contact
+              </CardTitle>
+              <CardDescription>
+                For system issues, access requests, or technical assistance, reach out to the IT support team.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-lg bg-muted/50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">IT Admin Support</p>
+                    <a
+                      href="mailto:xom-it-admin@xomoman.com"
+                      className="text-sm text-primary hover:underline break-all"
+                    >
+                      xom-it-admin@xomoman.com
+                    </a>
+                  </div>
+                </div>
+                <a
+                  href="mailto:xom-it-admin@xomoman.com?subject=HSE System Support Request"
+                  className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors shrink-0"
+                >
+                  <PhoneCall className="h-4 w-4" />
+                  Contact Support
+                </a>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* User Management Tab */}
+        <TabsContent value="users" className="space-y-6">
+          <UsersManagementWithRefresh />
+        </TabsContent>
+
+        {/* Supervisors Tab */}
+        <TabsContent value="supervisors" className="space-y-6">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-lg font-semibold">Supervisor Assignments</h3>
+            <p className="text-sm text-muted-foreground">
+              Assign supervisors to employees and send automated training expiry email alerts.
+              Emails are sent from <span className="font-medium text-foreground">hsesystem.xom@outlook.com</span>.
+            </p>
+          </div>
+          <SupervisorSettings />
+        </TabsContent>
+
+        {/* Tab Access Tab */}
+        <TabsContent value="tab-access" className="space-y-6">
+          <TabAccessSettings />
+        </TabsContent>
+
+        {/* Excel Data Tab */}
+        <TabsContent value="data" className="space-y-6">
+          <ExcelDataViewer />
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}

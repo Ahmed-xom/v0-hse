@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Search,
   Filter,
@@ -21,6 +21,8 @@ import {
   KeyRound,
   Copy,
   Check,
+  Route,
+  ShieldCheck,
 } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
@@ -62,10 +64,11 @@ import {
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { users, businessUnits, roles, type User } from "@/lib/users-data"
+import { businessUnits, roles, type User } from "@/lib/users-data"
+import { resetUserPassword, getPasswordResetHistory } from "@/app/actions/reset-password"
+import { updateUserStatus, updateUserRole, updateUser, fixMissingAccounts, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess, updateJourneyApprover, createUser } from "@/app/actions/manage-users"
+import { isAdminRole } from "@/lib/auth-roles"
 
-// Default password for reset
-const DEFAULT_PASSWORD = "Xom@2026"
 
 const roleColors: Record<string, string> = {
   "ADMIN SYSTEM": "bg-red-500/20 text-red-400 border-red-500/30",
@@ -104,15 +107,124 @@ export function UsersManagement() {
   const [currentPage, setCurrentPage] = useState(1)
   const [resetPasswordUser, setResetPasswordUser] = useState<User | null>(null)
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false)
+  const [isResetLoading, setIsResetLoading] = useState(false)
+  const [generatedPassword, setGeneratedPassword] = useState("")
   const [copiedPassword, setCopiedPassword] = useState(false)
+  const [resetHistory, setResetHistory] = useState<{ id: string; resetBy: string; resetAt: Date | null; ipAddress: string | null }[]>([])
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const [resetTab, setResetTab] = useState<"reset" | "history">("reset")
+
+  // Clipboard API is blocked in iframes — fall back to execCommand
+  const copyToClipboard = (text: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).catch(() => execCopy(text))
+      } else {
+        execCopy(text)
+      }
+    } catch {
+      execCopy(text)
+    }
+  }
+  const execCopy = (text: string) => {
+    const el = document.createElement('textarea')
+    el.value = text
+    el.style.position = 'fixed'
+    el.style.opacity = '0'
+    document.body.appendChild(el)
+    el.focus()
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
+  }
+
+  const [customPassword, setCustomPassword] = useState("")
+  const [showCustomPassword, setShowCustomPassword] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isEditLoading, setIsEditLoading] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    name: "",
+    email: "",
+    role: "",
+    status: "Active" as "Active" | "Inactive",
+    approver: "",
+    approverEmail: "",
+    designation: "",
+    payrollNo: "",
+    businessUnit: "",
+  })
+
+  const [addApprover, setAddApprover] = useState({ name: "", email: "" })
+  const [addForm, setAddForm] = useState({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "" })
+  const [isAddLoading, setIsAddLoading] = useState(false)
+  const [addTempPassword, setAddTempPassword] = useState("")
+  const [dbUsers, setDbUsers] = useState<User[]>([])
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const { toast } = useToast()
   const { user: currentUser } = useAuth()
-  
-  // Check if current user is admin
-  const isAdmin = currentUser?.role === "ADMIN SYSTEM" || currentUser?.role === "MASTER USER"
+
+  // Fetch real users from the database; also repair any orphaned users on first load
+  useEffect(() => {
+    async function fetchUsers() {
+      setIsLoadingUsers(true)
+      try {
+        // Repair users missing a credential account row (so they can log in)
+        if (refreshKey === 0) {
+          await fixMissingAccounts()
+        }
+        const result = await getUsers()
+        if (result.success && result.data) {
+          setDbUsers(result.data as User[])
+        } else {
+          console.error("[v0] Failed to load users:", result.error)
+        }
+      } catch (err) {
+        console.error("[v0] Error loading users:", err)
+      } finally {
+        setIsLoadingUsers(false)
+      }
+    }
+    fetchUsers()
+  }, [refreshKey])
+
+  const localUsers = dbUsers
+
+  const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
+
+  const handleToggleJourneyAccess = async (u: User) => {
+    const newValue = !u.journeyAccess
+    setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyAccess: newValue } : x))
+    const result = await updateJourneyAccess(u.id, newValue)
+    if (!result.success) {
+      setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyAccess: !newValue } : x))
+      toast({ title: "Error", description: result.error, variant: "destructive" })
+    } else {
+      toast({
+        title: newValue ? "Journey Tracker access granted" : "Journey Tracker access revoked",
+        description: `${u.name} ${newValue ? "can now" : "can no longer"} access the Journey Tracker.`,
+      })
+    }
+  }
+
+  const handleToggleJourneyApprover = async (u: User) => {
+    const newValue = !(u as any).journeyApprover
+    setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyApprover: newValue } : x))
+    const result = await updateJourneyApprover(u.id, newValue)
+    if (!result.success) {
+      setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyApprover: !newValue } : x))
+      toast({ title: "Error", description: result.error, variant: "destructive" })
+    } else {
+      toast({
+        title: newValue ? "Journey Approver role granted" : "Journey Approver role revoked",
+        description: `${u.name} ${newValue ? "can now approve" : "can no longer approve"} journey requests.`,
+      })
+    }
+  }
 
   const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
+    return localUsers.filter((user) => {
       const matchesSearch =
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -123,7 +235,9 @@ export function UsersManagement() {
       const matchesBusinessUnit = businessUnitFilter === "all" || user.businessUnit === businessUnitFilter
       return matchesSearch && matchesRole && matchesStatus && matchesBusinessUnit
     })
-  }, [searchQuery, roleFilter, statusFilter, businessUnitFilter])
+  }, [searchQuery, roleFilter, statusFilter, businessUnitFilter, refreshKey, localUsers])
+
+
 
   const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE)
   const paginatedUsers = useMemo(() => {
@@ -138,38 +252,212 @@ export function UsersManagement() {
   }
 
   const stats = useMemo(() => ({
-    total: users.length,
-    active: users.filter((u) => u.status === "Active").length,
-    inactive: users.filter((u) => u.status === "Inactive").length,
-    management: users.filter((u) => u.role === "MANAGEMENT" || u.role === "SITE MANAGER" || u.role === "SITE MANAGER - Global").length,
-    hse: users.filter((u) => u.role === "HSE" || u.role === "HSE ADMIN").length,
-  }), [])
+    total: localUsers.length,
+    active: localUsers.filter((u) => u.status === "Active").length,
+    inactive: localUsers.filter((u) => u.status === "Inactive").length,
+    management: localUsers.filter((u) => u.role === "MANAGEMENT" || u.role === "SITE MANAGER" || u.role === "SITE MANAGER - Global").length,
+    hse: localUsers.filter((u) => u.role === "HSE" || u.role === "HSE ADMIN").length,
+  }), [localUsers])
 
   const handleResetPassword = (user: User) => {
     setResetPasswordUser(user)
     setIsResetPasswordOpen(true)
     setCopiedPassword(false)
+    setGeneratedPassword("")
+    setCustomPassword("")
+    setShowCustomPassword(false)
+    setIsResetLoading(false)
+    setResetTab("reset")
+    setResetHistory([])
+    // Fetch history in background
+    setIsLoadingHistory(true)
+    getPasswordResetHistory(user.id).then((res) => {
+      if (res.success) setResetHistory(res.history)
+      setIsLoadingHistory(false)
+    })
   }
 
-  const confirmResetPassword = () => {
-    if (resetPasswordUser) {
+  const confirmResetPassword = async () => {
+    if (!resetPasswordUser) return
+
+    // Validate custom password if provided
+    if (customPassword && customPassword.length < 8) {
+      toast({ title: "Invalid password", description: "Password must be at least 8 characters.", variant: "destructive" })
+      return
+    }
+
+    setIsResetLoading(true)
+    try {
+      const result = await resetUserPassword(
+        resetPasswordUser.email,
+        currentUser?.email,
+        customPassword || undefined,
+      )
+
+      if (!result.success) {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to reset password",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Show the new password in the dialog
+      setGeneratedPassword(result.temporaryPassword || "")
+      setCopiedPassword(false)
+
       toast({
-        title: "Password Reset Successful",
-        description: `Password for ${resetPasswordUser.name} has been reset to the default password.`,
+        title: result.emailSent ? "Password reset — email sent" : "Password reset",
+        description: result.emailSent
+          ? `New password emailed to ${result.userEmail}`
+          : `Password updated in database. ${result.emailError || ""}`,
+        variant: result.emailSent ? "default" : "destructive",
       })
-      setIsResetPasswordOpen(false)
-      setResetPasswordUser(null)
+
+      // Refresh history list
+      if (resetPasswordUser) {
+        getPasswordResetHistory(resetPasswordUser.id).then((res) => {
+          if (res.success) setResetHistory(res.history)
+        })
+      }
+    } catch (error) {
+      console.error("[reset-password] Error:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to reset password",
+        variant: "destructive",
+      })
+    } finally {
+      setIsResetLoading(false)
     }
   }
 
-  const copyPassword = () => {
-    navigator.clipboard.writeText(DEFAULT_PASSWORD)
-    setCopiedPassword(true)
-    setTimeout(() => setCopiedPassword(false), 2000)
-    toast({
-      title: "Password Copied",
-      description: "Default password has been copied to clipboard.",
+  const handleEditUser = (user: User) => {
+    setEditingUser(user)
+    setEditFormData({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+      approver: user.approver ?? "",
+      approverEmail: user.approverEmail ?? "",
+      designation: user.designation ?? "",
+      payrollNo: user.payrollNo ?? "",
+      businessUnit: user.businessUnit ?? "",
     })
+    setIsEditDialogOpen(true)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return
+
+    setIsEditLoading(true)
+    try {
+      // Single call: update name, email, role, designation, payrollNo, businessUnit
+      // in both neon_auth.user and public.employee atomically
+      const profileResult = await updateUser(editingUser.id, {
+        name: editFormData.name,
+        email: editFormData.email,
+        role: editFormData.role,
+        designation: editFormData.designation,
+        payrollNo: editFormData.payrollNo,
+        businessUnit: editFormData.businessUnit,
+      })
+      if (!profileResult.success) {
+        toast({ title: "Error", description: profileResult.error, variant: "destructive" })
+        setIsEditLoading(false)
+        return
+      }
+
+      // Update status if changed
+      if (editFormData.status !== editingUser.status) {
+        const statusResult = await updateUserStatus(editingUser.id, editFormData.status)
+        if (!statusResult.success) {
+          toast({ title: "Error", description: statusResult.error, variant: "destructive" })
+          setIsEditLoading(false)
+          return
+        }
+      }
+
+      // Update approver if changed
+      if (
+        editFormData.approver !== (editingUser.approver ?? "") ||
+        editFormData.approverEmail !== (editingUser.approverEmail ?? "")
+      ) {
+        await updateUserApprover(editingUser.id, editFormData.approver, editFormData.approverEmail)
+      }
+
+      toast({ title: "User updated successfully" })
+      setIsEditDialogOpen(false)
+      setRefreshKey(refreshKey + 1)
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update user", variant: "destructive" })
+    } finally {
+      setIsEditLoading(false)
+    }
+  }
+
+  const handleDeleteUser = async (user: User) => {
+    if (!confirm(`Are you sure you want to delete ${user.name}?`)) return
+
+    try {
+      const result = await deleteUser(user.id)
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "User deleted successfully",
+        })
+        setRefreshKey(refreshKey + 1)
+      } else {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete user",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleExportToExcel = async () => {
+    try {
+      const result = await exportUsersToExcel(localUsers)
+      if (result.success && result.data) {
+        // Create a blob and download
+        const blob = new Blob([result.data], { type: 'text/csv;charset=utf-8;' })
+        const link = document.createElement('a')
+        const url = URL.createObjectURL(blob)
+        link.setAttribute('href', url)
+        link.setAttribute('download', `users_export_${new Date().toISOString().split('T')[0]}.csv`)
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        toast({
+          title: "Success",
+          description: "Users exported to Excel successfully",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to export users",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to export users",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -181,10 +469,10 @@ export function UsersManagement() {
               <Users className="h-5 w-5 text-primary" />
               Team Members
             </CardTitle>
-            <CardDescription>Manage {users.length} HSE personnel across all business units</CardDescription>
+            <CardDescription>Manage {isLoadingUsers ? '...' : localUsers.length} HSE personnel across all business units</CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2" onClick={handleExportToExcel}>
               <Download className="h-4 w-4" />
               Export
             </Button>
@@ -203,58 +491,124 @@ export function UsersManagement() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="payroll">Payroll No</Label>
-                      <Input id="payroll" placeholder="L-XXX-0000" />
+                  {addTempPassword ? (
+                    <div className="rounded-lg border border-primary/30 bg-primary/10 p-4 space-y-2">
+                      <p className="text-sm font-medium text-primary">User created successfully!</p>
+                      <p className="text-xs text-muted-foreground">Share this temporary password with the user. It will not be shown again.</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <code className="flex-1 rounded bg-secondary px-3 py-2 font-mono text-sm tracking-widest">{addTempPassword}</code>
+                        <Button size="icon" variant="outline" className="h-8 w-8" onClick={() => { copyToClipboard(addTempPassword); toast({ title: "Copied!", description: "Password copied to clipboard." }) }}>
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" placeholder="Enter full name" />
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="email@company.com" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="designation">Designation</Label>
-                    <Input id="designation" placeholder="Job title" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="role">Role</Label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {roles.map((role) => (
-                            <SelectItem key={role} value={role}>{role}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="businessUnit">Business Unit</Label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select unit" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {businessUnits.map((unit) => (
-                            <SelectItem key={unit} value={unit}>{unit}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="add-payroll">Payroll No</Label>
+                          <Input id="add-payroll" placeholder="L-XXX-0000" value={addForm.payrollNo} onChange={e => setAddForm(f => ({ ...f, payrollNo: e.target.value }))} />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="add-name">Full Name *</Label>
+                          <Input id="add-name" placeholder="Enter full name" value={addForm.name} onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))} />
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="add-email">Email *</Label>
+                        <Input id="add-email" type="email" placeholder="email@company.com" value={addForm.email} onChange={e => setAddForm(f => ({ ...f, email: e.target.value }))} />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="add-designation">Designation</Label>
+                        <Input id="add-designation" placeholder="Job title" value={addForm.designation} onChange={e => setAddForm(f => ({ ...f, designation: e.target.value }))} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label>Role</Label>
+                          <Select value={addForm.role} onValueChange={val => setAddForm(f => ({ ...f, role: val }))}>
+                            <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
+                            <SelectContent>
+                              {roles.map((role) => (
+                                <SelectItem key={role} value={role}>{role}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label>Business Unit</Label>
+                          <Select value={addForm.businessUnit} onValueChange={val => setAddForm(f => ({ ...f, businessUnit: val }))}>
+                            <SelectTrigger><SelectValue placeholder="Select unit" /></SelectTrigger>
+                            <SelectContent>
+                              {businessUnits.map((unit) => (
+                                <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label>Approver</Label>
+                        <Select
+                          value={addApprover.name ? `${addApprover.name}||${addApprover.email}` : "__none__"}
+                          onValueChange={(val) => {
+                            if (val === "__none__") { setAddApprover({ name: "", email: "" }) }
+                            else { const [name, email] = val.split("||"); setAddApprover({ name, email }) }
+                          }}
+                        >
+                          <SelectTrigger><SelectValue placeholder="Select approver..." /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__none__"><span className="text-muted-foreground">None</span></SelectItem>
+                            {dbUsers.map((u) => (
+                              <SelectItem key={u.id} value={`${u.name}||${u.email}`}>
+                                <div className="flex flex-col">
+                                  <span className="font-medium">{u.name}</span>
+                                  <span className="text-xs text-muted-foreground">{u.email}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
-                    Cancel
+                  <Button variant="outline" onClick={() => {
+                    setIsAddUserOpen(false)
+                    setAddApprover({ name: "", email: "" })
+                    setAddForm({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "" })
+                    setAddTempPassword("")
+                  }}>
+                    {addTempPassword ? "Close" : "Cancel"}
                   </Button>
-                  <Button onClick={() => setIsAddUserOpen(false)}>Add User</Button>
+                  {!addTempPassword && (
+                    <Button
+                      disabled={isAddLoading || !addForm.name || !addForm.email}
+                      onClick={async () => {
+                        setIsAddLoading(true)
+                        const res = await createUser({
+                          name: addForm.name,
+                          email: addForm.email,
+                          payrollNo: addForm.payrollNo,
+                          designation: addForm.designation,
+                          role: addForm.role || "USER",
+                          businessUnit: addForm.businessUnit,
+                          approverName: addApprover.name,
+                          approverEmail: addApprover.email,
+                        })
+                        setIsAddLoading(false)
+                        if (res.success) {
+                          setAddTempPassword((res as any).tempPassword ?? "")
+                          setRefreshKey(k => k + 1)
+                          toast({ title: "User created", description: `${addForm.name} has been added successfully.` })
+                        } else {
+                          toast({ title: "Error", description: res.error ?? "Failed to create user.", variant: "destructive" })
+                        }
+                      }}
+                    >
+                      {isAddLoading ? "Creating..." : "Add User"}
+                    </Button>
+                  )}
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -349,6 +703,7 @@ export function UsersManagement() {
                 <TableHead className="font-semibold">Role</TableHead>
                 <TableHead className="hidden font-semibold lg:table-cell">Business Unit</TableHead>
                 <TableHead className="hidden font-semibold xl:table-cell">Designation</TableHead>
+                <TableHead className="hidden font-semibold xl:table-cell">Approver</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="w-[50px]">
                   <span className="sr-only">Actions</span>
@@ -356,8 +711,38 @@ export function UsersManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedUsers.map((user) => {
-                const StatusIcon = statusConfig[user.status].icon
+              {isLoadingUsers ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <TableRow key={i} className="border-border/50">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-full bg-muted animate-pulse" />
+                        <div className="flex flex-col gap-1.5">
+                          <div className="h-3.5 w-32 bg-muted animate-pulse rounded" />
+                          <div className="h-3 w-44 bg-muted animate-pulse rounded" />
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell"><div className="h-3 w-24 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><div className="h-5 w-20 bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell className="hidden lg:table-cell"><div className="h-3 w-28 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell className="hidden xl:table-cell"><div className="h-3 w-40 bg-muted animate-pulse rounded" /></TableCell>
+                    <TableCell><div className="h-5 w-16 bg-muted animate-pulse rounded-full" /></TableCell>
+                    <TableCell><div className="h-8 w-8 bg-muted animate-pulse rounded" /></TableCell>
+                  </TableRow>
+                ))
+              ) : paginatedUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                      <Users className="h-8 w-8 opacity-40" />
+                      <p className="text-sm font-medium">No users found</p>
+                      <p className="text-xs">Try adjusting your search or filters</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : paginatedUsers.map((user) => {
+                const StatusIcon = statusConfig[user.status]?.icon ?? UserCheck
                 return (
                   <TableRow key={user.id} className="border-border/50">
                     <TableCell>
@@ -385,15 +770,39 @@ export function UsersManagement() {
                       <span className="font-mono text-xs text-muted-foreground">{user.payrollNo}</span>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`text-xs ${roleColors[user.role] || roleColors["USER"]}`}>
-                        {user.role}
-                      </Badge>
+                      <div className="flex flex-col gap-1">
+                        <Badge variant="outline" className={`text-xs ${roleColors[user.role] || roleColors["USER"]}`}>
+                          {user.role}
+                        </Badge>
+                        {user.journeyAccess && (
+                          <Badge variant="outline" className="gap-1 text-xs bg-cyan-500/10 text-cyan-400 border-cyan-500/30 w-fit">
+                            <Route className="h-2.5 w-2.5" />
+                            Journey
+                          </Badge>
+                        )}
+                        {(user as any).journeyApprover && (
+                          <Badge variant="outline" className="gap-1 text-xs bg-amber-500/10 text-amber-400 border-amber-500/30 w-fit">
+                            <ShieldCheck className="h-2.5 w-2.5" />
+                            J.Approver
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       <span className="text-sm text-muted-foreground">{user.businessUnit}</span>
                     </TableCell>
                     <TableCell className="hidden xl:table-cell">
                       <span className="text-sm text-muted-foreground truncate max-w-[200px] block">{user.designation}</span>
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      {user.approver ? (
+                        <div className="flex flex-col max-w-[180px]">
+                          <span className="text-sm truncate">{user.approver}</span>
+                          <span className="text-xs text-muted-foreground truncate">{user.approverEmail}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/50 italic">—</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={`gap-1 text-xs ${statusConfig[user.status].className}`}>
@@ -412,7 +821,7 @@ export function UsersManagement() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEditUser(user)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit User
                           </DropdownMenuItem>
@@ -427,6 +836,14 @@ export function UsersManagement() {
                           {isAdmin && (
                             <>
                               <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleToggleJourneyAccess(user)}>
+                                <Route className="mr-2 h-4 w-4" />
+                                {user.journeyAccess ? "Revoke Journey Tracker" : "Grant Journey Tracker"}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleToggleJourneyApprover(user)}>
+                                <ShieldCheck className="mr-2 h-4 w-4" />
+                                {(user as any).journeyApprover ? "Revoke Journey Approver" : "Grant Journey Approver"}
+                              </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleResetPassword(user)}>
                                 <KeyRound className="mr-2 h-4 w-4" />
                                 Reset Password
@@ -434,9 +851,12 @@ export function UsersManagement() {
                             </>
                           )}
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem 
+                            className="text-destructive"
+                            onClick={() => handleDeleteUser(user)}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Deactivate
+                            {user.status === 'Active' ? 'Deactivate' : 'Delete'}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -451,8 +871,12 @@ export function UsersManagement() {
         {/* Pagination */}
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
-            {filteredUsers.length !== users.length && ` (filtered from ${users.length})`}
+            {isLoadingUsers
+              ? "Loading users..."
+              : filteredUsers.length === 0
+              ? "No users found"
+              : `Showing ${((currentPage - 1) * ITEMS_PER_PAGE) + 1} to ${Math.min(currentPage * ITEMS_PER_PAGE, filteredUsers.length)} of ${filteredUsers.length} users${filteredUsers.length !== localUsers.length ? ` (filtered from ${localUsers.length})` : ""}`
+            }
           </p>
           <div className="flex items-center gap-2">
             <Button 
@@ -511,16 +935,166 @@ export function UsersManagement() {
               Reset User Password
             </DialogTitle>
             <DialogDescription>
-              Reset password for the selected user to the default password.
+              Generate or set a new password for this user. The password will be saved to the database and sent to their email.
             </DialogDescription>
           </DialogHeader>
           {resetPasswordUser && (
+            <div className="space-y-4 py-2">
+              {/* User card */}
+              <div className="rounded-lg border border-border/50 bg-muted/30 p-3">
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-primary/20 text-primary text-sm">
+                      {resetPasswordUser.name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium leading-none">{resetPasswordUser.name}</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">{resetPasswordUser.email}</p>
+                    <Badge variant="outline" className={`mt-1 text-xs ${roleColors[resetPasswordUser.role] || roleColors["USER"]}`}>
+                      {resetPasswordUser.role}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tab switcher */}
+              <div className="flex gap-1 rounded-lg border border-border/50 bg-muted/30 p-1">
+                <button
+                  type="button"
+                  onClick={() => setResetTab("reset")}
+                  className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    resetTab === "reset" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Reset Password
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setResetTab("history")}
+                  className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    resetTab === "history" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  History {resetHistory.length > 0 && <span className="ml-1 text-xs text-muted-foreground">({resetHistory.length})</span>}
+                </button>
+              </div>
+
+              {/* Reset tab */}
+              {resetTab === "reset" && (
+                <div className="space-y-3">
+                  {!generatedPassword ? (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <Label>Password</Label>
+                        <button
+                          type="button"
+                          className="text-xs text-primary underline"
+                          onClick={() => { setShowCustomPassword((v) => !v); setCustomPassword("") }}
+                        >
+                          {showCustomPassword ? "Auto-generate instead" : "Set custom password"}
+                        </button>
+                      </div>
+                      {showCustomPassword ? (
+                        <Input
+                          type="text"
+                          placeholder="Enter new password (min. 8 chars)"
+                          value={customPassword}
+                          onChange={(e) => setCustomPassword(e.target.value)}
+                          className="font-mono"
+                        />
+                      ) : (
+                        <p className="rounded-md border border-border/50 bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+                          A secure random password will be generated and saved to the database.
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        The new password will be saved to the database and emailed to <strong>{resetPasswordUser.email}</strong>.
+                      </p>
+                    </>
+                  ) : (
+                    <div className="space-y-2">
+                      <Label>New Password — copy before closing</Label>
+                      <div className="flex items-center gap-2">
+                        <Input value={generatedPassword} readOnly className="font-mono" />
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => { copyToClipboard(generatedPassword); setCopiedPassword(true); setTimeout(() => setCopiedPassword(false), 2000) }}
+                        >
+                          {copiedPassword ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-emerald-500">Password saved to database successfully.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* History tab */}
+              {resetTab === "history" && (
+                <div className="space-y-2">
+                  {isLoadingHistory ? (
+                    <p className="py-4 text-center text-sm text-muted-foreground">Loading history...</p>
+                  ) : resetHistory.length === 0 ? (
+                    <p className="py-4 text-center text-sm text-muted-foreground">No password resets recorded for this user.</p>
+                  ) : (
+                    <div className="max-h-[220px] overflow-y-auto rounded-lg border border-border/50">
+                      {resetHistory.map((h, i) => (
+                        <div key={h.id} className={`flex items-start justify-between gap-3 px-4 py-3 text-sm ${i !== 0 ? "border-t border-border/40" : ""}`}>
+                          <div className="min-w-0">
+                            <p className="font-medium">Reset by <span className="text-primary">{h.resetBy}</span></p>
+                            <p className="mt-0.5 text-xs text-muted-foreground">
+                              IP: {h.ipAddress || "unknown"}
+                            </p>
+                          </div>
+                          <p className="shrink-0 text-xs text-muted-foreground">
+                            {h.resetAt ? new Date(h.resetAt).toLocaleString() : "—"}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => { setIsResetPasswordOpen(false); setGeneratedPassword(""); setCustomPassword(""); setShowCustomPassword(false) }}
+              disabled={isResetLoading}
+            >
+              {generatedPassword ? "Close" : "Cancel"}
+            </Button>
+            {resetTab === "reset" && !generatedPassword && (
+              <Button onClick={confirmResetPassword} disabled={isResetLoading}>
+                {isResetLoading ? "Resetting..." : showCustomPassword ? "Set Password" : "Generate & Reset"}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5 text-primary" />
+              Edit User
+            </DialogTitle>
+            <DialogDescription>
+              Update user role and status information.
+            </DialogDescription>
+          </DialogHeader>
+          {editingUser && (
             <div className="space-y-4 py-4">
               <div className="rounded-lg border border-border/50 bg-muted/30 p-4">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback className="bg-primary/20 text-primary">
-                      {resetPasswordUser.name
+                      {editingUser.name
                         .split(" ")
                         .slice(0, 2)
                         .map((n) => n[0])
@@ -529,43 +1103,133 @@ export function UsersManagement() {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{resetPasswordUser.name}</p>
-                    <p className="text-sm text-muted-foreground">{resetPasswordUser.email}</p>
-                    <Badge variant="outline" className={`mt-1 text-xs ${roleColors[resetPasswordUser.role] || roleColors["USER"]}`}>
-                      {resetPasswordUser.role}
-                    </Badge>
+                    <p className="font-medium">{editingUser.name}</p>
+                    <p className="text-sm text-muted-foreground">{editingUser.email}</p>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>New Password (Default)</Label>
-                <div className="flex items-center gap-2">
-                  <Input 
-                    value={DEFAULT_PASSWORD} 
-                    readOnly 
-                    className="font-mono"
-                  />
-                  <Button variant="outline" size="icon" onClick={copyPassword}>
-                    {copiedPassword ? (
-                      <Check className="h-4 w-4 text-emerald-500" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-name">Full Name</Label>
+                    <Input
+                      id="edit-name"
+                      value={editFormData.name}
+                      onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-email">Email</Label>
+                    <Input
+                      id="edit-email"
+                      type="email"
+                      value={editFormData.email}
+                      onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  The user will need to sign in with this password. Recommend they change it after logging in.
-                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-designation">Designation</Label>
+                    <Input
+                      id="edit-designation"
+                      value={editFormData.designation}
+                      onChange={(e) => setEditFormData({ ...editFormData, designation: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-payroll">Payroll No.</Label>
+                    <Input
+                      id="edit-payroll"
+                      value={editFormData.payrollNo}
+                      onChange={(e) => setEditFormData({ ...editFormData, payrollNo: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-bu">Business Unit</Label>
+                  <Select value={editFormData.businessUnit} onValueChange={(value) => setEditFormData({ ...editFormData, businessUnit: value })}>
+                    <SelectTrigger id="edit-bu">
+                      <SelectValue placeholder="Select business unit..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {businessUnits.map((bu) => (
+                        <SelectItem key={bu} value={bu}>{bu}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-role">Role</Label>
+                  <Select value={editFormData.role} onValueChange={(value) => setEditFormData({ ...editFormData, role: value })}>
+                    <SelectTrigger id="edit-role">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role} value={role}>{role}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-status">Status</Label>
+                  <Select value={editFormData.status} onValueChange={(value) => setEditFormData({ ...editFormData, status: value as "Active" | "Inactive" })}>
+                    <SelectTrigger id="edit-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Approver</Label>
+                  <Select
+                    value={editFormData.approver ? `${editFormData.approver}||${editFormData.approverEmail}` : "__none__"}
+                    onValueChange={(val) => {
+                      if (val === "__none__") {
+                        setEditFormData({ ...editFormData, approver: "", approverEmail: "" })
+                      } else {
+                        const [name, email] = val.split("||")
+                        setEditFormData({ ...editFormData, approver: name, approverEmail: email })
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select approver..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">
+                        <span className="text-muted-foreground">None</span>
+                      </SelectItem>
+                      {dbUsers.map((u) => (
+                        <SelectItem key={u.id} value={`${u.name}||${u.email}`}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{u.name}</span>
+                            <span className="text-xs text-muted-foreground">{u.email}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsResetPasswordOpen(false)}>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isEditLoading}>
               Cancel
             </Button>
-            <Button onClick={confirmResetPassword}>
-              Reset Password
+            <Button onClick={handleSaveEdit} disabled={isEditLoading}>
+              {isEditLoading ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Settings,
   Shield,
@@ -23,7 +23,15 @@ import {
   ArrowLeft,
   Database,
   Layers,
+  Mail,
+  RefreshCw,
+  UserCheck,
+  ShieldCheck,
 } from "lucide-react"
+import { getReviewersApprovers, updateReviewerApproverStatus, addReviewerApprover, type ReviewerApproverUser } from "@/app/actions/get-reviewers-approvers"
+import { getUsers } from "@/app/actions/manage-users"
+import type { User } from "@/lib/users-data"
+import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -54,6 +62,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { masterCategories, getTotalMasterItems, getTotalSections, type MasterSection } from "@/lib/masters-data"
+import { VehiclesSection } from "./vehicles-section"
 
 const iconMap: Record<string, React.ReactNode> = {
   settings: <Settings className="h-5 w-5" />,
@@ -71,17 +80,94 @@ const iconMap: Record<string, React.ReactNode> = {
 }
 
 export function MasterSettings() {
+  const { toast } = useToast()
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [selectedSection, setSelectedSection] = useState<MasterSection | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
+  // Reviewer/Approver real data state
+  const [raUsers, setRaUsers] = useState<ReviewerApproverUser[]>([])
+  const [raLoading, setRaLoading] = useState(false)
+  const [raSearch, setRaSearch] = useState("")
+
+  // All users for the "Add New" dropdown
+  const [allUsers, setAllUsers] = useState<User[]>([])
+  const [newEntryUser, setNewEntryUser] = useState("")
+  const [newEntryRole, setNewEntryRole] = useState<"REVIEWER" | "APPROVER">("REVIEWER")
+  const [newEntryName, setNewEntryName] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+
   const currentCategory = masterCategories.find((c) => c.id === selectedCategory)
+
+  // Load real reviewer/approver users when that section is opened
+  useEffect(() => {
+    if (selectedSection?.id === "reviewer-approver") {
+      setRaLoading(true)
+      getReviewersApprovers()
+        .then((res) => {
+          if (res.success) setRaUsers(res.users)
+          else toast({ title: "Error loading users", description: res.error, variant: "destructive" })
+        })
+        .finally(() => setRaLoading(false))
+    }
+  }, [selectedSection])
+
+  // Load all users when the Add dialog opens for reviewer-approver section
+  useEffect(() => {
+    if (isAddDialogOpen && selectedSection?.id === "reviewer-approver" && allUsers.length === 0) {
+      getUsers().then((res) => {
+        if (res.success) {
+          const sorted = [...(res.data as User[])].sort((a, b) =>
+            a.name.localeCompare(b.name)
+          )
+          setAllUsers(sorted)
+        }
+      })
+    }
+    if (!isAddDialogOpen) {
+      setNewEntryUser("")
+      setNewEntryName("")
+      setNewEntryRole("REVIEWER")
+    }
+  }, [isAddDialogOpen])
 
   const filteredCategories = masterCategories.filter((category) =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     category.items.some((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
   )
+
+  const handleSaveReviewerApprover = async () => {
+    if (!newEntryUser) {
+      toast({ title: "Select a user", description: "Please select a user from the dropdown.", variant: "destructive" })
+      return
+    }
+    const [, , id] = newEntryUser.split("||")
+    const resolvedUser = allUsers.find((u) => u.id === id)
+    const userId = id || resolvedUser?.id
+    const name = newEntryName.trim() || resolvedUser?.name || ""
+    if (!userId) {
+      toast({ title: "User not found", description: "Could not resolve user ID.", variant: "destructive" })
+      return
+    }
+    setIsSaving(true)
+    try {
+      const result = await addReviewerApprover(userId, newEntryRole)
+      if (!result.success) {
+        toast({ title: "Error", description: result.error, variant: "destructive" })
+        return
+      }
+      toast({ title: "Saved", description: `${name} added as ${newEntryRole}.` })
+      setIsAddDialogOpen(false)
+      // Refresh the reviewer/approver list
+      const res = await getReviewersApprovers()
+      if (res.success) setRaUsers(res.users)
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" })
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   const handleBackToCategories = () => {
     setSelectedCategory(null)
@@ -137,7 +223,7 @@ export function MasterSettings() {
                 </div>
               </div>
             )}
-            {selectedSection && (
+            {selectedSection && selectedSection.id !== "vehicle-details" && selectedSection.id !== "jm-vehicle-detail" && (
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="bg-primary hover:bg-primary/90">
@@ -153,32 +239,91 @@ export function MasterSettings() {
                     </DialogDescription>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="name">Name</Label>
-                      <Input id="name" placeholder="Enter name" />
-                    </div>
+                    {selectedSection?.id === "reviewer-approver" ? (
+                      <>
+                        <div className="grid gap-2">
+                          <Label htmlFor="user-dropdown">Select User</Label>
+                          <Select
+                            value={newEntryUser}
+                            onValueChange={(val) => {
+                              setNewEntryUser(val)
+                              const [name] = val.split("||")
+                              setNewEntryName(name)
+                            }}
+                          >
+                            <SelectTrigger id="user-dropdown">
+                              <SelectValue placeholder="Select a user..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allUsers.map((u) => (
+                                <SelectItem key={u.id} value={`${u.name}||${u.email}||${u.id}`}>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{u.name}</span>
+                                    <span className="text-xs text-muted-foreground">{u.email}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="entry-name">Name</Label>
+                          <Input
+                            id="entry-name"
+                            placeholder="Enter name"
+                            value={newEntryName}
+                            onChange={(e) => setNewEntryName(e.target.value)}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="grid gap-2">
+                        <Label htmlFor="name">Name</Label>
+                        <Input id="name" placeholder="Enter name" />
+                      </div>
+                    )}
                     <div className="grid gap-2">
                       <Label htmlFor="description">Description</Label>
                       <Textarea id="description" placeholder="Enter description" rows={3} />
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="status">Status</Label>
-                      <Select defaultValue="active">
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="inactive">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {selectedSection?.id === "reviewer-approver" ? (
+                      <div className="grid gap-2">
+                        <Label htmlFor="role">Role</Label>
+                        <Select value={newEntryRole} onValueChange={(v) => setNewEntryRole(v as "REVIEWER" | "APPROVER")}>
+                          <SelectTrigger id="role">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="REVIEWER">Reviewer</SelectItem>
+                            <SelectItem value="APPROVER">Approver</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : (
+                      <div className="grid gap-2">
+                        <Label htmlFor="status">Status</Label>
+                        <Select defaultValue="active">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                   <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                    <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} disabled={isSaving}>
                       Cancel
                     </Button>
-                    <Button onClick={() => setIsAddDialogOpen(false)}>Save</Button>
+                    <Button
+                      onClick={selectedSection?.id === "reviewer-approver" ? handleSaveReviewerApprover : () => setIsAddDialogOpen(false)}
+                      disabled={isSaving}
+                    >
+                      {isSaving ? "Saving..." : "Save"}
+                    </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
@@ -264,8 +409,168 @@ export function MasterSettings() {
                 ))}
             </div>
           </ScrollArea>
+        ) : selectedSection.id === "reviewer-approver" ? (
+          // ── Real Reviewer / Approver section ──────────────────────────────
+          <div className="p-6">
+            {/* stats row */}
+            <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {[
+                { label: "Total",     value: raUsers.length,                                      icon: <Users className="h-4 w-4" /> },
+                { label: "Approvers", value: raUsers.filter((u) => u.role === "APPROVER").length,  icon: <ShieldCheck className="h-4 w-4" /> },
+                { label: "Reviewers", value: raUsers.filter((u) => u.role === "REVIEWER").length,  icon: <UserCheck className="h-4 w-4" /> },
+                { label: "Active",    value: raUsers.filter((u) => u.status === "active").length,  icon: <Eye className="h-4 w-4" /> },
+              ].map((s) => (
+                <div key={s.label} className="flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 p-4">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    {s.icon}
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold leading-none">{s.value}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{s.label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* search + refresh */}
+            <div className="mb-4 flex items-center gap-2">
+              <Input
+                placeholder="Search by name or email..."
+                value={raSearch}
+                onChange={(e) => setRaSearch(e.target.value)}
+                className="max-w-sm bg-background/50"
+              />
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  setRaLoading(true)
+                  getReviewersApprovers()
+                    .then((res) => { if (res.success) setRaUsers(res.users) })
+                    .finally(() => setRaLoading(false))
+                }}
+              >
+                <RefreshCw className={`h-4 w-4 ${raLoading ? "animate-spin" : ""}`} />
+              </Button>
+              <p className="ml-auto text-sm text-muted-foreground">{raUsers.length} users</p>
+            </div>
+
+            {raLoading ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                Loading…
+              </div>
+            ) : (
+              <div className="rounded-lg border border-border/50 overflow-hidden">
+                {/* table header */}
+                <div className="grid grid-cols-12 gap-4 border-b border-border/50 bg-muted/30 px-4 py-3 text-sm font-medium text-muted-foreground">
+                  <div className="col-span-4">Name</div>
+                  <div className="col-span-4">Email</div>
+                  <div className="col-span-2">Role</div>
+                  <div className="col-span-1">Status</div>
+                  <div className="col-span-1 text-right">Actions</div>
+                </div>
+
+                {/* rows */}
+                <div className="divide-y divide-border/50">
+                  {raUsers
+                    .filter((u) =>
+                      u.name.toLowerCase().includes(raSearch.toLowerCase()) ||
+                      u.email.toLowerCase().includes(raSearch.toLowerCase())
+                    )
+                    .map((u) => (
+                      <div key={u.id} className="grid grid-cols-12 items-center gap-4 px-4 py-3">
+                        {/* name + avatar */}
+                        <div className="col-span-4 flex items-center gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                            {u.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+                          </div>
+                          <span className="font-medium text-foreground truncate">{u.name}</span>
+                        </div>
+
+                        {/* email */}
+                        <div className="col-span-4 flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <Mail className="h-3.5 w-3.5 shrink-0" />
+                          <span className="truncate">{u.email}</span>
+                        </div>
+
+                        {/* role badge */}
+                        <div className="col-span-2">
+                          <Badge
+                            className={
+                              u.role === "APPROVER"
+                                ? "bg-primary/15 text-primary border-primary/30"
+                                : "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                            }
+                            variant="outline"
+                          >
+                            {u.role === "APPROVER" ? (
+                              <ShieldCheck className="mr-1 h-3 w-3" />
+                            ) : (
+                              <UserCheck className="mr-1 h-3 w-3" />
+                            )}
+                            {u.role}
+                          </Badge>
+                        </div>
+
+                        {/* status badge */}
+                        <div className="col-span-1">
+                          <Badge
+                            variant="outline"
+                            className={
+                              u.status === "active"
+                                ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-500"
+                                : "border-amber-500/50 bg-amber-500/10 text-amber-500"
+                            }
+                          >
+                            {u.status === "active" ? "Active" : "Inactive"}
+                          </Badge>
+                        </div>
+
+                        {/* actions */}
+                        <div className="col-span-1 flex justify-end">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={async () => {
+                                  const newStatus = u.status === "active" ? "inactive" : "active"
+                                  const res = await updateReviewerApproverStatus(u.id, newStatus)
+                                  if (res.success) {
+                                    setRaUsers((prev) =>
+                                      prev.map((x) => x.id === u.id ? { ...x, status: newStatus } : x)
+                                    )
+                                    toast({ title: "Status updated", description: `${u.name} marked as ${newStatus}` })
+                                  }
+                                }}
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Toggle Status
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </div>
+                    ))}
+
+                  {raUsers.length === 0 && (
+                    <div className="py-10 text-center text-sm text-muted-foreground">
+                      No reviewer or approver users found.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : selectedSection.id === "vehicle-details" || selectedSection.id === "jm-vehicle-detail" ? (
+          // ── Real Vehicles section ─────────────────────────────────────────
+          <VehiclesSection />
         ) : (
-          // Section Detail View with Sample Items
+          // ── Generic mock detail view (all other sections) ─────────────────
           <div className="p-6">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">

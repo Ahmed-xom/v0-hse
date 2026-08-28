@@ -51,7 +51,7 @@ export const masterCategories: MasterCategory[] = [
       { id: "lagging-indicator", name: "Lagging Indicator LTI", description: "Lost Time Injury indicators", itemCount: 8 },
       { id: "parameter-settings", name: "Parameter Settings", description: "System parameters", itemCount: 15 },
       { id: "ticker-message", name: "Ticker Message", description: "Dashboard ticker messages", itemCount: 3 },
-      { id: "reviewer-approver", name: "Reviewer/Approver", description: "Approval workflow settings", itemCount: 18 },
+      { id: "reviewer-approver", name: "Reviewer/Approver", description: "Approval workflow users (Reviewers & Approvers)", itemCount: 3 },
       { id: "password-setting", name: "Password Setting", description: "Password policy configuration", itemCount: 1 },
       { id: "insights-threshold", name: "Insights Threshold Settings", description: "Analytics threshold config", itemCount: 6 },
       { id: "team-lead", name: "Team Lead", description: "Team leadership assignments", itemCount: 22 },
@@ -78,7 +78,7 @@ export const masterCategories: MasterCategory[] = [
       { id: "weather-condition", name: "Weather Condition", description: "Weather condition categories", itemCount: 6 },
       { id: "site", name: "Site", description: "Work site locations", itemCount: 28 },
       { id: "impact", name: "Impact", description: "Impact assessment levels", itemCount: 5 },
-      { id: "vehicle-details", name: "Vehicle Details", description: "Vehicle information", itemCount: 45 },
+      { id: "vehicle-details", name: "Vehicle Details", description: "Fleet vehicles — plate, type, load & KM (live database)", itemCount: 0 },
       { id: "asset-category", name: "Asset Category", description: "Asset categorization", itemCount: 8 },
       { id: "asset", name: "Asset", description: "Company assets", itemCount: 156 },
       { id: "substandard-acts", name: "Substandard Acts", description: "Unsafe act classifications", itemCount: 18 },
@@ -188,7 +188,7 @@ export const masterCategories: MasterCategory[] = [
     icon: "truck",
     items: [
       { id: "driver", name: "Driver", description: "Driver information", itemCount: 38 },
-      { id: "jm-vehicle-detail", name: "Vehicle Detail", description: "Vehicle details for JM", itemCount: 42 },
+      { id: "jm-vehicle-detail", name: "Vehicle Detail", description: "Fleet vehicles for Journey Management (live database)", itemCount: 0 },
       { id: "inspection-checklist", name: "Inspection Checklist", description: "JM inspection checklists", itemCount: 15 },
     ]
   },

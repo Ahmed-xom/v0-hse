@@ -3,10 +3,13 @@ export interface User {
   payrollNo: string
   name: string
   email: string
-  role: "ADMIN SYSTEM" | "MANAGEMENT" | "SITE MANAGER" | "SITE MANAGER - Global" | "HSE ADMIN" | "HSE" | "HR" | "MASTER USER" | "USER" | "USER - JM"
+  role: string
   designation: string
   businessUnit: string
   status: "Active" | "Inactive"
+  approver?: string
+  approverEmail?: string
+  journeyAccess?: boolean
 }
 
 export const users: User[] = [

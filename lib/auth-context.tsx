@@ -1,7 +1,9 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { users } from "./users-data"
+import { getUserJourneyAccess } from "@/app/actions/manage-users"
+import { verifyUserPassword } from "@/app/actions/verify-password"
+import { getUserByEmail } from "@/app/actions/get-user-by-email"
 
 export type UserRole = "ADMIN SYSTEM" | "MANAGEMENT" | "SITE MANAGER" | "HSE ADMIN" | "HSE" | "HR" | "MASTER USER" | "USER" | "USER - JM"
 
@@ -13,20 +15,18 @@ export interface AuthUser {
   designation: string
   businessUnit: string
   status: string
+  journeyAccess: boolean
 }
 
 interface AuthContextType {
   user: AuthUser | null
+  currentUser: AuthUser | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
-  requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-// Default password for all users (in production, this would be hashed in a database)
-const DEFAULT_PASSWORD = "Xom@2026"
 
 // Admin user
 const ADMIN_EMAIL = "xom-it-admin@xomoman.com"
@@ -49,23 +49,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    // Find user by email
-    const foundUser = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    )
+    // Look up user directly from the database (covers both static and dynamically added users)
+    const foundUser = await getUserByEmail(email)
 
     if (!foundUser) {
       return { success: false, error: "User not found. Please check your email address." }
+    }
+
+    if (foundUser.banned) {
+      return { success: false, error: "Your account has been suspended. Please contact your administrator." }
     }
 
     if (foundUser.status !== "Active") {
       return { success: false, error: "Your account is inactive. Please contact your administrator." }
     }
 
-    // Check password (in production, this would verify against hashed password)
-    if (password !== DEFAULT_PASSWORD) {
+    // Verify password against the hashed value stored in neon_auth.account
+    const passwordValid = await verifyUserPassword(email, password)
+    if (!passwordValid) {
       return { success: false, error: "Invalid password. Please try again." }
     }
+
+    // Fetch journey access flag from DB
+    const journeyAccess = await getUserJourneyAccess(email)
 
     const authUser: AuthUser = {
       payrollNumber: foundUser.payrollNo,
@@ -75,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       designation: foundUser.designation,
       businessUnit: foundUser.businessUnit,
       status: foundUser.status,
+      journeyAccess,
     }
 
     setUser(authUser)
@@ -88,39 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("hse_user")
   }
 
-  const requestPasswordReset = async (email: string): Promise<{ success: boolean; error?: string }> => {
-    // Find user by email
-    const foundUser = users.find(
-      (u) => u.email.toLowerCase() === email.toLowerCase()
-    )
-
-    if (!foundUser) {
-      return { success: false, error: "No account found with this email address." }
-    }
-
-    // In production, this would send an actual email
-    // For now, we'll simulate the API call
-    try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
-
-      if (response.ok) {
-        return { success: true }
-      } else {
-        const data = await response.json()
-        return { success: false, error: data.error || "Failed to send reset email." }
-      }
-    } catch {
-      // If API fails, still show success for demo purposes
-      return { success: true }
-    }
-  }
-
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, requestPasswordReset }}>
+    <AuthContext.Provider value={{ user, currentUser: user, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

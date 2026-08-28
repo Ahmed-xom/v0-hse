@@ -98,12 +98,6 @@ export default function SignInPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm text-primary hover:text-primary/80 hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -158,12 +152,7 @@ export default function SignInPage() {
           </CardFooter>
         </Card>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          Need help?{" "}
-          <a href="mailto:hsexomoman@gmail.com" className="text-primary hover:underline">
-            Contact Support
-          </a>
-        </p>
+
       </div>
     </div>
   )
