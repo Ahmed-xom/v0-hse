@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useTheme } from "next-themes"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Bell, Calendar, ChevronDown, LogOut, Menu, Search, Settings, User, X } from "lucide-react"
+import { Bell, Calendar, ChevronDown, LogOut, Menu, Moon, Search, Settings, Sun, User, X } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,8 +30,14 @@ const navItems = [
 
 export function DashboardHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -114,6 +121,18 @@ export function DashboardHeader() {
             <Calendar className="h-4 w-4" />
             <span>Last 30 days</span>
             <ChevronDown className="h-4 w-4" />
+          </Button>
+
+          {/* Theme toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            aria-label={mounted && theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            title={mounted && theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {mounted && theme === "dark" ? <Sun data-icon="inline-start" /> : <Moon data-icon="inline-start" />}
+            <span className="sr-only">Toggle color theme</span>
           </Button>
 
           {/* Notifications */}
