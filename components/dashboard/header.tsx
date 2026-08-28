@@ -3,7 +3,8 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Bell, Calendar, ChevronDown, LogOut, Menu, Search, Settings, Shield, User, X } from "lucide-react"
+import Image from "next/image"
+import { Bell, Calendar, ChevronDown, LogOut, Menu, Search, Settings, User, X } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -52,12 +53,17 @@ export function DashboardHeader() {
       <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo and Brand */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-              <Shield className="h-5 w-5 text-primary-foreground" />
-            </div>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/amnko-hse-logo.png"
+              alt="AMNKO HSE logo"
+              width={44}
+              height={44}
+              className="size-11 rounded-md object-contain"
+              priority
+            />
             <div className="hidden sm:block">
-              <span className="text-lg font-semibold">XOM Oman</span>
+              <span className="text-lg font-semibold tracking-tight">AMNKO HSE</span>
               <Badge variant="secondary" className="ml-2 text-xs">
                 HSE
               </Badge>
