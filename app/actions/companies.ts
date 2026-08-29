@@ -6,11 +6,16 @@ import { auth } from '@/lib/auth'
 import { pool } from '@/lib/db'
 
 async function requireMaster() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) return null
-  const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
-  if (!['MASTER USER', 'ADMIN SYSTEM'].includes(result.rows[0]?.role ?? '')) return null
-  return { ...session.user, role: result.rows[0].role as string }
+  try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!session?.user) return null
+    const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
+    if (!['MASTER USER', 'ADMIN SYSTEM'].includes(result.rows[0]?.role ?? '')) return null
+    return { ...session.user, role: result.rows[0].role as string }
+  } catch {
+    // Server actions can be invoked before the preview cookie is available.
+    return null
+  }
 }
 
 export async function listCompanies() {
