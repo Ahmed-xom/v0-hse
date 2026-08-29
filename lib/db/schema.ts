@@ -56,6 +56,26 @@ export const verification = neonAuthSchema.table('verification', {
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
 })
 
+// Multi-company tenancy
+export const company = pgTable('company', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  code: text('code').unique(),
+  status: text('status').notNull().default('Active'),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
+})
+
+export const companyMembership = pgTable('company_membership', {
+  id: text('id').primaryKey(),
+  companyId: text('company_id').notNull(),
+  userId: uuid('user_id').notNull(),
+  role: text('role').notNull().default('MEMBER'),
+  status: text('status').notNull().default('Active'),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
+}, (table) => ({ membershipUnique: index('company_membership_company_user_idx').on(table.companyId, table.userId) }))
+
 // HSE System Users Table - stores app-specific user data
 export const hseUser = pgTable('hse_user', {
   id: text('id').primaryKey(),
