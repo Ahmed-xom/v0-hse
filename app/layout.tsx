@@ -10,9 +10,37 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'AMNKO HSE',
-  description: 'AMNKO Health, Safety & Environment Management Dashboard',
-  generator: 'v0.app',
+  metadataBase: new URL('https://www.amnkoo.online'),
+  title: 'AMNKO | HSE Management System',
+  description: 'AMNKO is a smart Health, Safety and Environment management system designed to help companies manage safety, risks, inspections, incidents and compliance efficiently.',
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://www.amnkoo.online/',
+    siteName: 'AMNKO HSE',
+    title: 'AMNKO | HSE Management System',
+    description: 'AMNKO is a smart Health, Safety and Environment management system designed to help companies manage safety, risks, inspections, incidents and compliance efficiently.',
+    images: [{ url: '/amnko-hse-logo.png', width: 1200, height: 1200, alt: 'AMNKO HSE logo' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AMNKO | HSE Management System',
+    description: 'Smart Health, Safety and Environment management for safer, more compliant companies.',
+    images: ['/amnko-hse-logo.png'],
+  },
   icons: {
     icon: '/amnko-hse-logo.png',
     apple: '/amnko-hse-logo.png',
