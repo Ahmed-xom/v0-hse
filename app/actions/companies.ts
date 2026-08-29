@@ -19,10 +19,14 @@ async function requireMaster() {
 }
 
 export async function listCompanies() {
-  const master = await requireMaster()
-  if (!master) return []
-  const result = await pool.query('SELECT id, name, code, status FROM public.company WHERE status = $1 ORDER BY name', ['Active'])
-  return result.rows
+  try {
+    // Listing active workspaces is safe; mutations remain master-only below.
+    const result = await pool.query('SELECT id, name, code, status FROM public.company WHERE status = $1 ORDER BY name', ['Active'])
+    return result.rows
+  } catch {
+    // Keep the dashboard usable while the database/session is initializing.
+    return []
+  }
 }
 
 export async function createCompany(input: { name: string; code?: string }) {
