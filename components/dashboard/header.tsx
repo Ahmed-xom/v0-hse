@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { useAuth, isMasterUser } from "@/lib/auth-context"
+import { CompanySwitcher } from "@/components/dashboard/company-switcher"
 
 const navItems = [
   { label: "Overview", href: "#kpi-cards", active: true },
@@ -115,6 +116,8 @@ export function DashboardHeader() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input placeholder="Search..." className="w-64 pl-9" />
           </div>
+
+          <CompanySwitcher />
 
           {/* Date Range */}
           <Button variant="outline" className="hidden gap-2 sm:flex">
