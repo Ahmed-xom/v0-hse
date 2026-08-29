@@ -7,20 +7,22 @@ import { pool } from '@/lib/db'
 
 async function requireMaster() {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) throw new Error('Unauthorized')
+  if (!session?.user) return null
   const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
-  if (!['MASTER USER', 'ADMIN SYSTEM'].includes(result.rows[0]?.role ?? '')) throw new Error('Unauthorized')
+  if (!['MASTER USER', 'ADMIN SYSTEM'].includes(result.rows[0]?.role ?? '')) return null
   return { ...session.user, role: result.rows[0].role as string }
 }
 
 export async function listCompanies() {
-  await requireMaster()
+  const master = await requireMaster()
+  if (!master) return []
   const result = await pool.query('SELECT id, name, code, status FROM public.company WHERE status = $1 ORDER BY name', ['Active'])
   return result.rows
 }
 
 export async function createCompany(input: { name: string; code?: string }) {
   const master = await requireMaster()
+  if (!master) return { success: false, error: 'You must be signed in as a master user to manage companies' }
   const name = input.name.trim()
   if (!name) return { success: false, error: 'Company name is required' }
   const id = `company-${crypto.randomUUID()}`
@@ -34,7 +36,8 @@ export async function createCompany(input: { name: string; code?: string }) {
 }
 
 export async function setCompanyMembership(input: { companyId: string; userId: string; role?: string }) {
-  await requireMaster()
+  const master = await requireMaster()
+  if (!master) return { success: false, error: 'You must be signed in as a master user to manage memberships' }
   await pool.query('INSERT INTO public.company_membership (id, company_id, user_id, role) VALUES ($1, $2, $3, $4) ON CONFLICT (company_id, user_id) DO UPDATE SET role = EXCLUDED.role, status = $5, updated_at = now()', [crypto.randomUUID(), input.companyId, input.userId, input.role || 'MEMBER', 'Active'])
   return { success: true }
 }
