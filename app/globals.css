@@ -139,14 +139,8 @@ html {
     @apply bg-background text-foreground;
   }
 
-  /* Keep the transparent logo legible on either background. */
+  /* AMNKO brand green keeps the transparent logo visible on dark and light surfaces. */
   .logo-adaptive {
-    filter: grayscale(1) brightness(0) invert(1);
-  }
-
-  @media (prefers-color-scheme: light) {
-    .logo-adaptive {
-      filter: grayscale(1) brightness(0);
-    }
+    filter: brightness(0) saturate(100%) invert(38%) sepia(82%) saturate(1045%) hue-rotate(113deg) brightness(91%) contrast(101%);
   }
 }
