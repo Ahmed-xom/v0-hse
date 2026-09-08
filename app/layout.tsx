@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { AuthProvider } from '@/lib/auth-context'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
@@ -61,6 +62,7 @@ export default function RootLayout({
             <Toaster />
           </AuthProvider>
           {process.env.NODE_ENV === 'production' && <Analytics />}
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
