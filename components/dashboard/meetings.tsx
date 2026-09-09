@@ -234,7 +234,7 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
   const scheduled = records.filter((r) => r.status === "Scheduled").length
   const completed = records.filter((r) => r.status === "Completed").length
 
-  const MeetingForm = () => (
+  const renderMeetingForm = () => (
     <Tabs defaultValue="details">
       <TabsList className="w-full grid grid-cols-3">
         <TabsTrigger value="details">Details</TabsTrigger>
