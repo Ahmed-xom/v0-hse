@@ -19,7 +19,7 @@ export function CompanySwitcher() {
   if (!user) return null
   const canManage = ['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(String(user.role).trim().toUpperCase())
   const loadCompanies = async () => {
-    const response = await fetch('/api/companies', { cache: 'no-store' })
+    const response = await fetch('/api/companies', { cache: 'no-store', headers: user.email ? { 'x-user-email': user.email } : undefined })
     if (!response.ok) return
     const availableCompanies: { id: string; name: string; code?: string | null }[] = await response.json()
     setCompanies(availableCompanies)

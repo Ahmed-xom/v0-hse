@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createCompany, listCompanies } from '@/app/actions/companies'
 
-export async function GET() {
-  return NextResponse.json(await listCompanies())
+export async function GET(request: Request) {
+  const actorEmail = request.headers.get('x-user-email') ?? undefined
+  return NextResponse.json(await listCompanies(actorEmail), { headers: { 'Cache-Control': 'no-store' } })
 }
 
 export async function POST(request: Request) {
