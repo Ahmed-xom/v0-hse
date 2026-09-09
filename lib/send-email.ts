@@ -8,7 +8,9 @@ function getResend(): Resend {
   return new Resend(key)
 }
 
-const FROM = 'AMNKO HSE <no-replay@amnkoo.online>'
+const FROM = process.env.RESEND_FROM_EMAIL?.trim()
+  ? (process.env.RESEND_FROM_EMAIL.includes('<') ? process.env.RESEND_FROM_EMAIL.trim() : `AMNKO HSE <${process.env.RESEND_FROM_EMAIL.trim()}>`)
+  : 'AMNKO HSE <no-replay@amnkoo.online>'
 
 export async function sendEmail(opts: {
   to: string | string[]

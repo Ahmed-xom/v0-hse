@@ -24,8 +24,9 @@ export async function POST(request: NextRequest) {
   const baseUrl = process.env.BETTER_AUTH_URL || "https://amnkoo.online"
   const resetLink = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`
   const resend = new Resend(process.env.RESEND_API_KEY)
+  const resetFrom = process.env.RESEND_FROM_EMAIL?.trim() || "no-replay@amnkoo.online"
   const { error } = await resend.emails.send({
-    from: "AMNKO HSE <no-replay@amnkoo.online>",
+    from: resetFrom.includes("<") ? resetFrom : `AMNKO HSE <${resetFrom}>`,
     to: user.email,
     subject: "Reset your AMNKO HSE password",
     html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px"><h1 style="color:#059669">AMNKO HSE</h1><h2>Password reset request</h2><p>Hello ${user.name || "there"},</p><p>Click below to choose a new password. This link expires in one hour.</p><p><a href="${resetLink}" style="display:inline-block;background:#059669;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Reset password</a></p><p>If you did not request this, you can ignore this email.</p></div>`,
