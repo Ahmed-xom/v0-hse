@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
-      from: 'HSE Dashboard <onboarding@resend.dev>',
+      from: 'AMNKO HSE <no-replay@amnkoo.online>',
       to: email,
       subject: 'Password Reset Request - HSE Dashboard',
       html: htmlContent,

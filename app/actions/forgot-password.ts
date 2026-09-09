@@ -164,9 +164,7 @@ export async function requestPasswordReset(email: string) {
         // Once a domain is verified at resend.com/domains, remove RESEND_TEST_EMAIL to send to real users.
         const recipient = process.env.RESEND_TEST_EMAIL || email
         console.log('[v0] Sending password reset email via Resend to:', recipient, '(user:', email, ')')
-        const fromAddress = process.env.RESEND_FROM_EMAIL
-          ? `HSE System <${process.env.RESEND_FROM_EMAIL}>`
-          : 'HSE System <onboarding@resend.dev>'
+        const fromAddress = 'AMNKO HSE <no-replay@amnkoo.online>'
         const { data, error } = await resend.emails.send({
           from: fromAddress,
           to: recipient,
