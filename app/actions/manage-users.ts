@@ -100,7 +100,7 @@ export async function getUsers() {
     if (!session?.user) throw new Error('Unauthorized')
     const current = await pool.query('SELECT role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
     const currentRole = String(current.rows[0]?.role ?? '').trim().toUpperCase()
-    const isGlobalAdmin = ['MASTER USER', 'ADMIN SYSTEM', 'ADMIN'].includes(currentRole)
+    const isGlobalAdmin = ['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(currentRole)
     const companyScope = isGlobalAdmin ? sql`TRUE` : sql`EXISTS (SELECT 1 FROM public.company_membership cm WHERE cm.user_id = u.id AND cm.status = 'Active' AND cm.company_id IN (SELECT company_id FROM public.company_membership WHERE user_id = ${session.user.id} AND status = 'Active'))`
     // Join neon_auth.user with public.employee by email to get designation,
     // payroll_no and business_unit

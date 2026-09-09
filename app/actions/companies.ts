@@ -15,7 +15,7 @@ async function getCurrentUser() {
 async function requireMaster() {
   try {
     const currentUser = await getCurrentUser()
-    if (!currentUser || !['MASTER USER', 'ADMIN SYSTEM'].includes(currentUser.role)) return null
+    if (!currentUser || !['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(String(currentUser.role).trim().toUpperCase())) return null
     return currentUser
   } catch {
     return null
@@ -26,7 +26,7 @@ export async function listCompanies() {
   try {
     const currentUser = await getCurrentUser()
     if (!currentUser) return []
-    const isGlobalAdmin = ['MASTER USER', 'ADMIN SYSTEM'].includes(currentUser.role)
+    const isGlobalAdmin = ['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(String(currentUser.role).trim().toUpperCase())
     const result = isGlobalAdmin
       ? await pool.query('SELECT id, name, code, status FROM public.company WHERE status = $1 ORDER BY name', ['Active'])
       : await pool.query(`SELECT c.id, c.name, c.code, c.status FROM public.company c INNER JOIN public.company_membership m ON m.company_id = c.id WHERE m.user_id = $1 AND m.status = 'Active' AND c.status = 'Active' ORDER BY c.name`, [currentUser.id])
