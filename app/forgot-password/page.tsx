@@ -18,14 +18,29 @@ export default function ForgotPasswordPage() {
     setStatus("loading")
     setMessage("")
 
-    const response = await fetch("/api/auth/forgot-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    })
-    const result = await response.json()
-    setStatus(response.ok ? "success" : "error")
-    setMessage(result.message || result.error || "Unable to send the reset email.")
+    try {
+      const response = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+      const responseText = await response.text()
+      let result: { message?: string; error?: string } = {}
+
+      if (responseText.trim()) {
+        try {
+          result = JSON.parse(responseText)
+        } catch {
+          result = {}
+        }
+      }
+
+      setStatus(response.ok ? "success" : "error")
+      setMessage(result.message || result.error || (response.ok ? "Check your email for the reset link." : "Unable to send the reset email."))
+    } catch {
+      setStatus("error")
+      setMessage("Unable to send the reset email. Please try again.")
+    }
   }
 
   return (
