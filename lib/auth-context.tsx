@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { getUserJourneyAccess } from "@/app/actions/manage-users"
 import { verifyUserPassword } from "@/app/actions/verify-password"
 import { getUserByEmail } from "@/app/actions/get-user-by-email"
+import { createUpcomingMeetingReminders } from "@/app/actions/manage-meetings"
 
 export type UserRole = "ADMIN SYSTEM" | "MANAGEMENT" | "SITE MANAGER" | "HSE ADMIN" | "HSE" | "HR" | "MASTER USER" | "USER" | "USER - JM"
 
@@ -94,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setUser(authUser)
     localStorage.setItem("hse_user", JSON.stringify(authUser))
+    void createUpcomingMeetingReminders(authUser.email)
 
     return { success: true }
   }

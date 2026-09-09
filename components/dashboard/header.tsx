@@ -36,6 +36,11 @@ export function DashboardHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+
+  const handleCalendarDate = (date: Date) => {
+    setSelectedDate(date)
+    window.dispatchEvent(new CustomEvent("hse:create-meeting", { detail: { date: format(date, "yyyy-MM-dd") } }))
+  }
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
   const router = useRouter()
@@ -144,7 +149,7 @@ export function DashboardHeader() {
               <DatePicker {...({
                 mode: "single",
                 selected: selectedDate,
-                onSelect: (date: Date | undefined) => date && setSelectedDate(date),
+                onSelect: (date: Date | undefined) => date && handleCalendarDate(date),
                 defaultMonth: selectedDate,
                 initialFocus: true,
               } as any)} />

@@ -259,6 +259,24 @@ export async function toggleAttendance(
   }
 }
 
+export async function createUpcomingMeetingReminders(userEmail: string): Promise<{ success: boolean; count: number }> {
+  try {
+    const result = await pool.query(
+      `INSERT INTO public.notification (user_email, type, title, body, link)
+       SELECT $1, 'meeting', 'Upcoming meeting reminder', CONCAT('You have ', m.title, ' on ', to_char(m.date, 'DD Mon YYYY at HH24:MI'), '.'), '/?tab=meetings'
+       FROM public.meeting m
+       WHERE m.date >= NOW() AND m.date < NOW() + INTERVAL '7 days'
+         AND (lower(m.created_by_email) = lower($1) OR EXISTS (SELECT 1 FROM public.meeting_attendee ma WHERE ma.meeting_id = m.id AND lower(ma.email) = lower($1)))
+         AND NOT EXISTS (SELECT 1 FROM public.notification n WHERE n.user_email = $1 AND n.type = 'meeting' AND n.title = 'Upcoming meeting reminder' AND n.body LIKE CONCAT('%', m.title, '%') AND n.created_at > NOW() - INTERVAL '1 day')`,
+      [userEmail]
+    )
+    return { success: true, count: result.rowCount ?? 0 }
+  } catch (e: any) {
+    console.error('[v0] createUpcomingMeetingReminders error:', e.message)
+    return { success: false, count: 0 }
+  }
+}
+
 export async function sendMeetingInvites(meetingId: string): Promise<{ success: boolean; sent: number; failed: number }> {
   try {
     const m = await pool.query('SELECT * FROM public.meeting WHERE id = $1', [meetingId])

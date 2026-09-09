@@ -91,12 +91,12 @@ function DateField({ label, value, onChange }: { label: string; value: string; o
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={value ? parseISO(value) : undefined}
-            onSelect={(d) => onChange(d ? format(d, "yyyy-MM-dd") : "")}
-            initialFocus
-          />
+          <Calendar {...({
+            mode: "single",
+            selected: value ? parseISO(value) : undefined,
+            onSelect: (d: Date | undefined) => onChange(d ? format(d, "yyyy-MM-dd") : ""),
+            initialFocus: true,
+          } as any)} />
         </PopoverContent>
       </Popover>
     </div>
@@ -137,6 +137,17 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
   }, [filterType, filterStatus, search, currentUser?.email, activeCompanyId])
 
   useEffect(() => { load() }, [load])
+
+  useEffect(() => {
+    const openMeetingForDate = (event: Event) => {
+      const date = (event as CustomEvent<{ date?: string }>).detail?.date
+      setForm({ ...EMPTY_FORM, date: date ?? EMPTY_FORM.date })
+      setAttendees([])
+      setIsAddOpen(true)
+    }
+    window.addEventListener("hse:create-meeting", openMeetingForDate)
+    return () => window.removeEventListener("hse:create-meeting", openMeetingForDate)
+  }, [])
 
   const openAdd = () => {
     setForm(EMPTY_FORM)
