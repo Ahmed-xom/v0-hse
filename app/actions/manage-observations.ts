@@ -32,15 +32,17 @@ function generateObservationId() {
 
 // Pass userEmail to filter to the user's own observations.
 // Pass undefined (or omit) for admins who should see everything.
-export async function getObservations(userEmail?: string) {
+export async function getObservations(userEmail?: string, companyId?: string) {
   try {
     const rows = await db
       .select()
       .from(observation)
       .where(
-        userEmail
-          ? sql`lower(${observation.observer}) = lower(${userEmail})`
-          : undefined
+        companyId
+          ? sql`${observation.companyId} = ${companyId}`
+          : userEmail
+            ? sql`lower(${observation.observer}) = lower(${userEmail})`
+            : undefined
       )
       .orderBy(desc(observation.createdAt))
 

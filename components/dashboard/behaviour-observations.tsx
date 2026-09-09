@@ -116,7 +116,7 @@ export function BehaviourObservations({ viewAll = false, readOnly = false }: Beh
   const [isViewObservationOpen, setIsViewObservationOpen] = useState(false)
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null)
   const { toast } = useToast()
-  const { user } = useAuth()
+  const { user, activeCompanyId } = useAuth()
   const isAdmin = isAdminRole(user?.role ?? '', user?.email ?? '')
   const itemsPerPage = 10
 
@@ -148,7 +148,7 @@ export function BehaviourObservations({ viewAll = false, readOnly = false }: Beh
       setIsLoading(true)
       try {
         const filterEmail = (isAdmin || viewAll) ? undefined : (user?.email ?? undefined)
-        const result = await getObservations(filterEmail)
+        const result = await getObservations(filterEmail, activeCompanyId ?? undefined)
         if (result.success) {
           setDbObservations(result.data as Observation[])
         }
@@ -159,7 +159,7 @@ export function BehaviourObservations({ viewAll = false, readOnly = false }: Beh
       }
     }
     fetchObservations()
-  }, [refreshKey, isAdmin, viewAll, user?.email])
+  }, [refreshKey, isAdmin, viewAll, user?.email, activeCompanyId])
 
   // Stats
   const stats = useMemo(() => ({

@@ -94,7 +94,7 @@ export async function createUser(input: {
   }
 }
 
-export async function getUsers(actorEmail?: string) {
+export async function getUsers(actorEmail?: string, companyId?: string) {
   try {
     const session = await auth.api.getSession({ headers: await headers() })
     const actor = session?.user
@@ -108,7 +108,11 @@ export async function getUsers(actorEmail?: string) {
     
     const currentRole = String(current.rows[0]?.role ?? '').trim().toUpperCase()
     const isGlobalAdmin = ['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(currentRole)
-    const companyScope = isGlobalAdmin ? sql`TRUE` : sql`EXISTS (SELECT 1 FROM public.company_membership cm WHERE cm.user_id = u.id AND cm.status = 'Active' AND cm.company_id IN (SELECT company_id FROM public.company_membership WHERE user_id = ${actorId} AND status = 'Active'))`
+    const companyScope = companyId
+      ? sql`EXISTS (SELECT 1 FROM public.company_membership cm WHERE cm.user_id = u.id AND cm.status = 'Active' AND cm.company_id = ${companyId})`
+      : isGlobalAdmin
+        ? sql`TRUE`
+        : sql`EXISTS (SELECT 1 FROM public.company_membership cm WHERE cm.user_id = u.id AND cm.status = 'Active' AND cm.company_id IN (SELECT company_id FROM public.company_membership WHERE user_id = ${actorId} AND status = 'Active'))`
     // Join neon_auth.user with public.employee by email to get designation,
     // payroll_no and business_unit
     const rows = await db.execute(sql`

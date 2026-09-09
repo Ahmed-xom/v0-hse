@@ -165,7 +165,7 @@ export function UsersManagement() {
   const [dbUsers, setDbUsers] = useState<User[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const { toast } = useToast()
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, activeCompanyId } = useAuth()
 
   useEffect(() => {
     listCompanies().then((items) => {
@@ -183,7 +183,7 @@ export function UsersManagement() {
         if (refreshKey === 0) {
           await fixMissingAccounts()
         }
-        const result = await getUsers(currentUser?.email)
+        const result = await getUsers(currentUser?.email, activeCompanyId ?? undefined)
         if (result.success && result.data) {
           setDbUsers(result.data as User[])
         } else {
@@ -198,7 +198,7 @@ export function UsersManagement() {
       }
     }
     fetchUsers()
-  }, [refreshKey, currentUser?.email])
+  }, [refreshKey, currentUser?.email, activeCompanyId])
 
   const localUsers = dbUsers
 

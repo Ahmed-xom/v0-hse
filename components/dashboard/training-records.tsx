@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Search,
   Filter,
@@ -126,9 +126,13 @@ export function TrainingRecords() {
     location: "",
   })
   const { toast } = useToast()
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, activeCompanyId } = useAuth()
 
   const isAdmin = currentUser?.role === "ADMIN SYSTEM" || currentUser?.role === "MASTER USER"
+  useEffect(() => {
+    setRecordsList(activeCompanyId === "company-xom-llc" ? trainingRecords : [])
+  }, [activeCompanyId])
+
   const itemsPerPage = 15
 
   // Get unique courses from records
@@ -202,8 +206,8 @@ export function TrainingRecords() {
       result: newRecord.result,
       completedDate: newRecord.completedDate || new Date().toISOString().split("T")[0],
       expiryDate: newRecord.expiryDate,
-      score: newRecord.score,
-      certificateNumber: newRecord.certificateNumber,
+      score: Number(newRecord.score) || 0,
+      certificateNo: newRecord.certificateNumber,
       instructor: newRecord.instructor,
       location: newRecord.location,
     }
