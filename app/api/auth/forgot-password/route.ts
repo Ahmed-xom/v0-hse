@@ -1,80 +1,34 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
+import crypto from "crypto"
+import { db } from "@/lib/db"
+import { sql } from "drizzle-orm"
+
+const secret = () => process.env.BETTER_AUTH_SECRET || "development-reset-secret"
+const sign = (value: string) => crypto.createHmac("sha256", secret()).update(value).digest("hex")
 
 export async function POST(request: NextRequest) {
-  try {
-    const { email } = await request.json()
+  const { email } = await request.json().catch(() => ({}))
+  const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : ""
+  const genericMessage = "If an account with that email exists, a password reset link has been sent."
+  if (!normalizedEmail || !normalizedEmail.includes("@")) return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 })
 
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 })
-    }
+  const result = await db.execute(sql`SELECT id, email, name FROM neon_auth."user" WHERE lower(email) = ${normalizedEmail} LIMIT 1`)
+  const user = ((result as any).rows || [])[0]
+  if (!user) return NextResponse.json({ success: true, message: genericMessage })
 
-    // Use env var if valid, otherwise fall back to the known working key
-    const envKey = process.env.RESEND_API_KEY
-    const apiKey = (envKey && envKey.startsWith('re_') && envKey.length > 10)
-      ? envKey
-      : 're_BfU1qKaZ_2vKWdNozZK19qLvmiqJ6KEf2'
-
-    // Initialize Resend with API key
-    const resend = new Resend(apiKey)
-
-    // Generate a reset token (in production, store this in database with expiry)
-    const resetToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`
-
-    // Email content
-    const htmlContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); padding: 30px; border-radius: 10px 10px 0 0;">
-          <h1 style="color: white; margin: 0; font-size: 24px;">HSE Dashboard</h1>
-          <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Health, Safety & Environment Management</p>
-        </div>
-        <div style="background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; border-top: none;">
-          <h2 style="color: #1e293b; margin-top: 0;">Password Reset Request</h2>
-          <p style="color: #475569; line-height: 1.6;">
-            We received a request to reset your password for your HSE Dashboard account.
-            Click the button below to create a new password:
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetLink}" style="background: #0d9488; color: white; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
-              Reset Password
-            </a>
-          </div>
-          <p style="color: #64748b; font-size: 14px; line-height: 1.6;">
-            If you didn't request this password reset, you can safely ignore this email.
-            This link will expire in 24 hours.
-          </p>
-          <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;" />
-          <p style="color: #94a3b8; font-size: 12px; margin: 0;">
-            This email was sent by HSE Dashboard. Please do not reply to this email.
-          </p>
-        </div>
-      </div>
-    `
-
-    // Send email via Resend
-    const { data, error } = await resend.emails.send({
-      from: 'AMNKO HSE <no-replay@amnkoo.online>',
-      to: email,
-      subject: 'Password Reset Request - HSE Dashboard',
-      html: htmlContent,
-    })
-
-    if (error) {
-      console.error("[v0] Resend email error:", error)
-      return NextResponse.json({
-        success: false,
-        error: `Failed to send password reset email: ${error.message}`
-      }, { status: 500 })
-    }
-
-    console.log("[v0] Password reset email sent successfully:", data?.id)
-    return NextResponse.json({ success: true, message: "Password reset email sent" })
-  } catch (error) {
-    console.error("[v0] Password reset error:", error)
-    return NextResponse.json(
-      { error: "Failed to send password reset email. Please try again later." },
-      { status: 500 }
-    )
-  }
+  const expires = Date.now() + 60 * 60 * 1000
+  const payload = `${user.id}.${user.email}.${expires}`
+  const token = Buffer.from(`${payload}.${sign(payload)}`).toString("base64url")
+  const baseUrl = process.env.BETTER_AUTH_URL || "https://www.amnkoo.online"
+  const resetLink = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const { error } = await resend.emails.send({
+    from: "AMNKO HSE <no-replay@amnkoo.online>",
+    to: user.email,
+    subject: "Reset your AMNKO HSE password",
+    html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px"><h1 style="color:#059669">AMNKO HSE</h1><h2>Password reset request</h2><p>Hello ${user.name || "there"},</p><p>Click below to choose a new password. This link expires in one hour.</p><p><a href="${resetLink}" style="display:inline-block;background:#059669;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Reset password</a></p><p>If you did not request this, you can ignore this email.</p></div>`,
+  })
+  if (error) return NextResponse.json({ error: "Unable to send the reset email right now." }, { status: 500 })
+  return NextResponse.json({ success: true, message: genericMessage })
 }
