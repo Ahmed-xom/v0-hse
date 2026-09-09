@@ -24,7 +24,14 @@ export async function GET(request: Request) {
   if (!actor) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const companyId = await getCompanyId(request, actor.id)
   if (!companyId) return NextResponse.json([])
-  const result = await pool.query("SELECT id, name, code, description, manager, email, type, status, created_at AS \"createdAt\", updated_at AS \"updatedAt\" FROM public.business_unit WHERE company_id = $1 ORDER BY name", [companyId])
+  let result = await pool.query("SELECT id, name, code, description, manager, email, type, status, created_at AS \"createdAt\", updated_at AS \"updatedAt\" FROM public.business_unit WHERE company_id = $1 ORDER BY name", [companyId])
+  if (result.rows.length === 0) {
+    await pool.query(
+      "INSERT INTO public.business_unit (id, company_id, name, code, description, type, status) VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6) ON CONFLICT (company_id, name) DO NOTHING",
+      [companyId, "Default Business Unit", "DEFAULT", "Default business unit", "Business Unit", "Active"]
+    )
+    result = await pool.query("SELECT id, name, code, description, manager, email, type, status, created_at AS \"createdAt\", updated_at AS \"updatedAt\" FROM public.business_unit WHERE company_id = $1 ORDER BY name", [companyId])
+  }
   return NextResponse.json(result.rows, { headers: { "Cache-Control": "no-store" } })
 }
 

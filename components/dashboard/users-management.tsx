@@ -187,7 +187,11 @@ export function UsersManagement() {
       headers: { 'x-user-email': currentUser.email, 'x-company-id': addForm.companyId },
     })
       .then((response) => response.ok ? response.json() : [])
-      .then((items: Array<{ name?: string }>) => setCompanyBusinessUnits(items.map((item) => item.name).filter(Boolean) as string[]))
+      .then((items: Array<{ name?: string }>) => {
+        const names = items.map((item) => item.name).filter(Boolean) as string[]
+        setCompanyBusinessUnits(names)
+        setAddForm((form) => ({ ...form, businessUnit: names.includes(form.businessUnit) ? form.businessUnit : (names[0] ?? "") }))
+      })
   }, [currentUser?.email, addForm.companyId])
 
   // Fetch real users from the database; also repair any orphaned users on first load
@@ -552,7 +556,7 @@ export function UsersManagement() {
                       </div>
                       <div className="grid gap-2">
                         <Label>Company *</Label>
-                        <Select value={addForm.companyId} onValueChange={val => setAddForm(f => ({ ...f, companyId: val }))}>
+                        <Select value={addForm.companyId} onValueChange={val => setAddForm(f => ({ ...f, companyId: val, businessUnit: "" }))}>
                           <SelectTrigger><SelectValue placeholder="Select company" /></SelectTrigger>
                           <SelectContent>{companies.map((company) => <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>)}</SelectContent>
                         </Select>
@@ -572,9 +576,9 @@ export function UsersManagement() {
                         <div className="grid gap-2">
                           <Label>Business Unit</Label>
                           <Select value={addForm.businessUnit} onValueChange={val => setAddForm(f => ({ ...f, businessUnit: val }))}>
-                            <SelectTrigger><SelectValue placeholder="Select unit" /></SelectTrigger>
+                            <SelectTrigger disabled={!addForm.companyId || companyBusinessUnits.length === 0}><SelectValue placeholder={companyBusinessUnits.length ? "Select unit" : "Default Business Unit"} /></SelectTrigger>
                             <SelectContent>
-                              {(companyBusinessUnits.length ? companyBusinessUnits : businessUnits).map((unit) => (
+                              {companyBusinessUnits.map((unit) => (
                                 <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                               ))}
                             </SelectContent>
@@ -700,7 +704,7 @@ export function UsersManagement() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Units</SelectItem>
-                {(companyBusinessUnits.length ? companyBusinessUnits : businessUnits).map((unit) => (
+                {companyBusinessUnits.map((unit) => (
                   <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                 ))}
               </SelectContent>
