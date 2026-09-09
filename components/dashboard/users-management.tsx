@@ -68,6 +68,7 @@ import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword, getPasswordResetHistory } from "@/app/actions/reset-password"
 import { updateUserStatus, updateUserRole, updateUser, fixMissingAccounts, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess, updateJourneyApprover, createUser } from "@/app/actions/manage-users"
 import { isAdminRole } from "@/lib/auth-roles"
+import { listCompanies } from "@/app/actions/companies"
 
 
 const roleColors: Record<string, string> = {
@@ -157,13 +158,21 @@ export function UsersManagement() {
   })
 
   const [addApprover, setAddApprover] = useState({ name: "", email: "" })
-  const [addForm, setAddForm] = useState({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "" })
+  const [addForm, setAddForm] = useState({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "", companyId: "" })
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([])
   const [isAddLoading, setIsAddLoading] = useState(false)
   const [addTempPassword, setAddTempPassword] = useState("")
   const [dbUsers, setDbUsers] = useState<User[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const { toast } = useToast()
   const { user: currentUser } = useAuth()
+
+  useEffect(() => {
+    listCompanies().then((items) => {
+      setCompanies(items)
+      if (items.length === 1) setAddForm((form) => ({ ...form, companyId: items[0].id }))
+    })
+  }, [])
 
   // Fetch real users from the database; also repair any orphaned users on first load
   useEffect(() => {
@@ -522,6 +531,13 @@ export function UsersManagement() {
                         <Label htmlFor="add-designation">Designation</Label>
                         <Input id="add-designation" placeholder="Job title" value={addForm.designation} onChange={e => setAddForm(f => ({ ...f, designation: e.target.value }))} />
                       </div>
+                      <div className="grid gap-2">
+                        <Label>Company *</Label>
+                        <Select value={addForm.companyId} onValueChange={val => setAddForm(f => ({ ...f, companyId: val }))}>
+                          <SelectTrigger><SelectValue placeholder="Select company" /></SelectTrigger>
+                          <SelectContent>{companies.map((company) => <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                           <Label>Role</Label>
@@ -576,14 +592,14 @@ export function UsersManagement() {
                   <Button variant="outline" onClick={() => {
                     setIsAddUserOpen(false)
                     setAddApprover({ name: "", email: "" })
-                    setAddForm({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "" })
+                    setAddForm({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "", companyId: "" })
                     setAddTempPassword("")
                   }}>
                     {addTempPassword ? "Close" : "Cancel"}
                   </Button>
                   {!addTempPassword && (
                     <Button
-                      disabled={isAddLoading || !addForm.name || !addForm.email}
+                      disabled={isAddLoading || !addForm.name || !addForm.email || !addForm.companyId}
                       onClick={async () => {
                         setIsAddLoading(true)
                         const res = await createUser({
@@ -595,6 +611,7 @@ export function UsersManagement() {
                           businessUnit: addForm.businessUnit,
                           approverName: addApprover.name,
                           approverEmail: addApprover.email,
+                          companyId: addForm.companyId,
                         })
                         setIsAddLoading(false)
                         if (res.success) {

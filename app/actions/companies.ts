@@ -5,26 +5,33 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { pool } from '@/lib/db'
 
+async function getCurrentUser() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) return null
+  const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
+  return result.rows[0] ? { id: session.user.id, role: result.rows[0].role as string } : null
+}
+
 async function requireMaster() {
   try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (!session?.user) return null
-    const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
-    if (!['MASTER USER', 'ADMIN SYSTEM'].includes(result.rows[0]?.role ?? '')) return null
-    return { ...session.user, role: result.rows[0].role as string }
+    const currentUser = await getCurrentUser()
+    if (!currentUser || !['MASTER USER', 'ADMIN SYSTEM'].includes(currentUser.role)) return null
+    return currentUser
   } catch {
-    // Server actions can be invoked before the preview cookie is available.
     return null
   }
 }
 
 export async function listCompanies() {
   try {
-    // Listing active workspaces is safe; mutations remain master-only below.
-    const result = await pool.query('SELECT id, name, code, status FROM public.company WHERE status = $1 ORDER BY name', ['Active'])
+    const currentUser = await getCurrentUser()
+    if (!currentUser) return []
+    const isGlobalAdmin = ['MASTER USER', 'ADMIN SYSTEM'].includes(currentUser.role)
+    const result = isGlobalAdmin
+      ? await pool.query('SELECT id, name, code, status FROM public.company WHERE status = $1 ORDER BY name', ['Active'])
+      : await pool.query(`SELECT c.id, c.name, c.code, c.status FROM public.company c INNER JOIN public.company_membership m ON m.company_id = c.id WHERE m.user_id = $1 AND m.status = 'Active' AND c.status = 'Active' ORDER BY c.name`, [currentUser.id])
     return result.rows
   } catch {
-    // Keep the dashboard usable while the database/session is initializing.
     return []
   }
 }

@@ -194,6 +194,7 @@ export const observation = pgTable('observation', {
   date: timestamp('date').default(sql`now()`),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
+  companyId: text('company_id'),
 })
 
 // Training Matrix Table
@@ -302,4 +303,5 @@ export const inspection = pgTable('inspection', {
   status: varchar('status').default('Pending'),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
-})
+  companyId: text('company_id'),
+  })

@@ -6,6 +6,16 @@ import { user } from '@/lib/db/schema'
 import { revalidateTag } from 'next/cache'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
+
+async function requireCompanyAdmin() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) throw new Error('Unauthorized')
+  const result = await pool.query('SELECT role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
+  if (!['MASTER USER', 'ADMIN SYSTEM'].includes(result.rows[0]?.role ?? '')) throw new Error('Only company administrators can manage users')
+  return session.user.id
+}
 
 export async function createUser(input: {
   name: string
@@ -16,11 +26,15 @@ export async function createUser(input: {
   businessUnit: string
   approverName: string
   approverEmail: string
+  companyId: string
 }) {
   try {
-    const { name, email, payrollNo, designation, role, businessUnit, approverName, approverEmail } = input
+    await requireCompanyAdmin()
+    const { name, email, payrollNo, designation, role, businessUnit, approverName, approverEmail, companyId } = input
 
-    if (!name || !email) return { success: false, error: 'Name and email are required' }
+    if (!name || !email || !companyId) return { success: false, error: 'Name, email, and company are required' }
+    const company = await pool.query('SELECT id FROM public.company WHERE id = $1 AND status = \'Active\' LIMIT 1', [companyId])
+    if (company.rows.length === 0) return { success: false, error: 'Selected company was not found' }
 
     // Check if email already exists
     const existing = await pool.query(
@@ -62,6 +76,11 @@ export async function createUser(input: {
       [newUserId, name, email, payrollNo || '', designation || '', businessUnit || '', role || 'USER', now]
     )
 
+    await pool.query(
+      `INSERT INTO public.company_membership (id, company_id, user_id, role) VALUES ($1, $2, $3::uuid, 'MEMBER') ON CONFLICT (company_id, user_id) DO UPDATE SET status = 'Active', updated_at = now()`,
+      [crypto.randomUUID(), companyId, newUserId],
+    )
+
     revalidateTag('users', 'max')
     return {
       success: true,
@@ -76,6 +95,11 @@ export async function createUser(input: {
 
 export async function getUsers() {
   try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!session?.user) throw new Error('Unauthorized')
+    const current = await pool.query('SELECT role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
+    const isGlobalAdmin = ['MASTER USER', 'ADMIN SYSTEM'].includes(current.rows[0]?.role ?? '')
+    const companyScope = isGlobalAdmin ? sql`TRUE` : sql`EXISTS (SELECT 1 FROM public.company_membership cm WHERE cm.user_id = u.id AND cm.status = 'Active' AND cm.company_id IN (SELECT company_id FROM public.company_membership WHERE user_id = ${session.user.id} AND status = 'Active'))`
     // Join neon_auth.user with public.employee by email to get designation,
     // payroll_no and business_unit
     const rows = await db.execute(sql`
@@ -95,6 +119,7 @@ export async function getUsers() {
         COALESCE(e.business_unit, '') AS "businessUnit"
       FROM neon_auth.user u
       LEFT JOIN public.employee e ON lower(e.email) = lower(u.email)
+      WHERE ${companyScope}
       ORDER BY u."createdAt" ASC
     `)
 
