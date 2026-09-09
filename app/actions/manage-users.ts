@@ -13,7 +13,8 @@ async function requireCompanyAdmin() {
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session?.user) throw new Error('Unauthorized')
   const result = await pool.query('SELECT role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
-  if (!['MASTER USER', 'ADMIN SYSTEM'].includes(result.rows[0]?.role ?? '')) throw new Error('Only company administrators can manage users')
+  const role = String(result.rows[0]?.role ?? '').trim().toUpperCase()
+  if (!['MASTER USER', 'ADMIN SYSTEM', 'HSE ADMIN', 'ADMIN'].includes(role)) throw new Error('Only administrators can manage users')
   return session.user.id
 }
 
@@ -158,6 +159,7 @@ export async function updateUserStatus(
   status: 'Active' | 'Inactive'
 ) {
   try {
+    await requireCompanyAdmin()
     if (!userId) {
       return {
         success: false,
@@ -197,6 +199,7 @@ export async function updateUserRole(
   role: string
 ) {
   try {
+    await requireCompanyAdmin()
     if (!userId || !role) {
       return { success: false, error: 'User ID and role are required' }
     }
@@ -235,6 +238,7 @@ export async function updateUser(
   }
 ) {
   try {
+    await requireCompanyAdmin()
     if (!userId) return { success: false, error: 'User ID is required' }
 
     const now = new Date().toISOString()
@@ -341,6 +345,7 @@ export async function fixMissingAccounts(): Promise<{ fixed: number; error?: str
 
 export async function deleteUser(userId: string) {
   try {
+    await requireCompanyAdmin()
     if (!userId) {
       return {
         success: false,
@@ -379,6 +384,7 @@ export async function updateUserApprover(
   approverEmail: string,
 ) {
   try {
+    await requireCompanyAdmin()
     if (!userId) return { success: false, error: 'User ID is required' }
     await db.execute(sql`
       UPDATE neon_auth.user
@@ -396,6 +402,7 @@ export async function updateUserApprover(
 
 export async function updateJourneyAccess(userId: string, grant: boolean) {
   try {
+    await requireCompanyAdmin()
     if (!userId) return { success: false, error: 'User ID is required' }
     await db.execute(sql`
       UPDATE neon_auth."user"
@@ -412,6 +419,7 @@ export async function updateJourneyAccess(userId: string, grant: boolean) {
 
 export async function updateJourneyApprover(userId: string, grant: boolean) {
   try {
+    await requireCompanyAdmin()
     if (!userId) return { success: false, error: 'User ID is required' }
     await db.execute(sql`
       UPDATE neon_auth."user"
