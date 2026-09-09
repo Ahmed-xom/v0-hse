@@ -12,6 +12,7 @@ export async function POST(request: Request) {
     const result = await createCompany({
       name: String(input.name ?? ''),
       code: input.code ? String(input.code) : undefined,
+      actorEmail: request.headers.get('x-user-email') ?? undefined,
     })
     return NextResponse.json(result, { status: result.success ? 200 : 403 })
   } catch {

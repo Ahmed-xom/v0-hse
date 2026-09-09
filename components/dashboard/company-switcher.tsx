@@ -32,11 +32,17 @@ export function CompanySwitcher() {
     setIsCreating(true)
     const response = await fetch('/api/companies', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(user.email ? { 'x-user-email': user.email } : {}) },
       body: JSON.stringify({ name }),
     })
     const result = await response.json()
-    if (result.success && result.company) { setCompanies((items) => [...items, result.company]); setActiveCompanyId(result.company.id); setName('') }
+    if (result.success && result.company) {
+      setCompanies((items) => [...items, result.company])
+      setActiveCompanyId(result.company.id)
+      setName('')
+    } else {
+      window.alert(result.error || 'Could not create company')
+    }
     setIsCreating(false)
   }
   return <Popover open={open} onOpenChange={(value) => { setOpen(value); if (value) loadCompanies() }}>

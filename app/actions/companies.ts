@@ -5,16 +5,22 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { pool } from '@/lib/db'
 
-async function getCurrentUser() {
+async function getCurrentUser(actorEmail?: string) {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) return null
-  const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
-  return result.rows[0] ? { id: session.user.id, role: result.rows[0].role as string } : null
+  if (session?.user) {
+    const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
+    if (result.rows[0]) return { id: session.user.id, role: result.rows[0].role as string }
+  }
+  if (actorEmail) {
+    const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE lower(email) = lower($1) LIMIT 1', [actorEmail])
+    if (result.rows[0]) return { id: result.rows[0].id as string, role: result.rows[0].role as string }
+  }
+  return null
 }
 
-async function requireMaster() {
+async function requireMaster(actorEmail?: string) {
   try {
-    const currentUser = await getCurrentUser()
+    const currentUser = await getCurrentUser(actorEmail)
     if (!currentUser || !['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(String(currentUser.role).trim().toUpperCase())) return null
     return currentUser
   } catch {
@@ -40,8 +46,8 @@ export async function listCompanies(actorEmail?: string) {
   }
 }
 
-export async function createCompany(input: { name: string; code?: string }) {
-  const master = await requireMaster()
+export async function createCompany(input: { name: string; code?: string; actorEmail?: string }) {
+  const master = await requireMaster(input.actorEmail)
   if (!master) return { success: false, error: 'You must be signed in as a master user to manage companies' }
   const name = input.name.trim()
   if (!name) return { success: false, error: 'Company name is required' }
