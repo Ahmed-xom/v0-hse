@@ -5,7 +5,7 @@ import { useTheme } from "next-themes"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Bell, Calendar, ChevronDown, LogOut, Menu, Moon, Search, Settings, Sun, User, X } from "lucide-react"
+import { Bell, Calendar, ChevronDown, Home, LogOut, Menu, Moon, Search, Settings, Sun, User, X } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -66,6 +66,14 @@ export function DashboardHeader() {
         {/* Logo and Brand */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              aria-label="Go to home page"
+              title="Home"
+              className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <Home className="size-4" />
+            </Link>
             <Image
               src="/amnko-hse-logo.png"
               alt="AMNKO HSE logo"
