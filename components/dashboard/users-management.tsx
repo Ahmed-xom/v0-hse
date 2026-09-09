@@ -160,6 +160,7 @@ export function UsersManagement() {
   const [addApprover, setAddApprover] = useState({ name: "", email: "" })
   const [addForm, setAddForm] = useState({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "", companyId: "" })
   const [companies, setCompanies] = useState<{ id: string; name: string }[]>([])
+  const [companyBusinessUnits, setCompanyBusinessUnits] = useState<string[]>([])
   const [isAddLoading, setIsAddLoading] = useState(false)
   const [addTempPassword, setAddTempPassword] = useState("")
   const [dbUsers, setDbUsers] = useState<User[]>([])
@@ -168,11 +169,26 @@ export function UsersManagement() {
   const { user: currentUser, activeCompanyId } = useAuth()
 
   useEffect(() => {
-    listCompanies().then((items) => {
+    if (!currentUser?.email) return
+    listCompanies(currentUser.email).then((items) => {
       setCompanies(items)
-      if (items.length === 1) setAddForm((form) => ({ ...form, companyId: items[0].id }))
+      const selectedCompany = activeCompanyId ?? (items.length === 1 ? items[0].id : undefined)
+      if (selectedCompany) setAddForm((form) => ({ ...form, companyId: selectedCompany }))
     })
-  }, [])
+  }, [currentUser?.email, activeCompanyId])
+
+  useEffect(() => {
+    if (!currentUser?.email || !addForm.companyId) {
+      setCompanyBusinessUnits([])
+      return
+    }
+    fetch('/api/business-units', {
+      cache: 'no-store',
+      headers: { 'x-user-email': currentUser.email, 'x-company-id': addForm.companyId },
+    })
+      .then((response) => response.ok ? response.json() : [])
+      .then((items: Array<{ name?: string }>) => setCompanyBusinessUnits(items.map((item) => item.name).filter(Boolean) as string[]))
+  }, [currentUser?.email, addForm.companyId])
 
   // Fetch real users from the database; also repair any orphaned users on first load
   useEffect(() => {
@@ -558,7 +574,7 @@ export function UsersManagement() {
                           <Select value={addForm.businessUnit} onValueChange={val => setAddForm(f => ({ ...f, businessUnit: val }))}>
                             <SelectTrigger><SelectValue placeholder="Select unit" /></SelectTrigger>
                             <SelectContent>
-                              {businessUnits.map((unit) => (
+                              {(companyBusinessUnits.length ? companyBusinessUnits : businessUnits).map((unit) => (
                                 <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                               ))}
                             </SelectContent>
@@ -684,7 +700,7 @@ export function UsersManagement() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Units</SelectItem>
-                {businessUnits.map((unit) => (
+                {(companyBusinessUnits.length ? companyBusinessUnits : businessUnits).map((unit) => (
                   <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                 ))}
               </SelectContent>
@@ -1183,7 +1199,7 @@ export function UsersManagement() {
                       <SelectValue placeholder="Select business unit..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {businessUnits.map((bu) => (
+                      {(companyBusinessUnits.length ? companyBusinessUnits : businessUnits).map((bu) => (
                         <SelectItem key={bu} value={bu}>{bu}</SelectItem>
                       ))}
                     </SelectContent>
