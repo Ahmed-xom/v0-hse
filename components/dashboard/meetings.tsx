@@ -109,7 +109,7 @@ interface MeetingsProps {
 
 export function Meetings({ readOnly = false }: MeetingsProps) {
   const { toast } = useToast()
-  const { currentUser } = useAuth()
+  const { currentUser, activeCompanyId } = useAuth()
   const canEdit = !readOnly && (
     isAdminRole(currentUser?.role ?? "", currentUser?.email ?? "") ||
     isReviewerRole(currentUser?.role ?? "")
@@ -131,10 +131,10 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
 
   const load = useCallback(async () => {
     setIsLoading(true)
-    const data = await getMeetings({ type: filterType, status: filterStatus, search })
+    const data = await getMeetings({ type: filterType, status: filterStatus, search, userEmail: currentUser?.email, companyId: activeCompanyId ?? undefined, isCompanyMaster: isAdminRole(currentUser?.role ?? "", currentUser?.email ?? "") })
     setRecords(data)
     setIsLoading(false)
-  }, [filterType, filterStatus, search])
+  }, [filterType, filterStatus, search, currentUser?.email, activeCompanyId])
 
   useEffect(() => { load() }, [load])
 
@@ -145,7 +145,7 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
   }
 
   const openEdit = async (r: Meeting) => {
-    const full = await getMeetingWithAttendees(r.id)
+    const full = await getMeetingWithAttendees(r.id, currentUser?.email, activeCompanyId ?? undefined, isAdminRole(currentUser?.role ?? "", currentUser?.email ?? ""))
     setSelected(full ?? r)
     const dt = r.date ? new Date(r.date) : null
     setForm({
@@ -171,7 +171,7 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
   }
 
   const openView = async (r: Meeting) => {
-    const full = await getMeetingWithAttendees(r.id)
+    const full = await getMeetingWithAttendees(r.id, currentUser?.email, activeCompanyId ?? undefined, isAdminRole(currentUser?.role ?? "", currentUser?.email ?? ""))
     setSelected(full ?? r)
     setIsViewOpen(true)
   }
@@ -193,8 +193,8 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
     const { time: _time, ...formWithoutTime } = form
     const validAttendees = attendees.filter((a) => a.name.trim())
     const res = isEdit && selected
-      ? await updateMeeting(selected.id, { ...formWithoutTime, date: combinedDate, updated_at: undefined }, validAttendees)
-      : await createMeeting({ ...formWithoutTime, date: combinedDate, created_by: currentUser?.name }, validAttendees)
+      ? await updateMeeting(selected.id, { ...formWithoutTime, date: combinedDate, updated_at: undefined, ...(isAdminRole(currentUser?.role ?? "", currentUser?.email ?? "") && activeCompanyId ? { company_id: activeCompanyId } : {}) }, validAttendees)
+      : await createMeeting({ ...formWithoutTime, date: combinedDate, created_by: currentUser?.name, created_by_email: currentUser?.email, company_id: activeCompanyId }, validAttendees)
     setIsSaving(false)
     if (res.success) {
       const emailsSent = (res as any).emailsSent ?? 0
