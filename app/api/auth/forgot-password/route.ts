@@ -30,6 +30,22 @@ export async function POST(request: NextRequest) {
   const smtpHost = process.env.SMTP_HOST
   const smtpFrom = process.env.SMTP_FROM || process.env.RESEND_FROM_EMAIL || smtpUser
 
+  if (process.env.RESEND_API_KEY) {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    const resetFrom = process.env.RESEND_FROM_EMAIL?.trim() || "no-replay@amnkoo.online"
+    const { error } = await resend.emails.send(
+      {
+        from: resetFrom.includes("<") ? resetFrom : `AMNKO HSE <${resetFrom}>`,
+        to: user.email,
+        subject: "Reset your AMNKO HSE password",
+        html: emailHtml,
+      },
+      { idempotencyKey: `password-reset/${user.id}/${expires}` },
+    )
+    if (!error) return NextResponse.json({ success: true, message: genericMessage })
+    console.error("[password-reset] Resend delivery failed:", error.message)
+  }
+
   if (smtpUser && smtpPass && smtpHost) {
     try {
       const transporter = nodemailer.createTransport({
@@ -51,20 +67,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (process.env.RESEND_API_KEY) {
-    const resend = new Resend(process.env.RESEND_API_KEY)
-    const resetFrom = process.env.RESEND_FROM_EMAIL?.trim() || "no-replay@amnkoo.online"
-    const { error } = await resend.emails.send({
-      from: resetFrom.includes("<") ? resetFrom : `AMNKO HSE <${resetFrom}>`,
-      to: user.email,
-      subject: "Reset your AMNKO HSE password",
-      html: emailHtml,
-    })
-    if (!error) return NextResponse.json({ success: true, message: genericMessage })
-    console.error("[password-reset] Resend delivery failed:", error.message)
-  }
-
-  return NextResponse.json({ error: "Unable to send the reset email right now." }, { status: 500 })
+  return NextResponse.json({ error: "Email delivery is not configured. Verify no-replay@amnkoo.online in Resend or enable SMTP AUTH for the mailbox." }, { status: 503 })
   } catch {
     return NextResponse.json({ error: "Unable to send the reset email right now." }, { status: 500 })
   }
