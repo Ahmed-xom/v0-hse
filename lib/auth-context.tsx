@@ -8,6 +8,7 @@ import { getUserByEmail } from "@/app/actions/get-user-by-email"
 export type UserRole = "ADMIN SYSTEM" | "MANAGEMENT" | "SITE MANAGER" | "HSE ADMIN" | "HSE" | "HR" | "MASTER USER" | "USER" | "USER - JM"
 
 export interface AuthUser {
+  id: string
   payrollNumber: string
   name: string
   email: string
@@ -24,6 +25,7 @@ interface AuthContextType {
   isLoading: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
+  updateProfile: (updates: Pick<AuthUser, "name" | "designation" | "businessUnit">) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -74,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const journeyAccess = await getUserJourneyAccess(email)
 
     const authUser: AuthUser = {
+      id: foundUser.id,
       payrollNumber: foundUser.payrollNo,
       name: foundUser.name,
       email: foundUser.email,
@@ -95,8 +98,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("hse_user")
   }
 
+  const updateProfile = (updates: Pick<AuthUser, "name" | "designation" | "businessUnit">) => {
+    setUser((current) => {
+      if (!current) return current
+      const updated = { ...current, ...updates }
+      localStorage.setItem("hse_user", JSON.stringify(updated))
+      return updated
+    })
+  }
+
   return (
-    <AuthContext.Provider value={{ user, currentUser: user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, currentUser: user, isLoading, login, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   )
