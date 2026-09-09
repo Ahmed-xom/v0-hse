@@ -183,7 +183,7 @@ export function UsersManagement() {
         if (refreshKey === 0) {
           await fixMissingAccounts()
         }
-        const result = await getUsers()
+        const result = await getUsers(currentUser?.email)
         if (result.success && result.data) {
           setDbUsers(result.data as User[])
         } else {
@@ -198,7 +198,7 @@ export function UsersManagement() {
       }
     }
     fetchUsers()
-  }, [refreshKey])
+  }, [refreshKey, currentUser?.email])
 
   const localUsers = dbUsers
 
