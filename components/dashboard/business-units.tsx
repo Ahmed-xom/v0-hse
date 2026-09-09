@@ -61,11 +61,13 @@ import { useAuth } from "@/lib/auth-context"
 export function BusinessUnits() {
   const { toast } = useToast()
   const { user, activeCompanyId } = useAuth()
+  const isCompanyAdmin = ["MASTER USER", "ADMIN SYSTEM", "ADMIN", "HSE ADMIN"].includes(String(user?.role ?? "").toUpperCase())
   const [units, setUnits] = useState<BusinessUnit[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [editingUnit, setEditingUnit] = useState<BusinessUnit | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   useEffect(() => {
     if (!user?.email) return
@@ -151,6 +153,30 @@ export function BusinessUnits() {
     }
   }
 
+  const handleEditUnit = (unit: BusinessUnit) => {
+    setEditingUnit(unit)
+    setFormData({ name: unit.name, description: unit.description, email: unit.email, type: unit.type, status: unit.status, manager: (unit as BusinessUnit & { manager?: string }).manager ?? "" })
+    setIsAddDialogOpen(true)
+  }
+
+  const handleUpdateUnit = async () => {
+    if (!editingUnit) return
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/business-units', { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...(user?.email ? { 'x-user-email': user.email } : {}), ...(activeCompanyId ? { 'x-company-id': activeCompanyId } : {}) }, body: JSON.stringify({ id: editingUnit.id, ...formData }) })
+      const result = await response.json()
+      if (!result.success) throw new Error(result.error)
+      setUnits((current) => current.map((unit) => unit.id === editingUnit.id ? { ...unit, ...result.data } : unit))
+      toast({ title: 'Success', description: 'Business unit updated successfully' })
+      setIsAddDialogOpen(false)
+      setEditingUnit(null)
+    } catch (error) {
+      toast({ title: 'Error', description: error instanceof Error ? error.message : 'Failed to update business unit', variant: 'destructive' })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleDeleteUnit = async (id: string) => {
     if (confirm("Are you sure you want to delete this business unit?")) {
       try {
@@ -224,7 +250,7 @@ export function BusinessUnits() {
               </p>
             </div>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          {isCompanyAdmin && <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if (!open) setEditingUnit(null) }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2">
                 <Plus className="h-4 w-4" />
@@ -233,7 +259,7 @@ export function BusinessUnits() {
             </DialogTrigger>
             <DialogContent className="bg-card border-border">
               <DialogHeader>
-                <DialogTitle className="text-foreground">Add Business Unit</DialogTitle>
+                <DialogTitle className="text-foreground">{editingUnit ? "Edit Business Unit" : "Add Business Unit"}</DialogTitle>
                 <DialogDescription>
                   Create a new business unit or group in the organization.
                 </DialogDescription>
@@ -308,12 +334,12 @@ export function BusinessUnits() {
                 <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleAddUnit} disabled={isLoading}>
-                  {isLoading ? "Creating..." : "Create Unit"}
+                <Button onClick={editingUnit ? handleUpdateUnit : handleAddUnit} disabled={isLoading}>
+                  {isLoading ? "Saving..." : editingUnit ? "Save Changes" : "Create Unit"}
                 </Button>
               </DialogFooter>
             </DialogContent>
-          </Dialog>
+          </Dialog>}
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -512,10 +538,10 @@ export function BusinessUnits() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-card border-border">
-                        <DropdownMenuItem className="gap-2">
+                        {isCompanyAdmin && <DropdownMenuItem className="gap-2" onClick={() => handleEditUnit(unit)}>
                           <Edit className="h-4 w-4" />
                           Edit Unit
-                        </DropdownMenuItem>
+                        </DropdownMenuItem>}
                         <DropdownMenuItem className="gap-2">
                           <Mail className="h-4 w-4" />
                           Send Email
@@ -525,10 +551,10 @@ export function BusinessUnits() {
                           View Members
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-border" />
-                        <DropdownMenuItem className="gap-2 text-red-400 focus:text-red-400">
+                        {isCompanyAdmin && <DropdownMenuItem className="gap-2 text-red-400 focus:text-red-400" onClick={() => handleDeleteUnit(unit.id)}>
                           <Trash2 className="h-4 w-4" />
                           Delete Unit
-                        </DropdownMenuItem>
+                        </DropdownMenuItem>}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

@@ -10,6 +10,10 @@ async function getActor(request: Request) {
   return result.rows[0] ?? null
 }
 
+async function requireAdmin(actor: { role?: string }) {
+  return ADMIN_ROLES.includes(String(actor.role ?? "").trim().toUpperCase())
+}
+
 async function getCompanyId(request: Request, actorId: string) {
   const requested = request.headers.get("x-company-id")
   const actor = await pool.query('SELECT role FROM neon_auth."user" WHERE id = $1 LIMIT 1', [actorId])
@@ -38,6 +42,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const actor = await getActor(request)
   if (!actor) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+  if (!(await requireAdmin(actor))) return NextResponse.json({ success: false, error: "Only company admins can create business units" }, { status: 403 })
   const companyId = await getCompanyId(request, actor.id)
   if (!companyId) return NextResponse.json({ success: false, error: "No company assigned" }, { status: 400 })
   const body = await request.json()
@@ -46,9 +51,23 @@ export async function POST(request: Request) {
   return NextResponse.json({ success: true, data: result.rows[0] })
 }
 
+export async function PATCH(request: Request) {
+  const actor = await getActor(request)
+  if (!actor || !(await requireAdmin(actor))) return NextResponse.json({ success: false, error: "Only company admins can edit business units" }, { status: 403 })
+  const companyId = await getCompanyId(request, actor.id)
+  const body = await request.json()
+  if (!companyId || !body.id || !body.name || !body.email) return NextResponse.json({ success: false, error: "Name and email are required" }, { status: 400 })
+  const result = await pool.query(
+    "UPDATE public.business_unit SET name = $1, description = $2, manager = $3, email = $4, type = $5, status = $6, updated_at = now() WHERE id = $7 AND company_id = $8 RETURNING id, name, description, manager, email, type, status",
+    [body.name, body.description ?? null, body.manager ?? null, body.email, body.type ?? "Business Unit", body.status ?? "Active", body.id, companyId]
+  )
+  return result.rows[0] ? NextResponse.json({ success: true, data: result.rows[0] }) : NextResponse.json({ success: false, error: "Business unit not found" }, { status: 404 })
+}
+
 export async function DELETE(request: Request) {
   const actor = await getActor(request)
   if (!actor) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+  if (!(await requireAdmin(actor))) return NextResponse.json({ success: false, error: "Only company admins can delete business units" }, { status: 403 })
   const companyId = await getCompanyId(request, actor.id)
   const id = new URL(request.url).searchParams.get("id")
   if (!companyId || !id) return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 })
