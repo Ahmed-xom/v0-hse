@@ -635,6 +635,7 @@ export function UsersManagement() {
                           approverName: addApprover.name,
                           approverEmail: addApprover.email,
                           companyId: addForm.companyId,
+                          actorEmail: currentUser?.email,
                         })
                         setIsAddLoading(false)
                         if (res.success) {

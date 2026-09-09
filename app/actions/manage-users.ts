@@ -9,13 +9,17 @@ import crypto from 'crypto'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 
-async function requireCompanyAdmin() {
+async function requireCompanyAdmin(actorEmail?: string) {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) throw new Error('Unauthorized')
-  const result = await pool.query('SELECT role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
-  const role = String(result.rows[0]?.role ?? '').trim().toUpperCase()
+  const result = session?.user
+    ? await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
+    : actorEmail
+      ? await pool.query('SELECT id, role FROM neon_auth.user WHERE lower(email) = lower($1) LIMIT 1', [actorEmail])
+      : { rows: [] }
+  if (!result.rows[0]) throw new Error('Unauthorized')
+  const role = String(result.rows[0].role ?? '').trim().toUpperCase()
   if (!['MASTER USER', 'ADMIN SYSTEM', 'HSE ADMIN', 'ADMIN'].includes(role)) throw new Error('Only administrators can manage users')
-  return session.user.id
+  return result.rows[0].id as string
 }
 
 export async function createUser(input: {
@@ -28,9 +32,10 @@ export async function createUser(input: {
   approverName: string
   approverEmail: string
   companyId: string
+  actorEmail?: string
 }) {
   try {
-    await requireCompanyAdmin()
+    await requireCompanyAdmin(input.actorEmail)
     const { name, email, payrollNo, designation, role, businessUnit, approverName, approverEmail, companyId } = input
 
     if (!name || !email || !companyId) return { success: false, error: 'Name, email, and company are required' }
