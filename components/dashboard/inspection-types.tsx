@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth } from "@/lib/auth-context"
 import { Search, ClipboardList, Plus, MoreHorizontal, Edit, Trash2, Eye, FileText } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -42,12 +43,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { inspectionTypes, categoryConfig, type InspectionType } from "@/lib/inspection-types-data"
 
 export function InspectionTypes() {
+  const { activeCompanyId } = useAuth()
+  const companyInspectionTypes = activeCompanyId === "company-xom-llc" ? inspectionTypes : []
   const [searchQuery, setSearchQuery] = useState("")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [selectedInspection, setSelectedInspection] = useState<InspectionType | null>(null)
 
-  const filteredTypes = inspectionTypes.filter((type) => {
+  const filteredTypes = companyInspectionTypes.filter((type) => {
     const matchesSearch =
       type.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       type.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -57,12 +60,12 @@ export function InspectionTypes() {
   })
 
   const categoryCounts = {
-    all: inspectionTypes.length,
-    safety: inspectionTypes.filter((t) => t.category === "safety").length,
-    equipment: inspectionTypes.filter((t) => t.category === "equipment").length,
-    compliance: inspectionTypes.filter((t) => t.category === "compliance").length,
-    environmental: inspectionTypes.filter((t) => t.category === "environmental").length,
-    general: inspectionTypes.filter((t) => t.category === "general").length,
+    all: companyInspectionTypes.length,
+    safety: companyInspectionTypes.filter((t) => t.category === "safety").length,
+    equipment: companyInspectionTypes.filter((t) => t.category === "equipment").length,
+    compliance: companyInspectionTypes.filter((t) => t.category === "compliance").length,
+    environmental: companyInspectionTypes.filter((t) => t.category === "environmental").length,
+    general: companyInspectionTypes.filter((t) => t.category === "general").length,
   }
 
   return (
@@ -265,7 +268,7 @@ export function InspectionTypes() {
 
         {/* Results count */}
         <div className="text-sm text-muted-foreground">
-          Showing {filteredTypes.length} of {inspectionTypes.length} inspection types
+          Showing {filteredTypes.length} of {companyInspectionTypes.length} inspection types
         </div>
       </CardContent>
 

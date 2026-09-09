@@ -5,7 +5,7 @@ import { useTheme } from "next-themes"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
-import { Bell, Calendar, ChevronDown, LogOut, Menu, Moon, Search, Settings, Sun, User, X } from "lucide-react"
+import { Bell, Calendar, ChevronDown, Home, LogOut, Menu, Moon, Search, Settings, Sun, User, X } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,9 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { useAuth, isMasterUser } from "@/lib/auth-context"
 import { CompanySwitcher } from "@/components/dashboard/company-switcher"
+import { Calendar as DatePicker } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
 
 const navItems = [
   { label: "Overview", href: "#kpi-cards", active: true },
@@ -32,6 +35,12 @@ const navItems = [
 export function DashboardHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+
+  const handleCalendarDate = (date: Date) => {
+    setSelectedDate(date)
+    window.dispatchEvent(new CustomEvent("hse:create-meeting", { detail: { date: format(date, "yyyy-MM-dd") } }))
+  }
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
   const router = useRouter()
@@ -62,6 +71,14 @@ export function DashboardHeader() {
         {/* Logo and Brand */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              aria-label="Go to home page"
+              title="Home"
+              className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <Home className="size-4" />
+            </Link>
             <Image
               src="/amnko-hse-logo.png"
               alt="AMNKO HSE logo"
@@ -120,11 +137,24 @@ export function DashboardHeader() {
           <CompanySwitcher />
 
           {/* Date Range */}
-          <Button variant="outline" className="hidden gap-2 sm:flex">
-            <Calendar className="h-4 w-4" />
-            <span>Last 30 days</span>
-            <ChevronDown className="h-4 w-4" />
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="hidden gap-2 sm:flex" aria-label="Choose date range">
+                <Calendar className="h-4 w-4" />
+                <span>{format(selectedDate, "dd MMM yyyy")}</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-auto p-0">
+              <DatePicker {...({
+                mode: "single",
+                selected: selectedDate,
+                onSelect: (date: Date | undefined) => date && handleCalendarDate(date),
+                defaultMonth: selectedDate,
+                initialFocus: true,
+              } as any)} />
+            </PopoverContent>
+          </Popover>
 
           {/* Theme toggle */}
           <Button
@@ -201,10 +231,12 @@ export function DashboardHeader() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/profile">
+              <User className="mr-2 h-4 w-4" />
+              Profile
+            </Link>
+          </DropdownMenuItem>
               {showSettings && (
                 <DropdownMenuItem asChild>
                   <Link href="/settings">

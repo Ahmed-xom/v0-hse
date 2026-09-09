@@ -11,11 +11,26 @@ export async function getMeetings(filter?: {
   type?: string
   status?: string
   search?: string
+  userEmail?: string
+  companyId?: string
+  isCompanyMaster?: boolean
 }): Promise<Meeting[]> {
   try {
     let query = `SELECT * FROM public.meeting WHERE 1=1`
     const params: any[] = []
     let idx = 1
+
+    if (filter?.userEmail) {
+      if (filter.isCompanyMaster && filter.companyId) {
+        query += ` AND (company_id = $${idx} OR company_id IS NULL)`
+        params.push(filter.companyId)
+        idx++
+      } else {
+        query += ` AND (lower(created_by_email) = lower($${idx}) OR EXISTS (SELECT 1 FROM public.meeting_attendee ma WHERE ma.meeting_id = meeting.id AND lower(ma.email) = lower($${idx})))`
+        params.push(filter.userEmail)
+        idx++
+      }
+    }
 
     if (filter?.type && filter.type !== 'all') {
       query += ` AND meeting_type = $${idx++}`
@@ -45,9 +60,12 @@ export async function getMeetings(filter?: {
   }
 }
 
-export async function getMeetingWithAttendees(id: string): Promise<Meeting | null> {
+export async function getMeetingWithAttendees(id: string, userEmail?: string, companyId?: string, isCompanyMaster = false): Promise<Meeting | null> {
   try {
-    const m = await pool.query('SELECT * FROM public.meeting WHERE id = $1', [id])
+    const m = await pool.query(
+      `SELECT * FROM public.meeting WHERE id = $1 AND (${isCompanyMaster && companyId ? 'company_id = $2 OR company_id IS NULL' : '(lower(created_by_email) = lower($2) OR EXISTS (SELECT 1 FROM public.meeting_attendee ma WHERE ma.meeting_id = meeting.id AND lower(ma.email) = lower($2)))'})`,
+      isCompanyMaster && companyId ? [id, companyId] : [id, userEmail ?? '']
+    )
     if (!m.rows.length) return null
     const att = await pool.query(
       'SELECT * FROM public.meeting_attendee WHERE meeting_id = $1 ORDER BY name',
@@ -81,6 +99,8 @@ export async function createMeeting(
     action_items?: string
     status?: MeetingStatus
     created_by?: string
+    created_by_email?: string
+    company_id?: string | null
   },
   attendees?: { name: string; email?: string; role?: string; department?: string }[]
 ): Promise<{ success: boolean; id?: string; emailsSent?: number; error?: string }> {
@@ -91,8 +111,8 @@ export async function createMeeting(
     const res = await client.query(
       `INSERT INTO public.meeting
         (ref_no, meeting_type, title, date, location, business_unit, chairperson, chairperson_email,
-         agenda, minutes, action_items, status, created_by)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+         agenda, minutes, action_items, status, created_by, created_by_email, company_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
        RETURNING id`,
       [
         ref_no,
@@ -108,6 +128,8 @@ export async function createMeeting(
         data.action_items ?? null,
         data.status ?? 'Scheduled',
         data.created_by ?? null,
+        data.created_by_email ?? null,
+        data.company_id ?? null,
       ]
     )
     const meetingId = res.rows[0].id
@@ -234,6 +256,24 @@ export async function toggleAttendance(
     return { success: true }
   } catch (e: any) {
     return { success: false }
+  }
+}
+
+export async function createUpcomingMeetingReminders(userEmail: string): Promise<{ success: boolean; count: number }> {
+  try {
+    const result = await pool.query(
+      `INSERT INTO public.notification (user_email, type, title, body, link)
+       SELECT $1, 'meeting', 'Upcoming meeting reminder', CONCAT('You have ', m.title, ' on ', to_char(m.date, 'DD Mon YYYY at HH24:MI'), '.'), '/?tab=meetings'
+       FROM public.meeting m
+       WHERE m.date >= NOW() AND m.date < NOW() + INTERVAL '7 days'
+         AND (lower(m.created_by_email) = lower($1) OR EXISTS (SELECT 1 FROM public.meeting_attendee ma WHERE ma.meeting_id = m.id AND lower(ma.email) = lower($1)))
+         AND NOT EXISTS (SELECT 1 FROM public.notification n WHERE n.user_email = $1 AND n.type = 'meeting' AND n.title = 'Upcoming meeting reminder' AND n.body LIKE CONCAT('%', m.title, '%') AND n.created_at > NOW() - INTERVAL '1 day')`,
+      [userEmail]
+    )
+    return { success: true, count: result.rowCount ?? 0 }
+  } catch (e: any) {
+    console.error('[v0] createUpcomingMeetingReminders error:', e.message)
+    return { success: false, count: 0 }
   }
 }
 

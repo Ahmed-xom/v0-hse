@@ -130,8 +130,9 @@ export const employee = pgTable('employee', {
 // Business Units Table
 export const businessUnit = pgTable('business_unit', {
   id: text('id').primaryKey(),
-  name: varchar('name').unique().notNull(),
-  code: varchar('code').unique(),
+  companyId: text('company_id').notNull(),
+  name: varchar('name').notNull(),
+  code: varchar('code'),
   description: text('description'),
   manager: varchar('manager'),
   status: varchar('status').default('Active'),
@@ -194,6 +195,7 @@ export const observation = pgTable('observation', {
   date: timestamp('date').default(sql`now()`),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
+  companyId: text('company_id'),
 })
 
 // Training Matrix Table
@@ -302,4 +304,5 @@ export const inspection = pgTable('inspection', {
   status: varchar('status').default('Pending'),
   createdAt: timestamp('createdAt').notNull().default(sql`now()`),
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
-})
+  companyId: text('company_id'),
+  })

@@ -3,8 +3,19 @@
 import { pool } from '@/lib/db'
 import { revalidateTag } from 'next/cache'
 import { unstable_cache } from 'next/cache'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
+
+async function getCompanyScope() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user) throw new Error('Unauthorized')
+  const current = await pool.query('SELECT role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
+  const isGlobalAdmin = ['MASTER USER', 'ADMIN SYSTEM'].includes(current.rows[0]?.role ?? '')
+  return { userId: session.user.id, isGlobalAdmin }
+}
 
 export async function getObservations() {
+  const scope = await getCompanyScope()
   return unstable_cache(
     async () => {
       try {
@@ -24,6 +35,7 @@ export async function getObservations() {
             e.email as created_by_email
           FROM public.observation o
           LEFT JOIN public.employee e ON o."userId" = e.id
+          WHERE ${scope.isGlobalAdmin ? 'TRUE' : `o.company_id IN (SELECT company_id FROM public.company_membership WHERE user_id = '${scope.userId}' AND status = 'Active')`}
           ORDER BY o."createdAt" DESC
         `)
         return result.rows
@@ -38,6 +50,7 @@ export async function getObservations() {
 }
 
 export async function getInspections() {
+  const scope = await getCompanyScope()
   return unstable_cache(
     async () => {
       try {
@@ -56,6 +69,7 @@ export async function getInspections() {
             e.email as created_by_email
           FROM public.inspection i
           LEFT JOIN public.employee e ON i."userId" = e.id
+          WHERE ${scope.isGlobalAdmin ? 'TRUE' : `i.company_id IN (SELECT company_id FROM public.company_membership WHERE user_id = '${scope.userId}' AND status = 'Active')`}
           ORDER BY i."createdAt" DESC
         `)
         return result.rows
@@ -81,8 +95,8 @@ export async function createObservation(data: {
     console.log('[v0] Creating observation:', data)
 
     const result = await pool.query(
-      `INSERT INTO public.observation (id, "userId", "observationTypeId", "businessUnitId", description, severity, location, status, "createdAt", "updatedAt")
-       VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+      `INSERT INTO public.observation (id, "userId", "observationTypeId", "businessUnitId", description, severity, location, status, company_id, "createdAt", "updatedAt")
+       VALUES (gen_random_uuid()::text, $1, $2, $3, $4, $5, $6, $7, (SELECT company_id FROM public.employee WHERE id = $1), NOW(), NOW())
        RETURNING *`,
       [data.userId, data.observationTypeId, data.businessUnitId, data.description, data.severity, data.location, 'Open']
     )
@@ -110,9 +124,10 @@ export async function updateObservationStatus(observationId: string, status: str
   try {
     console.log('[v0] Updating observation status:', { observationId, status })
 
+    const scope = await getCompanyScope()
     const result = await pool.query(
-      `UPDATE public.observation SET status = $1, "updatedAt" = NOW() WHERE id = $2 RETURNING *`,
-      [status, observationId]
+      `UPDATE public.observation SET status = $1, "updatedAt" = NOW() WHERE id = $2 AND ($3 = TRUE OR company_id IN (SELECT company_id FROM public.company_membership WHERE user_id = $4 AND status = 'Active')) RETURNING *`,
+      [status, observationId, scope.isGlobalAdmin, scope.userId]
     )
 
     if (result.rows.length === 0) {

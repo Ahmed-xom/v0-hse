@@ -4,10 +4,12 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { getUserJourneyAccess } from "@/app/actions/manage-users"
 import { verifyUserPassword } from "@/app/actions/verify-password"
 import { getUserByEmail } from "@/app/actions/get-user-by-email"
+import { createUpcomingMeetingReminders } from "@/app/actions/manage-meetings"
 
 export type UserRole = "ADMIN SYSTEM" | "MANAGEMENT" | "SITE MANAGER" | "HSE ADMIN" | "HSE" | "HR" | "MASTER USER" | "USER" | "USER - JM"
 
 export interface AuthUser {
+  id: string
   payrollNumber: string
   name: string
   email: string
@@ -24,6 +26,9 @@ interface AuthContextType {
   isLoading: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   logout: () => void
+  updateProfile: (updates: Pick<AuthUser, "name" | "designation" | "businessUnit">) => void
+  activeCompanyId: string | null
+  setActiveCompanyId: (companyId: string) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -33,10 +38,13 @@ const ADMIN_EMAIL = "xom-it-admin@xomoman.com"
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
+  const [activeCompanyId, setActiveCompanyIdState] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     // Check for existing session
+    const storedCompanyId = localStorage.getItem("hse_active_company")
+    if (storedCompanyId) setActiveCompanyIdState(storedCompanyId)
     const storedUser = localStorage.getItem("hse_user")
     if (storedUser) {
       try {
@@ -74,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const journeyAccess = await getUserJourneyAccess(email)
 
     const authUser: AuthUser = {
+      id: foundUser.id,
       payrollNumber: foundUser.payrollNo,
       name: foundUser.name,
       email: foundUser.email,
@@ -86,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setUser(authUser)
     localStorage.setItem("hse_user", JSON.stringify(authUser))
+    void createUpcomingMeetingReminders(authUser.email)
 
     return { success: true }
   }
@@ -95,8 +105,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("hse_user")
   }
 
+  const updateProfile = (updates: Pick<AuthUser, "name" | "designation" | "businessUnit">) => {
+    setUser((current) => {
+      if (!current) return current
+      const updated = { ...current, ...updates }
+      localStorage.setItem("hse_user", JSON.stringify(updated))
+      return updated
+    })
+  }
+
+  const setActiveCompanyId = (companyId: string) => {
+    setActiveCompanyIdState(companyId)
+    localStorage.setItem("hse_active_company", companyId)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, currentUser: user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, currentUser: user, isLoading, login, logout, updateProfile, activeCompanyId, setActiveCompanyId }}>
       {children}
     </AuthContext.Provider>
   )

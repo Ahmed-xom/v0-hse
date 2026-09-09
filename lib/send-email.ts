@@ -1,14 +1,22 @@
 import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 
-function getResend(): Resend {
+function getResend(): Resend | null {
   const key = process.env.RESEND_API_KEY
-  if (!key || !key.startsWith('re_')) {
-    throw new Error('RESEND_API_KEY is not configured')
-  }
-  return new Resend(key)
+  return key?.startsWith('re_') ? new Resend(key) : null
 }
 
-const FROM = 'HSE System <onboarding@resend.dev>'
+function getSmtpTransporter() {
+  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) return null
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT ?? 587),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+  })
+}
+
+const FROM = process.env.RESEND_FROM_EMAIL?.trim() || process.env.SMTP_FROM?.trim() || process.env.SENDGRID_FROM_EMAIL?.trim() || 'AMNKO HSE <no-reply@amnkoo.online>'
 
 export async function sendEmail(opts: {
   to: string | string[]
@@ -16,19 +24,20 @@ export async function sendEmail(opts: {
   html: string
 }): Promise<{ sent: boolean; error?: string }> {
   try {
-    const resend = getResend()
     const globalBcc = process.env.ALERT_BCC_EMAIL?.trim() || undefined
-    const { error } = await resend.emails.send({
-      from: FROM,
-      to: opts.to,
-      bcc: globalBcc,
-      subject: opts.subject,
-      html: opts.html,
-    })
-    if (error) {
-      return { sent: false, error: (error as any).message ?? JSON.stringify(error) }
+    const resend = getResend()
+    if (resend) {
+      const { error } = await resend.emails.send({ from: FROM, to: opts.to, bcc: globalBcc, subject: opts.subject, html: opts.html })
+      if (!error) return { sent: true }
     }
-    return { sent: true }
+
+    const smtp = getSmtpTransporter()
+    if (smtp) {
+      await smtp.sendMail({ from: FROM, to: opts.to, bcc: globalBcc, subject: opts.subject, html: opts.html })
+      return { sent: true }
+    }
+
+    return { sent: false, error: 'No valid email provider is configured' }
   } catch (err) {
     return { sent: false, error: err instanceof Error ? err.message : String(err) }
   }

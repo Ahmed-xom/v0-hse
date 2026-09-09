@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Building2,
   Search,
@@ -54,17 +54,28 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
-import { businessUnitsData, type BusinessUnit } from "@/lib/business-units-data"
-import { addBusinessUnit, deleteBusinessUnit, updateBusinessUnit } from "@/app/actions/manage-business-units"
+import type { BusinessUnit } from "@/lib/business-units-data"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/auth-context"
 
 export function BusinessUnits() {
   const { toast } = useToast()
+  const { user, activeCompanyId } = useAuth()
+  const isCompanyAdmin = ["MASTER USER", "ADMIN SYSTEM", "ADMIN", "HSE ADMIN"].includes(String(user?.role ?? "").toUpperCase())
+  const [units, setUnits] = useState<BusinessUnit[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [editingUnit, setEditingUnit] = useState<BusinessUnit | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  useEffect(() => {
+    if (!user?.email) return
+    fetch("/api/business-units", { headers: { "x-user-email": user.email, ...(activeCompanyId ? { "x-company-id": activeCompanyId } : {}) }, cache: "no-store" })
+      .then((response) => response.ok ? response.json() : [])
+      .then(setUnits)
+  }, [user?.email, activeCompanyId])
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -74,7 +85,7 @@ export function BusinessUnits() {
     manager: "",
   })
 
-  const filteredUnits = businessUnitsData.filter((unit) => {
+  const filteredUnits = units.filter((unit) => {
     const matchesSearch =
       unit.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       unit.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -105,16 +116,18 @@ export function BusinessUnits() {
 
     setIsLoading(true)
     try {
-      const result = await addBusinessUnit({
+      const response = await fetch('/api/business-units', { method: 'POST', headers: { 'Content-Type': 'application/json', ...(user?.email ? { 'x-user-email': user.email } : {}), ...(activeCompanyId ? { 'x-company-id': activeCompanyId } : {}) }, body: JSON.stringify({
         name: formData.name,
         description: formData.description,
         email: formData.email,
         type: formData.type as "Business Unit" | "Group",
         status: formData.status as "Active" | "Inactive",
         manager: formData.manager || undefined,
-      })
+      }) })
+      const result = await response.json()
 
       if (result.success) {
+        setUnits((current) => [...current, { ...result.data, underName: "", trainingCompliance: null, equipmentCompliance: null, createdAt: new Date().toISOString(), createdBy: user?.name ?? "Admin" }])
         toast({
           title: "Success",
           description: "Business unit added successfully",
@@ -140,10 +153,36 @@ export function BusinessUnits() {
     }
   }
 
+  const handleEditUnit = (unit: BusinessUnit) => {
+    setEditingUnit(unit)
+    setFormData({ name: unit.name, description: unit.description, email: unit.email, type: unit.type, status: unit.status, manager: (unit as BusinessUnit & { manager?: string }).manager ?? "" })
+    setIsAddDialogOpen(true)
+  }
+
+  const handleUpdateUnit = async () => {
+    if (!editingUnit) return
+    setIsLoading(true)
+    try {
+      const response = await fetch('/api/business-units', { method: 'PATCH', headers: { 'Content-Type': 'application/json', ...(user?.email ? { 'x-user-email': user.email } : {}), ...(activeCompanyId ? { 'x-company-id': activeCompanyId } : {}) }, body: JSON.stringify({ id: editingUnit.id, ...formData }) })
+      const result = await response.json()
+      if (!result.success) throw new Error(result.error)
+      setUnits((current) => current.map((unit) => unit.id === editingUnit.id ? { ...unit, ...result.data } : unit))
+      toast({ title: 'Success', description: 'Business unit updated successfully' })
+      setIsAddDialogOpen(false)
+      setEditingUnit(null)
+    } catch (error) {
+      toast({ title: 'Error', description: error instanceof Error ? error.message : 'Failed to update business unit', variant: 'destructive' })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleDeleteUnit = async (id: string) => {
     if (confirm("Are you sure you want to delete this business unit?")) {
       try {
-        const result = await deleteBusinessUnit(id)
+        const response = await fetch(`/api/business-units?id=${encodeURIComponent(id)}`, { method: 'DELETE', headers: user?.email ? { 'x-user-email': user.email, ...(activeCompanyId ? { 'x-company-id': activeCompanyId } : {}) } : undefined })
+        const result = await response.json()
+        if (result.success) setUnits((current) => current.filter((unit) => unit.id !== id))
         if (result.success) {
           toast({
             title: "Success",
@@ -166,20 +205,20 @@ export function BusinessUnits() {
     }
   }
 
-  const activeUnits = businessUnitsData.filter((u) => u.status === "Active").length
-  const groupCount = businessUnitsData.filter((u) => u.type === "Group").length
-  const businessUnitCount = businessUnitsData.filter((u) => u.type === "Business Unit").length
+  const activeUnits = units.filter((u) => u.status === "Active").length
+  const groupCount = units.filter((u) => u.type === "Group").length
+  const businessUnitCount = units.filter((u) => u.type === "Business Unit").length
   const avgTrainingCompliance = Math.round(
-    businessUnitsData
+    units
       .filter((u) => u.trainingCompliance !== null)
       .reduce((sum, u) => sum + (u.trainingCompliance || 0), 0) /
-      businessUnitsData.filter((u) => u.trainingCompliance !== null).length
+      units.filter((u) => u.trainingCompliance !== null).length
   )
   const avgEquipmentCompliance = Math.round(
-    businessUnitsData
+    units
       .filter((u) => u.equipmentCompliance !== null)
       .reduce((sum, u) => sum + (u.equipmentCompliance || 0), 0) /
-      businessUnitsData.filter((u) => u.equipmentCompliance !== null).length
+      units.filter((u) => u.equipmentCompliance !== null).length
   )
 
   const getComplianceColor = (value: number | null) => {
@@ -211,7 +250,7 @@ export function BusinessUnits() {
               </p>
             </div>
           </div>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          {isCompanyAdmin && <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if (!open) setEditingUnit(null) }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2">
                 <Plus className="h-4 w-4" />
@@ -220,7 +259,7 @@ export function BusinessUnits() {
             </DialogTrigger>
             <DialogContent className="bg-card border-border">
               <DialogHeader>
-                <DialogTitle className="text-foreground">Add Business Unit</DialogTitle>
+                <DialogTitle className="text-foreground">{editingUnit ? "Edit Business Unit" : "Add Business Unit"}</DialogTitle>
                 <DialogDescription>
                   Create a new business unit or group in the organization.
                 </DialogDescription>
@@ -295,12 +334,12 @@ export function BusinessUnits() {
                 <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleAddUnit} disabled={isLoading}>
-                  {isLoading ? "Creating..." : "Create Unit"}
+                <Button onClick={editingUnit ? handleUpdateUnit : handleAddUnit} disabled={isLoading}>
+                  {isLoading ? "Saving..." : editingUnit ? "Save Changes" : "Create Unit"}
                 </Button>
               </DialogFooter>
             </DialogContent>
-          </Dialog>
+          </Dialog>}
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -311,7 +350,7 @@ export function BusinessUnits() {
               <Building2 className="h-4 w-4" />
               <span className="text-xs font-medium">Total Units</span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-foreground">{businessUnitsData.length}</p>
+            <p className="mt-2 text-2xl font-bold text-foreground">{units.length}</p>
           </div>
           <div className="rounded-lg border border-border/50 bg-background/50 p-4">
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -499,10 +538,10 @@ export function BusinessUnits() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-card border-border">
-                        <DropdownMenuItem className="gap-2">
+                        {isCompanyAdmin && <DropdownMenuItem className="gap-2" onClick={() => handleEditUnit(unit)}>
                           <Edit className="h-4 w-4" />
                           Edit Unit
-                        </DropdownMenuItem>
+                        </DropdownMenuItem>}
                         <DropdownMenuItem className="gap-2">
                           <Mail className="h-4 w-4" />
                           Send Email
@@ -512,10 +551,10 @@ export function BusinessUnits() {
                           View Members
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-border" />
-                        <DropdownMenuItem className="gap-2 text-red-400 focus:text-red-400">
+                        {isCompanyAdmin && <DropdownMenuItem className="gap-2 text-red-400 focus:text-red-400" onClick={() => handleDeleteUnit(unit.id)}>
                           <Trash2 className="h-4 w-4" />
                           Delete Unit
-                        </DropdownMenuItem>
+                        </DropdownMenuItem>}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

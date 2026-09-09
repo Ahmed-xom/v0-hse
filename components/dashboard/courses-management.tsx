@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Search,
   Filter,
@@ -102,9 +102,13 @@ export function CoursesManagement() {
     recertificationMonths: 0,
   })
   const { toast } = useToast()
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, activeCompanyId } = useAuth()
 
   const isAdmin = currentUser?.role === "ADMIN SYSTEM" || currentUser?.role === "MASTER USER"
+  useEffect(() => {
+    setCoursesList(activeCompanyId === "company-xom-llc" ? courses : [])
+  }, [activeCompanyId])
+
   const itemsPerPage = 15
 
   // Stats

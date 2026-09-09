@@ -68,6 +68,7 @@ import { businessUnits, roles, type User } from "@/lib/users-data"
 import { resetUserPassword, getPasswordResetHistory } from "@/app/actions/reset-password"
 import { updateUserStatus, updateUserRole, updateUser, fixMissingAccounts, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess, updateJourneyApprover, createUser } from "@/app/actions/manage-users"
 import { isAdminRole } from "@/lib/auth-roles"
+import { listCompanies } from "@/app/actions/companies"
 
 
 const roleColors: Record<string, string> = {
@@ -157,13 +158,41 @@ export function UsersManagement() {
   })
 
   const [addApprover, setAddApprover] = useState({ name: "", email: "" })
-  const [addForm, setAddForm] = useState({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "" })
+  const [addForm, setAddForm] = useState({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "", companyId: "" })
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([])
+  const [companyBusinessUnits, setCompanyBusinessUnits] = useState<string[]>([])
   const [isAddLoading, setIsAddLoading] = useState(false)
   const [addTempPassword, setAddTempPassword] = useState("")
   const [dbUsers, setDbUsers] = useState<User[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
   const { toast } = useToast()
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, activeCompanyId } = useAuth()
+
+  useEffect(() => {
+    if (!currentUser?.email) return
+    listCompanies(currentUser.email).then((items) => {
+      setCompanies(items)
+      const selectedCompany = activeCompanyId ?? (items.length === 1 ? items[0].id : undefined)
+      if (selectedCompany) setAddForm((form) => ({ ...form, companyId: selectedCompany }))
+    })
+  }, [currentUser?.email, activeCompanyId])
+
+  useEffect(() => {
+    if (!currentUser?.email || !addForm.companyId) {
+      setCompanyBusinessUnits([])
+      return
+    }
+    fetch('/api/business-units', {
+      cache: 'no-store',
+      headers: { 'x-user-email': currentUser.email, 'x-company-id': addForm.companyId },
+    })
+      .then((response) => response.ok ? response.json() : [])
+      .then((items: Array<{ name?: string }>) => {
+        const names = items.map((item) => item.name).filter(Boolean) as string[]
+        setCompanyBusinessUnits(names)
+        setAddForm((form) => ({ ...form, businessUnit: names.includes(form.businessUnit) ? form.businessUnit : (names[0] ?? "") }))
+      })
+  }, [currentUser?.email, addForm.companyId])
 
   // Fetch real users from the database; also repair any orphaned users on first load
   useEffect(() => {
@@ -174,20 +203,22 @@ export function UsersManagement() {
         if (refreshKey === 0) {
           await fixMissingAccounts()
         }
-        const result = await getUsers()
+        const result = await getUsers(currentUser?.email, activeCompanyId ?? undefined)
         if (result.success && result.data) {
           setDbUsers(result.data as User[])
         } else {
           console.error("[v0] Failed to load users:", result.error)
+          toast({ title: "Unable to load users", description: result.error || "The database users could not be loaded.", variant: "destructive" })
         }
       } catch (err) {
         console.error("[v0] Error loading users:", err)
+        toast({ title: "Unable to load users", description: "The database users could not be loaded.", variant: "destructive" })
       } finally {
         setIsLoadingUsers(false)
       }
     }
     fetchUsers()
-  }, [refreshKey])
+  }, [refreshKey, currentUser?.email, activeCompanyId])
 
   const localUsers = dbUsers
 
@@ -476,13 +507,14 @@ export function UsersManagement() {
               <Download className="h-4 w-4" />
               Export
             </Button>
-            <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add User
-                </Button>
-              </DialogTrigger>
+            {isAdmin && (
+              <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add User
+                  </Button>
+                </DialogTrigger>
               <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                   <DialogTitle>Add New Team Member</DialogTitle>
@@ -522,6 +554,13 @@ export function UsersManagement() {
                         <Label htmlFor="add-designation">Designation</Label>
                         <Input id="add-designation" placeholder="Job title" value={addForm.designation} onChange={e => setAddForm(f => ({ ...f, designation: e.target.value }))} />
                       </div>
+                      <div className="grid gap-2">
+                        <Label>Company *</Label>
+                        <Select value={addForm.companyId} onValueChange={val => setAddForm(f => ({ ...f, companyId: val, businessUnit: "" }))}>
+                          <SelectTrigger><SelectValue placeholder="Select company" /></SelectTrigger>
+                          <SelectContent>{companies.map((company) => <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>)}</SelectContent>
+                        </Select>
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                           <Label>Role</Label>
@@ -537,9 +576,9 @@ export function UsersManagement() {
                         <div className="grid gap-2">
                           <Label>Business Unit</Label>
                           <Select value={addForm.businessUnit} onValueChange={val => setAddForm(f => ({ ...f, businessUnit: val }))}>
-                            <SelectTrigger><SelectValue placeholder="Select unit" /></SelectTrigger>
+                            <SelectTrigger disabled={!addForm.companyId || companyBusinessUnits.length === 0}><SelectValue placeholder={companyBusinessUnits.length ? "Select unit" : "Default Business Unit"} /></SelectTrigger>
                             <SelectContent>
-                              {businessUnits.map((unit) => (
+                              {companyBusinessUnits.map((unit) => (
                                 <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                               ))}
                             </SelectContent>
@@ -576,14 +615,14 @@ export function UsersManagement() {
                   <Button variant="outline" onClick={() => {
                     setIsAddUserOpen(false)
                     setAddApprover({ name: "", email: "" })
-                    setAddForm({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "" })
+                    setAddForm({ name: "", email: "", payrollNo: "", designation: "", role: "", businessUnit: "", companyId: "" })
                     setAddTempPassword("")
                   }}>
                     {addTempPassword ? "Close" : "Cancel"}
                   </Button>
                   {!addTempPassword && (
                     <Button
-                      disabled={isAddLoading || !addForm.name || !addForm.email}
+                      disabled={isAddLoading || !addForm.name || !addForm.email || !addForm.companyId}
                       onClick={async () => {
                         setIsAddLoading(true)
                         const res = await createUser({
@@ -595,6 +634,8 @@ export function UsersManagement() {
                           businessUnit: addForm.businessUnit,
                           approverName: addApprover.name,
                           approverEmail: addApprover.email,
+                          companyId: addForm.companyId,
+                          actorEmail: currentUser?.email,
                         })
                         setIsAddLoading(false)
                         if (res.success) {
@@ -611,7 +652,8 @@ export function UsersManagement() {
                   )}
                 </DialogFooter>
               </DialogContent>
-            </Dialog>
+              </Dialog>
+            )}
           </div>
         </div>
 
@@ -663,7 +705,7 @@ export function UsersManagement() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Units</SelectItem>
-                {businessUnits.map((unit) => (
+                {companyBusinessUnits.map((unit) => (
                   <SelectItem key={unit} value={unit}>{unit}</SelectItem>
                 ))}
               </SelectContent>
@@ -821,10 +863,12 @@ export function UsersManagement() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleEditUser(user)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit User
-                          </DropdownMenuItem>
+                          {isAdmin && (
+                            <DropdownMenuItem onClick={() => handleEditUser(user)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit User
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem>
                             <Mail className="mr-2 h-4 w-4" />
                             Send Email
@@ -850,14 +894,18 @@ export function UsersManagement() {
                               </DropdownMenuItem>
                             </>
                           )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-destructive"
-                            onClick={() => handleDeleteUser(user)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            {user.status === 'Active' ? 'Deactivate' : 'Delete'}
-                          </DropdownMenuItem>
+                          {isAdmin && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => handleDeleteUser(user)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {user.status === 'Active' ? 'Deactivate' : 'Delete'}
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -1156,7 +1204,7 @@ export function UsersManagement() {
                       <SelectValue placeholder="Select business unit..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {businessUnits.map((bu) => (
+                      {(companyBusinessUnits.length ? companyBusinessUnits : businessUnits).map((bu) => (
                         <SelectItem key={bu} value={bu}>{bu}</SelectItem>
                       ))}
                     </SelectContent>

@@ -6,8 +6,8 @@ import { desc, eq } from 'drizzle-orm'
 import { sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
-import { Resend } from 'resend'
 import bcrypt from 'bcryptjs'
+import { sendEmail } from '@/lib/send-email'
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -140,24 +140,14 @@ export async function resetUserPassword(
         </div>
       `
 
-      // Use env key if real, otherwise fall back to known working key
-      const isReal = (v?: string) => !!v && v.length > 10 && v.startsWith('re_')
-      const resendKey = isReal(process.env.RESEND_API_KEY)
-        ? process.env.RESEND_API_KEY!
-        : 're_R6qRD5C4_Dthy79ZUMtjsW7GQBq2NmpuG'
-
-      const resend = new Resend(resendKey)
-      const fromAddress = 'HSE System <onboarding@resend.dev>'
-
-      const { error } = await resend.emails.send({
-        from: fromAddress,
+      const result = await sendEmail({
         to: targetUser.email,
         subject: 'Your HSE System password has been reset',
         html: htmlContent,
       })
 
-      if (error) {
-        emailErrorMsg = `Email not delivered: ${(error as any).message ?? JSON.stringify(error)}`
+      if (!result.sent) {
+        emailErrorMsg = `Email not delivered: ${result.error ?? 'Unknown email provider error'}`
       } else {
         emailSent = true
       }

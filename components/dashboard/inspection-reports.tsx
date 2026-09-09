@@ -237,7 +237,7 @@ export function InspectionReports({ readOnly = false }: InspectionReportsProps) 
     </div>
   )
 
-  const FormBody = ({ d, set }: { d: FormData; set: React.Dispatch<React.SetStateAction<FormData>> }) => (
+  const renderFormBody = (d: FormData, set: React.Dispatch<React.SetStateAction<FormData>>) => (
     <div className="grid gap-4 py-2 max-h-[65vh] overflow-y-auto pr-1">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
@@ -476,7 +476,7 @@ export function InspectionReports({ readOnly = false }: InspectionReportsProps) 
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>New Inspection</DialogTitle></DialogHeader>
-          <FormBody d={form} set={setForm} />
+          {renderFormBody(form, setForm)}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
             <Button onClick={() => handleSave(false)} disabled={isSaving}>
@@ -490,7 +490,7 @@ export function InspectionReports({ readOnly = false }: InspectionReportsProps) 
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>Edit Inspection</DialogTitle></DialogHeader>
-          <FormBody d={form} set={setForm} />
+          {renderFormBody(form, setForm)}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
             <Button onClick={() => handleSave(true)} disabled={isSaving}>

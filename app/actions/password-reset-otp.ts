@@ -126,7 +126,7 @@ export async function sendPasswordResetOtp(email: string) {
     // Use a verified custom from-address if configured, else onboarding@resend.dev
     const fromEnv = (process.env.RESEND_FROM_EMAIL ?? '').trim()
     const from = (isReal(fromEnv) && fromEnv.includes('@') && !fromEnv.includes('onboarding@resend'))
-      ? fromEnv : 'onboarding@resend.dev'
+      ? fromEnv : 'no-replay@amnkoo.online'
 
     const { data, error } = await resend.emails.send({
       from,
