@@ -490,7 +490,7 @@ export function InspectionReports({ readOnly = false }: InspectionReportsProps) 
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>Edit Inspection</DialogTitle></DialogHeader>
-          <FormBody d={form} set={setForm} />
+          {renderFormBody(form, setForm)}
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
             <Button onClick={() => handleSave(true)} disabled={isSaving}>

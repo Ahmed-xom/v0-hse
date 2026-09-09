@@ -496,7 +496,7 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader><DialogTitle>New Meeting</DialogTitle></DialogHeader>
-          <MeetingForm />
+          {renderMeetingForm()}
           <DialogFooter className="mt-2">
             <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
             <Button onClick={() => handleSave(false)} disabled={isSaving}>
@@ -510,7 +510,7 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader><DialogTitle>Edit Meeting</DialogTitle></DialogHeader>
-          <MeetingForm />
+          {renderMeetingForm()}
           <DialogFooter className="mt-2">
             <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
             <Button onClick={() => handleSave(true)} disabled={isSaving}>
