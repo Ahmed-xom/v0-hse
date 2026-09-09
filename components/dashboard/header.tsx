@@ -20,6 +20,9 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { useAuth, isMasterUser } from "@/lib/auth-context"
 import { CompanySwitcher } from "@/components/dashboard/company-switcher"
+import { Calendar as DatePicker } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
 
 const navItems = [
   { label: "Overview", href: "#kpi-cards", active: true },
@@ -32,6 +35,7 @@ const navItems = [
 export function DashboardHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
   const router = useRouter()
@@ -120,11 +124,24 @@ export function DashboardHeader() {
           <CompanySwitcher />
 
           {/* Date Range */}
-          <Button variant="outline" className="hidden gap-2 sm:flex">
-            <Calendar className="h-4 w-4" />
-            <span>Last 30 days</span>
-            <ChevronDown className="h-4 w-4" />
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="hidden gap-2 sm:flex" aria-label="Choose date range">
+                <Calendar className="h-4 w-4" />
+                <span>{format(selectedDate, "dd MMM yyyy")}</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-auto p-0">
+              <DatePicker {...({
+                mode: "single",
+                selected: selectedDate,
+                onSelect: (date: Date | undefined) => date && setSelectedDate(date),
+                defaultMonth: selectedDate,
+                initialFocus: true,
+              } as any)} />
+            </PopoverContent>
+          </Popover>
 
           {/* Theme toggle */}
           <Button
