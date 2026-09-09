@@ -61,6 +61,22 @@ export async function createCompany(input: { name: string; code?: string; actorE
   }
 }
 
+export async function updateCompany(input: { id: string; name: string; code?: string; status?: string; actorEmail?: string }) {
+  const master = await requireMaster(input.actorEmail)
+  if (!master) return { success: false, error: 'Only administrators can manage companies' }
+  const name = input.name.trim()
+  if (!input.id || !name) return { success: false, error: 'Company ID and name are required' }
+  try {
+    const result = await pool.query(
+      'UPDATE public.company SET name = $1, code = $2, status = $3, updated_at = now() WHERE id = $4 RETURNING id, name, code, status',
+      [name, input.code?.trim() || null, input.status === 'Inactive' ? 'Inactive' : 'Active', input.id]
+    )
+    return result.rows[0] ? { success: true, company: result.rows[0] } : { success: false, error: 'Company not found' }
+  } catch (error: any) {
+    return { success: false, error: error.code === '23505' ? 'A company with this name or code already exists' : 'Could not update company' }
+  }
+}
+
 export async function setCompanyMembership(input: { companyId: string; userId: string; role?: string }) {
   const master = await requireMaster()
   if (!master) return { success: false, error: 'You must be signed in as a master user to manage memberships' }

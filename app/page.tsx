@@ -7,6 +7,7 @@ import { InspectionReports } from "@/components/dashboard/inspection-reports"
 import { InspectionTypes } from "@/components/dashboard/inspection-types"
 import { UsersManagement } from "@/components/dashboard/users-management"
 import { BusinessUnits } from "@/components/dashboard/business-units"
+import { CompanyManagement } from "@/components/dashboard/company-management"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
 import { CoursesManagement } from "@/components/dashboard/courses-management"
 import { TrainingRecords } from "@/components/dashboard/training-records"
@@ -73,6 +74,9 @@ export default function HSEDashboard() {
           <section id="business-units" aria-label="Business Units">
             <BusinessUnits />
           </section>
+
+          {/* Company Management */}
+          <CompanyManagement />
         </main>
 
         {/* Footer */}
