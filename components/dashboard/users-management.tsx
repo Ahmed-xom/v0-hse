@@ -188,9 +188,11 @@ export function UsersManagement() {
           setDbUsers(result.data as User[])
         } else {
           console.error("[v0] Failed to load users:", result.error)
+          toast({ title: "Unable to load users", description: result.error || "The database users could not be loaded.", variant: "destructive" })
         }
       } catch (err) {
         console.error("[v0] Error loading users:", err)
+        toast({ title: "Unable to load users", description: "The database users could not be loaded.", variant: "destructive" })
       } finally {
         setIsLoadingUsers(false)
       }
