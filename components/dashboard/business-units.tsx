@@ -60,7 +60,7 @@ import { useAuth } from "@/lib/auth-context"
 
 export function BusinessUnits() {
   const { toast } = useToast()
-  const { user } = useAuth()
+  const { user, activeCompanyId } = useAuth()
   const [units, setUnits] = useState<BusinessUnit[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
@@ -69,10 +69,10 @@ export function BusinessUnits() {
   const [isLoading, setIsLoading] = useState(false)
   useEffect(() => {
     if (!user?.email) return
-    fetch("/api/business-units", { headers: { "x-user-email": user.email }, cache: "no-store" })
+    fetch("/api/business-units", { headers: { "x-user-email": user.email, ...(activeCompanyId ? { "x-company-id": activeCompanyId } : {}) }, cache: "no-store" })
       .then((response) => response.ok ? response.json() : [])
       .then(setUnits)
-  }, [user?.email])
+  }, [user?.email, activeCompanyId])
 
   const [formData, setFormData] = useState({
     name: "",
@@ -114,7 +114,7 @@ export function BusinessUnits() {
 
     setIsLoading(true)
     try {
-      const response = await fetch('/api/business-units', { method: 'POST', headers: { 'Content-Type': 'application/json', ...(user?.email ? { 'x-user-email': user.email } : {}) }, body: JSON.stringify({
+      const response = await fetch('/api/business-units', { method: 'POST', headers: { 'Content-Type': 'application/json', ...(user?.email ? { 'x-user-email': user.email } : {}), ...(activeCompanyId ? { 'x-company-id': activeCompanyId } : {}) }, body: JSON.stringify({
         name: formData.name,
         description: formData.description,
         email: formData.email,
@@ -154,7 +154,7 @@ export function BusinessUnits() {
   const handleDeleteUnit = async (id: string) => {
     if (confirm("Are you sure you want to delete this business unit?")) {
       try {
-        const response = await fetch(`/api/business-units?id=${encodeURIComponent(id)}`, { method: 'DELETE', headers: user?.email ? { 'x-user-email': user.email } : undefined })
+        const response = await fetch(`/api/business-units?id=${encodeURIComponent(id)}`, { method: 'DELETE', headers: user?.email ? { 'x-user-email': user.email, ...(activeCompanyId ? { 'x-company-id': activeCompanyId } : {}) } : undefined })
         const result = await response.json()
         if (result.success) setUnits((current) => current.filter((unit) => unit.id !== id))
         if (result.success) {

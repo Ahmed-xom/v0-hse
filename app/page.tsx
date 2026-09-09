@@ -11,11 +11,14 @@ import { BehaviourObservations } from "@/components/dashboard/behaviour-observat
 import { CoursesManagement } from "@/components/dashboard/courses-management"
 import { TrainingRecords } from "@/components/dashboard/training-records"
 import { ProtectedRoute } from "@/components/protected-route"
+import { useAuth } from "@/lib/auth-context"
 
 export default function HSEDashboard() {
+  const { activeCompanyId } = useAuth()
+
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background">
+      <div key={activeCompanyId ?? "company-xom-llc"} className="min-h-screen bg-background">
         <DashboardHeader />
         <main className="mx-auto max-w-[1600px] space-y-6 px-4 py-6 sm:px-6 lg:px-8">
           {/* Page Title */}

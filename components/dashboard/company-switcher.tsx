@@ -10,10 +10,10 @@ import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/lib/auth-context'
 
 export function CompanySwitcher() {
-  const { user } = useAuth()
+  const { user, activeCompanyId, setActiveCompanyId } = useAuth()
   const [open, setOpen] = useState(false)
   const [companies, setCompanies] = useState<{ id: string; name: string; code?: string | null }[]>([])
-  const [activeId, setActiveId] = useState('company-xom-llc')
+  const activeId = activeCompanyId ?? 'company-xom-llc'
   const [name, setName] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   if (!user) return null
@@ -24,7 +24,7 @@ export function CompanySwitcher() {
     const availableCompanies: { id: string; name: string; code?: string | null }[] = await response.json()
     setCompanies(availableCompanies)
     if (!availableCompanies.some((company) => company.id === activeId) && availableCompanies[0]) {
-      setActiveId(availableCompanies[0].id)
+      setActiveCompanyId(availableCompanies[0].id)
     }
   }
   const addCompany = async () => {
@@ -36,11 +36,11 @@ export function CompanySwitcher() {
       body: JSON.stringify({ name }),
     })
     const result = await response.json()
-    if (result.success && result.company) { setCompanies((items) => [...items, result.company]); setActiveId(result.company.id); setName('') }
+    if (result.success && result.company) { setCompanies((items) => [...items, result.company]); setActiveCompanyId(result.company.id); setName('') }
     setIsCreating(false)
   }
   return <Popover open={open} onOpenChange={(value) => { setOpen(value); if (value) loadCompanies() }}>
     <PopoverTrigger asChild><Button variant="outline" className="hidden max-w-48 gap-2 sm:flex"><Building2 data-icon="inline-start" /><span className="truncate">{companies.find((c) => c.id === activeId)?.name || 'AMNKO'}</span></Button></PopoverTrigger>
-    <PopoverContent align="end" className="w-72"><div className="flex flex-col gap-3"><div><p className="font-semibold">Active company</p><p className="text-sm text-muted-foreground">Choose the company workspace</p></div><div className="flex flex-col gap-1">{companies.length > 0 ? companies.map((company) => <Button key={company.id} variant="ghost" className="justify-between" onClick={() => { setActiveId(company.id); setOpen(false) }}>{company.name}{activeId === company.id && <Check />}</Button>) : <p className="px-3 py-2 text-sm text-muted-foreground">No companies assigned</p>}</div>{canManage && <><Separator /><Label htmlFor="company-name">Add company</Label><div className="flex gap-2"><Input id="company-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Company name" /><Button size="icon" onClick={addCompany} disabled={isCreating} aria-label="Add company"><Plus /></Button></div></>}</div></PopoverContent>
+    <PopoverContent align="end" className="w-72"><div className="flex flex-col gap-3"><div><p className="font-semibold">Active company</p><p className="text-sm text-muted-foreground">Choose the company workspace</p></div><div className="flex flex-col gap-1">{companies.length > 0 ? companies.map((company) => <Button key={company.id} variant="ghost" className="justify-between" onClick={() => {       setActiveCompanyId(company.id); setOpen(false) }}>{company.name}{activeId === company.id && <Check />}</Button>) : <p className="px-3 py-2 text-sm text-muted-foreground">No companies assigned</p>}</div>{canManage && <><Separator /><Label htmlFor="company-name">Add company</Label><div className="flex gap-2"><Input id="company-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Company name" /><Button size="icon" onClick={addCompany} disabled={isCreating} aria-label="Add company"><Plus /></Button></div></>}</div></PopoverContent>
   </Popover>
 }
