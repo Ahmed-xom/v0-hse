@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   const expires = Date.now() + 60 * 60 * 1000
   const payload = `${user.id}.${user.email}.${expires}`
   const token = Buffer.from(`${payload}.${sign(payload)}`).toString("base64url")
-  const baseUrl = process.env.BETTER_AUTH_URL || "https://www.amnkoo.online"
+  const baseUrl = process.env.BETTER_AUTH_URL || "https://amnkoo.online"
   const resetLink = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`
   const resend = new Resend(process.env.RESEND_API_KEY)
   const { error } = await resend.emails.send({

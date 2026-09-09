@@ -66,7 +66,9 @@ export default function ForgotPasswordPage() {
                 <Input id="reset-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" required autoComplete="email" />
               </div>
               {message && <p className="text-sm text-destructive">{message}</p>}
-              <Button className="w-full" type="submit" disabled={status === "loading"}>{status === "loading" ? "Sending..." : "Send reset link"}</Button>
+              <Button className="w-full" type="submit" disabled={status === "loading"} aria-busy={status === "loading"}>
+                {status === "loading" ? "Sending reset link..." : "Send reset link"}
+              </Button>
               <Link href="/sign-in" className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft size={16} /> Back to sign in</Link>
             </form>
           )}
