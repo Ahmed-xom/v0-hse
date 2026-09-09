@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Building2, Check, Plus } from 'lucide-react'
-import { listCompanies, createCompany } from '@/app/actions/companies'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -18,9 +17,11 @@ export function CompanySwitcher() {
   const [name, setName] = useState('')
   const [isCreating, setIsCreating] = useState(false)
   if (!user) return null
-  const canManage = user.role === 'MASTER USER' || user.role === 'ADMIN SYSTEM'
+  const canManage = ['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(String(user.role).trim().toUpperCase())
   const loadCompanies = async () => {
-    const availableCompanies = await listCompanies()
+    const response = await fetch('/api/companies', { cache: 'no-store' })
+    if (!response.ok) return
+    const availableCompanies: { id: string; name: string; code?: string | null }[] = await response.json()
     setCompanies(availableCompanies)
     if (!availableCompanies.some((company) => company.id === activeId) && availableCompanies[0]) {
       setActiveId(availableCompanies[0].id)
@@ -29,8 +30,13 @@ export function CompanySwitcher() {
   const addCompany = async () => {
     if (!name.trim()) return
     setIsCreating(true)
-    const result = await createCompany({ name })
-    if (result.success && result.company) { setCompanies((items) => [...items, result.company!]); setActiveId(result.company.id); setName('') }
+    const response = await fetch('/api/companies', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    })
+    const result = await response.json()
+    if (result.success && result.company) { setCompanies((items) => [...items, result.company]); setActiveId(result.company.id); setName('') }
     setIsCreating(false)
   }
   return <Popover open={open} onOpenChange={(value) => { setOpen(value); if (value) loadCompanies() }}>
