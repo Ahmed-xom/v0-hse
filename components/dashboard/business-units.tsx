@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Building2,
   Search,
@@ -54,17 +54,26 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Progress } from "@/components/ui/progress"
-import { businessUnitsData, type BusinessUnit } from "@/lib/business-units-data"
-import { addBusinessUnit, deleteBusinessUnit, updateBusinessUnit } from "@/app/actions/manage-business-units"
+import type { BusinessUnit } from "@/lib/business-units-data"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/lib/auth-context"
 
 export function BusinessUnits() {
   const { toast } = useToast()
+  const { user } = useAuth()
+  const [units, setUnits] = useState<BusinessUnit[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  useEffect(() => {
+    if (!user?.email) return
+    fetch("/api/business-units", { headers: { "x-user-email": user.email }, cache: "no-store" })
+      .then((response) => response.ok ? response.json() : [])
+      .then(setUnits)
+  }, [user?.email])
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -74,7 +83,7 @@ export function BusinessUnits() {
     manager: "",
   })
 
-  const filteredUnits = businessUnitsData.filter((unit) => {
+  const filteredUnits = units.filter((unit) => {
     const matchesSearch =
       unit.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       unit.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -105,16 +114,18 @@ export function BusinessUnits() {
 
     setIsLoading(true)
     try {
-      const result = await addBusinessUnit({
+      const response = await fetch('/api/business-units', { method: 'POST', headers: { 'Content-Type': 'application/json', ...(user?.email ? { 'x-user-email': user.email } : {}) }, body: JSON.stringify({
         name: formData.name,
         description: formData.description,
         email: formData.email,
         type: formData.type as "Business Unit" | "Group",
         status: formData.status as "Active" | "Inactive",
         manager: formData.manager || undefined,
-      })
+      }) })
+      const result = await response.json()
 
       if (result.success) {
+        setUnits((current) => [...current, { ...result.data, underName: "", trainingCompliance: null, equipmentCompliance: null, createdAt: new Date().toISOString(), createdBy: user?.name ?? "Admin" }])
         toast({
           title: "Success",
           description: "Business unit added successfully",
@@ -143,7 +154,9 @@ export function BusinessUnits() {
   const handleDeleteUnit = async (id: string) => {
     if (confirm("Are you sure you want to delete this business unit?")) {
       try {
-        const result = await deleteBusinessUnit(id)
+        const response = await fetch(`/api/business-units?id=${encodeURIComponent(id)}`, { method: 'DELETE', headers: user?.email ? { 'x-user-email': user.email } : undefined })
+        const result = await response.json()
+        if (result.success) setUnits((current) => current.filter((unit) => unit.id !== id))
         if (result.success) {
           toast({
             title: "Success",
@@ -166,20 +179,20 @@ export function BusinessUnits() {
     }
   }
 
-  const activeUnits = businessUnitsData.filter((u) => u.status === "Active").length
-  const groupCount = businessUnitsData.filter((u) => u.type === "Group").length
-  const businessUnitCount = businessUnitsData.filter((u) => u.type === "Business Unit").length
+  const activeUnits = units.filter((u) => u.status === "Active").length
+  const groupCount = units.filter((u) => u.type === "Group").length
+  const businessUnitCount = units.filter((u) => u.type === "Business Unit").length
   const avgTrainingCompliance = Math.round(
-    businessUnitsData
+    units
       .filter((u) => u.trainingCompliance !== null)
       .reduce((sum, u) => sum + (u.trainingCompliance || 0), 0) /
-      businessUnitsData.filter((u) => u.trainingCompliance !== null).length
+      units.filter((u) => u.trainingCompliance !== null).length
   )
   const avgEquipmentCompliance = Math.round(
-    businessUnitsData
+    units
       .filter((u) => u.equipmentCompliance !== null)
       .reduce((sum, u) => sum + (u.equipmentCompliance || 0), 0) /
-      businessUnitsData.filter((u) => u.equipmentCompliance !== null).length
+      units.filter((u) => u.equipmentCompliance !== null).length
   )
 
   const getComplianceColor = (value: number | null) => {
@@ -311,7 +324,7 @@ export function BusinessUnits() {
               <Building2 className="h-4 w-4" />
               <span className="text-xs font-medium">Total Units</span>
             </div>
-            <p className="mt-2 text-2xl font-bold text-foreground">{businessUnitsData.length}</p>
+            <p className="mt-2 text-2xl font-bold text-foreground">{units.length}</p>
           </div>
           <div className="rounded-lg border border-border/50 bg-background/50 p-4">
             <div className="flex items-center gap-2 text-muted-foreground">

@@ -130,8 +130,9 @@ export const employee = pgTable('employee', {
 // Business Units Table
 export const businessUnit = pgTable('business_unit', {
   id: text('id').primaryKey(),
-  name: varchar('name').unique().notNull(),
-  code: varchar('code').unique(),
+  companyId: text('company_id').notNull(),
+  name: varchar('name').notNull(),
+  code: varchar('code'),
   description: text('description'),
   manager: varchar('manager'),
   status: varchar('status').default('Active'),
