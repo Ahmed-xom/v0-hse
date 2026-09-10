@@ -228,6 +228,8 @@ export function UsersManagement() {
   const localUsers = dbUsers
 
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
+  const canImportExcel = isAdmin
+  const canDownloadTemplate = isAdmin
 
   const handleToggleJourneyAccess = async (u: User) => {
     const newValue = !u.journeyAccess
@@ -540,16 +542,18 @@ export function UsersManagement() {
             <CardDescription>Manage {isLoadingUsers ? '...' : localUsers.length} HSE personnel across all business units</CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
-            {isAdmin && <>
+            {(canImportExcel || canDownloadTemplate) && <>
+              {canImportExcel && <>
               <input ref={importInputRef} type="file" accept=".xlsx" className="hidden" onChange={handleImportExcel} />
               <Button variant="outline" className="gap-2" onClick={() => importInputRef.current?.click()} disabled={isImporting}>
                 <Upload className="h-4 w-4" />
                 {isImporting ? "Importing..." : "Import Excel"}
               </Button>
-              <Button variant="outline" className="gap-2" onClick={downloadImportTemplate}>
+              </>}
+              {canDownloadTemplate && <Button variant="outline" className="gap-2" onClick={downloadImportTemplate}>
                 <FileSpreadsheet className="h-4 w-4" />
                 Template
-              </Button>
+              </Button>}
             </>}
             <Button variant="outline" className="gap-2" onClick={handleExportToExcel}>
               <Download className="h-4 w-4" />
