@@ -3,6 +3,7 @@
 import { DashboardHeader } from "@/components/dashboard/header"
 import { KPICards } from "@/components/dashboard/kpi-cards"
 import { IncidentStatistics } from "@/components/dashboard/incident-statistics"
+import { IncidentManagement } from "@/components/dashboard/incident-management"
 import { InspectionReports } from "@/components/dashboard/inspection-reports"
 import { InspectionTypes } from "@/components/dashboard/inspection-types"
 import { UsersManagement } from "@/components/dashboard/users-management"
@@ -38,6 +39,11 @@ export default function HSEDashboard() {
           {/* Incident Statistics */}
           <section id="incident-statistics" aria-label="Incident Statistics">
             <IncidentStatistics />
+          </section>
+
+          {/* Incident Management */}
+          <section id="incidents" aria-label="Incident Management">
+            <IncidentManagement />
           </section>
 
           {/* Behaviour Observations */}
