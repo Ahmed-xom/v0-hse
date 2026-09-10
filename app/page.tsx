@@ -101,9 +101,6 @@ export default function HSEDashboard() {
         <footer className="border-t border-border/50 bg-card/30">
           <div className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6 lg:px-8">
             <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-              <p className="text-sm text-muted-foreground">
-                © 2024 AMNKO HSE. All rights reserved.
-              </p>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <a href="#" className="transition-colors hover:text-foreground">Privacy Policy</a>
                 <a href="#" className="transition-colors hover:text-foreground">Terms of Service</a>
