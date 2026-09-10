@@ -3,7 +3,7 @@
 import { pool } from '@/lib/db'
 import { revalidateTag } from 'next/cache'
 import { unstable_cache } from 'next/cache'
-import { nanoid } from 'nanoid'
+import { randomUUID } from 'node:crypto'
 
 export type Incident = {
   id: string
@@ -87,7 +87,7 @@ export async function createIncident(data: {
   lostTimeDays?: number
 }) {
   try {
-    const id = nanoid()
+    const id = randomUUID()
     // Generate reference number: INC-YYYYMMDD-XXXX
     const now = new Date()
     const datePart = now.toISOString().slice(0, 10).replace(/-/g, '')
