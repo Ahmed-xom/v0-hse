@@ -30,7 +30,6 @@ import { Calendar } from "@/components/ui/calendar"
 import { format, parseISO } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
 import {
   getInspections, createInspection, updateInspection, deleteInspection,
   type Inspection, type InspectionType, type InspectionStatus, type InspectionPriority,
@@ -140,10 +139,7 @@ interface InspectionReportsProps {
 export function InspectionReports({ readOnly = false }: InspectionReportsProps) {
   const { toast } = useToast()
   const { currentUser } = useAuth()
-  const canEdit = !readOnly && (
-    isAdminRole(currentUser?.role ?? "", currentUser?.email ?? "") ||
-    isReviewerRole(currentUser?.role ?? "")
-  )
+  const canEdit = !readOnly && Boolean(currentUser)
 
   const [records, setRecords] = useState<Inspection[]>([])
   const [isLoading, setIsLoading] = useState(true)

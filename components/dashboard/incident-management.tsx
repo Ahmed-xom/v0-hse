@@ -30,7 +30,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
 import {
   getIncidents, createIncident, updateIncident, deleteIncident,
   type Incident,
@@ -119,9 +118,7 @@ const EMPTY_FORM = {
 export function IncidentManagement() {
   const { currentUser } = useAuth()
   const { toast } = useToast()
-  const isAdmin = isAdminRole(currentUser?.role ?? "", currentUser?.email ?? "")
-  const isReviewer = isReviewerRole(currentUser?.role ?? "")
-  const canEdit = isAdmin || isReviewer
+  const canEdit = Boolean(currentUser)
 
   const [incidents, setIncidents] = useState<Incident[]>([])
   const [loading, setLoading] = useState(true)
