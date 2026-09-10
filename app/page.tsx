@@ -14,9 +14,11 @@ import { CoursesManagement } from "@/components/dashboard/courses-management"
 import { TrainingRecords } from "@/components/dashboard/training-records"
 import { ProtectedRoute } from "@/components/protected-route"
 import { useAuth } from "@/lib/auth-context"
+import { SectionDataToolbar } from "@/components/dashboard/section-data-toolbar"
 
 export default function HSEDashboard() {
-  const { activeCompanyId } = useAuth()
+  const { activeCompanyId, user } = useAuth()
+  const canImport = ["MASTER USER", "ADMIN SYSTEM", "ADMIN", "HSE ADMIN"].includes(String(user?.role ?? "").toUpperCase())
 
   return (
     <ProtectedRoute>
@@ -43,31 +45,37 @@ export default function HSEDashboard() {
 
           {/* Incident Management */}
           <section id="incidents" aria-label="Incident Management">
+            <SectionDataToolbar section="Incidents" canImport={canImport} columns={["Reference No", "Title", "Type", "Severity", "Status", "Date", "Location", "Business Unit", "Description"]} />
             <IncidentManagement />
           </section>
 
           {/* Behaviour Observations */}
           <section id="behaviour-observations" aria-label="Behaviour Observations">
+            <SectionDataToolbar section="Observations" canImport={canImport} columns={["Date", "Observer", "Location", "Category", "Description", "Action Required", "Status"]} />
             <BehaviourObservations />
           </section>
 
           {/* Inspection Reports */}
           <section id="inspection-reports" aria-label="Inspection Reports">
+            <SectionDataToolbar section="Inspections" canImport={canImport} columns={["Reference No", "Inspection Type", "Date", "Location", "Inspector", "Status", "Findings"]} />
             <InspectionReports />
           </section>
 
           {/* Inspection Types */}
           <section id="inspection-types" aria-label="Inspection Types">
+            <SectionDataToolbar section="Inspection Types" canImport={canImport} columns={["Name", "Description", "Frequency", "Status"]} />
             <InspectionTypes />
           </section>
 
           {/* Training Courses */}
           <section id="training-courses" aria-label="Training Courses">
+            <SectionDataToolbar section="Training Courses" canImport={canImport} columns={["Course Name", "Description", "Category", "Validity", "Status"]} />
             <CoursesManagement />
           </section>
 
           {/* Training Records */}
           <section id="training-records" aria-label="Training Records">
+            <SectionDataToolbar section="Training Records" canImport={canImport} columns={["Employee", "Course", "Completion Date", "Expiry Date", "Status"]} />
             <TrainingRecords />
           </section>
 
@@ -78,11 +86,15 @@ export default function HSEDashboard() {
 
           {/* Business Units */}
           <section id="business-units" aria-label="Business Units">
+            <SectionDataToolbar section="Business Units" canImport={canImport} columns={["Name", "Code", "Description", "Manager", "Email", "Type", "Status"]} />
             <BusinessUnits />
           </section>
 
           {/* Company Management */}
-          <CompanyManagement />
+          <section aria-label="Company Management">
+            <SectionDataToolbar section="Companies" canImport={canImport} columns={["Name", "Code", "Description", "Status"]} />
+            <CompanyManagement />
+          </section>
         </main>
 
         {/* Footer */}
