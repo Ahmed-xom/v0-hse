@@ -359,9 +359,9 @@ export async function fixMissingAccounts(): Promise<{ fixed: number; error?: str
   }
 }
 
-export async function deleteUser(userId: string) {
+export async function deleteUser(userId: string, actorEmail?: string) {
   try {
-    await requireCompanyAdmin()
+    await requireCompanyAdmin(actorEmail)
     if (!userId) {
       return {
         success: false,

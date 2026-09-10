@@ -440,7 +440,7 @@ export function UsersManagement() {
     if (!confirm(`Are you sure you want to delete ${user.name}?`)) return
 
     try {
-      const result = await deleteUser(user.id)
+      const result = await deleteUser(user.id, currentUser?.email)
       if (result.success) {
         toast({
           title: "Success",
