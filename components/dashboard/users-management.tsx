@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
 import {
   Search,
   Filter,
@@ -18,6 +18,8 @@ import {
   Building2,
   Users,
   Download,
+  Upload,
+  FileSpreadsheet,
   KeyRound,
   Copy,
   Check,
@@ -69,6 +71,7 @@ import { resetUserPassword, getPasswordResetHistory } from "@/app/actions/reset-
 import { updateUserStatus, updateUserRole, updateUser, fixMissingAccounts, deleteUser, exportUsersToExcel, getUsers, updateUserApprover, updateJourneyAccess, updateJourneyApprover, createUser } from "@/app/actions/manage-users"
 import { isAdminRole } from "@/lib/auth-roles"
 import { listCompanies } from "@/app/actions/companies"
+import { read, utils, writeFile } from "xlsx"
 
 
 const roleColors: Record<string, string> = {
@@ -165,6 +168,8 @@ export function UsersManagement() {
   const [addTempPassword, setAddTempPassword] = useState("")
   const [dbUsers, setDbUsers] = useState<User[]>([])
   const [isLoadingUsers, setIsLoadingUsers] = useState(true)
+  const importInputRef = useRef<HTMLInputElement>(null)
+  const [isImporting, setIsImporting] = useState(false)
   const { toast } = useToast()
   const { user: currentUser, activeCompanyId } = useAuth()
 
@@ -223,6 +228,8 @@ export function UsersManagement() {
   const localUsers = dbUsers
 
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
+  const canImportExcel = isAdmin
+  const canDownloadTemplate = isAdmin
 
   const handleToggleJourneyAccess = async (u: User) => {
     const newValue = !u.journeyAccess
@@ -456,6 +463,38 @@ export function UsersManagement() {
     }
   }
 
+  const downloadImportTemplate = () => {
+    const sheet = utils.json_to_sheet([{ payrollNo: "F0001", name: "Full Name", email: "user@example.com", designation: "Designation", role: "USER", businessUnit: "Default Business Unit", approverName: "", approverEmail: "" }])
+    const workbook = utils.book_new()
+    utils.book_append_sheet(workbook, sheet, "Team Members")
+    writeFile(workbook, "team-members-template.xlsx")
+  }
+
+  const handleImportExcel = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ""
+    if (!file || !activeCompanyId || !currentUser?.email) return
+    setIsImporting(true)
+    try {
+      const workbook = read(await file.arrayBuffer(), { type: "array" })
+      const rows = utils.sheet_to_json<Record<string, unknown>>(workbook.Sheets[workbook.SheetNames[0]])
+      let created = 0
+      const errors: string[] = []
+      for (const [index, row] of rows.entries()) {
+        const value = (key: string) => String(row[key] ?? row[key.toLowerCase()] ?? "").trim()
+        const result = await createUser({ name: value("name"), email: value("email"), payrollNo: value("payrollNo"), designation: value("designation"), role: value("role") || "USER", businessUnit: value("businessUnit") || companyBusinessUnits[0] || "Default Business Unit", approverName: value("approverName"), approverEmail: value("approverEmail"), companyId: activeCompanyId, actorEmail: currentUser.email })
+        if (result.success) created++
+        else errors.push(`Row ${index + 2}: ${result.error ?? "Could not create user"}`)
+      }
+      setRefreshKey((key) => key + 1)
+      toast({ title: `Imported ${created} user${created === 1 ? "" : "s"}`, description: errors.length ? errors.slice(0, 3).join("; ") : "All rows were imported successfully.", variant: errors.length ? "destructive" : "default" })
+    } catch (error) {
+      toast({ title: "Import failed", description: error instanceof Error ? error.message : "Please upload a valid .xlsx file.", variant: "destructive" })
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
   const handleExportToExcel = async () => {
     try {
       const result = await exportUsersToExcel(localUsers)
@@ -502,7 +541,7 @@ export function UsersManagement() {
             </CardTitle>
             <CardDescription>Manage {isLoadingUsers ? '...' : localUsers.length} HSE personnel across all business units</CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button variant="outline" className="gap-2" onClick={handleExportToExcel}>
               <Download className="h-4 w-4" />
               Export
@@ -971,10 +1010,25 @@ export function UsersManagement() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-      </CardContent>
-
-      {/* Reset Password Dialog */}
+  </div>
+  {(canImportExcel || canDownloadTemplate) && (
+    <div className="flex flex-wrap justify-end gap-2 border-t border-border/50 pt-4">
+      {canImportExcel && <>
+        <input ref={importInputRef} type="file" accept=".xlsx" className="hidden" onChange={handleImportExcel} />
+        <Button variant="outline" className="gap-2" onClick={() => importInputRef.current?.click()} disabled={isImporting}>
+          <Upload className="h-4 w-4" />
+          {isImporting ? "Importing..." : "Import Excel"}
+        </Button>
+      </>}
+      {canDownloadTemplate && <Button variant="outline" className="gap-2" onClick={downloadImportTemplate}>
+        <FileSpreadsheet className="h-4 w-4" />
+        Download Template
+      </Button>}
+    </div>
+  )}
+  </CardContent>
+  
+  {/* Reset Password Dialog */}
       <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
