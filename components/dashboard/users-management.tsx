@@ -542,19 +542,6 @@ export function UsersManagement() {
             <CardDescription>Manage {isLoadingUsers ? '...' : localUsers.length} HSE personnel across all business units</CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
-            {(canImportExcel || canDownloadTemplate) && <>
-              {canImportExcel && <>
-              <input ref={importInputRef} type="file" accept=".xlsx" className="hidden" onChange={handleImportExcel} />
-              <Button variant="outline" className="gap-2" onClick={() => importInputRef.current?.click()} disabled={isImporting}>
-                <Upload className="h-4 w-4" />
-                {isImporting ? "Importing..." : "Import Excel"}
-              </Button>
-              </>}
-              {canDownloadTemplate && <Button variant="outline" className="gap-2" onClick={downloadImportTemplate}>
-                <FileSpreadsheet className="h-4 w-4" />
-                Template
-              </Button>}
-            </>}
             <Button variant="outline" className="gap-2" onClick={handleExportToExcel}>
               <Download className="h-4 w-4" />
               Export
@@ -1023,10 +1010,25 @@ export function UsersManagement() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-      </CardContent>
-
-      {/* Reset Password Dialog */}
+  </div>
+  {(canImportExcel || canDownloadTemplate) && (
+    <div className="flex flex-wrap justify-end gap-2 border-t border-border/50 pt-4">
+      {canImportExcel && <>
+        <input ref={importInputRef} type="file" accept=".xlsx" className="hidden" onChange={handleImportExcel} />
+        <Button variant="outline" className="gap-2" onClick={() => importInputRef.current?.click()} disabled={isImporting}>
+          <Upload className="h-4 w-4" />
+          {isImporting ? "Importing..." : "Import Excel"}
+        </Button>
+      </>}
+      {canDownloadTemplate && <Button variant="outline" className="gap-2" onClick={downloadImportTemplate}>
+        <FileSpreadsheet className="h-4 w-4" />
+        Download Template
+      </Button>}
+    </div>
+  )}
+  </CardContent>
+  
+  {/* Reset Password Dialog */}
       <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
