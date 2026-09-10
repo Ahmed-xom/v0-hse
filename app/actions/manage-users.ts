@@ -369,22 +369,34 @@ export async function deleteUser(userId: string) {
       }
     }
 
-    // Soft delete by setting status to Inactive in employee table
-    const now = new Date().toISOString()
-    const result = await pool.query(
-      'UPDATE public."employee" SET "updated_at" = $1, "status" = $2 WHERE id = $3 RETURNING id',
-      [now, 'Inactive', userId]
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const userResult = await client.query(
+      'SELECT id, email FROM neon_auth."user" WHERE id = $1 LIMIT 1',
+      [userId]
     )
-    
-    if (result.rows.length === 0) {
-      throw new Error('User not found')
-    }
+    const user = userResult.rows[0]
+    if (!user) throw new Error('User not found')
+
+    // Keep historical HSE records, but remove the account, memberships, employee profile, and active sessions.
+    await client.query('DELETE FROM neon_auth.session WHERE "userId" = $1', [user.id])
+    await client.query('DELETE FROM neon_auth.account WHERE "userId" = $1', [user.id])
+    await client.query('DELETE FROM neon_auth.member WHERE "userId" = $1', [user.id])
+    await client.query('DELETE FROM neon_auth.employee WHERE "user_id" = $1', [user.id])
+    await client.query('DELETE FROM public.company_membership WHERE user_id = $1', [user.id])
+    await client.query('DELETE FROM public.employee WHERE lower(email) = lower($1)', [user.email])
+    await client.query('DELETE FROM neon_auth."user" WHERE id = $1', [user.id])
+    await client.query('COMMIT')
 
     revalidateTag('users', 'max')
-    return {
-      success: true,
-      message: 'User deleted successfully - all observations updated',
-    }
+    return { success: true, message: 'User account and profile removed permanently' }
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+  }
   } catch (error: any) {
     console.error('[v0] Error deleting user:', error)
     return {
