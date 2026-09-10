@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import nodemailer from "nodemailer"
+import { Resend } from "resend"
 import crypto from "crypto"
 
 // Only this admin email can reset passwords
 const ADMIN_EMAIL = "xom-it-admin@xomoman.com"
 
-// Email configuration for sending new passwords
-const EMAIL_USER = process.env.EMAIL_USER || "hsesystem.xom@outlook.com"
-const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD
+// Resend handles transactional delivery without relying on Office 365 SMTP authentication.
+const RESEND_API_KEY = process.env.RESEND_API_KEY
+const RESET_FROM = process.env.RESEND_FROM_EMAIL || "no-reply@amnkoo.online"
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -42,34 +42,12 @@ export async function POST(request: NextRequest) {
     // Generate new password
     const newPassword = generateSecurePassword()
 
-    // Send new password via email
-    if (!EMAIL_PASSWORD || !userEmail) {
-      return NextResponse.json(
-        {
-          success: true,
-          message: "Password reset completed",
-          temporaryPassword: newPassword,
-        },
-        { status: 200 }
-      )
+    // Send the temporary password through Resend instead of Office 365 SMTP.
+    if (!RESEND_API_KEY || !userEmail) {
+      return NextResponse.json({ error: "Email delivery is not configured" }, { status: 503 })
     }
 
-    try {
-      const transporter = nodemailer.createTransport({
-        host: "smtp.office365.com",
-        port: 587,
-        secure: false,
-        auth: {
-          user: EMAIL_USER,
-          pass: EMAIL_PASSWORD,
-        },
-        tls: {
-          ciphers: "SSLv3",
-          rejectUnauthorized: false,
-        },
-      })
-
-      const htmlContent = `
+    const htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); padding: 30px; border-radius: 10px 10px 0 0;">
             <h1 style="color: white; margin: 0; font-size: 24px;">HSE System</h1>
@@ -108,15 +86,19 @@ export async function POST(request: NextRequest) {
         </div>
       `
 
-      await transporter.sendMail({
-        from: `"HSE System" <${EMAIL_USER}>`,
+    const resend = new Resend(RESEND_API_KEY)
+    const { error: emailError } = await resend.emails.send(
+      {
+        from: RESET_FROM.includes("<") ? RESET_FROM : `HSE System <${RESET_FROM}>`,
         to: userEmail,
         subject: "Your Password Has Been Reset - HSE System",
         html: htmlContent,
-      })
-    } catch (emailError) {
-      console.error("[v0] Email send error:", emailError)
-      // Don't fail the password reset if email fails
+      },
+      { idempotencyKey: `admin-password-reset/${userId || userEmail}` },
+    )
+    if (emailError) {
+      console.error("[v0] Resend password reset error:", emailError.message)
+      return NextResponse.json({ error: `Password reset saved, but email could not be sent: ${emailError.message}`, temporaryPassword: newPassword }, { status: 502 })
     }
 
     return NextResponse.json(
