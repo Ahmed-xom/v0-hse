@@ -36,8 +36,8 @@ export async function listCompanies(actorEmail?: string) {
       : null
     const resolvedUser = currentUser ?? (fallbackUser ? { id: fallbackUser.id as string, role: fallbackUser.role as string } : null)
     if (!resolvedUser) return []
-    const isGlobalAdmin = ['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(String(resolvedUser.role).trim().toUpperCase())
-    const result = isGlobalAdmin
+  const isGlobalAdmin = ['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(String(resolvedUser.role).trim().toUpperCase())
+  const result = isGlobalAdmin
       ? await pool.query('SELECT id, name, code, status FROM public.company WHERE status = $1 ORDER BY name', ['Active'])
       : await pool.query(`SELECT c.id, c.name, c.code, c.status FROM public.company c INNER JOIN public.company_membership m ON m.company_id = c.id WHERE m.user_id = $1 AND m.status = 'Active' AND c.status = 'Active' ORDER BY c.name`, [resolvedUser.id])
     return result.rows
