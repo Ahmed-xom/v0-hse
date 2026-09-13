@@ -29,11 +29,9 @@ export type Incident = {
   updatedAt: string
 }
 
-export async function getIncidents(companyId?: string | null) {
-  const cacheKey = `incidents-data-${companyId ?? 'all'}`
-  const companyClause = companyId
-    ? `business_unit IN (SELECT name FROM public.business_unit WHERE company_id = '${companyId.replace(/'/g, "''")}')`
-    : 'TRUE'
+export async function getIncidents() {
+  const cacheKey = 'incidents-data-all'
+  const companyClause = 'TRUE'
   return unstable_cache(
     async () => {
       try {

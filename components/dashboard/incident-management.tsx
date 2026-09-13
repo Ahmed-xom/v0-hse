@@ -140,7 +140,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
 
   const fetchIncidents = async () => {
     setLoading(true)
-    const data = await getIncidents(companyId)
+    const data = await getIncidents()
     setIncidents(data)
     setLoading(false)
   }
