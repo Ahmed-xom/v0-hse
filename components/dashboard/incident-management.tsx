@@ -115,7 +115,7 @@ const EMPTY_FORM = {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function IncidentManagement() {
+export function IncidentManagement({ companyId }: { companyId?: string | null }) {
   const { currentUser } = useAuth()
   const { toast } = useToast()
   const canEdit = Boolean(currentUser)
@@ -145,7 +145,24 @@ export function IncidentManagement() {
     setLoading(false)
   }
 
-  useEffect(() => { fetchIncidents() }, [])
+  useEffect(() => { fetchIncidents() }, [companyId])
+
+  useEffect(() => {
+    const openIncident = (event: Event) => {
+      const referenceNo = (event as CustomEvent<{ referenceNo?: string }>).detail?.referenceNo
+      if (!referenceNo) return
+      const incident = incidents.find((item) => item.referenceNo === referenceNo)
+      if (incident) {
+        setSelected(incident)
+        setShowView(true)
+        window.requestAnimationFrame(() => document.getElementById("incident-statistics")?.scrollIntoView({ behavior: "smooth", block: "start" }))
+      } else {
+        toast({ title: "Incident not found", description: `No incident was found for ${referenceNo}.`, variant: "destructive" })
+      }
+    }
+    window.addEventListener("hse:open-incident", openIncident)
+    return () => window.removeEventListener("hse:open-incident", openIncident)
+  }, [incidents, toast])
 
   // ── Filtered / paged data ──────────────────────────────────────────────
 
@@ -222,7 +239,7 @@ export function IncidentManagement() {
       const res = await updateIncident(selected.id, {
         ...form,
         lostTimeDays: Number(form.lostTimeDays),
-      })
+      }, companyId)
       if (res.success) {
         toast({ title: "Incident updated" })
         setShowForm(false)
@@ -234,9 +251,10 @@ export function IncidentManagement() {
       const res = await createIncident({
         ...form,
         lostTimeDays: Number(form.lostTimeDays),
+        companyId,
       })
       if (res.success) {
-        toast({ title: "Incident reported", description: `Reference: ${res.referenceNo}` })
+        toast({ title: "Incident reported", description: res.alertSent ? `Reference: ${res.referenceNo}. Company users were notified.` : `Reference: ${res.referenceNo}. Alert not sent: ${res.alertError ?? "no recipients found"}.` })
         setShowForm(false)
         fetchIncidents()
       } else {
@@ -249,7 +267,7 @@ export function IncidentManagement() {
   const handleDelete = async () => {
     if (!selected) return
     setSaving(true)
-    const res = await deleteIncident(selected.id)
+    const res = await deleteIncident(selected.id, companyId)
     if (res.success) {
       toast({ title: "Incident deleted" })
       setShowDelete(false)

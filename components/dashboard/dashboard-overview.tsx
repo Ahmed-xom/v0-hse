@@ -6,16 +6,20 @@ import { IncidentStatistics } from "./incident-statistics"
 import { getDashboardStats } from "@/app/actions/get-dashboard-stats"
 import type { DashboardStats } from "@/app/actions/get-dashboard-stats"
 
-export function DashboardOverview() {
+export function DashboardOverview({ companyId }: { companyId?: string | null }) {
   const [stats, setStats] = useState<DashboardStats | undefined>(undefined)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    getDashboardStats().then((s) => {
+    getDashboardStats(companyId).then((s) => {
       setStats(s)
       setIsLoading(false)
+    }).catch((error) => {
+      console.error('[v0] Dashboard stats failed', error)
+      setStats(undefined)
+      setIsLoading(false)
     })
-  }, [])
+  }, [companyId])
 
   return (
     <>

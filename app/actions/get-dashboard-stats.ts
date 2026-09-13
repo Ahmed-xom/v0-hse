@@ -32,11 +32,15 @@ const TYPE_COLORS: Record<string, string> = {
   'Environmental': '#8884d8',
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
+export async function getDashboardStats(companyId?: string | null): Promise<DashboardStats> {
   try {
+    const incidentFilter = companyId ? sql` AND business_unit IN (SELECT name FROM public.business_unit WHERE company_id = ${companyId})` : sql``
+    const observationFilter = companyId ? sql` AND company_id = ${companyId}` : sql``
+    const inspectionFilter = companyId ? sql` AND "company_id" = ${companyId}` : sql``
+    const trainingFilter = companyId ? sql` AND company_id = ${companyId}` : sql``
     // --- Days Without Incident ---
     const lastIncResult = await db.execute(sql`
-      SELECT MAX(date) as last_date FROM public.incident WHERE near_miss = false
+      SELECT MAX(date) as last_date FROM public.incident WHERE near_miss = false ${incidentFilter}
     `)
     const lastIncDate = (lastIncResult as any).rows?.[0]?.last_date
     const daysWithoutIncident = lastIncDate
@@ -46,7 +50,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     // Previous quarter comparison
     const prevQuarterResult = await db.execute(sql`
       SELECT MAX(date) as last_date FROM public.incident
-      WHERE near_miss = false AND date < NOW() - INTERVAL '90 days'
+      WHERE near_miss = false AND date < NOW() - INTERVAL '90 days' ${incidentFilter}
     `)
     const prevDate = (prevQuarterResult as any).rows?.[0]?.last_date
     const prevDays = prevDate
@@ -59,10 +63,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     // --- Inspection Compliance (last 30 days) ---
     const inspResult = await db.execute(sql`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'Completed' OR status = 'completed') as done,
+        COUNT(*) FILTER (WHERE status ILIKE 'completed') as done,
         COUNT(*) as total
       FROM public.inspection
-      WHERE "createdAt" >= NOW() - INTERVAL '30 days'
+      WHERE "createdAt" >= NOW() - INTERVAL '30 days' ${inspectionFilter}
     `)
     const inspRow = (inspResult as any).rows?.[0] ?? { done: 0, total: 0 }
     const inspTotal = Number(inspRow.total)
@@ -72,10 +76,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     // Prior month compliance for change %
     const prevInspResult = await db.execute(sql`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'Completed' OR status = 'completed') as done,
+        COUNT(*) FILTER (WHERE status ILIKE 'completed') as done,
         COUNT(*) as total
       FROM public.inspection
-      WHERE "createdAt" >= NOW() - INTERVAL '60 days' AND "createdAt" < NOW() - INTERVAL '30 days'
+      WHERE "createdAt" >= NOW() - INTERVAL '60 days' AND "createdAt" < NOW() - INTERVAL '30 days' ${inspectionFilter}
     `)
     const prevInspRow = (prevInspResult as any).rows?.[0] ?? { done: 0, total: 0 }
     const prevInspTotal = Number(prevInspRow.total)
@@ -89,9 +93,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     // --- Training Completion ---
     const trResult = await db.execute(sql`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'Completed') as done,
+        COUNT(*) FILTER (WHERE status ILIKE 'completed') as done,
         COUNT(*) as total
       FROM public.training
+      WHERE true ${trainingFilter}
     `)
     const trRow = (trResult as any).rows?.[0] ?? { done: 0, total: 0 }
     const trTotal = Number(trRow.total)
@@ -101,10 +106,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     // Prior quarter training
     const prevTrResult = await db.execute(sql`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'Completed') as done,
+        COUNT(*) FILTER (WHERE status ILIKE 'completed') as done,
         COUNT(*) as total
       FROM public.training
-      WHERE created_at >= NOW() - INTERVAL '6 months' AND created_at < NOW() - INTERVAL '3 months'
+      WHERE created_at >= NOW() - INTERVAL '6 months' AND created_at < NOW() - INTERVAL '3 months' ${trainingFilter}
     `)
     const prevTrRow = (prevTrResult as any).rows?.[0] ?? { done: 0, total: 0 }
     const prevTrTotal = Number(prevTrRow.total)
@@ -117,10 +122,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     // --- Near Misses (observations + incidents) ---
     const nmResult = await db.execute(sql`
-      SELECT COUNT(*) as cnt FROM public.incident WHERE near_miss = true
+      SELECT COUNT(*) as cnt FROM public.incident WHERE near_miss = true ${incidentFilter}
     `)
     const nmObs = await db.execute(sql`
-      SELECT COUNT(*) as cnt FROM public.observation WHERE "nearMiss" = true
+      SELECT COUNT(*) as cnt FROM public.observation WHERE "nearMiss" = true ${observationFilter}
     `)
     const nearMissTotal =
       Number((nmResult as any).rows?.[0]?.cnt ?? 0) +
@@ -128,7 +133,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     const prevNmResult = await db.execute(sql`
       SELECT COUNT(*) as cnt FROM public.incident
-      WHERE near_miss = true AND date >= NOW() - INTERVAL '60 days' AND date < NOW() - INTERVAL '30 days'
+      WHERE near_miss = true AND date >= NOW() - INTERVAL '60 days' AND date < NOW() - INTERVAL '30 days' ${incidentFilter}
     `)
     const prevNm = Number((prevNmResult as any).rows?.[0]?.cnt ?? 0)
     const nmChange = prevNm > 0
@@ -144,7 +149,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         COUNT(*) FILTER (WHERE near_miss = false) as incidents,
         COUNT(*) FILTER (WHERE near_miss = true) as near_misses
       FROM public.incident
-      WHERE date >= NOW() - INTERVAL '12 months'
+      WHERE date >= NOW() - INTERVAL '12 months' ${incidentFilter}
       GROUP BY month, m, y
       ORDER BY y, m
     `)
@@ -156,7 +161,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         COUNT(*) FILTER (WHERE "nearMiss" = false) as incidents,
         COUNT(*) FILTER (WHERE "nearMiss" = true) as near_misses
       FROM public.observation
-      WHERE date >= NOW() - INTERVAL '12 months'
+      WHERE date >= NOW() - INTERVAL '12 months' ${observationFilter}
       GROUP BY month, m, y
       ORDER BY y, m
     `)
@@ -176,9 +181,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     // --- Incidents by Type ---
     const byTypeResult = await db.execute(sql`
-      SELECT incident_type as name, COUNT(*) as value
+      SELECT COALESCE(NULLIF(TRIM(incident_type), ''), 'Uncategorized') as name, COUNT(*) as value
       FROM public.incident
-      GROUP BY incident_type
+      WHERE true ${incidentFilter}
+      GROUP BY COALESCE(NULLIF(TRIM(incident_type), ''), 'Uncategorized')
       ORDER BY value DESC
     `)
     const incidentsByType = ((byTypeResult as any).rows ?? []).map((r: any) => ({
@@ -190,9 +196,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     // Fallback: use observation categories if no incident types
     if (incidentsByType.length === 0) {
       const obsByCat = await db.execute(sql`
-        SELECT COALESCE(category, 'Uncategorized') as name, COUNT(*) as value
+        SELECT COALESCE(NULLIF(TRIM(category), ''), 'Uncategorized') as name, COUNT(*) as value
         FROM public.observation
-        GROUP BY category ORDER BY value DESC
+        WHERE true ${observationFilter}
+        GROUP BY COALESCE(NULLIF(TRIM(category), ''), 'Uncategorized') ORDER BY value DESC
       `)
       incidentsByType.push(...((obsByCat as any).rows ?? []).map((r: any) => ({
         name: r.name,
@@ -203,9 +210,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     // --- Incidents by Severity ---
     const bySevResult = await db.execute(sql`
-      SELECT COALESCE(severity, 'Unknown') as severity, COUNT(*) as count
+      SELECT COALESCE(NULLIF(TRIM(severity), ''), 'Unknown') as severity, COUNT(*) as count
       FROM public.incident
-      GROUP BY severity ORDER BY count DESC
+      WHERE true ${incidentFilter}
+      GROUP BY COALESCE(NULLIF(TRIM(severity), ''), 'Unknown') ORDER BY count DESC
     `)
     const incidentsBySeverity = ((bySevResult as any).rows ?? []).map((r: any) => ({
       severity: r.severity,
@@ -213,9 +221,9 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     }))
 
     // --- Summary Stats ---
-    const ltiResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident WHERE incident_type ILIKE '%lost time%' OR severity ILIKE '%serious%'`)
-    const medResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident WHERE incident_type ILIKE '%medical%'`)
-    const obsTotal = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.observation`)
+    const ltiResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident WHERE (incident_type ILIKE '%lost time%' OR severity ILIKE '%serious%') ${incidentFilter}`)
+    const medResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident WHERE incident_type ILIKE '%medical%' ${incidentFilter}`)
+    const obsTotal = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.observation WHERE true ${observationFilter}`)
 
     return {
       daysWithoutIncident,

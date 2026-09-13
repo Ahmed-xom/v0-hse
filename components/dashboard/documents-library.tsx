@@ -88,15 +88,16 @@ const EMPTY_FORM: FormData = {
   tags: [], is_public: true, allowed_emails: [],
 }
 
-interface Props { readOnly?: boolean }
+interface Props { readOnly?: boolean; activeCompanyId?: string | null }
 
 // ── component ─────────────────────────────────────────────────────────────────
 
-export function DocumentsLibrary({ readOnly = false }: Props) {
+export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: Props) {
   const { currentUser } = useAuth()
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
   const isReviewer = !isAdmin && isReviewerRole(currentUser?.role ?? '')
   const canEdit = !readOnly && (isAdmin || isReviewer)
+  const canUpload = !readOnly && Boolean(currentUser)
   const { toast } = useToast()
 
   // list state
@@ -134,10 +135,10 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const data = await getDocuments(currentUser?.email ?? '', isAdmin)
+    const data = await getDocuments(currentUser?.email ?? '', isAdmin, isAdmin ? null : activeCompanyId)
     setDocs(data)
     setLoading(false)
-  }, [currentUser?.email, isAdmin])
+  }, [currentUser?.email, isAdmin, activeCompanyId])
 
   useEffect(() => { load() }, [load])
 
@@ -256,7 +257,7 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
       fileData = { file_url: uploaded.url, blob_pathname: uploaded.pathname }
     }
 
-    const payload = { ...form, ...fileData }
+    const payload = { ...form, ...fileData, company_id: selected?.company_id ?? activeCompanyId }
     const res = selected
       ? await updateDocument(selected.id, payload)
       : await createDocument(payload)
@@ -378,7 +379,7 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
           <Button variant="outline" size="sm" onClick={load} aria-label="Refresh">
             <RefreshCw className="h-4 w-4" />
           </Button>
-          {canEdit && (
+          {canUpload && (
             <Button size="sm" onClick={openCreate}>
               <Upload className="mr-2 h-4 w-4" />Upload File
             </Button>
@@ -415,7 +416,7 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
                   <div className="flex flex-col items-center gap-3 text-muted-foreground">
                     <FolderOpen className="h-12 w-12 opacity-30" />
                     <p className="font-medium">No files found</p>
-                    {canEdit && <p className="text-sm">Upload your first file to the HSE library.</p>}
+                    {canUpload && <p className="text-sm">Upload your first file to the HSE library.</p>}
                   </div>
                 </TableCell>
               </TableRow>
@@ -499,7 +500,7 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
       </div>
 
       {/* ── Upload / Edit Dialog ─────────────────────────────────────────── */}
-      {canEdit && (
+      {canUpload && (
         <Dialog open={isFormOpen} onOpenChange={v => { setIsFormOpen(v); if (!v) setUploadFile(null) }}>
           <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto">
             <DialogHeader>

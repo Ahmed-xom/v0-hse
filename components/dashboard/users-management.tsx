@@ -234,7 +234,7 @@ export function UsersManagement() {
   const handleToggleJourneyAccess = async (u: User) => {
     const newValue = !u.journeyAccess
     setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyAccess: newValue } : x))
-    const result = await updateJourneyAccess(u.id, newValue)
+    const result = await updateJourneyAccess(u.id, newValue, currentUser?.email)
     if (!result.success) {
       setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyAccess: !newValue } : x))
       toast({ title: "Error", description: result.error, variant: "destructive" })
@@ -247,9 +247,9 @@ export function UsersManagement() {
   }
 
   const handleToggleJourneyApprover = async (u: User) => {
-    const newValue = !(u as any).journeyApprover
+    const newValue = !u.journeyApprover
     setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyApprover: newValue } : x))
-    const result = await updateJourneyApprover(u.id, newValue)
+    const result = await updateJourneyApprover(u.id, newValue, currentUser?.email)
     if (!result.success) {
       setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyApprover: !newValue } : x))
       toast({ title: "Error", description: result.error, variant: "destructive" })
@@ -925,7 +925,7 @@ export function UsersManagement() {
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleToggleJourneyApprover(user)}>
                                 <ShieldCheck className="mr-2 h-4 w-4" />
-                                {(user as any).journeyApprover ? "Revoke Journey Approver" : "Grant Journey Approver"}
+                                {user.journeyApprover ? "Revoke Journey Approver" : "Grant Journey Approver"}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleResetPassword(user)}>
                                 <KeyRound className="mr-2 h-4 w-4" />

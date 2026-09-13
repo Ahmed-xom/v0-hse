@@ -428,9 +428,9 @@ export async function updateUserApprover(
   }
 }
 
-export async function updateJourneyAccess(userId: string, grant: boolean) {
+export async function updateJourneyAccess(userId: string, grant: boolean, actorEmail?: string) {
   try {
-    await requireCompanyAdmin()
+  await requireCompanyAdmin(actorEmail)
     if (!userId) return { success: false, error: 'User ID is required' }
     await db.execute(sql`
       UPDATE neon_auth."user"
@@ -445,9 +445,9 @@ export async function updateJourneyAccess(userId: string, grant: boolean) {
   }
 }
 
-export async function updateJourneyApprover(userId: string, grant: boolean) {
+export async function updateJourneyApprover(userId: string, grant: boolean, actorEmail?: string) {
   try {
-    await requireCompanyAdmin()
+  await requireCompanyAdmin(actorEmail)
     if (!userId) return { success: false, error: 'User ID is required' }
     await db.execute(sql`
       UPDATE neon_auth."user"
@@ -472,6 +472,20 @@ export async function getUserJourneyAccess(email: string): Promise<boolean> {
     `)
     const row = rows.rows?.[0] as any
     return row?.journey_access === true
+  } catch {
+    return false
+  }
+}
+
+export async function getUserJourneyApprover(email: string): Promise<boolean> {
+  try {
+    const rows = await db.execute(sql`
+      SELECT COALESCE(journey_approver, false) AS journey_approver
+      FROM neon_auth."user"
+      WHERE email = ${email}
+      LIMIT 1
+    `)
+    return (rows.rows?.[0] as any)?.journey_approver === true
   } catch {
     return false
   }

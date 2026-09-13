@@ -2,6 +2,7 @@
 
 import { pool } from '@/lib/db'
 import { revalidateTag } from 'next/cache'
+import { sendEmail, incidentCreatedHtml } from '@/lib/send-email'
 import { unstable_cache } from 'next/cache'
 import { randomUUID } from 'node:crypto'
 
@@ -30,6 +31,8 @@ export type Incident = {
 }
 
 export async function getIncidents() {
+  const cacheKey = 'incidents-data-all'
+  const companyClause = 'TRUE'
   return unstable_cache(
     async () => {
       try {
@@ -57,6 +60,7 @@ export async function getIncidents() {
             created_at      AS "createdAt",
             updated_at      AS "updatedAt"
           FROM public.incident
+          WHERE ${companyClause}
           ORDER BY date DESC
         `)
         return result.rows as Incident[]
@@ -65,7 +69,7 @@ export async function getIncidents() {
         return []
       }
     },
-    ['incidents-data'],
+    [cacheKey],
     { tags: ['incidents'], revalidate: 60 }
   )()
 }
@@ -85,8 +89,16 @@ export async function createIncident(data: {
   immediateAction?: string
   nearMiss?: boolean
   lostTimeDays?: number
+  companyId?: string | null
 }) {
   try {
+    if (data.companyId && data.businessUnit) {
+      const allowed = await pool.query(
+        `SELECT 1 FROM public.business_unit WHERE company_id = $1 AND name = $2 LIMIT 1`,
+        [data.companyId, data.businessUnit]
+      )
+      if (allowed.rowCount === 0) return { success: false, error: 'Business unit does not belong to the selected company.' }
+    }
     const id = randomUUID()
     // Generate reference number: INC-YYYYMMDD-XXXX
     const now = new Date()
@@ -117,7 +129,48 @@ export async function createIncident(data: {
       ]
     )
     revalidateTag('incidents', 'max')
-    return { success: true, id, referenceNo }
+
+    if (data.companyId) {
+      const recipients = await pool.query<{ email: string }>(
+        `SELECT DISTINCT u.email
+         FROM neon_auth."user" u
+         JOIN public.company_membership cm ON cm.user_id::text = u.id::text
+         WHERE cm.company_id = $1 AND lower(cm.status) = 'active' AND u.email IS NOT NULL
+         UNION
+         SELECT DISTINCT u.email
+         FROM neon_auth."user" u
+         JOIN public.employee e ON lower(e.email) = lower(u.email)
+         JOIN public.business_unit bu ON bu.name = e.business_unit
+         WHERE bu.company_id = $1 AND lower(COALESCE(e.status, 'active')) = 'active' AND u.email IS NOT NULL`,
+        [data.companyId]
+      )
+      const emails = recipients.rows.map((row) => row.email).filter(Boolean)
+      let alertSent = false
+      let alertError: string | undefined
+      if (emails.length > 0) {
+        const alertResult = await sendEmail({
+          to: emails,
+          subject: `New incident reported: ${referenceNo}`,
+          html: incidentCreatedHtml({
+            referenceNo,
+            title: data.title,
+            incidentType: data.incidentType,
+            severity: data.severity,
+            date: data.date,
+            businessUnit: data.businessUnit,
+            location: data.location,
+            reportedBy: data.reportedBy,
+            description: data.description,
+          }),
+        })
+        alertSent = alertResult.sent
+        alertError = alertResult.error ?? (emails.length === 0 ? 'No active company users have email addresses.' : undefined)
+        if (!alertResult.sent) console.error('[v0] Incident alert delivery failed:', alertError)
+      }
+      return { success: true, id, referenceNo, alertSent, alertError }
+    }
+
+    return { success: true, id, referenceNo, alertSent: false, alertError: 'No company was selected.' }
   } catch (error: any) {
     console.error('[manage-incidents] createIncident error:', error)
     return { success: false, error: error.message }
@@ -142,7 +195,7 @@ export async function updateIncident(id: string, data: Partial<{
   correctiveAction: string
   lostTimeDays: number
   nearMiss: boolean
-}>) {
+}>, companyId?: string | null) {
   try {
     const fields: string[] = []
     const values: unknown[] = []
@@ -180,8 +233,10 @@ export async function updateIncident(id: string, data: Partial<{
     fields.push(`updated_at = now()`)
     values.push(id)
 
+    const scope = companyId ? ` AND business_unit IN (SELECT name FROM public.business_unit WHERE company_id = $${i + 1})` : ''
+    if (companyId) values.push(companyId)
     await pool.query(
-      `UPDATE public.incident SET ${fields.join(', ')} WHERE id = $${i}`,
+      `UPDATE public.incident SET ${fields.join(', ')} WHERE id = $${i}${scope}`,
       values
     )
     revalidateTag('incidents', 'max')
@@ -192,9 +247,11 @@ export async function updateIncident(id: string, data: Partial<{
   }
 }
 
-export async function deleteIncident(id: string) {
+export async function deleteIncident(id: string, companyId?: string | null) {
   try {
-    await pool.query(`DELETE FROM public.incident WHERE id = $1`, [id])
+    const scope = companyId ? ` AND business_unit IN (SELECT name FROM public.business_unit WHERE company_id = $2)` : ''
+    const values = companyId ? [id, companyId] : [id]
+    await pool.query(`DELETE FROM public.incident WHERE id = $1${scope}`, values)
     revalidateTag('incidents', 'max')
     return { success: true }
   } catch (error: any) {
