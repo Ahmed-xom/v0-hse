@@ -181,9 +181,10 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
 
     // --- Incidents by Type ---
     const byTypeResult = await db.execute(sql`
-      SELECT incident_type as name, COUNT(*) as value
+      SELECT COALESCE(NULLIF(TRIM(incident_type), ''), 'Uncategorized') as name, COUNT(*) as value
       FROM public.incident
-      GROUP BY incident_type
+      WHERE true ${incidentFilter}
+      GROUP BY COALESCE(NULLIF(TRIM(incident_type), ''), 'Uncategorized')
       ORDER BY value DESC
     `)
     const incidentsByType = ((byTypeResult as any).rows ?? []).map((r: any) => ({
@@ -195,9 +196,10 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     // Fallback: use observation categories if no incident types
     if (incidentsByType.length === 0) {
       const obsByCat = await db.execute(sql`
-        SELECT COALESCE(category, 'Uncategorized') as name, COUNT(*) as value
+        SELECT COALESCE(NULLIF(TRIM(category), ''), 'Uncategorized') as name, COUNT(*) as value
         FROM public.observation
-        GROUP BY category ORDER BY value DESC
+        WHERE true ${observationFilter}
+        GROUP BY COALESCE(NULLIF(TRIM(category), ''), 'Uncategorized') ORDER BY value DESC
       `)
       incidentsByType.push(...((obsByCat as any).rows ?? []).map((r: any) => ({
         name: r.name,
@@ -208,9 +210,10 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
 
     // --- Incidents by Severity ---
     const bySevResult = await db.execute(sql`
-      SELECT COALESCE(severity, 'Unknown') as severity, COUNT(*) as count
+      SELECT COALESCE(NULLIF(TRIM(severity), ''), 'Unknown') as severity, COUNT(*) as count
       FROM public.incident
-      GROUP BY severity ORDER BY count DESC
+      WHERE true ${incidentFilter}
+      GROUP BY COALESCE(NULLIF(TRIM(severity), ''), 'Unknown') ORDER BY count DESC
     `)
     const incidentsBySeverity = ((bySevResult as any).rows ?? []).map((r: any) => ({
       severity: r.severity,
