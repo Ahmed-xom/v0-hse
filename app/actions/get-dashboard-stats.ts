@@ -34,7 +34,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 export async function getDashboardStats(companyId?: string | null): Promise<DashboardStats> {
   try {
-    const incidentFilter = companyId ? sql` AND (business_unit IN (SELECT name FROM public.business_unit WHERE company_id = ${companyId}) OR business_unit IS NULL OR TRIM(business_unit) = '')` : sql``
+    const incidentFilter = companyId ? sql` AND business_unit IN (SELECT name FROM public.business_unit WHERE company_id = ${companyId})` : sql``
     const observationFilter = companyId ? sql` AND company_id = ${companyId}` : sql``
     const inspectionFilter = companyId ? sql` AND "company_id" = ${companyId}` : sql``
     const trainingFilter = companyId ? sql` AND company_id = ${companyId}` : sql``
@@ -50,7 +50,7 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     // Previous quarter comparison
     const prevQuarterResult = await db.execute(sql`
       SELECT MAX(date) as last_date FROM public.incident
-      WHERE near_miss = false AND date < NOW() - INTERVAL '90 days'
+      WHERE near_miss = false AND date < NOW() - INTERVAL '90 days' ${incidentFilter}
     `)
     const prevDate = (prevQuarterResult as any).rows?.[0]?.last_date
     const prevDays = prevDate
@@ -93,7 +93,7 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     // --- Training Completion ---
     const trResult = await db.execute(sql`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'Completed') as done,
+        COUNT(*) FILTER (WHERE status ILIKE 'completed') as done,
         COUNT(*) as total
       FROM public.training
       WHERE true ${trainingFilter}
@@ -106,10 +106,10 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     // Prior quarter training
     const prevTrResult = await db.execute(sql`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'Completed') as done,
+        COUNT(*) FILTER (WHERE status ILIKE 'completed') as done,
         COUNT(*) as total
       FROM public.training
-      WHERE created_at >= NOW() - INTERVAL '6 months' AND created_at < NOW() - INTERVAL '3 months'
+      WHERE created_at >= NOW() - INTERVAL '6 months' AND created_at < NOW() - INTERVAL '3 months' ${trainingFilter}
     `)
     const prevTrRow = (prevTrResult as any).rows?.[0] ?? { done: 0, total: 0 }
     const prevTrTotal = Number(prevTrRow.total)
@@ -133,7 +133,7 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
 
     const prevNmResult = await db.execute(sql`
       SELECT COUNT(*) as cnt FROM public.incident
-      WHERE near_miss = true AND date >= NOW() - INTERVAL '60 days' AND date < NOW() - INTERVAL '30 days'
+      WHERE near_miss = true AND date >= NOW() - INTERVAL '60 days' AND date < NOW() - INTERVAL '30 days' ${incidentFilter}
     `)
     const prevNm = Number((prevNmResult as any).rows?.[0]?.cnt ?? 0)
     const nmChange = prevNm > 0
@@ -161,7 +161,7 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
         COUNT(*) FILTER (WHERE "nearMiss" = false) as incidents,
         COUNT(*) FILTER (WHERE "nearMiss" = true) as near_misses
       FROM public.observation
-      WHERE date >= NOW() - INTERVAL '12 months'
+      WHERE date >= NOW() - INTERVAL '12 months' ${observationFilter}
       GROUP BY month, m, y
       ORDER BY y, m
     `)
