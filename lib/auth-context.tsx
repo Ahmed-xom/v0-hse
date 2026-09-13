@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
-import { getUserJourneyAccess } from "@/app/actions/manage-users"
+import { getUserJourneyAccess, getUserJourneyApprover } from "@/app/actions/manage-users"
 import { verifyUserPassword } from "@/app/actions/verify-password"
 import { getUserByEmail } from "@/app/actions/get-user-by-email"
 import { createUpcomingMeetingReminders } from "@/app/actions/manage-meetings"
@@ -18,6 +18,7 @@ export interface AuthUser {
   businessUnit: string
   status: string
   journeyAccess: boolean
+  journeyApprover: boolean
 }
 
 interface AuthContextType {
@@ -80,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Fetch journey access flag from DB
     const journeyAccess = await getUserJourneyAccess(email)
+    const journeyApprover = await getUserJourneyApprover(email)
 
     const authUser: AuthUser = {
       id: foundUser.id,
@@ -91,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       businessUnit: foundUser.businessUnit,
       status: foundUser.status,
       journeyAccess,
+      journeyApprover,
     }
 
     setUser(authUser)

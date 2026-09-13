@@ -477,6 +477,20 @@ export async function getUserJourneyAccess(email: string): Promise<boolean> {
   }
 }
 
+export async function getUserJourneyApprover(email: string): Promise<boolean> {
+  try {
+    const rows = await db.execute(sql`
+      SELECT COALESCE(journey_approver, false) AS journey_approver
+      FROM neon_auth."user"
+      WHERE email = ${email}
+      LIMIT 1
+    `)
+    return (rows.rows?.[0] as any)?.journey_approver === true
+  } catch {
+    return false
+  }
+}
+
 export async function exportUsersToExcel(users: any[]) {
   try {
     if (!users || users.length === 0) {

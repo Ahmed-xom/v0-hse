@@ -247,7 +247,7 @@ export function UsersManagement() {
   }
 
   const handleToggleJourneyApprover = async (u: User) => {
-    const newValue = !(u as any).journeyApprover
+    const newValue = !u.journeyApprover
     setDbUsers((prev) => prev.map((x) => x.id === u.id ? { ...x, journeyApprover: newValue } : x))
     const result = await updateJourneyApprover(u.id, newValue, currentUser?.email)
     if (!result.success) {
@@ -925,7 +925,7 @@ export function UsersManagement() {
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleToggleJourneyApprover(user)}>
                                 <ShieldCheck className="mr-2 h-4 w-4" />
-                                {(user as any).journeyApprover ? "Revoke Journey Approver" : "Grant Journey Approver"}
+                                {user.journeyApprover ? "Revoke Journey Approver" : "Grant Journey Approver"}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleResetPassword(user)}>
                                 <KeyRound className="mr-2 h-4 w-4" />

@@ -4,6 +4,9 @@ import { db } from '@/lib/db'
 import { journey, vehicle } from '@/lib/db/schema'
 import { eq, desc, asc } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
+import { getUserJourneyAccess, getUserJourneyApprover } from '@/app/actions/manage-users'
 
 export type VehicleRecord = {
   id: number
@@ -121,6 +124,14 @@ export async function createJourney(data: {
 
 export async function updateJourneyStatus(id: string, status: string) {
   try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    const email = session?.user?.email
+    if (!email) return { success: false, error: 'Unauthorized' }
+    const canApprove = await getUserJourneyApprover(email)
+    const role = String((session.user as any).role ?? '').toUpperCase()
+    if (!canApprove && !['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER'].includes(role)) {
+      return { success: false, error: 'Journey Approver access required' }
+    }
     await db
       .update(journey)
       .set({ status, updatedAt: new Date() })

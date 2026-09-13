@@ -10,6 +10,7 @@ export interface User {
   approver?: string
   approverEmail?: string
   journeyAccess?: boolean
+  journeyApprover?: boolean
 }
 
 export const users: User[] = [
