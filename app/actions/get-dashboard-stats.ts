@@ -32,11 +32,15 @@ const TYPE_COLORS: Record<string, string> = {
   'Environmental': '#8884d8',
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
+export async function getDashboardStats(companyId?: string | null): Promise<DashboardStats> {
   try {
+    const incidentFilter = companyId ? sql` AND reported_by_email IN (SELECT email FROM neon_auth."user" WHERE "companyId" = ${companyId})` : sql``
+    const observationFilter = companyId ? sql` AND company_id = ${companyId}` : sql``
+    const inspectionFilter = companyId ? sql` AND "company_id" = ${companyId}` : sql``
+    const trainingFilter = companyId ? sql` AND employee_code IN (SELECT payroll_no FROM public.user WHERE company_id = ${companyId})` : sql``
     // --- Days Without Incident ---
     const lastIncResult = await db.execute(sql`
-      SELECT MAX(date) as last_date FROM public.incident WHERE near_miss = false
+      SELECT MAX(date) as last_date FROM public.incident WHERE near_miss = false ${incidentFilter}
     `)
     const lastIncDate = (lastIncResult as any).rows?.[0]?.last_date
     const daysWithoutIncident = lastIncDate
@@ -62,7 +66,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         COUNT(*) FILTER (WHERE status = 'Completed' OR status = 'completed') as done,
         COUNT(*) as total
       FROM public.inspection
-      WHERE "createdAt" >= NOW() - INTERVAL '30 days'
+      WHERE "createdAt" >= NOW() - INTERVAL '30 days' ${inspectionFilter}
     `)
     const inspRow = (inspResult as any).rows?.[0] ?? { done: 0, total: 0 }
     const inspTotal = Number(inspRow.total)
@@ -92,6 +96,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         COUNT(*) FILTER (WHERE status = 'Completed') as done,
         COUNT(*) as total
       FROM public.training
+      WHERE true ${trainingFilter}
     `)
     const trRow = (trResult as any).rows?.[0] ?? { done: 0, total: 0 }
     const trTotal = Number(trRow.total)
@@ -120,7 +125,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       SELECT COUNT(*) as cnt FROM public.incident WHERE near_miss = true
     `)
     const nmObs = await db.execute(sql`
-      SELECT COUNT(*) as cnt FROM public.observation WHERE "nearMiss" = true
+      SELECT COUNT(*) as cnt FROM public.observation WHERE "nearMiss" = true ${observationFilter}
     `)
     const nearMissTotal =
       Number((nmResult as any).rows?.[0]?.cnt ?? 0) +
