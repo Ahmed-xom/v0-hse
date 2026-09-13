@@ -97,6 +97,7 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
   const isReviewer = !isAdmin && isReviewerRole(currentUser?.role ?? '')
   const canEdit = !readOnly && (isAdmin || isReviewer)
+  const canUpload = !readOnly && Boolean(currentUser)
   const { toast } = useToast()
 
   // list state
@@ -378,7 +379,7 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
           <Button variant="outline" size="sm" onClick={load} aria-label="Refresh">
             <RefreshCw className="h-4 w-4" />
           </Button>
-          {canEdit && (
+          {canUpload && (
             <Button size="sm" onClick={openCreate}>
               <Upload className="mr-2 h-4 w-4" />Upload File
             </Button>
@@ -415,7 +416,7 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
                   <div className="flex flex-col items-center gap-3 text-muted-foreground">
                     <FolderOpen className="h-12 w-12 opacity-30" />
                     <p className="font-medium">No files found</p>
-                    {canEdit && <p className="text-sm">Upload your first file to the HSE library.</p>}
+                    {canUpload && <p className="text-sm">Upload your first file to the HSE library.</p>}
                   </div>
                 </TableCell>
               </TableRow>
@@ -499,7 +500,7 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
       </div>
 
       {/* ── Upload / Edit Dialog ─────────────────────────────────────────── */}
-      {canEdit && (
+      {canUpload && (
         <Dialog open={isFormOpen} onOpenChange={v => { setIsFormOpen(v); if (!v) setUploadFile(null) }}>
           <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto">
             <DialogHeader>
