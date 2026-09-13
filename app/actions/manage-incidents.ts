@@ -2,6 +2,7 @@
 
 import { pool } from '@/lib/db'
 import { revalidateTag } from 'next/cache'
+import { sendEmail, incidentCreatedHtml } from '@/lib/send-email'
 import { unstable_cache } from 'next/cache'
 import { randomUUID } from 'node:crypto'
 
@@ -128,6 +129,35 @@ export async function createIncident(data: {
       ]
     )
     revalidateTag('incidents', 'max')
+
+    if (data.companyId) {
+      const recipients = await pool.query<{ email: string }>(
+        `SELECT DISTINCT u.email
+         FROM neon_auth."user" u
+         JOIN public.company_membership cm ON cm.user_id = u.id
+         WHERE cm.company_id = $1 AND cm.status = 'Active' AND u.email IS NOT NULL`,
+        [data.companyId]
+      )
+      const emails = recipients.rows.map((row) => row.email).filter(Boolean)
+      if (emails.length > 0) {
+        await sendEmail({
+          to: emails,
+          subject: `New incident reported: ${referenceNo}`,
+          html: incidentCreatedHtml({
+            referenceNo,
+            title: data.title,
+            incidentType: data.incidentType,
+            severity: data.severity,
+            date: data.date,
+            businessUnit: data.businessUnit,
+            location: data.location,
+            reportedBy: data.reportedBy,
+            description: data.description,
+          }),
+        })
+      }
+    }
+
     return { success: true, id, referenceNo }
   } catch (error: any) {
     console.error('[manage-incidents] createIncident error:', error)

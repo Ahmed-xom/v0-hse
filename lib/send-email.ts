@@ -43,6 +43,34 @@ export async function sendEmail(opts: {
   }
 }
 
+export function incidentCreatedHtml(incident: {
+  referenceNo: string
+  title: string
+  incidentType: string
+  severity: string
+  date: string
+  businessUnit?: string | null
+  location?: string | null
+  reportedBy?: string | null
+  description?: string | null
+}): string {
+  const severityColor = incident.severity.toLowerCase() === 'critical' ? '#dc2626' : incident.severity.toLowerCase() === 'major' ? '#ea580c' : '#0d9488'
+  return `<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;padding:20px;background:#f8fafc;">
+    <div style="background:#0d9488;padding:24px;border-radius:10px 10px 0 0;color:#fff;"><h1 style="margin:0;font-size:22px;">AMNKO HSE — New Incident</h1><p style="margin:6px 0 0;">${incident.referenceNo}</p></div>
+    <div style="background:#fff;padding:26px;border:1px solid #e2e8f0;border-top:0;border-radius:0 0 10px 10px;">
+      <h2 style="margin:0 0 18px;color:#0f172a;">${incident.title}</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <tr><td style="padding:7px 0;color:#64748b;width:140px;">Type</td><td style="padding:7px 0;color:#1e293b;">${incident.incidentType}</td></tr>
+        <tr><td style="padding:7px 0;color:#64748b;">Severity</td><td style="padding:7px 0;color:${severityColor};font-weight:700;">${incident.severity}</td></tr>
+        <tr><td style="padding:7px 0;color:#64748b;">Date</td><td style="padding:7px 0;color:#1e293b;">${incident.date}</td></tr>
+        <tr><td style="padding:7px 0;color:#64748b;">Business Unit</td><td style="padding:7px 0;color:#1e293b;">${incident.businessUnit || '—'}</td></tr>
+        <tr><td style="padding:7px 0;color:#64748b;">Location</td><td style="padding:7px 0;color:#1e293b;">${incident.location || '—'}</td></tr>
+        <tr><td style="padding:7px 0;color:#64748b;">Reported By</td><td style="padding:7px 0;color:#1e293b;">${incident.reportedBy || '—'}</td></tr>
+      </table>
+      <hr style="border:0;border-top:1px solid #e2e8f0;margin:20px 0;"/><p style="color:#64748b;font-size:13px;margin:0 0 6px;font-weight:600;">Description</p><p style="color:#1e293b;font-size:14px;line-height:1.6;margin:0;">${incident.description || '—'}</p>
+    </div></div>`
+}
+
 // ── Email templates ──────────────────────────────────────────────────────────
 
 export function observationCreatedHtml(obs: {
