@@ -34,7 +34,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 export async function getDashboardStats(companyId?: string | null): Promise<DashboardStats> {
   try {
-    const incidentFilter = companyId ? sql` AND business_unit IN (SELECT name FROM public.business_unit WHERE company_id = ${companyId})` : sql``
+    const incidentFilter = companyId ? sql` AND (business_unit IN (SELECT name FROM public.business_unit WHERE company_id = ${companyId}) OR business_unit IS NULL OR TRIM(business_unit) = '')` : sql``
     const observationFilter = companyId ? sql` AND company_id = ${companyId}` : sql``
     const inspectionFilter = companyId ? sql` AND "company_id" = ${companyId}` : sql``
     const trainingFilter = companyId ? sql` AND employee_code IN (SELECT payroll_no FROM public.user WHERE company_id = ${companyId})` : sql``
@@ -122,7 +122,7 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
 
     // --- Near Misses (observations + incidents) ---
     const nmResult = await db.execute(sql`
-      SELECT COUNT(*) as cnt FROM public.incident WHERE near_miss = true
+      SELECT COUNT(*) as cnt FROM public.incident WHERE near_miss = true ${incidentFilter}
     `)
     const nmObs = await db.execute(sql`
       SELECT COUNT(*) as cnt FROM public.observation WHERE "nearMiss" = true ${observationFilter}
@@ -149,7 +149,7 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
         COUNT(*) FILTER (WHERE near_miss = false) as incidents,
         COUNT(*) FILTER (WHERE near_miss = true) as near_misses
       FROM public.incident
-      WHERE date >= NOW() - INTERVAL '12 months'
+      WHERE date >= NOW() - INTERVAL '12 months' ${incidentFilter}
       GROUP BY month, m, y
       ORDER BY y, m
     `)
@@ -221,9 +221,9 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     }))
 
     // --- Summary Stats ---
-    const ltiResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident WHERE incident_type ILIKE '%lost time%' OR severity ILIKE '%serious%'`)
-    const medResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident WHERE incident_type ILIKE '%medical%'`)
-    const obsTotal = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.observation`)
+    const ltiResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident WHERE (incident_type ILIKE '%lost time%' OR severity ILIKE '%serious%') ${incidentFilter}`)
+    const medResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident WHERE incident_type ILIKE '%medical%' ${incidentFilter}`)
+    const obsTotal = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.observation WHERE true ${observationFilter}`)
 
     return {
       daysWithoutIncident,
