@@ -66,10 +66,10 @@ export function StorageUsage() {
         <div className="mt-5 border-t border-border pt-4">
           <h3 className="text-sm font-semibold">Stored records</h3>
           <div className="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-5">
-            {Object.entries(usage.recordCounts).map(([label, count]) => (
+            {Object.entries(usage.recordCounts ?? {}).map(([label, count]) => (
               <div key={label} className="rounded-lg border border-border bg-muted/20 px-3 py-3">
                 <p className="text-xs capitalize text-muted-foreground">{label}</p>
-                <p className="mt-1 text-lg font-semibold">{count.toLocaleString()}</p>
+                <p className="mt-1 text-lg font-semibold">{Number(count ?? 0).toLocaleString()}</p>
               </div>
             ))}
           </div>
