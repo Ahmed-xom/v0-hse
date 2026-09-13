@@ -29,7 +29,11 @@ export type Incident = {
   updatedAt: string
 }
 
-export async function getIncidents() {
+export async function getIncidents(companyId?: string | null) {
+  const cacheKey = `incidents-data-${companyId ?? 'all'}`
+  const companyClause = companyId
+    ? `business_unit IN (SELECT name FROM public.business_unit WHERE company_id = '${companyId.replace(/'/g, "''")}')`
+    : 'TRUE'
   return unstable_cache(
     async () => {
       try {
@@ -57,6 +61,7 @@ export async function getIncidents() {
             created_at      AS "createdAt",
             updated_at      AS "updatedAt"
           FROM public.incident
+          WHERE ${companyClause}
           ORDER BY date DESC
         `)
         return result.rows as Incident[]
@@ -65,7 +70,7 @@ export async function getIncidents() {
         return []
       }
     },
-    ['incidents-data'],
+    [cacheKey],
     { tags: ['incidents'], revalidate: 60 }
   )()
 }
@@ -85,8 +90,16 @@ export async function createIncident(data: {
   immediateAction?: string
   nearMiss?: boolean
   lostTimeDays?: number
+  companyId?: string | null
 }) {
   try {
+    if (data.companyId && data.businessUnit) {
+      const allowed = await pool.query(
+        `SELECT 1 FROM public.business_unit WHERE company_id = $1 AND name = $2 LIMIT 1`,
+        [data.companyId, data.businessUnit]
+      )
+      if (allowed.rowCount === 0) return { success: false, error: 'Business unit does not belong to the selected company.' }
+    }
     const id = randomUUID()
     // Generate reference number: INC-YYYYMMDD-XXXX
     const now = new Date()
@@ -142,7 +155,7 @@ export async function updateIncident(id: string, data: Partial<{
   correctiveAction: string
   lostTimeDays: number
   nearMiss: boolean
-}>) {
+}>, companyId?: string | null) {
   try {
     const fields: string[] = []
     const values: unknown[] = []
@@ -180,8 +193,10 @@ export async function updateIncident(id: string, data: Partial<{
     fields.push(`updated_at = now()`)
     values.push(id)
 
+    const scope = companyId ? ` AND business_unit IN (SELECT name FROM public.business_unit WHERE company_id = $${i + 1})` : ''
+    if (companyId) values.push(companyId)
     await pool.query(
-      `UPDATE public.incident SET ${fields.join(', ')} WHERE id = $${i}`,
+      `UPDATE public.incident SET ${fields.join(', ')} WHERE id = $${i}${scope}`,
       values
     )
     revalidateTag('incidents', 'max')
@@ -192,9 +207,11 @@ export async function updateIncident(id: string, data: Partial<{
   }
 }
 
-export async function deleteIncident(id: string) {
+export async function deleteIncident(id: string, companyId?: string | null) {
   try {
-    await pool.query(`DELETE FROM public.incident WHERE id = $1`, [id])
+    const scope = companyId ? ` AND business_unit IN (SELECT name FROM public.business_unit WHERE company_id = $2)` : ''
+    const values = companyId ? [id, companyId] : [id]
+    await pool.query(`DELETE FROM public.incident WHERE id = $1${scope}`, values)
     revalidateTag('incidents', 'max')
     return { success: true }
   } catch (error: any) {

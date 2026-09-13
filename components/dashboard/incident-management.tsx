@@ -115,7 +115,7 @@ const EMPTY_FORM = {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function IncidentManagement() {
+export function IncidentManagement({ companyId }: { companyId?: string | null }) {
   const { currentUser } = useAuth()
   const { toast } = useToast()
   const canEdit = Boolean(currentUser)
@@ -140,12 +140,12 @@ export function IncidentManagement() {
 
   const fetchIncidents = async () => {
     setLoading(true)
-    const data = await getIncidents()
+    const data = await getIncidents(companyId)
     setIncidents(data)
     setLoading(false)
   }
 
-  useEffect(() => { fetchIncidents() }, [])
+  useEffect(() => { fetchIncidents() }, [companyId])
 
   // ── Filtered / paged data ──────────────────────────────────────────────
 
@@ -222,7 +222,7 @@ export function IncidentManagement() {
       const res = await updateIncident(selected.id, {
         ...form,
         lostTimeDays: Number(form.lostTimeDays),
-      })
+      }, companyId)
       if (res.success) {
         toast({ title: "Incident updated" })
         setShowForm(false)
@@ -234,6 +234,7 @@ export function IncidentManagement() {
       const res = await createIncident({
         ...form,
         lostTimeDays: Number(form.lostTimeDays),
+        companyId,
       })
       if (res.success) {
         toast({ title: "Incident reported", description: `Reference: ${res.referenceNo}` })
@@ -249,7 +250,7 @@ export function IncidentManagement() {
   const handleDelete = async () => {
     if (!selected) return
     setSaving(true)
-    const res = await deleteIncident(selected.id)
+    const res = await deleteIncident(selected.id, companyId)
     if (res.success) {
       toast({ title: "Incident deleted" })
       setShowDelete(false)

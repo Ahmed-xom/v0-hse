@@ -50,7 +50,7 @@ export default function HSEDashboard() {
           {/* Incident Management */}
           <section id="incidents" aria-label="Incident Management">
             <SectionDataToolbar section="Incidents" canImport={canImport} columns={["Reference No", "Title", "Type", "Severity", "Status", "Date", "Location", "Business Unit", "Description"]} />
-            <IncidentManagement />
+            <IncidentManagement companyId={activeCompanyId} />
           </section>
 
           {/* Behaviour Observations */}
