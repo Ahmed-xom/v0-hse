@@ -428,9 +428,9 @@ export async function updateUserApprover(
   }
 }
 
-export async function updateJourneyAccess(userId: string, grant: boolean) {
+export async function updateJourneyAccess(userId: string, grant: boolean, actorEmail?: string) {
   try {
-    await requireCompanyAdmin()
+  await requireCompanyAdmin(actorEmail)
     if (!userId) return { success: false, error: 'User ID is required' }
     await db.execute(sql`
       UPDATE neon_auth."user"
@@ -445,9 +445,9 @@ export async function updateJourneyAccess(userId: string, grant: boolean) {
   }
 }
 
-export async function updateJourneyApprover(userId: string, grant: boolean) {
+export async function updateJourneyApprover(userId: string, grant: boolean, actorEmail?: string) {
   try {
-    await requireCompanyAdmin()
+  await requireCompanyAdmin(actorEmail)
     if (!userId) return { success: false, error: 'User ID is required' }
     await db.execute(sql`
       UPDATE neon_auth."user"
