@@ -32,11 +32,13 @@ const TYPE_COLORS: Record<string, string> = {
   'Environmental': '#8884d8',
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
+export async function getDashboardStats(companyId?: string | null): Promise<DashboardStats> {
   try {
+    const companyFilter = companyId ? sql` AND bu.company_id = ${companyId}` : sql``
+    const observationFilter = companyId ? sql` AND company_id = ${companyId}` : sql``
     // --- Days Without Incident ---
     const lastIncResult = await db.execute(sql`
-      SELECT MAX(date) as last_date FROM public.incident WHERE near_miss = false
+      SELECT MAX(i.date) as last_date FROM public.incident i LEFT JOIN public.business_unit bu ON bu.name = i.business_unit WHERE i.near_miss = false ${companyFilter}
     `)
     const lastIncDate = (lastIncResult as any).rows?.[0]?.last_date
     const daysWithoutIncident = lastIncDate
@@ -45,8 +47,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     // Previous quarter comparison
     const prevQuarterResult = await db.execute(sql`
-      SELECT MAX(date) as last_date FROM public.incident
-      WHERE near_miss = false AND date < NOW() - INTERVAL '90 days'
+      SELECT MAX(i.date) as last_date FROM public.incident i LEFT JOIN public.business_unit bu ON bu.name = i.business_unit
+      WHERE i.near_miss = false AND i.date < NOW() - INTERVAL '90 days' ${companyFilter}
     `)
     const prevDate = (prevQuarterResult as any).rows?.[0]?.last_date
     const prevDays = prevDate
@@ -61,8 +63,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       SELECT
         COUNT(*) FILTER (WHERE status = 'Completed' OR status = 'completed') as done,
         COUNT(*) as total
-      FROM public.inspection
-      WHERE "createdAt" >= NOW() - INTERVAL '30 days'
+      FROM public.inspection i JOIN public.business_unit bu ON bu.id = i."businessUnitId"
+      WHERE i."createdAt" >= NOW() - INTERVAL '30 days' ${companyFilter}
     `)
     const inspRow = (inspResult as any).rows?.[0] ?? { done: 0, total: 0 }
     const inspTotal = Number(inspRow.total)
@@ -156,7 +158,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         COUNT(*) FILTER (WHERE "nearMiss" = false) as incidents,
         COUNT(*) FILTER (WHERE "nearMiss" = true) as near_misses
       FROM public.observation
-      WHERE date >= NOW() - INTERVAL '12 months'
+      WHERE date >= NOW() - INTERVAL '12 months' ${observationFilter}
       GROUP BY month, m, y
       ORDER BY y, m
     `)
@@ -176,9 +178,10 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
     // --- Incidents by Type ---
     const byTypeResult = await db.execute(sql`
-      SELECT incident_type as name, COUNT(*) as value
-      FROM public.incident
-      GROUP BY incident_type
+      SELECT i.incident_type as name, COUNT(*) as value
+      FROM public.incident i LEFT JOIN public.business_unit bu ON bu.name = i.business_unit
+      WHERE true ${companyFilter}
+      GROUP BY i.incident_type
       ORDER BY value DESC
     `)
     const incidentsByType = ((byTypeResult as any).rows ?? []).map((r: any) => ({
