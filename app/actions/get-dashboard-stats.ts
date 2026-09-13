@@ -34,7 +34,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 export async function getDashboardStats(companyId?: string | null): Promise<DashboardStats> {
   try {
-    const incidentFilter = companyId ? sql` AND (company_id = ${companyId} OR business_unit IN (SELECT name FROM public.business_unit WHERE company_id = ${companyId}))` : sql``
+    const incidentFilter = companyId ? sql` AND business_unit IN (SELECT name FROM public.business_unit WHERE company_id = ${companyId})` : sql``
     const observationFilter = companyId ? sql` AND company_id = ${companyId}` : sql``
     const inspectionFilter = companyId ? sql` AND "company_id" = ${companyId}` : sql``
     const trainingFilter = companyId ? sql` AND employee_code IN (SELECT payroll_no FROM public.user WHERE company_id = ${companyId})` : sql``
