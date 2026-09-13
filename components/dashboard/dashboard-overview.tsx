@@ -14,6 +14,10 @@ export function DashboardOverview({ companyId }: { companyId?: string | null }) 
     getDashboardStats(companyId).then((s) => {
       setStats(s)
       setIsLoading(false)
+    }).catch((error) => {
+      console.error('[v0] Dashboard stats failed', error)
+      setStats(undefined)
+      setIsLoading(false)
     })
   }, [companyId])
 

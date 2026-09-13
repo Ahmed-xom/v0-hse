@@ -37,7 +37,7 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     const incidentFilter = companyId ? sql` AND (business_unit IN (SELECT name FROM public.business_unit WHERE company_id = ${companyId}) OR business_unit IS NULL OR TRIM(business_unit) = '')` : sql``
     const observationFilter = companyId ? sql` AND company_id = ${companyId}` : sql``
     const inspectionFilter = companyId ? sql` AND "company_id" = ${companyId}` : sql``
-    const trainingFilter = companyId ? sql` AND employee_code IN (SELECT payroll_no FROM public.user WHERE company_id = ${companyId})` : sql``
+    const trainingFilter = companyId ? sql` AND company_id = ${companyId}` : sql``
     // --- Days Without Incident ---
     const lastIncResult = await db.execute(sql`
       SELECT MAX(date) as last_date FROM public.incident WHERE near_miss = false ${incidentFilter}
@@ -63,7 +63,7 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     // --- Inspection Compliance (last 30 days) ---
     const inspResult = await db.execute(sql`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'Completed' OR status = 'completed') as done,
+        COUNT(*) FILTER (WHERE status ILIKE 'completed') as done,
         COUNT(*) as total
       FROM public.inspection
       WHERE "createdAt" >= NOW() - INTERVAL '30 days' ${inspectionFilter}
@@ -76,10 +76,10 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     // Prior month compliance for change %
     const prevInspResult = await db.execute(sql`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'Completed' OR status = 'completed') as done,
+        COUNT(*) FILTER (WHERE status ILIKE 'completed') as done,
         COUNT(*) as total
       FROM public.inspection
-      WHERE "createdAt" >= NOW() - INTERVAL '60 days' AND "createdAt" < NOW() - INTERVAL '30 days'
+      WHERE "createdAt" >= NOW() - INTERVAL '60 days' AND "createdAt" < NOW() - INTERVAL '30 days' ${inspectionFilter}
     `)
     const prevInspRow = (prevInspResult as any).rows?.[0] ?? { done: 0, total: 0 }
     const prevInspTotal = Number(prevInspRow.total)
