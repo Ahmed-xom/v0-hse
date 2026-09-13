@@ -10,14 +10,29 @@ export type StorageUsage = {
   databaseLabel: string
   blobBytes: number
   blobCount: number
+  recordCounts: {
+    incidents: number
+    inspections: number
+    training: number
+    observations: number
+    users: number
+  }
   checkedAt: string
 }
 
 export async function getStorageUsage(): Promise<StorageUsage> {
-  const [{ rows }] = await Promise.all([
+  const [{ rows }, { rows: countRows }] = await Promise.all([
     pool.query<{ size_bytes: string }>(
       'SELECT pg_database_size(current_database())::text AS size_bytes'
     ),
+    pool.query<{ incidents: string; inspections: string; training: string; observations: string; users: string }>(`
+      SELECT
+        (SELECT COUNT(*) FROM public.incident)::text AS incidents,
+        (SELECT COUNT(*) FROM public.inspection)::text AS inspections,
+        (SELECT COUNT(*) FROM public.training)::text AS training,
+        (SELECT COUNT(*) FROM public.observation)::text AS observations,
+        (SELECT COUNT(*) FROM neon_auth."user")::text AS users
+    `),
   ])
 
   let blobBytes = 0
@@ -38,6 +53,13 @@ export async function getStorageUsage(): Promise<StorageUsage> {
     databaseLabel: formatBytes(databaseBytes),
     blobBytes,
     blobCount,
+    recordCounts: {
+      incidents: Number(countRows[0]?.incidents ?? 0),
+      inspections: Number(countRows[0]?.inspections ?? 0),
+      training: Number(countRows[0]?.training ?? 0),
+      observations: Number(countRows[0]?.observations ?? 0),
+      users: Number(countRows[0]?.users ?? 0),
+    },
     checkedAt: new Date().toISOString(),
   }
 }
