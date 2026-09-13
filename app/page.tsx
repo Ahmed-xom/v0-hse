@@ -9,6 +9,7 @@ import { InspectionTypes } from "@/components/dashboard/inspection-types"
 import { UsersManagement } from "@/components/dashboard/users-management"
 import { BusinessUnits } from "@/components/dashboard/business-units"
 import { CompanyManagement } from "@/components/dashboard/company-management"
+import { DocumentsLibrary } from "@/components/dashboard/documents-library"
 import { BehaviourObservations } from "@/components/dashboard/behaviour-observations"
 import { CoursesManagement } from "@/components/dashboard/courses-management"
 import { TrainingRecords } from "@/components/dashboard/training-records"
@@ -88,6 +89,15 @@ export default function HSEDashboard() {
           <section id="business-units" aria-label="Business Units">
             <SectionDataToolbar section="Business Units" canImport={canImport} columns={["Name", "Code", "Description", "Manager", "Email", "Type", "Status"]} />
             <BusinessUnits />
+          </section>
+
+          {/* Company Document Library */}
+          <section id="document-library" aria-label="Company Document Library">
+            <div className="mb-3">
+              <h2 className="text-xl font-semibold">Document Library</h2>
+              <p className="text-sm text-muted-foreground">Files for the active company</p>
+            </div>
+            <DocumentsLibrary activeCompanyId={activeCompanyId} />
           </section>
 
           {/* Company Management */}

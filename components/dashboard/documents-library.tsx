@@ -88,11 +88,11 @@ const EMPTY_FORM: FormData = {
   tags: [], is_public: true, allowed_emails: [],
 }
 
-interface Props { readOnly?: boolean }
+interface Props { readOnly?: boolean; activeCompanyId?: string | null }
 
 // ── component ─────────────────────────────────────────────────────────────────
 
-export function DocumentsLibrary({ readOnly = false }: Props) {
+export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: Props) {
   const { currentUser } = useAuth()
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
   const isReviewer = !isAdmin && isReviewerRole(currentUser?.role ?? '')
@@ -135,10 +135,10 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const data = await getDocuments(currentUser?.email ?? '', isAdmin)
+    const data = await getDocuments(currentUser?.email ?? '', isAdmin, isAdmin ? null : activeCompanyId)
     setDocs(data)
     setLoading(false)
-  }, [currentUser?.email, isAdmin])
+  }, [currentUser?.email, isAdmin, activeCompanyId])
 
   useEffect(() => { load() }, [load])
 
@@ -257,7 +257,7 @@ export function DocumentsLibrary({ readOnly = false }: Props) {
       fileData = { file_url: uploaded.url, blob_pathname: uploaded.pathname }
     }
 
-    const payload = { ...form, ...fileData }
+    const payload = { ...form, ...fileData, company_id: selected?.company_id ?? activeCompanyId }
     const res = selected
       ? await updateDocument(selected.id, payload)
       : await createDocument(payload)

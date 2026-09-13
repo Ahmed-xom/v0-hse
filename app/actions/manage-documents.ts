@@ -32,6 +32,7 @@ export interface HSEDocument {
   allowed_emails: string[]
   created_at: string
   updated_at: string
+  company_id?: string | null
 }
 
 // Upload a file to Vercel Blob via server action (avoids client-side CORS issues in preview)
@@ -56,20 +57,23 @@ export async function uploadFileAction(
 
 // Returns documents visible to the given user email.
 // Admins see everything. Regular users see: is_public=true OR their email is in allowed_emails.
-export async function getDocuments(userEmail?: string, isAdmin?: boolean): Promise<HSEDocument[]> {
+export async function getDocuments(userEmail?: string, isAdmin?: boolean, companyId?: string | null): Promise<HSEDocument[]> {
   try {
     let query: string
     let params: string[]
-    if (isAdmin) {
+    if (isAdmin && companyId) {
+      query = 'SELECT * FROM public.document WHERE company_id = $1 OR company_id IS NULL ORDER BY category, title'
+      params = [companyId]
+    } else if (isAdmin) {
       query = 'SELECT * FROM public.document ORDER BY category, title'
       params = []
-    } else if (userEmail) {
+    } else if (userEmail && companyId) {
       query = `SELECT * FROM public.document
-               WHERE is_public = true OR $1 = ANY(allowed_emails)
+               WHERE company_id = $1 AND (is_public = true OR $2 = ANY(allowed_emails))
                ORDER BY category, title`
-      params = [userEmail]
+      params = [companyId, userEmail]
     } else {
-      query = 'SELECT * FROM public.document WHERE is_public = true ORDER BY category, title'
+      query = 'SELECT * FROM public.document WHERE false'
       params = []
     }
     const res = await pool.query(query, params)
@@ -104,8 +108,8 @@ export async function createDocument(
         (doc_no, title, category, sub_category, description, version, status,
          file_url, file_name, file_size, file_type, blob_pathname, business_unit,
          owner, owner_email, uploaded_by, uploaded_by_email,
-         review_date, expiry_date, tags, is_public, allowed_emails)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
+         review_date, expiry_date, tags, is_public, allowed_emails, company_id)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
       RETURNING id
     `, [
       doc_no, data.title, data.category,
@@ -116,7 +120,7 @@ export async function createDocument(
       data.business_unit ?? null, data.owner ?? null, data.owner_email ?? null,
       data.uploaded_by ?? null, data.uploaded_by_email ?? null,
       data.review_date ?? null, data.expiry_date ?? null,
-      data.tags ?? [], data.is_public ?? true, data.allowed_emails ?? [],
+      data.tags ?? [], data.is_public ?? true, data.allowed_emails ?? [], data.company_id ?? null,
     ])
     revalidatePath('/')
     return { success: true, id: res.rows[0].id }
