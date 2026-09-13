@@ -147,6 +147,23 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
 
   useEffect(() => { fetchIncidents() }, [companyId])
 
+  useEffect(() => {
+    const openIncident = (event: Event) => {
+      const referenceNo = (event as CustomEvent<{ referenceNo?: string }>).detail?.referenceNo
+      if (!referenceNo) return
+      const incident = incidents.find((item) => item.referenceNo === referenceNo)
+      if (incident) {
+        setSelected(incident)
+        setShowView(true)
+        window.requestAnimationFrame(() => document.getElementById("incident-statistics")?.scrollIntoView({ behavior: "smooth", block: "start" }))
+      } else {
+        toast({ title: "Incident not found", description: `No incident was found for ${referenceNo}.`, variant: "destructive" })
+      }
+    }
+    window.addEventListener("hse:open-incident", openIncident)
+    return () => window.removeEventListener("hse:open-incident", openIncident)
+  }, [incidents, toast])
+
   // ── Filtered / paged data ──────────────────────────────────────────────
 
   const filtered = useMemo(() => {

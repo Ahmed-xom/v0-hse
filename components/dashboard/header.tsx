@@ -182,17 +182,27 @@ export function DashboardHeader() {
             <DropdownMenuContent align="end" className="w-80">
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <span className="font-medium">Overdue Inspection Alert</span>
-                <span className="text-sm text-muted-foreground">Chemical Storage Inspection is 3 days overdue</span>
+              <DropdownMenuItem asChild>
+                <Link href="#inspection-reports" className="flex cursor-pointer flex-col items-start gap-1 py-3">
+                  <span className="font-medium">Overdue Inspection Alert</span>
+                  <span className="text-sm text-muted-foreground">Chemical Storage Inspection is 3 days overdue</span>
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <span className="font-medium">Training Reminder</span>
-                <span className="text-sm text-muted-foreground">12 employees have pending safety training</span>
+              <DropdownMenuItem asChild>
+                <Link href="#training-courses" className="flex cursor-pointer flex-col items-start gap-1 py-3">
+                  <span className="font-medium">Training Reminder</span>
+                  <span className="text-sm text-muted-foreground">12 employees have pending safety training</span>
+                </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="flex flex-col items-start gap-1 py-3">
-                <span className="font-medium">New Incident Report</span>
-                <span className="text-sm text-muted-foreground">Minor incident reported at Warehouse C</span>
+              <DropdownMenuItem asChild>
+                <button
+                  type="button"
+                  className="flex w-full cursor-pointer flex-col items-start gap-1 py-3 text-left"
+                  onClick={() => window.dispatchEvent(new CustomEvent("hse:open-incident", { detail: { referenceNo: "INC-20260912-0001" } }))}
+                >
+                  <span className="font-medium">New Incident Report</span>
+                  <span className="text-sm text-muted-foreground">Minor incident reported at Warehouse C</span>
+                </button>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
