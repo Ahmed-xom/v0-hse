@@ -16,6 +16,7 @@ import { ProtectedRoute } from "@/components/protected-route"
 import { useAuth } from "@/lib/auth-context"
 import { SectionDataToolbar } from "@/components/dashboard/section-data-toolbar"
 import { DashboardNavigation } from "@/components/dashboard/dashboard-navigation"
+import { StorageUsage } from "@/components/dashboard/storage-usage"
 
 export default function HSEDashboard() {
   const { activeCompanyId, user } = useAuth()
@@ -46,6 +47,8 @@ export default function HSEDashboard() {
           <section id="kpi-cards" aria-label="Key Performance Indicators">
             <DashboardOverview companyId={activeCompanyId} />
           </section>
+
+          <StorageUsage />
 
           {/* Incident Management */}
           <section id="incidents" aria-label="Incident Management">
