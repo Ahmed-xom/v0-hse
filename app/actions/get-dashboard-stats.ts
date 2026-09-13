@@ -61,7 +61,7 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     // --- Inspection Compliance (last 30 days) ---
     const inspResult = await db.execute(sql`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'Completed' OR status = 'completed') as done,
+        COUNT(*) FILTER (WHERE i.status = 'Completed' OR i.status = 'completed') as done,
         COUNT(*) as total
       FROM public.inspection i JOIN public.business_unit bu ON bu.id = i."businessUnitId"
       WHERE i."createdAt" >= NOW() - INTERVAL '30 days' ${companyFilter}
@@ -74,10 +74,10 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     // Prior month compliance for change %
     const prevInspResult = await db.execute(sql`
       SELECT
-        COUNT(*) FILTER (WHERE status = 'Completed' OR status = 'completed') as done,
+        COUNT(*) FILTER (WHERE i.status = 'Completed' OR i.status = 'completed') as done,
         COUNT(*) as total
-      FROM public.inspection
-      WHERE "createdAt" >= NOW() - INTERVAL '60 days' AND "createdAt" < NOW() - INTERVAL '30 days'
+      FROM public.inspection i JOIN public.business_unit bu ON bu.id = i."businessUnitId"
+      WHERE i."createdAt" >= NOW() - INTERVAL '60 days' AND i."createdAt" < NOW() - INTERVAL '30 days' ${companyFilter}
     `)
     const prevInspRow = (prevInspResult as any).rows?.[0] ?? { done: 0, total: 0 }
     const prevInspTotal = Number(prevInspRow.total)
@@ -119,7 +119,7 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
 
     // --- Near Misses (observations + incidents) ---
     const nmResult = await db.execute(sql`
-      SELECT COUNT(*) as cnt FROM public.incident WHERE near_miss = true
+      SELECT COUNT(*) as cnt FROM public.incident i LEFT JOIN public.business_unit bu ON bu.name = i.business_unit WHERE i.near_miss = true ${companyFilter}
     `)
     const nmObs = await db.execute(sql`
       SELECT COUNT(*) as cnt FROM public.observation WHERE "nearMiss" = true
@@ -145,8 +145,8 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
         EXTRACT(YEAR FROM date)::int as y,
         COUNT(*) FILTER (WHERE near_miss = false) as incidents,
         COUNT(*) FILTER (WHERE near_miss = true) as near_misses
-      FROM public.incident
-      WHERE date >= NOW() - INTERVAL '12 months'
+      FROM public.incident i LEFT JOIN public.business_unit bu ON bu.name = i.business_unit
+      WHERE i.date >= NOW() - INTERVAL '12 months' ${companyFilter}
       GROUP BY month, m, y
       ORDER BY y, m
     `)
@@ -207,7 +207,8 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     // --- Incidents by Severity ---
     const bySevResult = await db.execute(sql`
       SELECT COALESCE(severity, 'Unknown') as severity, COUNT(*) as count
-      FROM public.incident
+      FROM public.incident i LEFT JOIN public.business_unit bu ON bu.name = i.business_unit
+      WHERE true ${companyFilter}
       GROUP BY severity ORDER BY count DESC
     `)
     const incidentsBySeverity = ((bySevResult as any).rows ?? []).map((r: any) => ({
@@ -216,9 +217,9 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
     }))
 
     // --- Summary Stats ---
-    const ltiResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident WHERE incident_type ILIKE '%lost time%' OR severity ILIKE '%serious%'`)
-    const medResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident WHERE incident_type ILIKE '%medical%'`)
-    const obsTotal = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.observation`)
+    const ltiResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident i LEFT JOIN public.business_unit bu ON bu.name = i.business_unit WHERE (i.incident_type ILIKE '%lost time%' OR i.severity ILIKE '%serious%') ${companyFilter}`)
+    const medResult = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.incident i LEFT JOIN public.business_unit bu ON bu.name = i.business_unit WHERE i.incident_type ILIKE '%medical%' ${companyFilter}`)
+    const obsTotal = await db.execute(sql`SELECT COUNT(*) as cnt FROM public.observation WHERE true ${observationFilter}`)
 
     return {
       daysWithoutIncident,
