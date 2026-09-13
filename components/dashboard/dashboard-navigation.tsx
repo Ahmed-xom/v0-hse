@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const sections = [
+  ["Home", "dashboard-home"],
   ["Overview", "dashboard-overview"],
   ["Performance", "kpi-cards"],
   ["Incidents", "incidents"],
@@ -22,7 +23,7 @@ const sections = [
 
 export function DashboardNavigation() {
   const [open, setOpen] = useState(false)
-  const [active, setActive] = useState("dashboard-overview")
+  const [active, setActive] = useState("dashboard-home")
 
   useEffect(() => {
     const elements = sections
@@ -57,7 +58,7 @@ export function DashboardNavigation() {
         Sections
       </button>
       {open && <button className="fixed inset-0 z-40 bg-foreground/20 lg:hidden" onClick={() => setOpen(false)} aria-label="Close navigation" />}
-      <aside className={cn("fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-sidebar px-4 py-6 shadow-xl transition-transform lg:sticky lg:top-0 lg:z-30 lg:h-screen lg:translate-x-0 lg:shadow-none", open ? "translate-x-0" : "-translate-x-full")}>
+      <aside className={cn("fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-sidebar px-4 py-6 shadow-xl transition-transform lg:sticky lg:inset-auto lg:top-0 lg:z-30 lg:h-screen lg:translate-x-0 lg:shadow-none", open ? "translate-x-0" : "-translate-x-full")}>
         <div className="mb-8 flex items-center justify-between px-2">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-sidebar-primary">AMNKO HSE</p>

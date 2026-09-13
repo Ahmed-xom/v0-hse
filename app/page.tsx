@@ -29,7 +29,7 @@ export default function HSEDashboard() {
         <DashboardHeader />
         <div className="flex items-start">
           <DashboardNavigation />
-          <main className="min-w-0 flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+          <main id="dashboard-home" className="min-w-0 flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8">
           <section id="dashboard-overview" className="rounded-xl border border-border bg-card p-6 shadow-sm" aria-label="Dashboard overview">
             <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
               <div className="max-w-2xl">
