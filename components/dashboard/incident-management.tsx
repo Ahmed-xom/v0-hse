@@ -237,7 +237,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
         companyId,
       })
       if (res.success) {
-        toast({ title: "Incident reported", description: `Reference: ${res.referenceNo}` })
+        toast({ title: "Incident reported", description: res.alertSent ? `Reference: ${res.referenceNo}. Company users were notified.` : `Reference: ${res.referenceNo}. Alert not sent: ${res.alertError ?? "no recipients found"}.` })
         setShowForm(false)
         fetchIncidents()
       } else {

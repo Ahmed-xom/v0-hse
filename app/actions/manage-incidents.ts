@@ -134,13 +134,21 @@ export async function createIncident(data: {
       const recipients = await pool.query<{ email: string }>(
         `SELECT DISTINCT u.email
          FROM neon_auth."user" u
-         JOIN public.company_membership cm ON cm.user_id = u.id
-         WHERE cm.company_id = $1 AND cm.status = 'Active' AND u.email IS NOT NULL`,
+         JOIN public.company_membership cm ON cm.user_id::text = u.id::text
+         WHERE cm.company_id = $1 AND lower(cm.status) = 'active' AND u.email IS NOT NULL
+         UNION
+         SELECT DISTINCT u.email
+         FROM neon_auth."user" u
+         JOIN public.employee e ON lower(e.email) = lower(u.email)
+         JOIN public.business_unit bu ON bu.name = e.business_unit
+         WHERE bu.company_id = $1 AND lower(COALESCE(e.status, 'active')) = 'active' AND u.email IS NOT NULL`,
         [data.companyId]
       )
       const emails = recipients.rows.map((row) => row.email).filter(Boolean)
+      let alertSent = false
+      let alertError: string | undefined
       if (emails.length > 0) {
-        await sendEmail({
+        const alertResult = await sendEmail({
           to: emails,
           subject: `New incident reported: ${referenceNo}`,
           html: incidentCreatedHtml({
@@ -155,10 +163,14 @@ export async function createIncident(data: {
             description: data.description,
           }),
         })
+        alertSent = alertResult.sent
+        alertError = alertResult.error ?? (emails.length === 0 ? 'No active company users have email addresses.' : undefined)
+        if (!alertResult.sent) console.error('[v0] Incident alert delivery failed:', alertError)
       }
+      return { success: true, id, referenceNo, alertSent, alertError }
     }
 
-    return { success: true, id, referenceNo }
+    return { success: true, id, referenceNo, alertSent: false, alertError: 'No company was selected.' }
   } catch (error: any) {
     console.error('[manage-incidents] createIncident error:', error)
     return { success: false, error: error.message }
