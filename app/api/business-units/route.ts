@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { pool } from "@/lib/db"
 
-const ADMIN_ROLES = ["MASTER USER", "ADMIN SYSTEM", "ADMIN", "HSE ADMIN"]
+const VIEW_ROLES = ["MASTER USER", "ADMIN SYSTEM", "ADMIN", "HSE ADMIN"]
+const ADMIN_ROLES = ["ADMIN SYSTEM", "ADMIN", "HSE ADMIN"]
 
 async function getActor(request: Request) {
   const email = request.headers.get("x-user-email")
@@ -26,6 +27,7 @@ async function getCompanyId(request: Request, actorId: string) {
 export async function GET(request: Request) {
   const actor = await getActor(request)
   if (!actor) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  if (!VIEW_ROLES.includes(String(actor.role ?? "").trim().toUpperCase())) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const companyId = await getCompanyId(request, actor.id)
   if (!companyId) return NextResponse.json([])
   let result = await pool.query("SELECT id, name, code, description, manager, email, type, status, created_at AS \"createdAt\", updated_at AS \"updatedAt\" FROM public.business_unit WHERE company_id = $1 ORDER BY name", [companyId])

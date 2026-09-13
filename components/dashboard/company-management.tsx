@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/auth-context"
 
 interface Company { id: string; name: string; code?: string | null; status?: string | null }
 const adminRoles = ["ADMIN SYSTEM", "ADMIN", "HSE ADMIN"]
-const companyViewerRoles = ["MASTER USER", ...adminRoles]
+const companyViewerRoles = adminRoles
 
 export function CompanyManagement() {
   const { user, activeCompanyId, setActiveCompanyId } = useAuth()
@@ -29,7 +29,7 @@ export function CompanyManagement() {
     if (!user?.email || !canViewCompanies) return
     const response = await fetch("/api/companies", { cache: "no-store", headers: { "x-user-email": user.email } })
     if (response.ok) setCompanies(await response.json())
-  }, [isAdmin, user?.email])
+  }, [canViewCompanies, user?.email])
 
   useEffect(() => { void loadCompanies() }, [loadCompanies])
 

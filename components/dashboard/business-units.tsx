@@ -61,7 +61,9 @@ import { useAuth } from "@/lib/auth-context"
 export function BusinessUnits() {
   const { toast } = useToast()
   const { user, activeCompanyId } = useAuth()
-  const isCompanyAdmin = ["MASTER USER", "ADMIN SYSTEM", "ADMIN", "HSE ADMIN"].includes(String(user?.role ?? "").toUpperCase())
+  const role = String(user?.role ?? "").trim().toUpperCase()
+  const canViewBusinessUnits = ["MASTER USER", "ADMIN SYSTEM", "ADMIN", "HSE ADMIN"].includes(role)
+  const canManageBusinessUnits = ["ADMIN SYSTEM", "ADMIN", "HSE ADMIN"].includes(role)
   const [units, setUnits] = useState<BusinessUnit[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
@@ -235,6 +237,8 @@ export function BusinessUnits() {
     return "bg-red-500"
   }
 
+  if (!canViewBusinessUnits) return null
+
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
       <CardHeader>
@@ -250,7 +254,7 @@ export function BusinessUnits() {
               </p>
             </div>
           </div>
-          {isCompanyAdmin && <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if (!open) setEditingUnit(null) }}>
+          {canManageBusinessUnits && <Dialog open={isAddDialogOpen} onOpenChange={(open) => { setIsAddDialogOpen(open); if (!open) setEditingUnit(null) }}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2">
                 <Plus className="h-4 w-4" />
@@ -538,7 +542,7 @@ export function BusinessUnits() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-card border-border">
-                        {isCompanyAdmin && <DropdownMenuItem className="gap-2" onClick={() => handleEditUnit(unit)}>
+                        {canManageBusinessUnits && <DropdownMenuItem className="gap-2" onClick={() => handleEditUnit(unit)}>
                           <Edit className="h-4 w-4" />
                           Edit Unit
                         </DropdownMenuItem>}
@@ -551,7 +555,7 @@ export function BusinessUnits() {
                           View Members
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-border" />
-                        {isCompanyAdmin && <DropdownMenuItem className="gap-2 text-red-400 focus:text-red-400" onClick={() => handleDeleteUnit(unit.id)}>
+                        {canManageBusinessUnits && <DropdownMenuItem className="gap-2 text-red-400 focus:text-red-400" onClick={() => handleDeleteUnit(unit.id)}>
                           <Trash2 className="h-4 w-4" />
                           Delete Unit
                         </DropdownMenuItem>}
