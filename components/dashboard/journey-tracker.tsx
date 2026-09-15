@@ -70,6 +70,11 @@ export function JourneyTracker() {
   const [attachedFile, setAttachedFile]     = useState<File | null>(null)
   const [isUploading, setIsUploading]       = useState(false)
   const fileInputRef                        = useRef<HTMLInputElement>(null)
+  const templateInputRef                   = useRef<HTMLInputElement>(null)
+  const [templateRows, setTemplateRows]     = useState<Record<string, unknown>[]>([])
+  const [templateErrors, setTemplateErrors] = useState<string[]>([])
+  const [isTemplateOpen, setIsTemplateOpen] = useState(false)
+  const [isImportingTemplate, setIsImportingTemplate] = useState(false)
 
   const [searchQuery, setSearchQuery]     = useState("")
   const [statusFilter, setStatusFilter]   = useState("all")
@@ -191,6 +196,46 @@ export function JourneyTracker() {
     }
   }
 
+  const downloadTemplate = () => {
+    const columns = [["Origin", "Destination", "Purpose", "Vehicle Type", "Plate Number", "Date", "Departure Time", "Est. Return", "Passengers", "Notes"]]
+    const worksheet = XLSX.utils.aoa_to_sheet(columns)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Journeys")
+    XLSX.writeFile(workbook, "journey-tracker-template.xlsx")
+  }
+
+  const importTemplate = async (file: File) => {
+    setIsImportingTemplate(true)
+    try {
+      const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" })
+      const sheet = workbook.Sheets[workbook.SheetNames[0]]
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" })
+      const errors: string[] = []
+      const validRows = rows.filter((row, index) => {
+        const missing = ["Origin", "Destination", "Purpose", "Vehicle Type", "Date", "Departure Time"].filter((field) => !String(row[field] ?? "").trim())
+        if (missing.length) { errors.push(`Row ${index + 2}: missing ${missing.join(", ")}`); return false }
+        return true
+      })
+      setTemplateRows(validRows)
+      setTemplateErrors(errors)
+      setIsTemplateOpen(true)
+    } catch {
+      toast({ title: "Import failed", description: "Please upload a valid .xlsx journey template.", variant: "destructive" })
+    } finally { setIsImportingTemplate(false) }
+  }
+
+  const confirmTemplateImport = async () => {
+    if (!user || !templateRows.length) return
+    setIsImportingTemplate(true)
+    let imported = 0
+    for (const row of templateRows) {
+      const result = await createJourney({ userEmail: user.email, userName: user.name, origin: String(row.Origin), destination: String(row.Destination), purpose: String(row.Purpose), vehicleType: String(row["Vehicle Type"]), vehiclePlate: String(row["Plate Number"] || "") || undefined, departureDate: String(row.Date), departureTime: String(row["Departure Time"]), estimatedReturn: String(row["Est. Return"] || "") || undefined, passengers: Number(row.Passengers) || 1, notes: String(row.Notes || "") || undefined })
+      if (result.success) imported++
+    }
+    setIsImportingTemplate(false); setIsTemplateOpen(false); setTemplateRows([]); setTemplateErrors([]); await fetchJourneys()
+    toast({ title: "Template imported", description: `${imported} journey${imported === 1 ? "" : "s"} added.` })
+  }
+
   const exportToExcel = () => {
     const rows = filteredJourneys.map((j) => ({
       ID:               j.id,
@@ -227,7 +272,10 @@ export function JourneyTracker() {
                 Record and track your journeys safely across all locations
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <input ref={templateInputRef} type="file" accept=".xlsx" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; if (file) void importTemplate(file) }} />
+              <Button variant="outline" onClick={downloadTemplate} className="gap-2"><FileText className="h-4 w-4" /> Template</Button>
+              <Button variant="outline" onClick={() => templateInputRef.current?.click()} disabled={isImportingTemplate} className="gap-2"><Paperclip className="h-4 w-4" /> {isImportingTemplate ? "Checking..." : "Upload Template"}</Button>
               <Button variant="outline" onClick={exportToExcel}>
                 <Download className="mr-2 h-4 w-4" />
                 Export Excel
@@ -629,6 +677,15 @@ export function JourneyTracker() {
                 : "Log Journey"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isTemplateOpen} onOpenChange={setIsTemplateOpen}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader><DialogTitle>Validate journey template</DialogTitle><DialogDescription>{templateRows.length} valid rows are ready to import. Review the validation results before saving.</DialogDescription></DialogHeader>
+          {templateErrors.length > 0 && <div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"><p className="font-medium">Rows not included</p><ul className="mt-1 list-disc pl-5">{templateErrors.slice(0, 8).map((error) => <li key={error}>{error}</li>)}</ul>{templateErrors.length > 8 && <p className="mt-1">And {templateErrors.length - 8} more.</p>}</div>}
+          <div className="rounded-md border border-border bg-muted/30 p-3 text-sm">{templateRows.length} journey{templateRows.length === 1 ? "" : "s"} will be created for your account.</div>
+          <DialogFooter><Button variant="outline" onClick={() => setIsTemplateOpen(false)}>Cancel</Button><Button onClick={confirmTemplateImport} disabled={!templateRows.length || isImportingTemplate}>{isImportingTemplate ? "Importing..." : "Confirm Import"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </>
