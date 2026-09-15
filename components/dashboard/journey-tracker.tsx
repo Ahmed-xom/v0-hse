@@ -52,7 +52,7 @@ const statusColors: Record<string, string> = {
 
 const emptyForm = {
   origin: "", destination: "", purpose: "", vehicleType: "",
-  vehiclePlate: "", departureDate: "", departureTime: "",
+  journeyType: "morning", vehiclePlate: "", departureDate: "", departureTime: "",
   estimatedReturn: "", passengers: "1", notes: "",
 }
 
@@ -116,8 +116,7 @@ export function JourneyTracker() {
       const matchesStatus  = statusFilter  === "all" || j.status      === statusFilter
       const matchesPurpose = purposeFilter === "all" || j.purpose     === purposeFilter
       const matchesVehicle = vehicleFilter === "all" || j.vehicleType === vehicleFilter
-      const hour = Number(String(j.departureTime).split(":")[0])
-      const isNight = hour >= 18 || hour < 6
+  const isNight = j.journeyType === "night" || (j.journeyType == null && (Number(String(j.departureTime).split(":")[0]) >= 18 || Number(String(j.departureTime).split(":")[0]) < 6))
       const matchesJourneyTab = journeyTab === "all" || (journeyTab === "night" ? isNight : !isNight)
       return matchesSearch && matchesStatus && matchesPurpose && matchesVehicle && matchesJourneyTab
     })
@@ -168,8 +167,9 @@ export function JourneyTracker() {
       vehicleType:     form.vehicleType,
       vehiclePlate:    form.vehiclePlate || undefined,
       departureDate:   form.departureDate,
-      departureTime:   form.departureTime,
-      estimatedReturn: form.estimatedReturn || undefined,
+  journeyType:     form.journeyType as "morning" | "night",
+  departureTime:   form.departureTime,
+  estimatedReturn: form.estimatedReturn || undefined,
       passengers:      parseInt(form.passengers) || 1,
       notes:           form.notes || undefined,
       attachmentUrl,
@@ -526,6 +526,14 @@ export function JourneyTracker() {
                   />
                 </div>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Journey type <span className="text-destructive">*</span></Label>
+              <Select value={form.journeyType} onValueChange={(value) => setForm((current) => ({ ...current, journeyType: value }))}>
+                <SelectTrigger><SelectValue placeholder="Select journey type" /></SelectTrigger>
+                <SelectContent><SelectItem value="morning">Morning journey</SelectItem><SelectItem value="night">Night journey</SelectItem></SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-1.5">

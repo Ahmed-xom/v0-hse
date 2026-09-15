@@ -42,6 +42,7 @@ export type JourneyRecord = {
   vehiclePlate: string | null
   departureDate: string
   departureTime: string
+  journeyType: 'morning' | 'night'
   estimatedReturn: string | null
   passengers: number
   status: string
@@ -88,6 +89,7 @@ export async function createJourney(data: {
   vehiclePlate?: string
   departureDate: string
   departureTime: string
+  journeyType?: 'morning' | 'night'
   estimatedReturn?: string
   passengers: number
   notes?: string
@@ -107,6 +109,7 @@ export async function createJourney(data: {
       vehiclePlate: data.vehiclePlate || null,
       departureDate: data.departureDate,
       departureTime: data.departureTime,
+      journeyType: data.journeyType || 'morning',
       estimatedReturn: data.estimatedReturn || null,
       passengers: data.passengers,
       status: 'Planned',
