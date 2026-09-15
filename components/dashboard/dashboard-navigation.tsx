@@ -17,6 +17,7 @@ const sections = [
   ["Business Units", "business-units"],
   ["Document Library", "document-library"],
   ["Company Management", "company-management"],
+  ["Journey Tracker", "journey-tracker"],
 ] as const
 
 export function DashboardNavigation() {
@@ -40,6 +41,10 @@ export function DashboardNavigation() {
   }, [])
 
   const navigate = (id: string) => {
+    if (id === "journey-tracker") {
+      window.location.href = "/journey-tracker"
+      return
+    }
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })
     setActive(id)
     setOpen(false)
