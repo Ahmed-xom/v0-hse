@@ -248,6 +248,7 @@ export const journey = pgTable('journey', {
   vehiclePlate: text('vehicle_plate'),
   departureDate: date('departure_date').notNull(),
   departureTime: text('departure_time').notNull(),
+  journeyType: text('journey_type').notNull().default('morning'),
   estimatedReturn: text('estimated_return'),
   passengers: integer('passengers').notNull().default(0),
   status: text('status').notNull().default('Planned'),

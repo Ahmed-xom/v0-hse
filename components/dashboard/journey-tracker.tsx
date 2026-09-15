@@ -6,6 +6,7 @@ import {
   CheckCircle2, AlertCircle, Loader2,
   Trash2, Car, CalendarDays, Users, FileText, Download,
   Paperclip, X, ExternalLink,
+  Sun, Moon,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -51,7 +52,7 @@ const statusColors: Record<string, string> = {
 
 const emptyForm = {
   origin: "", destination: "", purpose: "", vehicleType: "",
-  vehiclePlate: "", departureDate: "", departureTime: "",
+  journeyType: "morning", vehiclePlate: "", departureDate: "", departureTime: "",
   estimatedReturn: "", passengers: "1", notes: "",
 }
 
@@ -75,6 +76,8 @@ export function JourneyTracker() {
   const [templateErrors, setTemplateErrors] = useState<string[]>([])
   const [isTemplateOpen, setIsTemplateOpen] = useState(false)
   const [isImportingTemplate, setIsImportingTemplate] = useState(false)
+  const [journeyTab, setJourneyTab] = useState<"all" | "morning" | "night">("all")
+  const [isApprover, setIsApprover] = useState(false)
 
   const [searchQuery, setSearchQuery]     = useState("")
   const [statusFilter, setStatusFilter]   = useState("all")
@@ -82,6 +85,7 @@ export function JourneyTracker() {
   const [vehicleFilter, setVehicleFilter] = useState("all")
 
   const isAdmin = !!user && isAdminRole(user.role, user.email)
+  const canReviewJourneys = isAdmin || String(user?.role ?? "").toUpperCase() === "MASTER USER" || Boolean(user?.journeyApprover)
 
   const fetchJourneys = useCallback(async () => {
     if (!user?.email) return
@@ -112,9 +116,11 @@ export function JourneyTracker() {
       const matchesStatus  = statusFilter  === "all" || j.status      === statusFilter
       const matchesPurpose = purposeFilter === "all" || j.purpose     === purposeFilter
       const matchesVehicle = vehicleFilter === "all" || j.vehicleType === vehicleFilter
-      return matchesSearch && matchesStatus && matchesPurpose && matchesVehicle
+  const isNight = j.journeyType === "night" || (j.journeyType == null && (Number(String(j.departureTime).split(":")[0]) >= 18 || Number(String(j.departureTime).split(":")[0]) < 6))
+      const matchesJourneyTab = journeyTab === "all" || (journeyTab === "night" ? isNight : !isNight)
+      return matchesSearch && matchesStatus && matchesPurpose && matchesVehicle && matchesJourneyTab
     })
-  }, [journeys, searchQuery, statusFilter, purposeFilter, vehicleFilter])
+  }, [journeys, searchQuery, statusFilter, purposeFilter, vehicleFilter, journeyTab])
 
   const stats = useMemo(() => ({
     total:      journeys.length,
@@ -161,8 +167,9 @@ export function JourneyTracker() {
       vehicleType:     form.vehicleType,
       vehiclePlate:    form.vehiclePlate || undefined,
       departureDate:   form.departureDate,
-      departureTime:   form.departureTime,
-      estimatedReturn: form.estimatedReturn || undefined,
+  journeyType:     form.journeyType as "morning" | "night",
+  departureTime:   form.departureTime,
+  estimatedReturn: form.estimatedReturn || undefined,
       passengers:      parseInt(form.passengers) || 1,
       notes:           form.notes || undefined,
       attachmentUrl,
@@ -288,8 +295,14 @@ export function JourneyTracker() {
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
-          {/* Stats */}
+  <CardContent className="space-y-6">
+  {canReviewJourneys && <div className="flex flex-wrap gap-2 rounded-lg border border-border/50 bg-muted/20 p-2" role="tablist" aria-label="Journey shift">
+    <Button type="button" variant={journeyTab === "all" ? "default" : "ghost"} onClick={() => setJourneyTab("all")}>All journeys</Button>
+    <Button type="button" variant={journeyTab === "morning" ? "default" : "ghost"} onClick={() => setJourneyTab("morning")} className="gap-2"><Sun className="h-4 w-4" /> Morning journeys</Button>
+    <Button type="button" variant={journeyTab === "night" ? "default" : "ghost"} onClick={() => setJourneyTab("night")} className="gap-2"><Moon className="h-4 w-4" /> Night journeys</Button>
+    <p className="basis-full text-xs text-muted-foreground">Night journeys are departures from 18:00 through 05:59. Admin and Master users can manage the company cutoff in settings.</p>
+  </div>}
+  {/* Stats */}
           <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
             <div className="rounded-lg border border-border/50 bg-muted/30 p-3 text-center">
               <p className="text-2xl font-bold text-foreground">{stats.total}</p>
@@ -513,6 +526,14 @@ export function JourneyTracker() {
                   />
                 </div>
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Journey type <span className="text-destructive">*</span></Label>
+              <Select value={form.journeyType} onValueChange={(value) => setForm((current) => ({ ...current, journeyType: value }))}>
+                <SelectTrigger><SelectValue placeholder="Select journey type" /></SelectTrigger>
+                <SelectContent><SelectItem value="morning">Morning journey</SelectItem><SelectItem value="night">Night journey</SelectItem></SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-1.5">
