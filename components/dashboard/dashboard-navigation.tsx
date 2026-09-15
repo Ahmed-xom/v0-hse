@@ -41,10 +41,6 @@ export function DashboardNavigation() {
   }, [])
 
   const navigate = (id: string) => {
-    if (id === "journey-tracker") {
-      window.location.href = "/journey-tracker"
-      return
-    }
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })
     setActive(id)
     setOpen(false)
