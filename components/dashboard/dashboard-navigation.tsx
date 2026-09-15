@@ -17,6 +17,7 @@ const sections = [
   ["Business Units", "business-units"],
   ["Document Library", "document-library"],
   ["Company Management", "company-management"],
+  ["Journey Tracker", "journey-tracker"],
 ] as const
 
 export function DashboardNavigation() {

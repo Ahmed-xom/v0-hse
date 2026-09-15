@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/auth-context"
 import { SectionDataToolbar } from "@/components/dashboard/section-data-toolbar"
 import { DashboardNavigation } from "@/components/dashboard/dashboard-navigation"
 import { StorageUsage } from "@/components/dashboard/storage-usage"
+import { JourneyTracker } from "@/components/dashboard/journey-tracker"
 
 export default function HSEDashboard() {
   const { activeCompanyId, user } = useAuth()
@@ -104,6 +105,11 @@ export default function HSEDashboard() {
               <p className="text-sm text-muted-foreground">Files for the active company</p>
             </div>
             <DocumentsLibrary activeCompanyId={activeCompanyId} />
+          </section>
+
+          {/* Journey Tracker */}
+          <section id="journey-tracker" aria-label="Journey Tracker">
+            <JourneyTracker />
           </section>
 
           {/* Company Management */}
