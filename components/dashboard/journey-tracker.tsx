@@ -37,6 +37,7 @@ import {
   type JourneyRecord, type VehicleRecord,
 } from "@/app/actions/manage-journeys"
 import { isAdminRole } from "@/lib/auth-roles"
+import { getJourneyCutoffSettings } from "@/app/actions/manage-journey-settings"
 import * as XLSX from "xlsx"
 
 const VEHICLE_TYPES = ["Car", "Van", "Bus", "Truck", "Motorcycle", "Other"]
@@ -58,8 +59,9 @@ const emptyForm = {
 }
 
 export function JourneyTracker() {
-  const { user } = useAuth()
+  const { user, activeCompanyId } = useAuth()
   const { toast } = useToast()
+  const [nightCutoff, setNightCutoff] = useState({ nightStart: "18:00", nightEnd: "06:00" })
 
   const [journeys, setJourneys]         = useState<JourneyRecord[]>([])
   const [isFetching, setIsFetching]     = useState(true)
@@ -106,6 +108,10 @@ export function JourneyTracker() {
   }, [user?.email, fetchJourneys])
 
   useEffect(() => {
+    getJourneyCutoffSettings(activeCompanyId).then((res) => { if (res.success) setNightCutoff(res.data) })
+  }, [activeCompanyId])
+
+  useEffect(() => {
     getVehicles().then((res) => { if (res.success) setVehicles(res.data) })
   }, [])
 
@@ -122,11 +128,11 @@ export function JourneyTracker() {
       const matchesStatus  = statusFilter  === "all" || j.status      === statusFilter
       const matchesPurpose = purposeFilter === "all" || j.purpose     === purposeFilter
       const matchesVehicle = vehicleFilter === "all" || j.vehicleType === vehicleFilter
-  const isNight = j.journeyType === "night" || (j.journeyType == null && (Number(String(j.departureTime).split(":")[0]) >= 18 || Number(String(j.departureTime).split(":")[0]) < 6))
+  const isNight = j.journeyType === "night" || (j.journeyType == null && (() => { const [hour, minute] = String(j.departureTime).split(":").map(Number); const current = hour * 60 + minute; const start = Number(nightCutoff.nightStart.split(":")[0]) * 60 + Number(nightCutoff.nightStart.split(":")[1]); const end = Number(nightCutoff.nightEnd.split(":")[0]) * 60 + Number(nightCutoff.nightEnd.split(":")[1]); return start > end ? current >= start || current < end : current >= start && current < end })())
       const matchesJourneyTab = journeyTab === "all" || (journeyTab === "night" ? isNight : !isNight)
       return matchesSearch && matchesStatus && matchesPurpose && matchesVehicle && matchesJourneyTab
     })
-  }, [journeys, searchQuery, statusFilter, purposeFilter, vehicleFilter, journeyTab])
+  }, [journeys, searchQuery, statusFilter, purposeFilter, vehicleFilter, journeyTab, nightCutoff])
 
   const stats = useMemo(() => ({
     total:      journeys.length,
@@ -306,7 +312,7 @@ export function JourneyTracker() {
     <Button type="button" variant={journeyTab === "all" ? "default" : "ghost"} onClick={() => setJourneyTab("all")}>All journeys</Button>
     <Button type="button" variant={journeyTab === "morning" ? "default" : "ghost"} onClick={() => setJourneyTab("morning")} className="gap-2"><Sun className="h-4 w-4" /> Morning journeys</Button>
     <Button type="button" variant={journeyTab === "night" ? "default" : "ghost"} onClick={() => setJourneyTab("night")} className="gap-2"><Moon className="h-4 w-4" /> Night journeys</Button>
-    <p className="basis-full text-xs text-muted-foreground">Night journeys are departures from 18:00 through 05:59. Admin and Master users can manage the company cutoff in settings.</p>
+    <p className="basis-full text-xs text-muted-foreground">Night journeys follow the active company cutoff ({nightCutoff.nightStart}–{nightCutoff.nightEnd}). Admin and Master users can manage it in settings.</p>
   </div>}
   {/* Stats */}
           <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">

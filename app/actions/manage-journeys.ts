@@ -132,7 +132,7 @@ export async function updateJourneyStatus(id: string, status: string) {
     if (!email) return { success: false, error: 'Unauthorized' }
     const canApprove = await getUserJourneyApprover(email)
     const role = String((session.user as any).role ?? '').toUpperCase()
-    if (!canApprove && !['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER'].includes(role)) {
+    if (!canApprove && !['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER', 'MANAGEMENT'].includes(role)) {
       return { success: false, error: 'Journey Approver access required' }
     }
     await db

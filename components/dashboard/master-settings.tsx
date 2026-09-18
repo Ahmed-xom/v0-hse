@@ -63,6 +63,8 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { masterCategories, getTotalMasterItems, getTotalSections, type MasterSection } from "@/lib/masters-data"
 import { VehiclesSection } from "./vehicles-section"
+import { useAuth } from "@/lib/auth-context"
+import { getJourneyCutoffSettings, saveJourneyCutoffSettings } from "@/app/actions/manage-journey-settings"
 
 const iconMap: Record<string, React.ReactNode> = {
   settings: <Settings className="h-5 w-5" />,
@@ -81,7 +83,12 @@ const iconMap: Record<string, React.ReactNode> = {
 
 export function MasterSettings() {
   const { toast } = useToast()
+  const { user, activeCompanyId } = useAuth()
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [nightStart, setNightStart] = useState("18:00")
+  const [nightEnd, setNightEnd] = useState("06:00")
+  const [savingCutoff, setSavingCutoff] = useState(false)
+  const canManageCutoff = ["ADMIN SYSTEM", "ADMIN", "HSE ADMIN", "MASTER USER", "MANAGEMENT"].includes(String(user?.role ?? "").toUpperCase())
   const [selectedSection, setSelectedSection] = useState<MasterSection | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
@@ -99,6 +106,21 @@ export function MasterSettings() {
   const [isSaving, setIsSaving] = useState(false)
 
   const currentCategory = masterCategories.find((c) => c.id === selectedCategory)
+
+  useEffect(() => {
+    if (!activeCompanyId || !canManageCutoff) return
+    getJourneyCutoffSettings(activeCompanyId).then((res) => {
+      if (res.success) { setNightStart(res.data.nightStart); setNightEnd(res.data.nightEnd) }
+    })
+  }, [activeCompanyId, canManageCutoff])
+
+  const handleSaveCutoff = async () => {
+    if (!activeCompanyId) { toast({ title: "Select a company", description: "Choose an active company before saving settings.", variant: "destructive" }); return }
+    setSavingCutoff(true)
+    const result = await saveJourneyCutoffSettings(activeCompanyId, nightStart, nightEnd)
+    setSavingCutoff(false)
+    toast({ title: result.success ? "Settings saved" : "Could not save settings", description: result.success ? "Night journey cutoff updated." : result.error, variant: result.success ? "default" : "destructive" })
+  }
 
   // Load real reviewer/approver users when that section is opened
   useEffect(() => {
@@ -341,8 +363,16 @@ export function MasterSettings() {
           </div>
         )}
       </CardHeader>
-      <CardContent className="p-0">
-        {!selectedCategory ? (
+  <CardContent className="p-0">
+  {!selectedCategory && canManageCutoff && (
+    <div className="m-6 rounded-lg border border-primary/20 bg-primary/5 p-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div><h3 className="font-semibold">Journey Night Cutoff</h3><p className="text-sm text-muted-foreground">Configure the company time range used to classify Morning and Night journeys. Overnight ranges are supported.</p></div>
+        <div className="grid gap-3 sm:grid-cols-2"><div className="grid gap-1.5"><Label htmlFor="night-start">Night starts</Label><Input id="night-start" type="time" value={nightStart} onChange={(e) => setNightStart(e.target.value)} /></div><div className="grid gap-1.5"><Label htmlFor="night-end">Night ends</Label><Input id="night-end" type="time" value={nightEnd} onChange={(e) => setNightEnd(e.target.value)} /></div><Button className="sm:col-span-2" onClick={handleSaveCutoff} disabled={savingCutoff}>{savingCutoff ? "Saving..." : "Save cutoff"}</Button></div>
+      </div>
+    </div>
+  )}
+  {!selectedCategory ? (
           // Categories Grid View
           <div className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredCategories.map((category) => (
