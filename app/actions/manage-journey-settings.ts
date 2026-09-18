@@ -41,7 +41,8 @@ export async function saveJourneyCutoffSettings(companyId: string, nightStart: s
       const existing = await db.select({ id: master.id }).from(master).where(and(eq(master.type, `journey-cutoff:${companyId}`), eq(master.key, key))).limit(1)
       if (existing[0]) await db.update(master).set({ value, updatedAt: new Date(), isActive: true }).where(eq(master.id, existing[0].id))
       else await db.insert(master).values({ id: `journey-cutoff-${companyId}-${key}`, type: `journey-cutoff:${companyId}`, key, value, description: 'Company journey night cutoff' })
-    }
+}
+
     revalidatePath('/settings')
     revalidatePath('/journey-tracker')
     return { success: true, data: { nightStart, nightEnd } }
@@ -50,5 +51,3 @@ export async function saveJourneyCutoffSettings(companyId: string, nightStart: s
     return { success: false, error: error.message }
   }
 }
-
-export { DEFAULTS }
