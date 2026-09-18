@@ -69,7 +69,7 @@ export async function getJourneys(userEmail: string) {
   }
 }
 
-export async function getAllJourneys() {
+export async function getAllJourneys(companyId?: string | null) {
   try {
     const session = await auth.api.getSession({ headers: await headers() })
     const email = session?.user?.email

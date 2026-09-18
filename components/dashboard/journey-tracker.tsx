@@ -97,10 +97,10 @@ export function JourneyTracker() {
   const fetchJourneys = useCallback(async () => {
     if (!user?.email) return
     setIsFetching(true)
-    const res = isAdmin ? await getAllJourneys() : await getJourneys(user.email)
+    const res = isAdmin ? await getAllJourneys(activeCompanyId) : await getJourneys(user.email)
     if (res.success) setJourneys(res.data)
     setIsFetching(false)
-  }, [user?.email, isAdmin])
+  }, [user?.email, isAdmin, activeCompanyId])
 
   useEffect(() => {
     if (user?.email) fetchJourneys()
