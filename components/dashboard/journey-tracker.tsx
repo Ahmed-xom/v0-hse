@@ -28,6 +28,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import {
@@ -500,7 +501,11 @@ export function JourneyTracker() {
             <DialogDescription>Fill in the details below to log a new journey.</DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-2">
+          <Tabs defaultValue="summary" className="mt-2">
+            <TabsList className="flex h-auto flex-wrap justify-start gap-1 bg-muted/50 p-1">
+              {[['summary','Summary'],['driver','Driver Details'],['journey','Journey'],['vehicle','Vehicle'],['checkin','Check-In'],['attachments','Attachments'],['inspection','Pre-Trip Inspection'],['route','Route Plan'],['changes','Route Changes'],['passengers','Passengers'],['night','Night Driving'],['hazards','Road Hazards'],['emergency','Emergency Contacts']].map(([value, label]) => <TabsTrigger key={value} value={value} className="text-xs">{label}</TabsTrigger>)}
+            </TabsList>
+            <TabsContent value="summary" className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label>Origin <span className="text-destructive">*</span></Label>
@@ -645,7 +650,22 @@ export function JourneyTracker() {
                 />
               </div>
             </div>
-          </div>
+            </TabsContent>
+            {[
+              ['driver', 'Driver Details', 'Capture the primary driver, mobile number, licence details, and fitness confirmation.'],
+              ['journey', 'Journey', 'Record journey manager, client, business unit, risk level, and approval status.'],
+              ['vehicle', 'Vehicle', 'Review registration, inspection, insurance, load, and vehicle readiness.'],
+              ['checkin', 'Check-In Details', 'Track departure check-in, arrival check-in, and overdue check-ins.'],
+              ['attachments', 'Attachments', 'Add permits, route documents, approvals, and supporting journey files.'],
+              ['inspection', 'Vehicle Pre-Trip Inspection', 'Record brakes, tyres, lights, fluids, seatbelts, and defects before departure.'],
+              ['route', 'Route Plan', 'Document the planned route, stops, distances, and expected timing.'],
+              ['changes', 'Changes to Route Plan', 'Record route changes, reasons, approver, and revised ETA.'],
+              ['passengers', 'Passengers', 'List passenger names, contact details, and seat allocation.'],
+              ['night', 'Night Driving', 'Capture night driving controls, fatigue checks, lighting, and additional approval.'],
+              ['hazards', 'Road Hazards', 'Record known hazards, controls, weather, and escalation requirements.'],
+              ['emergency', 'Emergency Contacts', 'Add emergency contacts, escalation instructions, and response numbers.'],
+            ].map(([value, title, description]) => <TabsContent key={value} value={value} className="space-y-4 py-4"><div className="rounded-lg border border-border/50 bg-muted/20 p-5"><h3 className="font-medium">{title}</h3><p className="mt-1 text-sm text-muted-foreground">{description}</p><Textarea className="mt-4 min-h-28" placeholder={`Enter ${title.toLowerCase()} details...`} /></div></TabsContent>)}
+          </Tabs>
 
           {/* Attachment */}
           <div className="space-y-1.5 px-1">
