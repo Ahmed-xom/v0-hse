@@ -28,6 +28,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import {
@@ -598,6 +599,13 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
             <DialogDescription>Incident details</DialogDescription>
           </DialogHeader>
           {selected && (
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="w-full justify-start">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="investigation">Investigation</TabsTrigger>
+                <TabsTrigger value="data-gathering">Data Gathering</TabsTrigger>
+              </TabsList>
+              <TabsContent value="overview" className="mt-4">
             <div className="space-y-4 text-sm">
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className={severityColor(selected.severity)}>{selected.severity}</Badge>
@@ -621,8 +629,31 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
               {selected.immediateAction && (<div><p className="text-xs text-muted-foreground mb-1">Immediate Action Taken</p><p className="leading-relaxed">{selected.immediateAction}</p></div>)}
               {selected.rootCause && (<div><p className="text-xs text-muted-foreground mb-1">Root Cause</p><p className="leading-relaxed">{selected.rootCause}</p></div>)}
               {selected.correctiveAction && (<div><p className="text-xs text-muted-foreground mb-1">Corrective Action</p><p className="leading-relaxed">{selected.correctiveAction}</p></div>)}
-              {(selected.dataGathering || selected.dataGatheringAttachmentName) && (<><Separator /><div><p className="text-xs text-muted-foreground mb-1">Data Gathering</p>{selected.dataGathering && <p className="leading-relaxed">{selected.dataGathering}</p>}{selected.dataGatheringAttachmentName && <p className="mt-2 text-sm text-muted-foreground">Attachment: {selected.dataGatheringAttachmentName}</p>}</div></>) }
             </div>
+              </TabsContent>
+              <TabsContent value="investigation" className="mt-4 space-y-4 text-sm">
+                <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
+                  <p className="text-xs text-muted-foreground mb-1">Root Cause</p>
+                  <p className="leading-relaxed">{selected.rootCause || "No root cause recorded."}</p>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
+                  <p className="text-xs text-muted-foreground mb-1">Corrective Action</p>
+                  <p className="leading-relaxed">{selected.correctiveAction || "No corrective action recorded."}</p>
+                </div>
+              </TabsContent>
+              <TabsContent value="data-gathering" className="mt-4 space-y-4 text-sm">
+                <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
+                  <p className="text-xs text-muted-foreground mb-1">Data Gathering Notes</p>
+                  <p className="whitespace-pre-wrap leading-relaxed">{selected.dataGathering || "No data gathering notes recorded."}</p>
+                </div>
+                {selected.dataGatheringAttachmentName && (
+                  <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
+                    <p className="text-xs text-muted-foreground mb-1">Attachment</p>
+                    <a className="text-primary underline" href={`/api/incident-attachment?pathname=${encodeURIComponent(selected.dataGatheringAttachment ?? "")}`} target="_blank" rel="noreferrer">{selected.dataGatheringAttachmentName}</a>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowView(false)}>Close</Button>
