@@ -40,14 +40,32 @@ import {
 const INCIDENT_CATEGORIES = ["HSE", "SQ"] as const
 
 const INCIDENT_TYPES = [
-  "Lost Time Injury (LTI)",
-  "Medical Treatment Case (MTC)",
-  "First Aid Case (FAC)",
-  "Near Miss",
-  "Property Damage",
-  "Environmental Incident",
-  "High Potential Incident",
+  "Alcohol or Drug Impairment",
+  "Conveyance & Wellbore Access Events",
+  "Environmental Nuisance",
+  "Environmental Spill",
+  "Equipment Damage",
+  "Equipment Downtime",
   "Fatality",
+  "Fire",
+  "First Aid Case",
+  "Gas Release",
+  "Lost Time Injury",
+  "LSR Violation",
+  "Medical Treatment Case",
+  "Motor Vehicle Collision",
+  "Motor Vehicle Damage",
+  "Motor Vehicle Rollover",
+  "Motor Vehicle Theft or Vandalism",
+  "Near Miss",
+  "No Loss",
+  "None Work Related",
+  "Not Yet Defined",
+  "Personal Illness",
+  "Reputation Affect",
+  "Restricted Work Case",
+  "Theft",
+  "Vandalism",
 ]
 
 const SEVERITY_LEVELS = ["Minor", "Moderate", "Serious", "Critical", "Fatality"]
@@ -98,6 +116,7 @@ function statusColor(s: string) {
 const EMPTY_FORM = {
   title: "",
   category: "HSE",
+  incidentCategory: "",
   incidentType: "",
   severity: "Minor",
   date: new Date().toISOString().slice(0, 16),
@@ -216,6 +235,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
     setForm({
   title:           inc.title,
   category:        inc.category ?? "HSE",
+  incidentCategory: inc.incidentCategory ?? "",
   incidentType:    inc.incidentType,
       severity:        inc.severity,
       date:            new Date(inc.date).toISOString().slice(0, 16),
@@ -588,7 +608,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
               </div>
               <Separator />
               <div className="grid gap-3 sm:grid-cols-2">
-                <div><p className="text-xs text-muted-foreground">Incident Module</p><p className="font-medium">{selected.category === "SQ" ? "SQ (Service Quality)" : "HSE Incident"}</p></div><div><p className="text-xs text-muted-foreground">Incident Type</p><p className="font-medium">{selected.incidentType}</p></div>
+                <div><p className="text-xs text-muted-foreground">Incident Module</p><p className="font-medium">{selected.category === "SQ" ? "SQ (Service Quality)" : "HSE Incident"}</p></div><div><p className="text-xs text-muted-foreground">Incident Category</p><p className="font-medium">{selected.incidentCategory ?? "—"}</p></div><div><p className="text-xs text-muted-foreground">Incident Type</p><p className="font-medium">{selected.incidentType}</p></div>
                 <div><p className="text-xs text-muted-foreground">Date</p><p className="font-medium">{new Date(selected.date).toLocaleString()}</p></div>
                 <div><p className="text-xs text-muted-foreground">Location</p><p className="font-medium">{selected.location ?? "—"}</p></div>
                 <div><p className="text-xs text-muted-foreground">Business Unit</p><p className="font-medium">{selected.businessUnit ?? "—"}</p></div>
@@ -641,14 +661,19 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
   <SelectContent>{INCIDENT_CATEGORIES.map((category) => <SelectItem key={category} value={category}>{category === "SQ" ? "SQ (Service Quality)" : "HSE Incident"}</SelectItem>)}</SelectContent>
   </Select>
   </div>
+  {/* Incident Category */}
+  <div className="space-y-1.5">
+  <Label>Incident Category <span className="text-destructive">*</span></Label>
+  <Select value={form.incidentCategory} onValueChange={(v) => f("incidentCategory", v)}>
+  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+  <SelectContent>{INCIDENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+  </Select>
+  </div>
   {/* Type */}
   <div className="space-y-1.5">
   <Label>Incident Type <span className="text-destructive">*</span></Label>
-                <Select value={form.incidentType} onValueChange={(v) => f("incidentType", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                  <SelectContent>{INCIDENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
+  <Input value={form.incidentType} onChange={(e) => f("incidentType", e.target.value)} placeholder="Enter incident type" />
+  </div>
               {/* Severity */}
               <div className="space-y-1.5">
                 <Label>Severity</Label>

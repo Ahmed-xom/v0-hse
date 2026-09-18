@@ -11,6 +11,7 @@ export type Incident = {
   referenceNo: string
   title: string
   category: 'HSE' | 'SQ'
+  incidentCategory: string | null
   incidentType: string
   severity: string
   status: string
@@ -46,6 +47,7 @@ export async function getIncidents() {
             reference_no    AS "referenceNo",
             title,
             category,
+            incident_category AS "incidentCategory",
             incident_type   AS "incidentType",
             severity,
             status,
@@ -85,6 +87,7 @@ export async function getIncidents() {
 export async function createIncident(data: {
   title: string
   category: 'HSE' | 'SQ'
+  incidentCategory?: string
   incidentType: string
   severity: string
   date: string
@@ -121,20 +124,20 @@ export async function createIncident(data: {
 
     await pool.query(
       `INSERT INTO public.incident (
-            id, reference_no, title, category, incident_type, severity, status, date,
+            id, reference_no, title, category, incident_category, incident_type, severity, status, date,
         location, business_unit, reported_by, reported_by_email,
         injured_person, injury_type, description, immediate_action,
         data_gathering, data_gathering_attachment, data_gathering_attachment_name,
         near_miss, lost_time_days, created_at, updated_at
       ) VALUES (
-        $1,$2,$3,$4,$5,'Open',$6,
-        $7,$8,$9,$10,
-        $11,$12,$13,$14,
-        $15,$16,$17,$18,
-        $19,$20,now(),now()
+        $1,$2,$3,$4,$5,$6,$7,'Open',$8,
+        $9,$10,$11,$12,
+        $13,$14,$15,$16,
+        $17,$18,$19,
+        $20,$21,$22,now(),now()
       )`,
       [
-        id, referenceNo, data.title, data.category, data.incidentType, data.severity, data.date,
+        id, referenceNo, data.title, data.category, data.incidentCategory ?? null, data.incidentType, data.severity, data.date,
         data.location ?? null, data.businessUnit ?? null,
         data.reportedBy ?? null, data.reportedByEmail ?? null,
         data.injuredPerson ?? null, data.injuryType ?? null,

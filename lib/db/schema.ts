@@ -266,6 +266,7 @@ export const incident = pgTable('incident', {
   referenceNo:      text('reference_no').notNull().unique(),
   title: text('title').notNull(),
   category: text('category').notNull().default('HSE'),
+  incidentCategory: text('incident_category'),
   incidentType: text('incident_type').notNull(),
   severity:         text('severity').notNull().default('Minor'),
   status:           text('status').notNull().default('Open'),
