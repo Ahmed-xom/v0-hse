@@ -209,6 +209,8 @@ export function JourneyTracker() {
     if (res.success) {
       setJourneys((prev) => prev.map((j) => j.id === id ? { ...j, status } : j))
       toast({ title: "Status updated" })
+    } else {
+      toast({ title: "Status update failed", description: res.error, variant: "destructive" })
     }
   }
 
@@ -217,6 +219,8 @@ export function JourneyTracker() {
     if (res.success) {
       setJourneys((prev) => prev.filter((j) => j.id !== id))
       toast({ title: "Journey deleted" })
+    } else {
+      toast({ title: "Delete failed", description: res.error, variant: "destructive" })
     }
   }
 
@@ -693,7 +697,7 @@ export function JourneyTracker() {
               type="file"
               accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
               className="hidden"
-              onChange={(e) => setAttachedFile(e.target.files?.[0] ?? null)}
+              onChange={(e) => { const file = e.target.files?.[0] ?? null; if (file && file.size > 10 * 1024 * 1024) { toast({ title: "Attachment too large", description: "Choose a file smaller than 10 MB.", variant: "destructive" }); e.target.value = ""; return }; setAttachedFile(file) }}
             />
             {attachedFile ? (
               <div className="flex items-center gap-2 rounded-md border border-border/50 bg-muted/30 px-3 py-2">
