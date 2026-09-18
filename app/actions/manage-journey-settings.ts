@@ -7,28 +7,28 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { revalidatePath } from 'next/cache'
 
-const DEFAULTS = { nightStart: '18:00', nightEnd: '06:00' }
-const allowedRoles = new Set(['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER', 'MANAGEMENT'])
+const getDefaultCutoff = () => ({ nightStart: '18:00', nightEnd: '06:00' })
+const allowedRoles = ['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER', 'MANAGEMENT']
 
 async function authorized() {
   const session = await auth.api.getSession({ headers: await headers() })
   const role = String((session?.user as { role?: string } | undefined)?.role ?? '').toUpperCase()
-  return { session, allowed: allowedRoles.has(role) }
+  return { session, allowed: allowedRoles.includes(role) }
 }
 
 function validTime(value: string) { return /^([01]\d|2[0-3]):[0-5]\d$/.test(value) }
 
 export async function getJourneyCutoffSettings(companyId?: string | null) {
-  if (!companyId) return { success: true, data: DEFAULTS }
+  if (!companyId) return { success: true, data: getDefaultCutoff() }
   const { session } = await authorized()
-  if (!session?.user) return { success: false, data: DEFAULTS, error: 'Authentication required.' }
+  if (!session?.user) return { success: false, data: getDefaultCutoff(), error: 'Authentication required.' }
   try {
     const rows = await db.select().from(master).where(eq(master.type, `journey-cutoff:${companyId}`))
     const values = Object.fromEntries(rows.map((row) => [row.key, row.value]))
-    return { success: true, data: { nightStart: values.nightStart || DEFAULTS.nightStart, nightEnd: values.nightEnd || DEFAULTS.nightEnd } }
+    return { success: true, data: { nightStart: values.nightStart || getDefaultCutoff().nightStart, nightEnd: values.nightEnd || getDefaultCutoff().nightEnd } }
   } catch (error) {
     console.error('[journey-settings] load failed', error)
-    return { success: true, data: DEFAULTS }
+    return { success: true, data: getDefaultCutoff() }
   }
 }
 
