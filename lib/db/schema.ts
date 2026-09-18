@@ -264,8 +264,9 @@ export const journey = pgTable('journey', {
 export const incident = pgTable('incident', {
   id:               text('id').primaryKey(),
   referenceNo:      text('reference_no').notNull().unique(),
-  title:            text('title').notNull(),
-  incidentType:     text('incident_type').notNull(),
+  title: text('title').notNull(),
+  category: text('category').notNull().default('HSE'),
+  incidentType: text('incident_type').notNull(),
   severity:         text('severity').notNull().default('Minor'),
   status:           text('status').notNull().default('Open'),
   date:             timestamp('date', { withTimezone: true }).notNull(),

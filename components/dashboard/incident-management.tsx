@@ -37,6 +37,8 @@ import {
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
+const INCIDENT_CATEGORIES = ["HSE", "SQ"] as const
+
 const INCIDENT_TYPES = [
   "Lost Time Injury (LTI)",
   "Medical Treatment Case (MTC)",
@@ -95,6 +97,7 @@ function statusColor(s: string) {
 
 const EMPTY_FORM = {
   title: "",
+  category: "HSE",
   incidentType: "",
   severity: "Minor",
   date: new Date().toISOString().slice(0, 16),
@@ -123,6 +126,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
   const [incidents, setIncidents] = useState<Incident[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const [filterCategory, setFilterCategory] = useState("all")
   const [filterType, setFilterType] = useState("all")
   const [filterSeverity, setFilterSeverity] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
@@ -171,12 +175,13 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
       const q = search.toLowerCase()
       const matchSearch = !q || [i.referenceNo, i.title, i.reportedBy ?? "", i.location ?? "", i.businessUnit ?? ""]
         .some((v) => v.toLowerCase().includes(q))
+      const matchCategory = filterCategory === "all" || i.category === filterCategory
       const matchType     = filterType     === "all" || i.incidentType === filterType
       const matchSeverity = filterSeverity === "all" || i.severity     === filterSeverity
       const matchStatus   = filterStatus   === "all" || i.status       === filterStatus
-      return matchSearch && matchType && matchSeverity && matchStatus
+      return matchSearch && matchCategory && matchType && matchSeverity && matchStatus
     })
-  }, [incidents, search, filterType, filterSeverity, filterStatus])
+  }, [incidents, search, filterCategory, filterType, filterSeverity, filterStatus])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -206,8 +211,9 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
 
   const openEdit = (inc: Incident) => {
     setForm({
-      title:           inc.title,
-      incidentType:    inc.incidentType,
+  title:           inc.title,
+  category:        inc.category ?? "HSE",
+  incidentType:    inc.incidentType,
       severity:        inc.severity,
       date:            new Date(inc.date).toISOString().slice(0, 16),
       location:        inc.location ?? "",
@@ -238,6 +244,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
     if (isEditing && selected) {
       const res = await updateIncident(selected.id, {
         ...form,
+        category: form.category as "HSE" | "SQ",
         lostTimeDays: Number(form.lostTimeDays),
       }, companyId)
       if (res.success) {
@@ -250,6 +257,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
     } else {
       const res = await createIncident({
         ...form,
+        category: form.category as "HSE" | "SQ",
         lostTimeDays: Number(form.lostTimeDays),
         companyId,
       })
@@ -282,8 +290,9 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
   const handleExport = () => {
     const rows = filtered.map((i) => ({
       "Reference No":     i.referenceNo,
-      "Title":            i.title,
-      "Type":             i.incidentType,
+  "Title":            i.title,
+  "Module":           i.category === "SQ" ? "SQ (Service Quality)" : "HSE Incident",
+  "Type":             i.incidentType,
       "Severity":         i.severity,
       "Status":           i.status,
       "Date":             new Date(i.date).toLocaleDateString(),
@@ -396,6 +405,10 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
                 className="pl-9"
               />
             </div>
+            <Select value={filterCategory} onValueChange={(v) => { setFilterCategory(v); setPage(1) }}>
+              <SelectTrigger className="w-full sm:w-48"><SelectValue placeholder="All modules" /></SelectTrigger>
+              <SelectContent><SelectItem value="all">All Modules</SelectItem>{INCIDENT_CATEGORIES.map((category) => <SelectItem key={category} value={category}>{category === "SQ" ? "SQ (Service Quality)" : "HSE Incident"}</SelectItem>)}</SelectContent>
+            </Select>
             <Select value={filterType} onValueChange={(v) => { setFilterType(v); setPage(1) }}>
               <SelectTrigger className="w-full sm:w-52">
                 <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -561,7 +574,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
               </div>
               <Separator />
               <div className="grid gap-3 sm:grid-cols-2">
-                <div><p className="text-xs text-muted-foreground">Incident Type</p><p className="font-medium">{selected.incidentType}</p></div>
+                <div><p className="text-xs text-muted-foreground">Incident Module</p><p className="font-medium">{selected.category === "SQ" ? "SQ (Service Quality)" : "HSE Incident"}</p></div><div><p className="text-xs text-muted-foreground">Incident Type</p><p className="font-medium">{selected.incidentType}</p></div>
                 <div><p className="text-xs text-muted-foreground">Date</p><p className="font-medium">{new Date(selected.date).toLocaleString()}</p></div>
                 <div><p className="text-xs text-muted-foreground">Location</p><p className="font-medium">{selected.location ?? "—"}</p></div>
                 <div><p className="text-xs text-muted-foreground">Business Unit</p><p className="font-medium">{selected.businessUnit ?? "—"}</p></div>
@@ -605,9 +618,17 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              {/* Type */}
-              <div className="space-y-1.5">
-                <Label>Incident Type <span className="text-destructive">*</span></Label>
+  {/* Module */}
+  <div className="space-y-1.5">
+  <Label>Incident Module</Label>
+  <Select value={form.category} onValueChange={(v) => f("category", v as "HSE" | "SQ")}>
+  <SelectTrigger><SelectValue /></SelectTrigger>
+  <SelectContent>{INCIDENT_CATEGORIES.map((category) => <SelectItem key={category} value={category}>{category === "SQ" ? "SQ (Service Quality)" : "HSE Incident"}</SelectItem>)}</SelectContent>
+  </Select>
+  </div>
+  {/* Type */}
+  <div className="space-y-1.5">
+  <Label>Incident Type <span className="text-destructive">*</span></Label>
                 <Select value={form.incidentType} onValueChange={(v) => f("incidentType", v)}>
                   <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                   <SelectContent>{INCIDENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>

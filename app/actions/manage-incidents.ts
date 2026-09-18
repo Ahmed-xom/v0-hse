@@ -10,6 +10,7 @@ export type Incident = {
   id: string
   referenceNo: string
   title: string
+  category: 'HSE' | 'SQ'
   incidentType: string
   severity: string
   status: string
@@ -41,6 +42,7 @@ export async function getIncidents() {
             id,
             reference_no    AS "referenceNo",
             title,
+            category,
             incident_type   AS "incidentType",
             severity,
             status,
@@ -76,6 +78,7 @@ export async function getIncidents() {
 
 export async function createIncident(data: {
   title: string
+  category: 'HSE' | 'SQ'
   incidentType: string
   severity: string
   date: string
@@ -109,7 +112,7 @@ export async function createIncident(data: {
 
     await pool.query(
       `INSERT INTO public.incident (
-        id, reference_no, title, incident_type, severity, status, date,
+            id, reference_no, title, category, incident_type, severity, status, date,
         location, business_unit, reported_by, reported_by_email,
         injured_person, injury_type, description, immediate_action,
         near_miss, lost_time_days, created_at, updated_at
@@ -120,7 +123,7 @@ export async function createIncident(data: {
         $15,$16,now(),now()
       )`,
       [
-        id, referenceNo, data.title, data.incidentType, data.severity, data.date,
+        id, referenceNo, data.title, data.category, data.incidentType, data.severity, data.date,
         data.location ?? null, data.businessUnit ?? null,
         data.reportedBy ?? null, data.reportedByEmail ?? null,
         data.injuredPerson ?? null, data.injuryType ?? null,
@@ -179,6 +182,7 @@ export async function createIncident(data: {
 
 export async function updateIncident(id: string, data: Partial<{
   title: string
+  category: 'HSE' | 'SQ'
   incidentType: string
   severity: string
   status: string
@@ -203,6 +207,7 @@ export async function updateIncident(id: string, data: Partial<{
 
     const map: Record<string, string> = {
       title: 'title',
+      category: 'category',
       incidentType: 'incident_type',
       severity: 'severity',
       status: 'status',
