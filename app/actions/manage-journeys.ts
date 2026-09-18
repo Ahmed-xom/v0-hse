@@ -54,10 +54,13 @@ export type JourneyRecord = {
 
 export async function getJourneys(userEmail: string) {
   try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    const sessionEmail = session?.user?.email
+    if (!sessionEmail || sessionEmail.toLowerCase() !== userEmail.toLowerCase()) return { success: false, data: [], error: 'Unauthorized' }
     const rows = await db
       .select()
       .from(journey)
-      .where(eq(journey.userEmail, userEmail))
+      .where(eq(journey.userEmail, sessionEmail))
       .orderBy(desc(journey.createdAt))
     return { success: true, data: rows as JourneyRecord[] }
   } catch (error: any) {
@@ -68,6 +71,12 @@ export async function getJourneys(userEmail: string) {
 
 export async function getAllJourneys() {
   try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    const email = session?.user?.email
+    if (!email) return { success: false, data: [], error: 'Unauthorized' }
+    const role = String((session.user as any).role ?? '').toUpperCase()
+    const canReview = await getUserJourneyApprover(email)
+    if (!canReview && !['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER', 'MANAGEMENT'].includes(role)) return { success: false, data: [], error: 'Journey Approver access required' }
     const rows = await db
       .select()
       .from(journey)
@@ -97,6 +106,8 @@ export async function createJourney(data: {
   attachmentName?: string
 }) {
   try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!session?.user?.email || session.user.email.toLowerCase() !== data.userEmail.toLowerCase()) return { success: false, error: 'Unauthorized' }
     const id = `jrn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
     await db.insert(journey).values({
       id,
@@ -149,6 +160,12 @@ export async function updateJourneyStatus(id: string, status: string) {
 
 export async function deleteJourney(id: string) {
   try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    const email = session?.user?.email
+    if (!email) return { success: false, error: 'Unauthorized' }
+    const role = String((session.user as any).role ?? '').toUpperCase()
+    const canReview = await getUserJourneyApprover(email)
+    if (!canReview && !['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER', 'MANAGEMENT'].includes(role)) return { success: false, error: 'Journey Approver access required' }
     await db.delete(journey).where(eq(journey.id, id))
     revalidatePath('/journey-tracker')
     return { success: true }
