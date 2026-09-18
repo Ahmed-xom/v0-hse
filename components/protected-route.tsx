@@ -21,12 +21,8 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
   }, [user, isLoading, router])
 
   useEffect(() => {
-    if (!isLoading && user && requiredRoles && requiredRoles.length > 0) {
-      if (!requiredRoles.includes(user.role)) {
-        router.push("/")
-      }
-    }
-  }, [user, isLoading, requiredRoles, router])
+    // All authenticated users are allowed through the application.
+  }, [])
 
   if (isLoading) {
     return (

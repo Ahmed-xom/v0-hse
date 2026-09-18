@@ -76,7 +76,7 @@ export async function getAllJourneys(companyId?: string | null) {
     if (!email) return { success: false, data: [], error: 'Unauthorized' }
     const role = String((session.user as any).role ?? '').toUpperCase()
     const canReview = await getUserJourneyApprover(email)
-    if (!canReview && !['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER', 'MANAGEMENT'].includes(role)) return { success: false, data: [], error: 'Journey Approver access required' }
+    if (!email) return { success: false, data: [], error: 'Unauthorized' }
     const rows = await db
       .select()
       .from(journey)
