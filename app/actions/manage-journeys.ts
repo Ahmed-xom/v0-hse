@@ -109,10 +109,11 @@ export async function createJourney(data: {
     const session = await auth.api.getSession({ headers: await headers() })
     if (!session?.user?.email || session.user.email.toLowerCase() !== data.userEmail.toLowerCase()) return { success: false, error: 'Unauthorized' }
     const id = `jrn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+    const sessionUser = session.user as { name?: string | null }
     await db.insert(journey).values({
       id,
-      userEmail: data.userEmail,
-      userName: data.userName,
+      userEmail: session.user.email,
+      userName: sessionUser.name || data.userName,
       origin: data.origin,
       destination: data.destination,
       purpose: data.purpose,
@@ -137,6 +138,8 @@ export async function createJourney(data: {
 }
 
 export async function updateJourneyStatus(id: string, status: string) {
+  const allowedStatuses = ['Planned', 'Pending Approval', 'Approved', 'Active', 'Completed', 'Cancelled']
+  if (!allowedStatuses.includes(status)) return { success: false, error: 'Invalid journey status' }
   try {
     const session = await auth.api.getSession({ headers: await headers() })
     const email = session?.user?.email
