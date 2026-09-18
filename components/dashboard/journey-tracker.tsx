@@ -133,8 +133,14 @@ export function JourneyTracker() {
     })
   }, [journeys, searchQuery, statusFilter, purposeFilter, vehicleFilter, journeyTab, nightCutoff])
 
+  const journeyTabCounts = useMemo(() => ({
+    all: journeys.length,
+    morning: journeys.filter((j) => { const hour = Number(String(j.departureTime).split(':')[0]); const minute = Number(String(j.departureTime).split(':')[1] ?? 0); const current = hour * 60 + minute; const start = Number(nightCutoff.nightStart.split(':')[0]) * 60 + Number(nightCutoff.nightStart.split(':')[1]); const end = Number(nightCutoff.nightEnd.split(':')[0]) * 60 + Number(nightCutoff.nightEnd.split(':')[1]); const night = start > end ? current >= start || current < end : current >= start && current < end; return j.journeyType === 'night' ? false : j.journeyType === 'morning' ? true : !night }).length,
+    night: journeys.filter((j) => { const hour = Number(String(j.departureTime).split(':')[0]); const minute = Number(String(j.departureTime).split(':')[1] ?? 0); const current = hour * 60 + minute; const start = Number(nightCutoff.nightStart.split(':')[0]) * 60 + Number(nightCutoff.nightStart.split(':')[1]); const end = Number(nightCutoff.nightEnd.split(':')[0]) * 60 + Number(nightCutoff.nightEnd.split(':')[1]); const night = start > end ? current >= start || current < end : current >= start && current < end; return j.journeyType === 'night' || (j.journeyType == null && night) }).length,
+  }), [journeys, nightCutoff])
+
   const stats = useMemo(() => ({
-    total:      journeys.length,
+  total:      journeys.length,
     planned:    journeys.filter((j) => j.status === "Planned").length,
     inProgress: journeys.filter((j) => j.status === "In Progress").length,
     completed:  journeys.filter((j) => j.status === "Completed").length,
@@ -308,9 +314,9 @@ export function JourneyTracker() {
 
   <CardContent className="space-y-6">
   {canReviewJourneys && <div className="flex flex-wrap gap-2 rounded-lg border border-border/50 bg-muted/20 p-2" role="tablist" aria-label="Journey shift">
-    <Button type="button" variant={journeyTab === "all" ? "default" : "ghost"} onClick={() => setJourneyTab("all")}>All journeys</Button>
-    <Button type="button" variant={journeyTab === "morning" ? "default" : "ghost"} onClick={() => setJourneyTab("morning")} className="gap-2"><Sun className="h-4 w-4" /> Morning journeys</Button>
-    <Button type="button" variant={journeyTab === "night" ? "default" : "ghost"} onClick={() => setJourneyTab("night")} className="gap-2"><Moon className="h-4 w-4" /> Night journeys</Button>
+    <Button type="button" variant={journeyTab === "all" ? "default" : "ghost"} onClick={() => setJourneyTab("all")}>All journeys ({journeyTabCounts.all})</Button>
+    <Button type="button" variant={journeyTab === "morning" ? "default" : "ghost"} onClick={() => setJourneyTab("morning")} className="gap-2"><Sun className="h-4 w-4" /> Morning journeys ({journeyTabCounts.morning})</Button>
+    <Button type="button" variant={journeyTab === "night" ? "default" : "ghost"} onClick={() => setJourneyTab("night")} className="gap-2"><Moon className="h-4 w-4" /> Night journeys ({journeyTabCounts.night})</Button>
     <p className="basis-full text-xs text-muted-foreground">Night journeys follow the active company cutoff ({nightCutoff.nightStart}–{nightCutoff.nightEnd}). Admin and Master users can manage it in settings.</p>
   </div>}
   {/* Stats */}

@@ -138,7 +138,7 @@ export async function createJourney(data: {
 }
 
 export async function updateJourneyStatus(id: string, status: string) {
-  const allowedStatuses = ['Planned', 'Pending Approval', 'Approved', 'Active', 'Completed', 'Cancelled']
+  const allowedStatuses = ['Planned', 'Pending Approval', 'Approved', 'Active', 'In Progress', 'Completed', 'Flagged', 'Cancelled']
   if (!allowedStatuses.includes(status)) return { success: false, error: 'Invalid journey status' }
   try {
     const session = await auth.api.getSession({ headers: await headers() })
