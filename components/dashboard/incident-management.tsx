@@ -111,6 +111,9 @@ const EMPTY_FORM = {
   immediateAction: "",
   rootCause: "",
   correctiveAction: "",
+  dataGathering: "",
+  dataGatheringAttachment: "",
+  dataGatheringAttachmentName: "",
   lostTimeDays: 0,
   nearMiss: false,
   status: "Open",
@@ -226,6 +229,9 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
       immediateAction: inc.immediateAction ?? "",
       rootCause:       inc.rootCause ?? "",
       correctiveAction:inc.correctiveAction ?? "",
+      dataGathering: inc.dataGathering ?? "",
+      dataGatheringAttachment: inc.dataGatheringAttachment ?? "",
+      dataGatheringAttachmentName: inc.dataGatheringAttachmentName ?? "",
       lostTimeDays:    inc.lostTimeDays ?? 0,
       nearMiss:        inc.nearMiss,
       status:          inc.status,
@@ -315,7 +321,15 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
   }
 
   const f = (key: string, val: string | number | boolean) =>
-    setForm((prev) => ({ ...prev, [key]: val }))
+  setForm((prev) => ({ ...prev, [key]: val }))
+  const uploadGatheringAttachment = async (file: File) => {
+    const body = new FormData(); body.append('file', file)
+    const response = await fetch('/api/incident-attachment', { method: 'POST', body })
+    const result = await response.json()
+    if (!response.ok) { toast({ title: 'Attachment upload failed', description: result.error, variant: 'destructive' }); return }
+    f('dataGatheringAttachment', result.pathname); f('dataGatheringAttachmentName', result.name)
+    toast({ title: 'Attachment uploaded' })
+  }
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -587,6 +601,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
               {selected.immediateAction && (<div><p className="text-xs text-muted-foreground mb-1">Immediate Action Taken</p><p className="leading-relaxed">{selected.immediateAction}</p></div>)}
               {selected.rootCause && (<div><p className="text-xs text-muted-foreground mb-1">Root Cause</p><p className="leading-relaxed">{selected.rootCause}</p></div>)}
               {selected.correctiveAction && (<div><p className="text-xs text-muted-foreground mb-1">Corrective Action</p><p className="leading-relaxed">{selected.correctiveAction}</p></div>)}
+              {(selected.dataGathering || selected.dataGatheringAttachmentName) && (<><Separator /><div><p className="text-xs text-muted-foreground mb-1">Data Gathering</p>{selected.dataGathering && <p className="leading-relaxed">{selected.dataGathering}</p>}{selected.dataGatheringAttachmentName && <p className="mt-2 text-sm text-muted-foreground">Attachment: {selected.dataGatheringAttachmentName}</p>}</div></>) }
             </div>
           )}
           <DialogFooter>
@@ -690,6 +705,12 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
                 <Label htmlFor="inc-ltd">Lost Time Days</Label>
                 <Input id="inc-ltd" type="number" min={0} value={form.lostTimeDays} onChange={(e) => f("lostTimeDays", parseInt(e.target.value) || 0)} />
               </div>
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-border/50 bg-secondary/20 p-4">
+              <div><p className="font-medium">Data Gathering</p><p className="text-xs text-muted-foreground">Add investigation notes and supporting evidence.</p></div>
+              <Textarea placeholder="Enter data gathering notes, witness statements, or findings..." value={form.dataGathering} onChange={(e) => f('dataGathering', e.target.value)} />
+              <div className="flex flex-wrap items-center gap-3"><Input type="file" className="max-w-sm" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadGatheringAttachment(file) }} />{form.dataGatheringAttachmentName && <span className="text-sm text-muted-foreground">{form.dataGatheringAttachmentName}</span>}</div>
             </div>
 
             {/* Near Miss Toggle */}
