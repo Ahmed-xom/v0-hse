@@ -37,7 +37,7 @@ import {
   type JourneyRecord, type VehicleRecord,
 } from "@/app/actions/manage-journeys"
 import { isAdminRole } from "@/lib/auth-roles"
-import { getJourneyCutoffSettings } from "@/app/actions/manage-journey-settings"
+import { getJourneyCutoffSettings } from "@/app/actions/journey-cutoff-actions"
 import * as XLSX from "xlsx"
 
 const VEHICLE_TYPES = ["Car", "Van", "Bus", "Truck", "Motorcycle", "Other"]

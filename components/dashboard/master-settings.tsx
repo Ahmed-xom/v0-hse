@@ -64,7 +64,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { masterCategories, getTotalMasterItems, getTotalSections, type MasterSection } from "@/lib/masters-data"
 import { VehiclesSection } from "./vehicles-section"
 import { useAuth } from "@/lib/auth-context"
-import { getJourneyCutoffSettings, saveJourneyCutoffSettings } from "@/app/actions/manage-journey-settings"
+import { getJourneyCutoffSettings, saveJourneyCutoffSettings } from "@/app/actions/journey-cutoff-actions"
 
 const iconMap: Record<string, React.ReactNode> = {
   settings: <Settings className="h-5 w-5" />,
