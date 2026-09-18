@@ -522,13 +522,13 @@ export function JourneyTracker() {
           </DialogHeader>
 
           <Tabs defaultValue="summary" className="mt-2">
-            <TabsList className="flex h-auto flex-wrap justify-start gap-1 bg-muted/50 p-1">
-              {[['summary','Summary'],['driver','Driver Details'],['resources','Resources'],['journey','Journey'],['vehicle','Vehicle'],['checkin','Check-In'],['attachments','Attachments'],['inspection','Pre-Trip Inspection'],['route','Route Plan'],['changes','Route Changes'],['passengers','Passengers'],['night','Night Driving'],['hazards','Road Hazards'],['emergency','Emergency Contacts'],['risk','Risk Assessment']].map(([value, label]) => <TabsTrigger key={value} value={value} className="text-xs">{label}</TabsTrigger>)}
+            <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 overflow-visible bg-muted/50 p-1">
+              {[['summary','Summary'],['driver','Driver Details'],['resources','Resources'],['journey','Journey'],['vehicle','Vehicle'],['checkin','Check-In'],['attachments','Attachments'],['inspection','Pre-Trip Inspection'],['route','Route Plan'],['changes','Route Changes'],['passengers','Passengers'],['night','Night Driving'],['hazards','Road Hazards'],['emergency','Emergency Contacts'],['risk','Risk Assessment']].map(([value, label]) => <TabsTrigger key={value} value={value} className="min-w-0 whitespace-normal text-center text-xs leading-tight sm:whitespace-nowrap">{label}</TabsTrigger>)}
             </TabsList>
             <TabsContent value="summary" className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label>Origin <span className="text-destructive">*</span></Label>
+                <Label className="block whitespace-nowrap">Origin <span className="text-destructive">*</span></Label>
                 <div className="relative">
                   <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -540,7 +540,7 @@ export function JourneyTracker() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label>Destination <span className="text-destructive">*</span></Label>
+                <Label className="block whitespace-nowrap">Destination <span className="text-destructive">*</span></Label>
                 <div className="relative">
                   <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
