@@ -289,7 +289,7 @@ export function VehiclesSection() {
                         expiry_date: date ? format(date, "yyyy-MM-dd") : "",
                       }))
                     }
-                    initialFocus
+
                   />
                 </PopoverContent>
               </Popover>

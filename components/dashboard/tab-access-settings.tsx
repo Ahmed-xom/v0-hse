@@ -22,6 +22,7 @@ type UserRow = {
 }
 
 const DEFAULT_ALL: TabKey[] = [...DEFAULT_TABS]
+const asTabKeys = (tabs: readonly string[]): TabKey[] => tabs.filter((tab): tab is TabKey => ALL_TABS.some((item) => item.key === tab))
 
 export function TabAccessSettings() {
   const { toast } = useToast()
@@ -46,7 +47,7 @@ export function TabAccessSettings() {
           email: u.email,
           name: u.name,
           role: u.role,
-          allowedTabs: accessMap.get(u.email.toLowerCase()) ?? DEFAULT_ALL,
+          allowedTabs: asTabKeys(accessMap.get(u.email.toLowerCase()) ?? DEFAULT_ALL),
           dirty: false,
         }))
       )

@@ -115,6 +115,9 @@ export async function createIncident(data: {
   injuryType?: string
   description?: string
   immediateAction?: string
+  immediateCauses?: string
+  rootCauses?: string
+  latentFailures?: string
   nearMiss?: boolean
   lostTimeDays?: number
   dataGathering?: string

@@ -5,7 +5,7 @@ import {
   Plus, Search, RefreshCw, Eye, Edit, Trash2, FileText,
   Download, ExternalLink, ChevronDown, FolderOpen, Upload,
   Lock, Globe, Users, Shield, X, FileUp, CheckCircle2,
-  FilePdf, FileSpreadsheet, FileCode, File,
+  FileSpreadsheet, FileCode, File,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

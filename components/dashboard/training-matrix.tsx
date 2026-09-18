@@ -379,7 +379,7 @@ export function TrainingMatrix() {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: async (result) => {
+      complete: async (result: Papa.ParseResult<Record<string, string>>) => {
         try {
           const rows = (result.data as Record<string, string>[]).map((row) => ({
             employeeName: row["Employee Name"] || row["employee_name"] || row["Name"] || "",
@@ -414,7 +414,7 @@ export function TrainingMatrix() {
     })
   }
 
-  // ── Delete ────────────────────────────────────────────────
+  // ── Delete ──────────────────────────��─────────────────────
   const handleDelete = async (id: string) => {
     const res = await deleteTrainingRecord(id)
     if (res.success) {
