@@ -20,6 +20,8 @@ function validTime(value: string) { return /^([01]\d|2[0-3]):[0-5]\d$/.test(valu
 
 export async function getJourneyCutoffSettings(companyId?: string | null) {
   if (!companyId) return { success: true, data: DEFAULTS }
+  const { session } = await authorized()
+  if (!session?.user) return { success: false, data: DEFAULTS, error: 'Authentication required.' }
   try {
     const rows = await db.select().from(master).where(eq(master.type, `journey-cutoff:${companyId}`))
     const values = Object.fromEntries(rows.map((row) => [row.key, row.value]))

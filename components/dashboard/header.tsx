@@ -63,7 +63,7 @@ export function DashboardHeader() {
       .slice(0, 2)
   }
 
-  const showSettings = user && isMasterUser(user.role)
+  const showSettings = user && (isMasterUser(user.role) || ["MANAGEMENT", "HSE ADMIN", "ADMIN", "ADMIN SYSTEM"].includes(String(user.role ?? "").toUpperCase()))
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
