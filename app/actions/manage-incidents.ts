@@ -26,7 +26,15 @@ export type Incident = {
   immediateAction: string | null
   rootCause: string | null
   correctiveAction: string | null
+  immediateCauses: string | null
+  rootCauses: string | null
+  latentFailures: string | null
   dataGathering: string | null
+  detailedObservations: string | null
+  interviewNotes: string | null
+  evidenceDescription: string | null
+  findings: string | null
+  additionalComments: string | null
   dataGatheringAttachment: string | null
   dataGatheringAttachmentName: string | null
   lostTimeDays: number
@@ -62,7 +70,15 @@ export async function getIncidents() {
             immediate_action AS "immediateAction",
             root_cause      AS "rootCause",
             corrective_action AS "correctiveAction",
+            immediate_causes AS "immediateCauses",
+            root_causes AS "rootCauses",
+            latent_failures AS "latentFailures",
             data_gathering AS "dataGathering",
+            detailed_observations AS "detailedObservations",
+            interview_notes AS "interviewNotes",
+            evidence_description AS "evidenceDescription",
+            findings,
+            additional_comments AS "additionalComments",
             data_gathering_attachment AS "dataGatheringAttachment",
             data_gathering_attachment_name AS "dataGatheringAttachmentName",
             COALESCE(lost_time_days, 0) AS "lostTimeDays",
@@ -102,6 +118,11 @@ export async function createIncident(data: {
   nearMiss?: boolean
   lostTimeDays?: number
   dataGathering?: string
+  detailedObservations?: string
+  interviewNotes?: string
+  evidenceDescription?: string
+  findings?: string
+  additionalComments?: string
   dataGatheringAttachment?: string
   dataGatheringAttachmentName?: string
   companyId?: string | null
@@ -127,14 +148,16 @@ export async function createIncident(data: {
             id, reference_no, title, category, incident_category, incident_type, severity, status, date,
         location, business_unit, reported_by, reported_by_email,
         injured_person, injury_type, description, immediate_action,
-        data_gathering, data_gathering_attachment, data_gathering_attachment_name,
+        immediate_causes, root_causes, latent_failures,
+        data_gathering, detailed_observations, interview_notes, evidence_description, findings, additional_comments,
+        data_gathering_attachment, data_gathering_attachment_name,
         near_miss, lost_time_days, created_at, updated_at
       ) VALUES (
         $1,$2,$3,$4,$5,$6,$7,'Open',$8,
         $9,$10,$11,$12,
         $13,$14,$15,$16,
-        $17,$18,$19,
-        $20,$21,$22,now(),now()
+        $17,$18,$19,$20,$21,$22,$23,$24,$25,
+        $26,$27,$28,$29,now(),now()
       )`,
       [
         id, referenceNo, data.title, data.category, data.incidentCategory ?? null, data.incidentType, data.severity, data.date,
@@ -142,7 +165,10 @@ export async function createIncident(data: {
         data.reportedBy ?? null, data.reportedByEmail ?? null,
         data.injuredPerson ?? null, data.injuryType ?? null,
         data.description ?? null, data.immediateAction ?? null,
-        data.dataGathering ?? null, data.dataGatheringAttachment ?? null, data.dataGatheringAttachmentName ?? null,
+        data.immediateCauses ?? null, data.rootCauses ?? null, data.latentFailures ?? null,
+        data.dataGathering ?? null, data.detailedObservations ?? null, data.interviewNotes ?? null,
+        data.evidenceDescription ?? null, data.findings ?? null, data.additionalComments ?? null,
+        data.dataGatheringAttachment ?? null, data.dataGatheringAttachmentName ?? null,
         data.nearMiss ?? false, data.lostTimeDays ?? 0,
       ]
     )
@@ -212,6 +238,9 @@ export async function updateIncident(id: string, data: Partial<{
   immediateAction: string
   rootCause: string
   correctiveAction: string
+  immediateCauses?: string
+  rootCauses?: string
+  latentFailures?: string
   dataGathering?: string
   dataGatheringAttachment?: string
   dataGatheringAttachmentName?: string

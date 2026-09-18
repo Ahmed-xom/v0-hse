@@ -131,7 +131,15 @@ const EMPTY_FORM = {
   immediateAction: "",
   rootCause: "",
   correctiveAction: "",
+  immediateCauses: "",
+  rootCauses: "",
+  latentFailures: "",
   dataGathering: "",
+  detailedObservations: "",
+  interviewNotes: "",
+  evidenceDescription: "",
+  findings: "",
+  additionalComments: "",
   dataGatheringAttachment: "",
   dataGatheringAttachmentName: "",
   lostTimeDays: 0,
@@ -250,7 +258,15 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
       immediateAction: inc.immediateAction ?? "",
       rootCause:       inc.rootCause ?? "",
       correctiveAction:inc.correctiveAction ?? "",
+      immediateCauses: inc.immediateCauses ?? "",
+      rootCauses: inc.rootCauses ?? "",
+      latentFailures: inc.latentFailures ?? "",
       dataGathering: inc.dataGathering ?? "",
+      detailedObservations: inc.detailedObservations ?? "",
+      interviewNotes: inc.interviewNotes ?? "",
+      evidenceDescription: inc.evidenceDescription ?? "",
+      findings: inc.findings ?? "",
+      additionalComments: inc.additionalComments ?? "",
       dataGatheringAttachment: inc.dataGatheringAttachment ?? "",
       dataGatheringAttachmentName: inc.dataGatheringAttachmentName ?? "",
       lostTimeDays:    inc.lostTimeDays ?? 0,
@@ -633,6 +649,11 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
               </TabsContent>
               <TabsContent value="investigation" className="mt-4 space-y-4 text-sm">
                 <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
+                  <p className="text-xs text-muted-foreground mb-1">Immediate Causes</p><p className="whitespace-pre-wrap">{selected.immediateCauses || "No immediate causes recorded."}</p>
+                  <p className="mt-3 text-xs text-muted-foreground mb-1">Root Causes</p><p className="whitespace-pre-wrap">{selected.rootCauses || selected.rootCause || "No root causes recorded."}</p>
+                  <p className="mt-3 text-xs text-muted-foreground mb-1">Latent Management System Failures</p><p className="whitespace-pre-wrap">{selected.latentFailures || "No latent failures recorded."}</p>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
                   <p className="text-xs text-muted-foreground mb-1">Root Cause</p>
                   <p className="leading-relaxed">{selected.rootCause || "No root cause recorded."}</p>
                 </div>
@@ -645,6 +666,11 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
                 <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
                   <p className="text-xs text-muted-foreground mb-1">Data Gathering Notes</p>
                   <p className="whitespace-pre-wrap leading-relaxed">{selected.dataGathering || "No data gathering notes recorded."}</p>
+                  {selected.detailedObservations && <p className="mt-3 whitespace-pre-wrap"><strong>Observations:</strong> {selected.detailedObservations}</p>}
+                  {selected.interviewNotes && <p className="mt-3 whitespace-pre-wrap"><strong>Interviews:</strong> {selected.interviewNotes}</p>}
+                  {selected.evidenceDescription && <p className="mt-3 whitespace-pre-wrap"><strong>Evidence:</strong> {selected.evidenceDescription}</p>}
+                  {selected.findings && <p className="mt-3 whitespace-pre-wrap"><strong>Findings:</strong> {selected.findings}</p>}
+                  {selected.additionalComments && <p className="mt-3 whitespace-pre-wrap"><strong>Comments:</strong> {selected.additionalComments}</p>}
                 </div>
                 {selected.dataGatheringAttachmentName && (
                   <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
@@ -764,8 +790,19 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
             </div>
 
             <div className="space-y-3 rounded-lg border border-border/50 bg-secondary/20 p-4">
+              <div><p className="font-medium">Cause Analysis</p><p className="text-xs text-muted-foreground">Enter multiple values separated by commas.</p></div>
+              <Textarea placeholder="Immediate causes" value={form.immediateCauses} onChange={(e) => f('immediateCauses', e.target.value)} />
+              <Textarea placeholder="Root causes" value={form.rootCauses} onChange={(e) => f('rootCauses', e.target.value)} />
+              <Textarea placeholder="Latent management system failures" value={form.latentFailures} onChange={(e) => f('latentFailures', e.target.value)} />
+            </div>
+            <div className="space-y-3 rounded-lg border border-border/50 bg-secondary/20 p-4">
               <div><p className="font-medium">Data Gathering</p><p className="text-xs text-muted-foreground">Add investigation notes and supporting evidence.</p></div>
-              <Textarea placeholder="Enter data gathering notes, witness statements, or findings..." value={form.dataGathering} onChange={(e) => f('dataGathering', e.target.value)} />
+              <Textarea placeholder="Investigation notes" value={form.dataGathering} onChange={(e) => f('dataGathering', e.target.value)} />
+              <Textarea placeholder="Detailed observations" value={form.detailedObservations} onChange={(e) => f('detailedObservations', e.target.value)} />
+              <Textarea placeholder="Interview notes" value={form.interviewNotes} onChange={(e) => f('interviewNotes', e.target.value)} />
+              <Textarea placeholder="Evidence description" value={form.evidenceDescription} onChange={(e) => f('evidenceDescription', e.target.value)} />
+              <Textarea placeholder="Findings" value={form.findings} onChange={(e) => f('findings', e.target.value)} />
+              <Textarea placeholder="Additional comments" value={form.additionalComments} onChange={(e) => f('additionalComments', e.target.value)} />
               <div className="flex flex-wrap items-center gap-3"><Input type="file" className="max-w-sm" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadGatheringAttachment(file) }} />{form.dataGatheringAttachmentName && <span className="text-sm text-muted-foreground">{form.dataGatheringAttachmentName}</span>}</div>
             </div>
 
