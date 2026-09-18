@@ -503,7 +503,7 @@ export function JourneyTracker() {
 
           <Tabs defaultValue="summary" className="mt-2">
             <TabsList className="flex h-auto flex-wrap justify-start gap-1 bg-muted/50 p-1">
-              {[['summary','Summary'],['driver','Driver Details'],['journey','Journey'],['vehicle','Vehicle'],['checkin','Check-In'],['attachments','Attachments'],['inspection','Pre-Trip Inspection'],['route','Route Plan'],['changes','Route Changes'],['passengers','Passengers'],['night','Night Driving'],['hazards','Road Hazards'],['emergency','Emergency Contacts']].map(([value, label]) => <TabsTrigger key={value} value={value} className="text-xs">{label}</TabsTrigger>)}
+              {[['summary','Summary'],['driver','Driver Details'],['resources','Resources'],['journey','Journey'],['vehicle','Vehicle'],['checkin','Check-In'],['attachments','Attachments'],['inspection','Pre-Trip Inspection'],['route','Route Plan'],['changes','Route Changes'],['passengers','Passengers'],['night','Night Driving'],['hazards','Road Hazards'],['emergency','Emergency Contacts']].map(([value, label]) => <TabsTrigger key={value} value={value} className="text-xs">{label}</TabsTrigger>)}
             </TabsList>
             <TabsContent value="summary" className="grid gap-4 py-4">
             <div className="grid grid-cols-2 gap-4">
@@ -653,6 +653,7 @@ export function JourneyTracker() {
             </TabsContent>
             {[
               ['driver', 'Driver Details', 'Capture the primary driver, mobile number, licence details, and fitness confirmation.'],
+              ['resources', 'Resources', 'Select reusable driver and vehicle master records, then review expiry and readiness status.'],
               ['journey', 'Journey', 'Record journey manager, client, business unit, risk level, and approval status.'],
               ['vehicle', 'Vehicle', 'Review registration, inspection, insurance, load, and vehicle readiness.'],
               ['checkin', 'Check-In Details', 'Track departure check-in, arrival check-in, and overdue check-ins.'],
@@ -664,7 +665,7 @@ export function JourneyTracker() {
               ['night', 'Night Driving', 'Capture night driving controls, fatigue checks, lighting, and additional approval.'],
               ['hazards', 'Road Hazards', 'Record known hazards, controls, weather, and escalation requirements.'],
               ['emergency', 'Emergency Contacts', 'Add emergency contacts, escalation instructions, and response numbers.'],
-            ].map(([value, title, description]) => <TabsContent key={value} value={value} className="space-y-4 py-4"><div className="rounded-lg border border-border/50 bg-muted/20 p-5"><h3 className="font-medium">{title}</h3><p className="mt-1 text-sm text-muted-foreground">{description}</p><Textarea className="mt-4 min-h-28" placeholder={`Enter ${title.toLowerCase()} details...`} /></div></TabsContent>)}
+            ].map(([value, title, description]) => <TabsContent key={value} value={value} className="space-y-4 py-4"><div className="rounded-lg border border-border/50 bg-muted/20 p-5"><h3 className="font-medium">{title}</h3><p className="mt-1 text-sm text-muted-foreground">{description}</p>{value === 'resources' ? <div className="mt-4 grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label>Driver</Label><Select><SelectTrigger><SelectValue placeholder="Search driver master" /></SelectTrigger><SelectContent><SelectItem value="driver-1">Select a registered driver</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label>Vehicle</Label><Select><SelectTrigger><SelectValue placeholder="Search vehicle master" /></SelectTrigger><SelectContent><SelectItem value="vehicle-1">Select a registered vehicle</SelectItem></SelectContent></Select></div><div className="rounded-md border border-border/50 p-3 text-sm text-muted-foreground sm:col-span-2">Selected resource details will populate license, training, registration, RAS expiry, load limit, and current KM reading.</div></div> : <Textarea className="mt-4 min-h-28" placeholder={`Enter ${title.toLowerCase()} details...`} />}</div></TabsContent>)}
           </Tabs>
 
           {/* Attachment */}
