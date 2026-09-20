@@ -10,6 +10,8 @@ export type Incident = {
   id: string
   referenceNo: string
   title: string
+  category: 'HSE' | 'SQ'
+  incidentCategory: string | null
   incidentType: string
   severity: string
   status: string
@@ -24,6 +26,17 @@ export type Incident = {
   immediateAction: string | null
   rootCause: string | null
   correctiveAction: string | null
+  immediateCauses: string | null
+  rootCauses: string | null
+  latentFailures: string | null
+  dataGathering: string | null
+  detailedObservations: string | null
+  interviewNotes: string | null
+  evidenceDescription: string | null
+  findings: string | null
+  additionalComments: string | null
+  dataGatheringAttachment: string | null
+  dataGatheringAttachmentName: string | null
   lostTimeDays: number
   nearMiss: boolean
   createdAt: string
@@ -41,6 +54,8 @@ export async function getIncidents() {
             id,
             reference_no    AS "referenceNo",
             title,
+            category,
+            incident_category AS "incidentCategory",
             incident_type   AS "incidentType",
             severity,
             status,
@@ -55,6 +70,17 @@ export async function getIncidents() {
             immediate_action AS "immediateAction",
             root_cause      AS "rootCause",
             corrective_action AS "correctiveAction",
+            immediate_causes AS "immediateCauses",
+            root_causes AS "rootCauses",
+            latent_failures AS "latentFailures",
+            data_gathering AS "dataGathering",
+            detailed_observations AS "detailedObservations",
+            interview_notes AS "interviewNotes",
+            evidence_description AS "evidenceDescription",
+            findings,
+            additional_comments AS "additionalComments",
+            data_gathering_attachment AS "dataGatheringAttachment",
+            data_gathering_attachment_name AS "dataGatheringAttachmentName",
             COALESCE(lost_time_days, 0) AS "lostTimeDays",
             near_miss       AS "nearMiss",
             created_at      AS "createdAt",
@@ -76,6 +102,8 @@ export async function getIncidents() {
 
 export async function createIncident(data: {
   title: string
+  category: 'HSE' | 'SQ'
+  incidentCategory?: string
   incidentType: string
   severity: string
   date: string
@@ -87,8 +115,19 @@ export async function createIncident(data: {
   injuryType?: string
   description?: string
   immediateAction?: string
+  immediateCauses?: string
+  rootCauses?: string
+  latentFailures?: string
   nearMiss?: boolean
   lostTimeDays?: number
+  dataGathering?: string
+  detailedObservations?: string
+  interviewNotes?: string
+  evidenceDescription?: string
+  findings?: string
+  additionalComments?: string
+  dataGatheringAttachment?: string
+  dataGatheringAttachmentName?: string
   companyId?: string | null
 }) {
   try {
@@ -109,22 +148,30 @@ export async function createIncident(data: {
 
     await pool.query(
       `INSERT INTO public.incident (
-        id, reference_no, title, incident_type, severity, status, date,
+            id, reference_no, title, category, incident_category, incident_type, severity, status, date,
         location, business_unit, reported_by, reported_by_email,
         injured_person, injury_type, description, immediate_action,
+        immediate_causes, root_causes, latent_failures,
+        data_gathering, detailed_observations, interview_notes, evidence_description, findings, additional_comments,
+        data_gathering_attachment, data_gathering_attachment_name,
         near_miss, lost_time_days, created_at, updated_at
       ) VALUES (
-        $1,$2,$3,$4,$5,'Open',$6,
-        $7,$8,$9,$10,
-        $11,$12,$13,$14,
-        $15,$16,now(),now()
+        $1,$2,$3,$4,$5,$6,$7,'Open',$8,
+        $9,$10,$11,$12,
+        $13,$14,$15,$16,
+        $17,$18,$19,$20,$21,$22,$23,$24,$25,
+        $26,$27,$28,$29,now(),now()
       )`,
       [
-        id, referenceNo, data.title, data.incidentType, data.severity, data.date,
+        id, referenceNo, data.title, data.category, data.incidentCategory ?? null, data.incidentType, data.severity, data.date,
         data.location ?? null, data.businessUnit ?? null,
         data.reportedBy ?? null, data.reportedByEmail ?? null,
         data.injuredPerson ?? null, data.injuryType ?? null,
         data.description ?? null, data.immediateAction ?? null,
+        data.immediateCauses ?? null, data.rootCauses ?? null, data.latentFailures ?? null,
+        data.dataGathering ?? null, data.detailedObservations ?? null, data.interviewNotes ?? null,
+        data.evidenceDescription ?? null, data.findings ?? null, data.additionalComments ?? null,
+        data.dataGatheringAttachment ?? null, data.dataGatheringAttachmentName ?? null,
         data.nearMiss ?? false, data.lostTimeDays ?? 0,
       ]
     )
@@ -179,6 +226,7 @@ export async function createIncident(data: {
 
 export async function updateIncident(id: string, data: Partial<{
   title: string
+  category: 'HSE' | 'SQ'
   incidentType: string
   severity: string
   status: string
@@ -193,6 +241,12 @@ export async function updateIncident(id: string, data: Partial<{
   immediateAction: string
   rootCause: string
   correctiveAction: string
+  immediateCauses?: string
+  rootCauses?: string
+  latentFailures?: string
+  dataGathering?: string
+  dataGatheringAttachment?: string
+  dataGatheringAttachmentName?: string
   lostTimeDays: number
   nearMiss: boolean
 }>, companyId?: string | null) {
@@ -203,6 +257,7 @@ export async function updateIncident(id: string, data: Partial<{
 
     const map: Record<string, string> = {
       title: 'title',
+      category: 'category',
       incidentType: 'incident_type',
       severity: 'severity',
       status: 'status',
@@ -217,6 +272,9 @@ export async function updateIncident(id: string, data: Partial<{
       immediateAction: 'immediate_action',
       rootCause: 'root_cause',
       correctiveAction: 'corrective_action',
+      dataGathering: 'data_gathering',
+      dataGatheringAttachment: 'data_gathering_attachment',
+      dataGatheringAttachmentName: 'data_gathering_attachment_name',
       lostTimeDays: 'lost_time_days',
       nearMiss: 'near_miss',
     }

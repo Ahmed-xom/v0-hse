@@ -1,5 +1,13 @@
+import { createHash } from "node:crypto"
 import { betterAuth } from "better-auth"
 import { pool } from "@/lib/db"
+
+const configuredSecret = process.env.BETTER_AUTH_SECRET
+const authSecret = configuredSecret && configuredSecret.length >= 32
+  ? configuredSecret
+  : configuredSecret
+    ? createHash("sha256").update(configuredSecret).digest("hex")
+    : undefined
 
 export const auth = betterAuth({
   // Pass the pg Pool directly — Better Auth uses its built-in pg adapter.
@@ -23,7 +31,7 @@ export const auth = betterAuth({
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
     process.env.V0_RUNTIME_URL || "http://localhost:3000",
   ],
-  secret: process.env.BETTER_AUTH_SECRET,
+  secret: authSecret,
   advanced: {
     ...(process.env.NODE_ENV === "development" && {
       defaultCookieAttributes: {

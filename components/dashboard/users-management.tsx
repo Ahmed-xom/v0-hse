@@ -228,8 +228,10 @@ export function UsersManagement() {
   const localUsers = dbUsers
 
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
-  const canImportExcel = isAdmin
-  const canDownloadTemplate = isAdmin
+  const isManager = (currentUser?.role ?? '').toUpperCase() === 'MANAGEMENT'
+  const canManageUsers = isAdmin && !isManager
+  const canImportExcel = canManageUsers
+  const canDownloadTemplate = canManageUsers
 
   const handleToggleJourneyAccess = async (u: User) => {
     const newValue = !u.journeyAccess
@@ -546,7 +548,7 @@ export function UsersManagement() {
               <Download className="h-4 w-4" />
               Export
             </Button>
-            {isAdmin && (
+            {canManageUsers && (
               <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
                 <DialogTrigger asChild>
                   <Button className="gap-2">

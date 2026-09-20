@@ -28,6 +28,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import {
@@ -36,6 +37,7 @@ import {
   type JourneyRecord, type VehicleRecord,
 } from "@/app/actions/manage-journeys"
 import { isAdminRole } from "@/lib/auth-roles"
+import { getJourneyCutoffSettings } from "@/app/actions/journey-cutoff-actions"
 import * as XLSX from "xlsx"
 
 const VEHICLE_TYPES = ["Car", "Van", "Bus", "Truck", "Motorcycle", "Other"]
@@ -57,8 +59,9 @@ const emptyForm = {
 }
 
 export function JourneyTracker() {
-  const { user } = useAuth()
+  const { user, activeCompanyId } = useAuth()
   const { toast } = useToast()
+  const [nightCutoff, setNightCutoff] = useState({ nightStart: "18:00", nightEnd: "06:00" })
 
   const [journeys, setJourneys]         = useState<JourneyRecord[]>([])
   const [isFetching, setIsFetching]     = useState(true)
@@ -77,7 +80,13 @@ export function JourneyTracker() {
   const [isTemplateOpen, setIsTemplateOpen] = useState(false)
   const [isImportingTemplate, setIsImportingTemplate] = useState(false)
   const [journeyTab, setJourneyTab] = useState<"all" | "morning" | "night">("all")
-  const [isApprover, setIsApprover] = useState(false)
+  const [formStep, setFormStep] = useState("summary")
+  const formSteps = [['summary','Summary'],['driver','Driver Details'],['resources','Resources'],['journey','Journey'],['vehicle','Vehicle'],['checkin','Check-In'],['attachments','Attachments'],['inspection','Pre-Trip Inspection'],['route','Route Plan'],['changes','Route Changes'],['passengers','Passengers'],['night','Night Driving'],['hazards','Road Hazards'],['emergency','Emergency Contacts'],['risk','Risk Assessment']] as const
+  const [inspection, setInspection] = useState<Record<string, "yes" | "no" | "na">>({})
+  const inspectionItems = ["Air Bags", "Air Compressor", "Air Conditioning", "Brakes – Hand Brakes", "Drinking Water / Food", "Defensive Driving Certificate", "Driving License", "Fire Extinguisher", "First Aid Box", "Front & Side Mirrors", "Fuel Level", "Goods / Cargo Manifest", "IVMS / Drive Right", "Jack, Tools, Jack Plates", "Lights & Indicators", "Load Secured", "Oil Level", "Radiator Coolant Level", "Reflective Triangle", "Rollover Bar", "Seat Belts", "Spare Tire", "Tires", "Vehicle License"]
+  const weatherHazards = ["Cloudy", "Fog", "High Temperature / Hot", "Low Temperature / Cold", "Rain", "Sand Storm", "Snow", "Storm", "Sunny", "Wind"]
+  const roadHazards = ["Black Top", "Clear Visibility", "Dry", "Foggy", "Graded", "Gravel", "High Wind", "Low Visibility", "Mud", "Others", "Poor Visibility", "Sand", "Snow / Ice", "Unpaved", "Wet"]
+  const riskFactors = ["Driver condition", "Driver competency", "Vehicle condition", "Route", "Weather", "Road conditions", "Journey duration", "Night driving", "Remote location", "Load", "Other hazards"]
 
   const [searchQuery, setSearchQuery]     = useState("")
   const [statusFilter, setStatusFilter]   = useState("all")
@@ -90,14 +99,18 @@ export function JourneyTracker() {
   const fetchJourneys = useCallback(async () => {
     if (!user?.email) return
     setIsFetching(true)
-    const res = isAdmin ? await getAllJourneys() : await getJourneys(user.email)
+    const res = isAdmin ? await getAllJourneys(activeCompanyId) : await getJourneys(user.email)
     if (res.success) setJourneys(res.data)
     setIsFetching(false)
-  }, [user?.email, isAdmin])
+  }, [user?.email, isAdmin, activeCompanyId])
 
   useEffect(() => {
     if (user?.email) fetchJourneys()
   }, [user?.email, fetchJourneys])
+
+  useEffect(() => {
+    getJourneyCutoffSettings(activeCompanyId).then((res) => { if (res.success) setNightCutoff(res.data) })
+  }, [activeCompanyId])
 
   useEffect(() => {
     getVehicles().then((res) => { if (res.success) setVehicles(res.data) })
@@ -116,14 +129,20 @@ export function JourneyTracker() {
       const matchesStatus  = statusFilter  === "all" || j.status      === statusFilter
       const matchesPurpose = purposeFilter === "all" || j.purpose     === purposeFilter
       const matchesVehicle = vehicleFilter === "all" || j.vehicleType === vehicleFilter
-  const isNight = j.journeyType === "night" || (j.journeyType == null && (Number(String(j.departureTime).split(":")[0]) >= 18 || Number(String(j.departureTime).split(":")[0]) < 6))
+  const isNight = j.journeyType === "night" || (j.journeyType == null && (() => { const [hour, minute] = String(j.departureTime).split(":").map(Number); const current = hour * 60 + minute; const start = Number(nightCutoff.nightStart.split(":")[0]) * 60 + Number(nightCutoff.nightStart.split(":")[1]); const end = Number(nightCutoff.nightEnd.split(":")[0]) * 60 + Number(nightCutoff.nightEnd.split(":")[1]); return start > end ? current >= start || current < end : current >= start && current < end })())
       const matchesJourneyTab = journeyTab === "all" || (journeyTab === "night" ? isNight : !isNight)
       return matchesSearch && matchesStatus && matchesPurpose && matchesVehicle && matchesJourneyTab
     })
-  }, [journeys, searchQuery, statusFilter, purposeFilter, vehicleFilter, journeyTab])
+  }, [journeys, searchQuery, statusFilter, purposeFilter, vehicleFilter, journeyTab, nightCutoff])
+
+  const journeyTabCounts = useMemo(() => ({
+    all: journeys.length,
+    morning: journeys.filter((j) => { const hour = Number(String(j.departureTime).split(':')[0]); const minute = Number(String(j.departureTime).split(':')[1] ?? 0); const current = hour * 60 + minute; const start = Number(nightCutoff.nightStart.split(':')[0]) * 60 + Number(nightCutoff.nightStart.split(':')[1]); const end = Number(nightCutoff.nightEnd.split(':')[0]) * 60 + Number(nightCutoff.nightEnd.split(':')[1]); const night = start > end ? current >= start || current < end : current >= start && current < end; return j.journeyType === 'night' ? false : j.journeyType === 'morning' ? true : !night }).length,
+    night: journeys.filter((j) => { const hour = Number(String(j.departureTime).split(':')[0]); const minute = Number(String(j.departureTime).split(':')[1] ?? 0); const current = hour * 60 + minute; const start = Number(nightCutoff.nightStart.split(':')[0]) * 60 + Number(nightCutoff.nightStart.split(':')[1]); const end = Number(nightCutoff.nightEnd.split(':')[0]) * 60 + Number(nightCutoff.nightEnd.split(':')[1]); const night = start > end ? current >= start || current < end : current >= start && current < end; return j.journeyType === 'night' || (j.journeyType == null && night) }).length,
+  }), [journeys, nightCutoff])
 
   const stats = useMemo(() => ({
-    total:      journeys.length,
+  total:      journeys.length,
     planned:    journeys.filter((j) => j.status === "Planned").length,
     inProgress: journeys.filter((j) => j.status === "In Progress").length,
     completed:  journeys.filter((j) => j.status === "Completed").length,
@@ -192,6 +211,8 @@ export function JourneyTracker() {
     if (res.success) {
       setJourneys((prev) => prev.map((j) => j.id === id ? { ...j, status } : j))
       toast({ title: "Status updated" })
+    } else {
+      toast({ title: "Status update failed", description: res.error, variant: "destructive" })
     }
   }
 
@@ -200,6 +221,8 @@ export function JourneyTracker() {
     if (res.success) {
       setJourneys((prev) => prev.filter((j) => j.id !== id))
       toast({ title: "Journey deleted" })
+    } else {
+      toast({ title: "Delete failed", description: res.error, variant: "destructive" })
     }
   }
 
@@ -297,10 +320,10 @@ export function JourneyTracker() {
 
   <CardContent className="space-y-6">
   {canReviewJourneys && <div className="flex flex-wrap gap-2 rounded-lg border border-border/50 bg-muted/20 p-2" role="tablist" aria-label="Journey shift">
-    <Button type="button" variant={journeyTab === "all" ? "default" : "ghost"} onClick={() => setJourneyTab("all")}>All journeys</Button>
-    <Button type="button" variant={journeyTab === "morning" ? "default" : "ghost"} onClick={() => setJourneyTab("morning")} className="gap-2"><Sun className="h-4 w-4" /> Morning journeys</Button>
-    <Button type="button" variant={journeyTab === "night" ? "default" : "ghost"} onClick={() => setJourneyTab("night")} className="gap-2"><Moon className="h-4 w-4" /> Night journeys</Button>
-    <p className="basis-full text-xs text-muted-foreground">Night journeys are departures from 18:00 through 05:59. Admin and Master users can manage the company cutoff in settings.</p>
+    <Button type="button" variant={journeyTab === "all" ? "default" : "ghost"} onClick={() => setJourneyTab("all")}>All journeys ({journeyTabCounts.all})</Button>
+    <Button type="button" variant={journeyTab === "morning" ? "default" : "ghost"} onClick={() => setJourneyTab("morning")} className="gap-2"><Sun className="h-4 w-4" /> Morning journeys ({journeyTabCounts.morning})</Button>
+    <Button type="button" variant={journeyTab === "night" ? "default" : "ghost"} onClick={() => setJourneyTab("night")} className="gap-2"><Moon className="h-4 w-4" /> Night journeys ({journeyTabCounts.night})</Button>
+    <p className="basis-full text-xs text-muted-foreground">Night journeys follow the active company cutoff ({nightCutoff.nightStart}–{nightCutoff.nightEnd}). Admin and Master users can manage it in settings.</p>
   </div>}
   {/* Stats */}
           <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -493,17 +516,21 @@ export function JourneyTracker() {
       </Card>
 
       {/* New Journey Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) { setForm(emptyForm); setAttachedFile(null) } }}>
-        <DialogContent className="max-w-2xl">
+      <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (open) setFormStep("summary"); if (!open) { setForm(emptyForm); setAttachedFile(null); setFormStep("summary") } }}>
+        <DialogContent className="max-h-[92vh] w-[calc(100vw-1rem)] max-w-5xl overflow-y-auto p-4 sm:w-[calc(100vw-2rem)] sm:p-6">
           <DialogHeader>
             <DialogTitle>New Journey</DialogTitle>
             <DialogDescription>Fill in the details below to log a new journey.</DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-2">
-            <div className="grid grid-cols-2 gap-4">
+          <Tabs value={formStep} onValueChange={setFormStep} className="mt-2">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 overflow-visible bg-muted/50 p-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {formSteps.map(([value, label], index) => <TabsTrigger key={value} value={value} className="h-auto w-full min-w-0 whitespace-normal px-2 py-2 text-center text-[11px] leading-tight sm:text-xs"><span className="mr-1 font-semibold">{index + 1}.</span>{label}</TabsTrigger>)}
+            </TabsList>
+            <TabsContent value="summary" className="grid gap-4 py-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label>Origin <span className="text-destructive">*</span></Label>
+                <Label className="block whitespace-nowrap">Origin <span className="text-destructive">*</span></Label>
                 <div className="relative">
                   <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -515,7 +542,7 @@ export function JourneyTracker() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label>Destination <span className="text-destructive">*</span></Label>
+                <Label className="block whitespace-nowrap">Destination <span className="text-destructive">*</span></Label>
                 <div className="relative">
                   <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -588,7 +615,7 @@ export function JourneyTracker() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>Departure Date <span className="text-destructive">*</span></Label>
                 <Input
@@ -607,7 +634,7 @@ export function JourneyTracker() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>Estimated Return</Label>
                 <Input
@@ -645,7 +672,33 @@ export function JourneyTracker() {
                 />
               </div>
             </div>
+            </TabsContent>
+            {[
+              ['driver', 'Driver Details', 'Capture the primary driver, mobile number, licence details, and fitness confirmation.'],
+              ['resources', 'Resources', 'Select reusable driver and vehicle master records, then review expiry and readiness status.'],
+              ['journey', 'Journey', 'Record journey manager, client, business unit, risk level, and approval status.'],
+              ['vehicle', 'Vehicle', 'Review registration, inspection, insurance, load, and vehicle readiness.'],
+              ['checkin', 'Check-In Details', 'Track departure check-in, arrival check-in, and overdue check-ins.'],
+              ['attachments', 'Attachments', 'Add permits, route documents, approvals, and supporting journey files.'],
+              ['inspection', 'Vehicle Pre-Trip Inspection', 'Record brakes, tyres, lights, fluids, seatbelts, and defects before departure.'],
+              ['route', 'Route Plan', 'Document the planned route, stops, distances, and expected timing.'],
+              ['changes', 'Changes to Route Plan', 'Record route changes, reasons, approver, and revised ETA.'],
+              ['passengers', 'Passengers', 'List passenger names, contact details, and seat allocation.'],
+              ['night', 'Night Driving', 'Capture night driving controls, fatigue checks, lighting, and additional approval.'],
+              ['hazards', 'Road Hazards', 'Record known hazards, controls, weather, and escalation requirements.'],
+              ['emergency', 'Emergency Contacts', 'Add emergency contacts, escalation instructions, and response numbers.'],
+              ['risk', 'Journey Risk Assessment', 'Evaluate driver, vehicle, route, weather, duration, night driving, remote location, load, and other hazards.'],
+            ].map(([value, title, description]) => <TabsContent key={value} value={value} className="space-y-4 py-4"><div className="rounded-lg border border-border/50 bg-muted/20 p-3 sm:p-5"><h3 className="text-sm font-medium sm:text-base">{title}</h3><p className="mt-1 text-sm text-muted-foreground">{description}</p>{value === 'resources' ? <div className="mt-4 grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label>Driver</Label><Select><SelectTrigger><SelectValue placeholder="Search driver master" /></SelectTrigger><SelectContent><SelectItem value="driver-1">Select a registered driver</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label>Vehicle</Label><Select><SelectTrigger><SelectValue placeholder="Search vehicle master" /></SelectTrigger><SelectContent><SelectItem value="vehicle-1">Select a registered vehicle</SelectItem></SelectContent></Select></div><div className="rounded-md border border-border/50 p-3 text-sm text-muted-foreground sm:col-span-2">Selected resource details will populate license, training, registration, RAS expiry, load limit, and KM details.</div></div> : value === 'night' ? <div className="mt-4 space-y-4"><div className="grid gap-4 sm:grid-cols-2"><div className="space-y-2"><Label>Night Driving Required</Label><Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger><SelectContent><SelectItem value="yes">YES</SelectItem><SelectItem value="no">NO</SelectItem><SelectItem value="na">N/A</SelectItem></SelectContent></Select></div><div className="space-y-2"><Label>Approval Status</Label><Select><SelectTrigger><SelectValue placeholder="Select approval" /></SelectTrigger><SelectContent><SelectItem value="pending">Pending</SelectItem><SelectItem value="approved">Approved</SelectItem><SelectItem value="rejected">Rejected</SelectItem></SelectContent></Select></div></div><Textarea placeholder="Reason for night driving" /><Textarea placeholder="Facility / Unit Manager Approval" /><Textarea placeholder="Country Manager Approval and comments" /></div> : value === 'hazards' ? <div className="mt-4 space-y-4"><div><Label>Weather Conditions</Label><div className="mt-2 flex flex-wrap gap-2">{weatherHazards.map((hazard) => <label key={hazard} className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"><input type="checkbox" />{hazard}</label>)}</div></div><div><Label>Road Conditions</Label><div className="mt-2 flex flex-wrap gap-2">{roadHazards.map((hazard) => <label key={hazard} className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"><input type="checkbox" />{hazard}</label>)}</div></div><Textarea placeholder="Hazard comments, severity, and additional control measures" /></div> : value === 'passengers' ? <div className="mt-4 space-y-4"><div className="grid gap-4 sm:grid-cols-2"><Input placeholder="Passenger name" /><Input placeholder="Company" /><Input placeholder="Mobile number" /><Input placeholder="Serial number" /></div><Textarea placeholder="Passenger comments" /><Button type="button" variant="outline">Add Passenger</Button></div> : value === 'emergency' ? <div className="mt-4 space-y-4"><div className="grid gap-4 sm:grid-cols-2"><Input placeholder="Contact name" /><Input placeholder="Organization" /><Input placeholder="Contact type" /><Input placeholder="Mobile number" /><Input placeholder="Alternative number" /><Input placeholder="Location" /><Input placeholder="Email" /></div><Textarea placeholder="Notes" /><Button type="button" variant="outline">Add Emergency Contact</Button></div> : value === 'risk' ? <div className="mt-4 space-y-4"><div className="grid gap-3 sm:grid-cols-2">{riskFactors.map((factor) => <div key={factor} className="flex items-center justify-between rounded-md border p-3"><span className="text-sm">{factor}</span><Select><SelectTrigger className="ml-3 w-28"><SelectValue placeholder="Rate" /></SelectTrigger><SelectContent><SelectItem value="low">Low</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="high">High</SelectItem><SelectItem value="critical">Critical</SelectItem></SelectContent></Select></div>)}</div><div className="rounded-md border border-primary/30 bg-primary/5 p-4"><p className="text-sm font-medium">Overall Journey Risk</p><p className="mt-1 text-2xl font-semibold text-primary">Pending assessment</p><p className="mt-1 text-xs text-muted-foreground">Risk matrix can be configured by authorized administrators.</p></div><Textarea placeholder="Risk controls and approval comments" /></div> : value === 'inspection' ? <div className="mt-4 space-y-3"><div className="overflow-x-auto rounded-md border"><table className="w-full text-sm"><thead className="bg-muted/40"><tr><th className="p-3 text-left">Checklist item</th><th className="p-3">Yes</th><th className="p-3">No</th><th className="p-3">N/A</th></tr></thead><tbody>{inspectionItems.map((item) => <tr key={item} className="border-t"><td className="p-3">{item}</td>{(['yes','no','na'] as const).map((choice) => <td key={choice} className="p-3 text-center"><input type="radio" name={`inspection-${item}`} checked={inspection[item] === choice} onChange={() => setInspection((current) => ({ ...current, [item]: choice }))} aria-label={`${item} ${choice}`} /></td>)}</tr>)}</tbody></table></div><Textarea placeholder="Defects and corrective action" /><Textarea placeholder="Inspection comments" /></div> : <Textarea className="mt-4 min-h-28" placeholder={`Enter ${title.toLowerCase()} details...`} />}</div></TabsContent>)}
+          <div className="mt-4 flex items-center justify-between gap-3 border-t pt-4">
+            <Button type="button" variant="outline" onClick={() => { const index = formSteps.findIndex(([value]) => value === formStep); if (index > 0) setFormStep(formSteps[index - 1][0]) }} disabled={formSteps[0][0] === formStep}>
+              Previous
+            </Button>
+            <span className="text-center text-xs text-muted-foreground">Step {formSteps.findIndex(([value]) => value === formStep) + 1} of {formSteps.length}</span>
+            <Button type="button" onClick={() => { const index = formSteps.findIndex(([value]) => value === formStep); if (index < formSteps.length - 1) setFormStep(formSteps[index + 1][0]) }} disabled={formSteps[formSteps.length - 1][0] === formStep}>
+              Next
+            </Button>
           </div>
+          </Tabs>
 
           {/* Attachment */}
           <div className="space-y-1.5 px-1">
@@ -655,7 +708,7 @@ export function JourneyTracker() {
               type="file"
               accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
               className="hidden"
-              onChange={(e) => setAttachedFile(e.target.files?.[0] ?? null)}
+              onChange={(e) => { const file = e.target.files?.[0] ?? null; if (file && file.size > 10 * 1024 * 1024) { toast({ title: "Attachment too large", description: "Choose a file smaller than 10 MB.", variant: "destructive" }); e.target.value = ""; return }; setAttachedFile(file) }}
             />
             {attachedFile ? (
               <div className="flex items-center gap-2 rounded-md border border-border/50 bg-muted/30 px-3 py-2">

@@ -124,7 +124,7 @@ function DatePickerField({
             mode="single"
             selected={value ? parseISO(value) : undefined}
             onSelect={(d) => onChange(d ? format(d, "yyyy-MM-dd") : "")}
-            initialFocus
+
           />
         </PopoverContent>
       </Popover>

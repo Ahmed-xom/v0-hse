@@ -28,6 +28,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import {
@@ -37,15 +38,35 @@ import {
 
 // ── Constants ──────────────────────────────────────────────────────────────
 
+const INCIDENT_CATEGORIES = ["HSE", "SQ"] as const
+
 const INCIDENT_TYPES = [
-  "Lost Time Injury (LTI)",
-  "Medical Treatment Case (MTC)",
-  "First Aid Case (FAC)",
-  "Near Miss",
-  "Property Damage",
-  "Environmental Incident",
-  "High Potential Incident",
+  "Alcohol or Drug Impairment",
+  "Conveyance & Wellbore Access Events",
+  "Environmental Nuisance",
+  "Environmental Spill",
+  "Equipment Damage",
+  "Equipment Downtime",
   "Fatality",
+  "Fire",
+  "First Aid Case",
+  "Gas Release",
+  "Lost Time Injury",
+  "LSR Violation",
+  "Medical Treatment Case",
+  "Motor Vehicle Collision",
+  "Motor Vehicle Damage",
+  "Motor Vehicle Rollover",
+  "Motor Vehicle Theft or Vandalism",
+  "Near Miss",
+  "No Loss",
+  "None Work Related",
+  "Not Yet Defined",
+  "Personal Illness",
+  "Reputation Affect",
+  "Restricted Work Case",
+  "Theft",
+  "Vandalism",
 ]
 
 const SEVERITY_LEVELS = ["Minor", "Moderate", "Serious", "Critical", "Fatality"]
@@ -95,6 +116,8 @@ function statusColor(s: string) {
 
 const EMPTY_FORM = {
   title: "",
+  category: "HSE",
+  incidentCategory: "",
   incidentType: "",
   severity: "Minor",
   date: new Date().toISOString().slice(0, 16),
@@ -108,6 +131,17 @@ const EMPTY_FORM = {
   immediateAction: "",
   rootCause: "",
   correctiveAction: "",
+  immediateCauses: "",
+  rootCauses: "",
+  latentFailures: "",
+  dataGathering: "",
+  detailedObservations: "",
+  interviewNotes: "",
+  evidenceDescription: "",
+  findings: "",
+  additionalComments: "",
+  dataGatheringAttachment: "",
+  dataGatheringAttachmentName: "",
   lostTimeDays: 0,
   nearMiss: false,
   status: "Open",
@@ -123,6 +157,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
   const [incidents, setIncidents] = useState<Incident[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const [filterCategory, setFilterCategory] = useState("all")
   const [filterType, setFilterType] = useState("all")
   const [filterSeverity, setFilterSeverity] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
@@ -171,12 +206,13 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
       const q = search.toLowerCase()
       const matchSearch = !q || [i.referenceNo, i.title, i.reportedBy ?? "", i.location ?? "", i.businessUnit ?? ""]
         .some((v) => v.toLowerCase().includes(q))
+      const matchCategory = filterCategory === "all" || i.category === filterCategory
       const matchType     = filterType     === "all" || i.incidentType === filterType
       const matchSeverity = filterSeverity === "all" || i.severity     === filterSeverity
       const matchStatus   = filterStatus   === "all" || i.status       === filterStatus
-      return matchSearch && matchType && matchSeverity && matchStatus
+      return matchSearch && matchCategory && matchType && matchSeverity && matchStatus
     })
-  }, [incidents, search, filterType, filterSeverity, filterStatus])
+  }, [incidents, search, filterCategory, filterType, filterSeverity, filterStatus])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -206,8 +242,10 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
 
   const openEdit = (inc: Incident) => {
     setForm({
-      title:           inc.title,
-      incidentType:    inc.incidentType,
+  title:           inc.title,
+  category:        inc.category ?? "HSE",
+  incidentCategory: inc.incidentCategory ?? "",
+  incidentType:    inc.incidentType,
       severity:        inc.severity,
       date:            new Date(inc.date).toISOString().slice(0, 16),
       location:        inc.location ?? "",
@@ -220,6 +258,17 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
       immediateAction: inc.immediateAction ?? "",
       rootCause:       inc.rootCause ?? "",
       correctiveAction:inc.correctiveAction ?? "",
+      immediateCauses: inc.immediateCauses ?? "",
+      rootCauses: inc.rootCauses ?? "",
+      latentFailures: inc.latentFailures ?? "",
+      dataGathering: inc.dataGathering ?? "",
+      detailedObservations: inc.detailedObservations ?? "",
+      interviewNotes: inc.interviewNotes ?? "",
+      evidenceDescription: inc.evidenceDescription ?? "",
+      findings: inc.findings ?? "",
+      additionalComments: inc.additionalComments ?? "",
+      dataGatheringAttachment: inc.dataGatheringAttachment ?? "",
+      dataGatheringAttachmentName: inc.dataGatheringAttachmentName ?? "",
       lostTimeDays:    inc.lostTimeDays ?? 0,
       nearMiss:        inc.nearMiss,
       status:          inc.status,
@@ -238,6 +287,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
     if (isEditing && selected) {
       const res = await updateIncident(selected.id, {
         ...form,
+        category: form.category as "HSE" | "SQ",
         lostTimeDays: Number(form.lostTimeDays),
       }, companyId)
       if (res.success) {
@@ -250,6 +300,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
     } else {
       const res = await createIncident({
         ...form,
+        category: form.category as "HSE" | "SQ",
         lostTimeDays: Number(form.lostTimeDays),
         companyId,
       })
@@ -282,8 +333,9 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
   const handleExport = () => {
     const rows = filtered.map((i) => ({
       "Reference No":     i.referenceNo,
-      "Title":            i.title,
-      "Type":             i.incidentType,
+  "Title":            i.title,
+  "Module":           i.category === "SQ" ? "SQ (Service Quality)" : "HSE Incident",
+  "Type":             i.incidentType,
       "Severity":         i.severity,
       "Status":           i.status,
       "Date":             new Date(i.date).toLocaleDateString(),
@@ -306,7 +358,15 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
   }
 
   const f = (key: string, val: string | number | boolean) =>
-    setForm((prev) => ({ ...prev, [key]: val }))
+  setForm((prev) => ({ ...prev, [key]: val }))
+  const uploadGatheringAttachment = async (file: File) => {
+    const body = new FormData(); body.append('file', file)
+    const response = await fetch('/api/incident-attachment', { method: 'POST', body })
+    const result = await response.json()
+    if (!response.ok) { toast({ title: 'Attachment upload failed', description: result.error, variant: 'destructive' }); return }
+    f('dataGatheringAttachment', result.pathname); f('dataGatheringAttachmentName', result.name)
+    toast({ title: 'Attachment uploaded' })
+  }
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -396,6 +456,10 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
                 className="pl-9"
               />
             </div>
+            <Select value={filterCategory} onValueChange={(v) => { setFilterCategory(v); setPage(1) }}>
+              <SelectTrigger className="w-full sm:w-48"><SelectValue placeholder="All modules" /></SelectTrigger>
+              <SelectContent><SelectItem value="all">All Modules</SelectItem>{INCIDENT_CATEGORIES.map((category) => <SelectItem key={category} value={category}>{category === "SQ" ? "SQ (Service Quality)" : "HSE Incident"}</SelectItem>)}</SelectContent>
+            </Select>
             <Select value={filterType} onValueChange={(v) => { setFilterType(v); setPage(1) }}>
               <SelectTrigger className="w-full sm:w-52">
                 <Filter className="mr-2 h-4 w-4 text-muted-foreground" />
@@ -551,6 +615,13 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
             <DialogDescription>Incident details</DialogDescription>
           </DialogHeader>
           {selected && (
+            <Tabs defaultValue="overview" className="w-full">
+              <TabsList className="w-full justify-start">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="investigation">Investigation</TabsTrigger>
+                <TabsTrigger value="data-gathering">Data Gathering</TabsTrigger>
+              </TabsList>
+              <TabsContent value="overview" className="mt-4">
             <div className="space-y-4 text-sm">
               <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className={severityColor(selected.severity)}>{selected.severity}</Badge>
@@ -561,7 +632,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
               </div>
               <Separator />
               <div className="grid gap-3 sm:grid-cols-2">
-                <div><p className="text-xs text-muted-foreground">Incident Type</p><p className="font-medium">{selected.incidentType}</p></div>
+                <div><p className="text-xs text-muted-foreground">Incident Module</p><p className="font-medium">{selected.category === "SQ" ? "SQ (Service Quality)" : "HSE Incident"}</p></div><div><p className="text-xs text-muted-foreground">Incident Category</p><p className="font-medium">{selected.incidentCategory ?? "—"}</p></div><div><p className="text-xs text-muted-foreground">Incident Type</p><p className="font-medium">{selected.incidentType}</p></div>
                 <div><p className="text-xs text-muted-foreground">Date</p><p className="font-medium">{new Date(selected.date).toLocaleString()}</p></div>
                 <div><p className="text-xs text-muted-foreground">Location</p><p className="font-medium">{selected.location ?? "—"}</p></div>
                 <div><p className="text-xs text-muted-foreground">Business Unit</p><p className="font-medium">{selected.businessUnit ?? "—"}</p></div>
@@ -575,6 +646,40 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
               {selected.rootCause && (<div><p className="text-xs text-muted-foreground mb-1">Root Cause</p><p className="leading-relaxed">{selected.rootCause}</p></div>)}
               {selected.correctiveAction && (<div><p className="text-xs text-muted-foreground mb-1">Corrective Action</p><p className="leading-relaxed">{selected.correctiveAction}</p></div>)}
             </div>
+              </TabsContent>
+              <TabsContent value="investigation" className="mt-4 space-y-4 text-sm">
+                <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
+                  <p className="text-xs text-muted-foreground mb-1">Immediate Causes</p><p className="whitespace-pre-wrap">{selected.immediateCauses || "No immediate causes recorded."}</p>
+                  <p className="mt-3 text-xs text-muted-foreground mb-1">Root Causes</p><p className="whitespace-pre-wrap">{selected.rootCauses || selected.rootCause || "No root causes recorded."}</p>
+                  <p className="mt-3 text-xs text-muted-foreground mb-1">Latent Management System Failures</p><p className="whitespace-pre-wrap">{selected.latentFailures || "No latent failures recorded."}</p>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
+                  <p className="text-xs text-muted-foreground mb-1">Root Cause</p>
+                  <p className="leading-relaxed">{selected.rootCause || "No root cause recorded."}</p>
+                </div>
+                <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
+                  <p className="text-xs text-muted-foreground mb-1">Corrective Action</p>
+                  <p className="leading-relaxed">{selected.correctiveAction || "No corrective action recorded."}</p>
+                </div>
+              </TabsContent>
+              <TabsContent value="data-gathering" className="mt-4 space-y-4 text-sm">
+                <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
+                  <p className="text-xs text-muted-foreground mb-1">Data Gathering Notes</p>
+                  <p className="whitespace-pre-wrap leading-relaxed">{selected.dataGathering || "No data gathering notes recorded."}</p>
+                  {selected.detailedObservations && <p className="mt-3 whitespace-pre-wrap"><strong>Observations:</strong> {selected.detailedObservations}</p>}
+                  {selected.interviewNotes && <p className="mt-3 whitespace-pre-wrap"><strong>Interviews:</strong> {selected.interviewNotes}</p>}
+                  {selected.evidenceDescription && <p className="mt-3 whitespace-pre-wrap"><strong>Evidence:</strong> {selected.evidenceDescription}</p>}
+                  {selected.findings && <p className="mt-3 whitespace-pre-wrap"><strong>Findings:</strong> {selected.findings}</p>}
+                  {selected.additionalComments && <p className="mt-3 whitespace-pre-wrap"><strong>Comments:</strong> {selected.additionalComments}</p>}
+                </div>
+                {selected.dataGatheringAttachmentName && (
+                  <div className="rounded-lg border border-border/50 bg-secondary/20 p-4">
+                    <p className="text-xs text-muted-foreground mb-1">Attachment</p>
+                    <a className="text-primary underline" href={`/api/incident-attachment?pathname=${encodeURIComponent(selected.dataGatheringAttachment ?? "")}`} target="_blank" rel="noreferrer">{selected.dataGatheringAttachmentName}</a>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowView(false)}>Close</Button>
@@ -605,14 +710,27 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              {/* Type */}
-              <div className="space-y-1.5">
-                <Label>Incident Type <span className="text-destructive">*</span></Label>
-                <Select value={form.incidentType} onValueChange={(v) => f("incidentType", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                  <SelectContent>{INCIDENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                </Select>
-              </div>
+  {/* Module */}
+  <div className="space-y-1.5">
+  <Label>Incident Module</Label>
+  <Select value={form.category} onValueChange={(v) => f("category", v as "HSE" | "SQ")}>
+  <SelectTrigger><SelectValue /></SelectTrigger>
+  <SelectContent>{INCIDENT_CATEGORIES.map((category) => <SelectItem key={category} value={category}>{category === "SQ" ? "SQ (Service Quality)" : "HSE Incident"}</SelectItem>)}</SelectContent>
+  </Select>
+  </div>
+  {/* Incident Category */}
+  <div className="space-y-1.5">
+  <Label>Incident Category <span className="text-destructive">*</span></Label>
+  <Select value={form.incidentCategory} onValueChange={(v) => f("incidentCategory", v)}>
+  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+  <SelectContent>{INCIDENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+  </Select>
+  </div>
+  {/* Type */}
+  <div className="space-y-1.5">
+  <Label>Incident Type <span className="text-destructive">*</span></Label>
+  <Input value={form.incidentType} onChange={(e) => f("incidentType", e.target.value)} placeholder="Enter incident type" />
+  </div>
               {/* Severity */}
               <div className="space-y-1.5">
                 <Label>Severity</Label>
@@ -669,6 +787,23 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
                 <Label htmlFor="inc-ltd">Lost Time Days</Label>
                 <Input id="inc-ltd" type="number" min={0} value={form.lostTimeDays} onChange={(e) => f("lostTimeDays", parseInt(e.target.value) || 0)} />
               </div>
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-border/50 bg-secondary/20 p-4">
+              <div><p className="font-medium">Cause Analysis</p><p className="text-xs text-muted-foreground">Enter multiple values separated by commas.</p></div>
+              <Textarea placeholder="Immediate causes" value={form.immediateCauses} onChange={(e) => f('immediateCauses', e.target.value)} />
+              <Textarea placeholder="Root causes" value={form.rootCauses} onChange={(e) => f('rootCauses', e.target.value)} />
+              <Textarea placeholder="Latent management system failures" value={form.latentFailures} onChange={(e) => f('latentFailures', e.target.value)} />
+            </div>
+            <div className="space-y-3 rounded-lg border border-border/50 bg-secondary/20 p-4">
+              <div><p className="font-medium">Data Gathering</p><p className="text-xs text-muted-foreground">Add investigation notes and supporting evidence.</p></div>
+              <Textarea placeholder="Investigation notes" value={form.dataGathering} onChange={(e) => f('dataGathering', e.target.value)} />
+              <Textarea placeholder="Detailed observations" value={form.detailedObservations} onChange={(e) => f('detailedObservations', e.target.value)} />
+              <Textarea placeholder="Interview notes" value={form.interviewNotes} onChange={(e) => f('interviewNotes', e.target.value)} />
+              <Textarea placeholder="Evidence description" value={form.evidenceDescription} onChange={(e) => f('evidenceDescription', e.target.value)} />
+              <Textarea placeholder="Findings" value={form.findings} onChange={(e) => f('findings', e.target.value)} />
+              <Textarea placeholder="Additional comments" value={form.additionalComments} onChange={(e) => f('additionalComments', e.target.value)} />
+              <div className="flex flex-wrap items-center gap-3"><Input type="file" className="max-w-sm" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadGatheringAttachment(file) }} />{form.dataGatheringAttachmentName && <span className="text-sm text-muted-foreground">{form.dataGatheringAttachmentName}</span>}</div>
             </div>
 
             {/* Near Miss Toggle */}

@@ -21,6 +21,16 @@ export interface DashboardStats {
     nearMissTotal: number
     observationsTotal: number
   }
+  journeyStats: {
+    total: number
+    draft: number
+    pending: number
+    approved: number
+    active: number
+    completed: number
+    cancelled: number
+    highRisk: number
+  }
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -179,7 +189,22 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([, v]) => v)
 
-    // --- Incidents by Type ---
+    const journeyStatsResult = await db.execute(sql`
+    SELECT
+      COUNT(*) as total,
+      COUNT(*) FILTER (WHERE LOWER(status) = 'draft') as draft,
+      COUNT(*) FILTER (WHERE LOWER(status) IN ('pending', 'pending approval')) as pending,
+      COUNT(*) FILTER (WHERE LOWER(status) = 'approved') as approved,
+      COUNT(*) FILTER (WHERE LOWER(status) = 'active') as active,
+      COUNT(*) FILTER (WHERE LOWER(status) = 'completed') as completed,
+      COUNT(*) FILTER (WHERE LOWER(status) = 'cancelled') as cancelled,
+      COUNT(*) FILTER (WHERE LOWER(COALESCE(risk_level, '')) IN ('high', 'critical')) as high_risk
+    FROM public.journey
+  `)
+  const journeyRow = (journeyStatsResult as any).rows?.[0] ?? {}
+  const journeyStats = { total: Number(journeyRow.total ?? 0), draft: Number(journeyRow.draft ?? 0), pending: Number(journeyRow.pending ?? 0), approved: Number(journeyRow.approved ?? 0), active: Number(journeyRow.active ?? 0), completed: Number(journeyRow.completed ?? 0), cancelled: Number(journeyRow.cancelled ?? 0), highRisk: Number(journeyRow.high_risk ?? 0) }
+
+  // --- Incidents by Type ---
     const byTypeResult = await db.execute(sql`
       SELECT COALESCE(NULLIF(TRIM(incident_type), ''), 'Uncategorized') as name, COUNT(*) as value
       FROM public.incident
@@ -237,12 +262,13 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
       incidentTrend,
       incidentsByType,
       incidentsBySeverity,
-      summaryStats: {
-        ltiCount: Number((ltiResult as any).rows?.[0]?.cnt ?? 0),
-        medicalTreatments: Number((medResult as any).rows?.[0]?.cnt ?? 0),
-        nearMissTotal,
-        observationsTotal: Number((obsTotal as any).rows?.[0]?.cnt ?? 0),
-      },
+  summaryStats: {
+    ltiCount: Number((ltiResult as any).rows?.[0]?.cnt ?? 0),
+    medicalTreatments: Number((medResult as any).rows?.[0]?.cnt ?? 0),
+    nearMissTotal,
+    observationsTotal: Number((obsTotal as any).rows?.[0]?.cnt ?? 0),
+  },
+  journeyStats,
     }
   } catch (err) {
     console.error('[getDashboardStats]', err)
@@ -259,7 +285,8 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
       incidentTrend: [],
       incidentsByType: [],
       incidentsBySeverity: [],
-      summaryStats: { ltiCount: 0, medicalTreatments: 0, nearMissTotal: 0, observationsTotal: 0 },
-    }
+  summaryStats: { ltiCount: 0, medicalTreatments: 0, nearMissTotal: 0, observationsTotal: 0 },
+  journeyStats: { total: 0, draft: 0, pending: 0, approved: 0, active: 0, completed: 0, cancelled: 0, highRisk: 0 },
+  }
   }
 }

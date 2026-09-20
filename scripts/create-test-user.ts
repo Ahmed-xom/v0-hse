@@ -1,5 +1,4 @@
-import { db } from '../lib/db'
-import { user } from '../lib/db/schema'
+import { pool } from '../lib/db'
 import { hash } from 'bcryptjs'
 import crypto from 'crypto'
 
@@ -15,7 +14,7 @@ async function createTestUser() {
     console.log('[v0] Creating test user...')
     
     // Insert user directly using raw SQL
-    const result = await db.execute(`
+    const result = await pool.query(`
       INSERT INTO neon_auth."user" (id, email, name, "emailVerified", role, password, "createdAt", "updatedAt")
       VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
       ON CONFLICT (email) DO NOTHING

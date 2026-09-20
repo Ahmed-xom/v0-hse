@@ -6,7 +6,7 @@ import { ProtectedRoute } from "@/components/protected-route"
 
 export default function SettingsPage() {
   return (
-    <ProtectedRoute requiredRoles={["ADMIN SYSTEM", "MASTER USER"]}>
+    <ProtectedRoute>
       <div className="min-h-screen bg-background">
         <DashboardHeader />
         <main className="container mx-auto px-4 py-8">

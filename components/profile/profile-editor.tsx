@@ -22,14 +22,15 @@ export function ProfileEditor() {
 
   if (isLoading) return <Card><CardContent className="py-10 text-center text-muted-foreground">Loading profile...</CardContent></Card>
   if (!user) return <Card><CardContent className="py-10 text-center text-muted-foreground">Please sign in to edit your profile.</CardContent></Card>
+  const profileUser = user
 
-  const initials = user.name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase()
+  const initials = profileUser.name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase()
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setStatus("saving")
     setMessage("")
-    const result = await updateUser(user.id, { name: name.trim(), designation: designation.trim(), businessUnit: businessUnit.trim() })
+    const result = await updateUser(profileUser.id, { name: name.trim(), designation: designation.trim(), businessUnit: businessUnit.trim() })
     if (!result.success) {
       setStatus("error")
       setMessage(result.error ?? "Unable to update your profile.")
