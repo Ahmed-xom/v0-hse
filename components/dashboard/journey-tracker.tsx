@@ -522,8 +522,8 @@ export function JourneyTracker() {
           </DialogHeader>
 
           <Tabs defaultValue="summary" className="mt-2">
-            <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 overflow-visible bg-muted/50 p-1">
-              {[['summary','Summary'],['driver','Driver Details'],['resources','Resources'],['journey','Journey'],['vehicle','Vehicle'],['checkin','Check-In'],['attachments','Attachments'],['inspection','Pre-Trip Inspection'],['route','Route Plan'],['changes','Route Changes'],['passengers','Passengers'],['night','Night Driving'],['hazards','Road Hazards'],['emergency','Emergency Contacts'],['risk','Risk Assessment']].map(([value, label]) => <TabsTrigger key={value} value={value} className="min-w-0 whitespace-normal text-center text-xs leading-tight sm:whitespace-nowrap">{label}</TabsTrigger>)}
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 overflow-visible bg-muted/50 p-1 sm:grid-cols-3 lg:grid-cols-5">
+              {[['summary','Summary'],['driver','Driver Details'],['resources','Resources'],['journey','Journey'],['vehicle','Vehicle'],['checkin','Check-In'],['attachments','Attachments'],['inspection','Pre-Trip Inspection'],['route','Route Plan'],['changes','Route Changes'],['passengers','Passengers'],['night','Night Driving'],['hazards','Road Hazards'],['emergency','Emergency Contacts'],['risk','Risk Assessment']].map(([value, label]) => <TabsTrigger key={value} value={value} className="w-full min-w-0 whitespace-normal text-center text-xs leading-tight sm:whitespace-nowrap">{label}</TabsTrigger>)}
             </TabsList>
             <TabsContent value="summary" className="grid gap-4 py-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
