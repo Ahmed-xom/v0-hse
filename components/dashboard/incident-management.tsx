@@ -404,7 +404,8 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
   const f = (key: string, val: string | number | boolean) =>
   setForm((prev) => ({ ...prev, [key]: val }))
   const uploadGatheringAttachment = async (file: File) => {
-    const body = new FormData(); body.append('file', file)
+  if (file.size > 10 * 1024 * 1024) { toast({ title: 'Attachment too large', description: 'Choose a file smaller than 10 MB.', variant: 'destructive' }); return }
+  const body = new FormData(); body.append('file', file)
     const response = await fetch('/api/incident-attachment', { method: 'POST', body })
     const result = await response.json()
     if (!response.ok) { toast({ title: 'Attachment upload failed', description: result.error, variant: 'destructive' }); return }
@@ -765,15 +766,18 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
   {/* Incident Category */}
   <div className="space-y-1.5">
   <Label>Incident Category <span className="text-destructive">*</span></Label>
-  <Select value={form.incidentCategory} onValueChange={(v) => f("incidentCategory", v)}>
-  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
+  <Select value={form.incidentCategory} onValueChange={(v) => { f("incidentCategory", v); if (!form.incidentType || form.incidentType === form.incidentCategory) f("incidentType", v) }}>
+  <SelectTrigger><SelectValue placeholder="Select HSE category" /></SelectTrigger>
   <SelectContent>{INCIDENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
   </Select>
   </div>
   {/* Type */}
   <div className="space-y-1.5">
   <Label>Incident Type <span className="text-destructive">*</span></Label>
-  <Input value={form.incidentType} onChange={(e) => f("incidentType", e.target.value)} placeholder="Enter incident type" />
+  <Select value={form.incidentType} onValueChange={(v) => f("incidentType", v)}>
+  <SelectTrigger><SelectValue placeholder="Select incident type" /></SelectTrigger>
+  <SelectContent>{INCIDENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+  </Select>
   </div>
               {/* Severity */}
               <div className="space-y-1.5">
@@ -834,13 +838,13 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
             </div>
 
             <div className="space-y-3 rounded-lg border border-border/50 bg-secondary/20 p-4">
-              <div><p className="font-medium">Cause Analysis</p><p className="text-xs text-muted-foreground">Enter multiple values separated by commas.</p></div>
+              <div><p className="font-medium">Cause Analysis</p><p className="text-xs text-muted-foreground">Add multiple immediate causes, root causes, and latent management system failures; separate each entry with a comma or new line.</p></div>
               <Textarea placeholder="Immediate causes" value={form.immediateCauses} onChange={(e) => f('immediateCauses', e.target.value)} />
               <Textarea placeholder="Root causes" value={form.rootCauses} onChange={(e) => f('rootCauses', e.target.value)} />
               <Textarea placeholder="Latent management system failures" value={form.latentFailures} onChange={(e) => f('latentFailures', e.target.value)} />
             </div>
             <div className="space-y-3 rounded-lg border border-border/50 bg-secondary/20 p-4">
-              <div><p className="font-medium">Data Gathering</p><p className="text-xs text-muted-foreground">Add investigation notes and supporting evidence.</p></div>
+              <div><p className="font-medium">Data Gathering</p><p className="text-xs text-muted-foreground">Add investigation notes, observations, interviews, evidence, findings, and one supporting attachment up to 10 MB.</p></div>
               <Textarea placeholder="Investigation notes" value={form.dataGathering} onChange={(e) => f('dataGathering', e.target.value)} />
               <Textarea placeholder="Detailed observations" value={form.detailedObservations} onChange={(e) => f('detailedObservations', e.target.value)} />
               <Textarea placeholder="Interview notes" value={form.interviewNotes} onChange={(e) => f('interviewNotes', e.target.value)} />
