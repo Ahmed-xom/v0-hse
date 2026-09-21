@@ -16,6 +16,10 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  session: {
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 0,
+  },
   baseURL: process.env.BETTER_AUTH_URL
     ? process.env.BETTER_AUTH_URL
     : process.env.VERCEL_PROJECT_PRODUCTION_URL

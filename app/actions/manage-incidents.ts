@@ -43,9 +43,11 @@ export type Incident = {
   updatedAt: string
 }
 
-export async function getIncidents() {
-  const cacheKey = 'incidents-data-all'
-  const companyClause = 'TRUE'
+export async function getIncidents(companyId?: string | null) {
+  const cacheKey = `incidents-data-${companyId ?? 'all'}`
+  const companyClause = companyId
+    ? 'business_unit IN (SELECT name FROM public.business_unit WHERE company_id = $1)'
+    : 'TRUE'
   return unstable_cache(
     async () => {
       try {
@@ -88,7 +90,7 @@ export async function getIncidents() {
           FROM public.incident
           WHERE ${companyClause}
           ORDER BY date DESC
-        `)
+        `, companyId ? [companyId] : [])
         return result.rows as Incident[]
       } catch (error) {
         console.error('[manage-incidents] getIncidents error:', error)
