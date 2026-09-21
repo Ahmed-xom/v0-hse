@@ -651,7 +651,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
 
       {/* ── View Dialog ─────────────────────────────────────────────────── */}
       <Dialog open={showView} onOpenChange={setShowView}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[92vh] w-[calc(100vw-1rem)] max-w-4xl overflow-y-auto p-4 sm:w-[calc(100vw-2rem)] sm:p-6">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span className="font-mono text-sm text-primary">{selected?.referenceNo}</span>
@@ -661,10 +661,10 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
           </DialogHeader>
           {selected && (
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="w-full justify-start">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="investigation">Investigation</TabsTrigger>
-                <TabsTrigger value="data-gathering">Data Gathering</TabsTrigger>
+              <TabsList className="grid h-auto w-full grid-cols-1 gap-1 sm:grid-cols-3">
+<TabsTrigger value="overview" className="whitespace-normal text-xs sm:text-sm">Overview</TabsTrigger>
+<TabsTrigger value="investigation" className="whitespace-normal text-xs sm:text-sm">Investigation &amp; Causes</TabsTrigger>
+<TabsTrigger value="data-gathering" className="whitespace-normal text-xs sm:text-sm">Data Gathering &amp; Evidence</TabsTrigger>
               </TabsList>
               <TabsContent value="overview" className="mt-4">
             <div className="space-y-4 text-sm">
@@ -739,7 +739,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
 
       {/* ── Create / Edit Form Dialog ────────────────────────────────────── */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+        <DialogContent className="max-h-[92vh] w-[calc(100vw-1rem)] max-w-4xl overflow-y-auto p-4 sm:w-[calc(100vw-2rem)] sm:p-6">
           <DialogHeader>
             <DialogTitle>{isEditing ? "Edit Incident" : "Report New Incident"}</DialogTitle>
             <DialogDescription>
