@@ -4,7 +4,11 @@ import bcrypt from "bcryptjs"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
 
-const secret = () => process.env.BETTER_AUTH_SECRET || "development-reset-secret"
+const secret = () => {
+  const value = process.env.BETTER_AUTH_SECRET
+  if (!value) throw new Error("BETTER_AUTH_SECRET is not configured")
+  return value
+}
 const sign = (value: string) => crypto.createHmac("sha256", secret()).update(value).digest("hex")
 
 export async function POST(request: NextRequest) {
