@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { Fragment, useState, useEffect, useMemo } from "react"
 import {
   Plus, Search, Filter, MoreHorizontal,
   Eye, Edit, Trash2, AlertTriangle, CheckCircle,
@@ -80,6 +80,50 @@ const INJURY_TYPES = [
 const STATUSES = ["Open", "Under Investigation", "Closed", "Cancelled"]
 
 const PAGE_SIZE = 10
+
+const RISK_CONSEQUENCES = [
+  'No health effect / no damage',
+  'Slight health effect / slight damage',
+  'Minor health effect / minor damage',
+  'Major health effect / moderate damage',
+  'PTD or 1 to 3 fatalities',
+  'Multiple fatalities / massive effect',
+]
+
+const RISK_LIKELIHOODS = [
+  'Never heard of in the industry',
+  'Heard of in the industry',
+  'Occurred in the company or more than once per year in industry',
+  'Happened at the location or more than once per year in company',
+  'Happened more than once per year at a location',
+]
+
+function IncidentRiskMatrix() {
+  const [severity, setSeverity] = useState(0)
+  const [likelihood, setLikelihood] = useState(0)
+  const score = severity * likelihood
+  const level = score >= 15
+    ? { label: 'HIGH RISK', className: 'bg-red-600 text-white', action: 'Intolerable — investigate alternatives.' }
+    : score >= 6
+      ? { label: 'MEDIUM RISK', className: 'bg-yellow-300 text-black', action: 'Incorporate risk reduction measures and demonstrate ALARP.' }
+      : { label: 'LOW RISK', className: 'bg-lime-500 text-black', action: 'Manage for continuous improvement.' }
+
+  return (
+    <div className="space-y-4 rounded-lg border border-border/50 bg-secondary/20 p-4">
+      <div>
+        <p className="font-medium">Risk Matrix</p>
+        <p className="text-xs text-muted-foreground">Select consequence severity and increasing likelihood to calculate the risk category.</p>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5"><Label>Consequence severity</Label><Select value={severity ? String(severity) : undefined} onValueChange={(value) => setSeverity(Number(value))}><SelectTrigger><SelectValue placeholder="Select severity" /></SelectTrigger><SelectContent>{RISK_CONSEQUENCES.map((item, index) => <SelectItem key={item} value={String(index + 1)}>{index + 1} — {item}</SelectItem>)}</SelectContent></Select></div>
+        <div className="space-y-1.5"><Label>Increasing likelihood</Label><Select value={likelihood ? String(likelihood) : undefined} onValueChange={(value) => setLikelihood(Number(value))}><SelectTrigger><SelectValue placeholder="Select likelihood" /></SelectTrigger><SelectContent>{RISK_LIKELIHOODS.map((item, index) => <SelectItem key={item} value={String(index + 1)}>{String.fromCharCode(65 + index)} — {item}</SelectItem>)}</SelectContent></Select></div>
+      </div>
+      <div className="overflow-x-auto rounded-md border"><div className="grid min-w-[520px] grid-cols-6 gap-px bg-border text-xs"><div className="bg-muted p-2 text-center font-semibold">Severity / Likelihood</div>{RISK_LIKELIHOODS.map((_, index) => <div key={index} className="bg-muted p-2 text-center font-semibold">{String.fromCharCode(65 + index)}</div>)}{RISK_CONSEQUENCES.map((_, row) => <Fragment key={row}><div className="bg-muted p-2 text-center font-semibold">{row + 1}</div>{RISK_LIKELIHOODS.map((_, column) => { const cell = (row + 1) * (column + 1); const cellClass = cell >= 15 ? 'bg-red-600 text-white' : cell >= 6 ? 'bg-yellow-300 text-black' : 'bg-lime-500 text-black'; return <div key={column} className={`flex min-h-10 items-center justify-center p-2 font-semibold ${cellClass}`}>{cell}</div> })}</Fragment>)}</div></div>
+      <div className={`rounded-md p-3 ${level.className}`}><div className="flex flex-wrap items-center justify-between gap-2 font-bold"><span>{severity && likelihood ? level.label : 'SELECT SEVERITY AND LIKELIHOOD'}</span>{severity && likelihood ? <span>Score {score}</span> : null}</div><p className="mt-1 text-sm">{severity && likelihood ? level.action : 'The calculated category will appear here.'}</p></div>
+      <div className="grid gap-2 text-xs sm:grid-cols-3"><div className="rounded border-l-4 border-lime-500 bg-lime-500/10 p-3"><strong>LOW RISK</strong><br />Manage for Continuous Improvement</div><div className="rounded border-l-4 border-yellow-400 bg-yellow-400/10 p-3"><strong>MEDIUM RISK</strong><br />Risk reduction measures and ALARP</div><div className="rounded border-l-4 border-red-600 bg-red-600/10 p-3"><strong>HIGH RISK</strong><br />Intolerable — investigate alternative</div></div>
+    </div>
+  )
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -825,9 +869,10 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
             {/* Description */}
             <div className="space-y-1.5">
               <Label htmlFor="inc-desc">Description</Label>
-              <Textarea id="inc-desc" rows={3} placeholder="Describe what happened..." value={form.description} onChange={(e) => f("description", e.target.value)} />
-            </div>
-            {/* Immediate Action */}
+<Textarea id="inc-desc" rows={3} placeholder="Describe what happened..." value={form.description} onChange={(e) => f("description", e.target.value)} />
+  </div>
+  <IncidentRiskMatrix />
+  {/* Immediate Action */}
             <div className="space-y-1.5">
               <Label htmlFor="inc-ia">Immediate Action Taken</Label>
               <Textarea id="inc-ia" rows={2} placeholder="Actions taken immediately after the incident..." value={form.immediateAction} onChange={(e) => f("immediateAction", e.target.value)} />
