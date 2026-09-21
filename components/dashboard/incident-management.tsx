@@ -323,8 +323,8 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
   }
 
   const handleSave = async () => {
-    if (!form.title || !form.incidentType || !form.date) {
-      toast({ title: "Validation", description: "Title, type and date are required.", variant: "destructive" })
+    if (!form.title.trim() || !form.incidentCategory || !form.incidentType || !form.date || !form.severity) {
+      toast({ title: "Validation", description: "Title, category, type, severity and date are required.", variant: "destructive" })
       return
     }
     setSaving(true)
@@ -649,7 +649,7 @@ export function IncidentManagement({ companyId }: { companyId?: string | null })
         </CardContent>
       </Card>
 
-      {/* ── View Dialog ──────────────��──────────────────────────────────── */}
+      {/* ── View Dialog ───────────��──��──────────────────────────────────── */}
       <Dialog open={showView} onOpenChange={setShowView}>
         <DialogContent className="max-h-[92vh] w-[calc(100vw-1rem)] max-w-4xl overflow-y-auto p-4 sm:w-[calc(100vw-2rem)] sm:p-6">
           <DialogHeader>
