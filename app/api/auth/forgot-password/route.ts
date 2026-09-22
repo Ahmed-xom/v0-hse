@@ -31,6 +31,27 @@ export async function POST(request: NextRequest) {
   const emailHtml = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px"><h1 style="color:#059669">AMNKO HSE</h1><h2>Password reset request</h2><p>Hello ${user.name || "there"},</p><p>Click below to choose a new password. This link expires in one hour.</p><p><a href="${resetLink}" style="display:inline-block;background:#059669;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Reset password</a></p><p>If you did not request this, you can ignore this email.</p></div>`
   const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER
   const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD
+  const sendGridKey = process.env.SENDGRID_API_KEY
+  const sendGridFrom = process.env.SENDGRID_FROM_EMAIL?.trim() || process.env.SMTP_FROM?.trim() || "no-replay@amnkoo.online"
+
+  if (sendGridKey) {
+    try {
+      const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${sendGridKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: user.email }] }],
+          from: { email: sendGridFrom, name: "AMNKO HSE" },
+          subject: "Reset your AMNKO HSE password",
+          content: [{ type: "text/html", value: emailHtml }],
+        }),
+      })
+      if (response.ok) return NextResponse.json({ success: true, message: genericMessage })
+      console.error("[password-reset] SendGrid delivery failed:", response.status)
+    } catch (sendGridError) {
+      console.error("[password-reset] SendGrid request failed:", sendGridError)
+    }
+  }
   const smtpHost = process.env.SMTP_HOST || "smtp.hostinger.com"
   const smtpFrom = process.env.SMTP_FROM || "no-replay@amnkoo.online"
   const smtpPort = Number(process.env.SMTP_PORT || 465)
