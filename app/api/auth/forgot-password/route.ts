@@ -29,10 +29,14 @@ export async function POST(request: NextRequest) {
   const baseUrl = process.env.BETTER_AUTH_URL || "https://amnkoo.online"
   const resetLink = `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`
   const emailHtml = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px"><h1 style="color:#059669">AMNKO HSE</h1><h2>Password reset request</h2><p>Hello ${user.name || "there"},</p><p>Click below to choose a new password. This link expires in one hour.</p><p><a href="${resetLink}" style="display:inline-block;background:#059669;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Reset password</a></p><p>If you did not request this, you can ignore this email.</p></div>`
-  const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER
-  const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD
+  const resolveEnvReference = (value: string | undefined) => {
+    const match = value?.trim().match(/^process\.env\.([A-Z0-9_]+)$/)
+    return match ? process.env[match[1]] : value?.trim()
+  }
+  const smtpUser = resolveEnvReference(process.env.SMTP_USER_2) || resolveEnvReference(process.env.SMTP_USER) || resolveEnvReference(process.env.EMAIL_USER)
+  const smtpPass = resolveEnvReference(process.env.SMTP_PASS_2) || resolveEnvReference(process.env.SMTP_PASS) || resolveEnvReference(process.env.EMAIL_PASSWORD)
   const sendGridKey = process.env.SENDGRID_API_KEY
-  const sendGridFrom = process.env.SENDGRID_FROM_EMAIL?.trim() || process.env.SMTP_FROM?.trim() || "no-replay@amnkoo.online"
+  const sendGridFrom = "no-replay@amnkoo.online"
 
   if (sendGridKey) {
     try {
@@ -52,14 +56,15 @@ export async function POST(request: NextRequest) {
       console.error("[password-reset] SendGrid request failed:", sendGridError)
     }
   }
-  const smtpHost = process.env.SMTP_HOST || "smtp.hostinger.com"
-  const smtpFrom = process.env.SMTP_FROM || "no-replay@amnkoo.online"
-  const smtpPort = Number(process.env.SMTP_PORT || 465)
-  const smtpSecure = process.env.SMTP_SECURE ? process.env.SMTP_SECURE === "true" : smtpPort === 465
+  const smtpHost = resolveEnvReference(process.env.SMTP_HOST_2) || resolveEnvReference(process.env.SMTP_HOST) || "smtp.hostinger.com"
+  const smtpFrom = resolveEnvReference(process.env.SMTP_FROM_2) || "no-replay@amnkoo.online"
+  const smtpPort = Number(resolveEnvReference(process.env.SMTP_PORT_2) || process.env.SMTP_PORT || 465)
+  const smtpSecureValue = resolveEnvReference(process.env.SMTP_SECURE_2) || process.env.SMTP_SECURE
+  const smtpSecure = smtpSecureValue ? smtpSecureValue === "true" : smtpPort === 465
 
   if (process.env.RESEND_API_KEY) {
     const resend = new Resend(process.env.RESEND_API_KEY)
-    const resetFrom = process.env.RESEND_FROM_EMAIL?.trim() || "no-replay@amnkoo.online"
+    const resetFrom = "no-replay@amnkoo.online"
     const { error } = await resend.emails.send(
       {
         from: resetFrom.includes("<") ? resetFrom : `AMNKO HSE <${resetFrom}>`,
