@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
   const sendGridKey = process.env.SENDGRID_API_KEY
   const sendGridFrom = "no-replay@amnkoo.online"
 
-  if (sendGridKey) {
+  if (sendGridKey && process.env.USE_SENDGRID === "true") {
     try {
       const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
         method: "POST",
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ error: "Email delivery is not configured. Verify no-replay@amnkoo.online in Resend or enable SMTP AUTH for the mailbox." }, { status: 503 })
+  return NextResponse.json({ error: "Email delivery is unavailable. Check the Hostinger mailbox credentials and SMTP settings in the deployment environment." }, { status: 503 })
   } catch {
     return NextResponse.json({ error: "Unable to send the reset email right now." }, { status: 500 })
   }
