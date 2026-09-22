@@ -31,8 +31,10 @@ export async function POST(request: NextRequest) {
   const emailHtml = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px"><h1 style="color:#059669">AMNKO HSE</h1><h2>Password reset request</h2><p>Hello ${user.name || "there"},</p><p>Click below to choose a new password. This link expires in one hour.</p><p><a href="${resetLink}" style="display:inline-block;background:#059669;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Reset password</a></p><p>If you did not request this, you can ignore this email.</p></div>`
   const smtpUser = process.env.SMTP_USER || process.env.EMAIL_USER
   const smtpPass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD
-  const smtpHost = process.env.SMTP_HOST
-  const smtpFrom = process.env.SMTP_FROM || process.env.RESEND_FROM_EMAIL || smtpUser
+  const smtpHost = process.env.SMTP_HOST || "smtp.hostinger.com"
+  const smtpFrom = process.env.SMTP_FROM || "no-replay@amnkoo.online"
+  const smtpPort = Number(process.env.SMTP_PORT || 465)
+  const smtpSecure = process.env.SMTP_SECURE ? process.env.SMTP_SECURE === "true" : smtpPort === 465
 
   if (process.env.RESEND_API_KEY) {
     const resend = new Resend(process.env.RESEND_API_KEY)
@@ -54,8 +56,8 @@ export async function POST(request: NextRequest) {
     try {
       const transporter = nodemailer.createTransport({
         host: smtpHost,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: process.env.SMTP_SECURE === "true",
+        port: smtpPort,
+        secure: smtpSecure,
         auth: { user: smtpUser, pass: smtpPass },
       })
       await transporter.sendMail({
