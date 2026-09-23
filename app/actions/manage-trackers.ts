@@ -36,9 +36,10 @@ export async function createTicket(input: { companyId: string; subject: string; 
   const userId = await requireAdmin()
   if (!input.companyId || !input.subject.trim()) return { success: false, error: 'Company and subject are required' }
   const ticketNo = `XOM-${new Date().getFullYear()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`
-  await pool.query(`INSERT INTO public.ticket (id, company_id, ticket_no, subject, description, priority, category, due_date, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [crypto.randomUUID(), input.companyId, ticketNo, input.subject.trim(), input.description?.trim() || null, input.priority, input.category, input.dueDate || null, userId])
+  const ticketId = crypto.randomUUID()
+  await pool.query(`INSERT INTO public.ticket (id, company_id, ticket_no, subject, description, priority, category, due_date, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [ticketId, input.companyId, ticketNo, input.subject.trim(), input.description?.trim() || null, input.priority, input.category, input.dueDate || null, userId])
   revalidatePath('/')
-  return { success: true }
+  return { success: true, ticketId }
 }
 
 export async function updateTicket(id: string, input: { status?: string; priority?: string; assigneeId?: string | null }) {
