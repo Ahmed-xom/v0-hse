@@ -49,10 +49,15 @@ export async function updateTicket(id: string, input: { status?: string; priorit
 }
 
 export async function getInvoicePermissions(companyId: string) {
-  const adminId = await getAdminUserId()
-  if (!companyId || !adminId) return []
-  const result = await pool.query(`SELECT p.id, p.user_id AS "userId", p.permission, u.name, u.email FROM public.invoice_permission p JOIN neon_auth.user u ON u.id = p.user_id WHERE p.company_id = $1 ORDER BY u.name`, [companyId])
-  return result.rows
+  if (!companyId) return []
+  try {
+    const adminId = await getAdminUserId()
+    if (!adminId) return []
+    const result = await pool.query(`SELECT p.id, p.user_id AS "userId", p.permission, u.name, u.email FROM public.invoice_permission p JOIN neon_auth.user u ON u.id = p.user_id WHERE p.company_id = $1 ORDER BY u.name`, [companyId])
+    return result.rows
+  } catch {
+    return []
+  }
 }
 
 export async function setInvoicePermission(input: { companyId: string; userId: string; permission: 'view' | 'edit' | 'none' }) {
@@ -67,10 +72,15 @@ export async function setInvoicePermission(input: { companyId: string; userId: s
 }
 
 export async function getCompanyUsers(companyId: string) {
-  const adminId = await getAdminUserId()
-  if (!companyId || !adminId) return []
-  const result = await pool.query(`SELECT u.id, u.name, u.email FROM neon_auth.user u JOIN public.company_membership cm ON cm.user_id = u.id WHERE cm.company_id = $1 AND cm.status = 'Active' ORDER BY u.name`, [companyId])
-  return result.rows
+  if (!companyId) return []
+  try {
+    const adminId = await getAdminUserId()
+    if (!adminId) return []
+    const result = await pool.query(`SELECT u.id, u.name, u.email FROM neon_auth.user u JOIN public.company_membership cm ON cm.user_id = u.id WHERE cm.company_id = $1 AND cm.status = 'Active' ORDER BY u.name`, [companyId])
+    return result.rows
+  } catch {
+    return []
+  }
 }
 
 export async function getMyInvoicePermission(companyId: string) {
