@@ -8,13 +8,18 @@ import { pool } from '@/lib/db'
 
 const ADMIN_ROLES = ['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN']
 
-async function requireAdmin() {
+async function getAdminUserId() {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user?.id) throw new Error('Unauthorized')
+  if (!session?.user?.id) return null
   const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
   const role = String(result.rows[0]?.role ?? '').toUpperCase()
-  if (!ADMIN_ROLES.includes(role)) throw new Error('Only administrators can manage tracker access')
-  return session.user.id
+  return ADMIN_ROLES.includes(role) ? session.user.id : null
+}
+
+async function requireAdmin() {
+  const userId = await getAdminUserId()
+  if (!userId) throw new Error('Unauthorized')
+  return userId
 }
 
 export async function getTickets(companyId: string) {
@@ -40,7 +45,7 @@ export async function updateTicket(id: string, input: { status?: string; priorit
 }
 
 export async function getInvoicePermissions(companyId: string) {
-  await requireAdmin()
+  if (!companyId || !(await getAdminUserId())) return []
   const result = await pool.query(`SELECT p.id, p.user_id AS "userId", p.permission, u.name, u.email FROM public.invoice_permission p JOIN neon_auth.user u ON u.id = p.user_id WHERE p.company_id = $1 ORDER BY u.name`, [companyId])
   return result.rows
 }
@@ -57,7 +62,7 @@ export async function setInvoicePermission(input: { companyId: string; userId: s
 }
 
 export async function getCompanyUsers(companyId: string) {
-  await requireAdmin()
+  if (!companyId || !(await getAdminUserId())) return []
   const result = await pool.query(`SELECT u.id, u.name, u.email FROM neon_auth.user u JOIN public.company_membership cm ON cm.user_id = u.id WHERE cm.company_id = $1 AND cm.status = 'Active' ORDER BY u.name`, [companyId])
   return result.rows
 }
