@@ -36,9 +36,9 @@ export async function POST(request: NextRequest) {
   const smtpUser = resolveEnvReference(process.env.SMTP_USER_2) || resolveEnvReference(process.env.SMTP_USER) || resolveEnvReference(process.env.EMAIL_USER)
   const smtpPass = resolveEnvReference(process.env.SMTP_PASS_2) || resolveEnvReference(process.env.SMTP_PASS) || resolveEnvReference(process.env.EMAIL_PASSWORD)
   const sendGridKey = process.env.SENDGRID_API_KEY
-  const sendGridFrom = "no-replay@amnkoo.online"
+  const sendGridFrom = resolveEnvReference(process.env.SENDGRID_FROM_EMAIL) || "no-replay@amnkoo.online"
 
-  if (sendGridKey && process.env.USE_SENDGRID === "true") {
+  if (sendGridKey) {
     try {
       const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
         method: "POST",
