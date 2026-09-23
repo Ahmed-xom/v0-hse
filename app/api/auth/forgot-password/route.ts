@@ -58,8 +58,9 @@ export async function POST(request: NextRequest) {
   }
   const smtpHost = resolveEnvReference(process.env.SMTP_HOST_2) || resolveEnvReference(process.env.SMTP_HOST) || "smtp.hostinger.com"
   const smtpFrom = resolveEnvReference(process.env.SMTP_FROM_2) || "no-replay@amnkoo.online"
-  const smtpPort = Number(resolveEnvReference(process.env.SMTP_PORT_2) || process.env.SMTP_PORT || 465)
-  const smtpSecureValue = resolveEnvReference(process.env.SMTP_SECURE_2) || process.env.SMTP_SECURE
+  const smtpHostUsesOverride = Boolean(resolveEnvReference(process.env.SMTP_HOST_2))
+  const smtpPort = Number(resolveEnvReference(process.env.SMTP_PORT_2) || (smtpHostUsesOverride ? 465 : process.env.SMTP_PORT) || 465)
+  const smtpSecureValue = resolveEnvReference(process.env.SMTP_SECURE_2) || (smtpHostUsesOverride ? "true" : process.env.SMTP_SECURE)
   const smtpSecure = smtpSecureValue ? smtpSecureValue === "true" : smtpPort === 465
 
   if (process.env.RESEND_API_KEY) {
