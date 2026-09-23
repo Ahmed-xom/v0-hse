@@ -18,6 +18,7 @@ const sections = [
   ["Document Library", "document-library"],
   ["Company Management", "company-management"],
   ["Journey Tracker", "journey-tracker"],
+  ["Ticket & Invoice Tracker", "ticket-invoice-tracker"],
 ] as const
 
 export function DashboardNavigation() {

@@ -320,3 +320,33 @@ export const inspection = pgTable('inspection', {
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
   companyId: text('company_id'),
   })
+
+// Ticket Tracker Table for XOM Company
+export const ticket = pgTable('ticket', {
+  id: text('id').primaryKey(),
+  companyId: text('company_id').notNull(),
+  ticketNo: text('ticket_no').notNull().unique(),
+  subject: text('subject').notNull(),
+  description: text('description'),
+  priority: text('priority').notNull().default('Medium'),
+  status: text('status').notNull().default('Open'),
+  category: text('category').notNull().default('General'),
+  assigneeId: uuid('assignee_id'),
+  createdBy: uuid('created_by').notNull(),
+  dueDate: date('due_date'),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
+})
+
+// Invoice Permission Control Table
+export const invoicePermission = pgTable('invoice_permission', {
+  id: text('id').primaryKey(),
+  companyId: text('company_id').notNull(),
+  userId: uuid('user_id').notNull(),
+  permission: text('permission').notNull().default('view'),
+  grantedBy: uuid('granted_by').notNull(),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
+}, (table) => ({
+  uniquePermission: index('invoice_permission_company_user_idx').on(table.companyId, table.userId),
+}))
