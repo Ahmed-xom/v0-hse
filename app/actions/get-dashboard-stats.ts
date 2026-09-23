@@ -198,7 +198,7 @@ export async function getDashboardStats(companyId?: string | null): Promise<Dash
       COUNT(*) FILTER (WHERE LOWER(status) = 'active') as active,
       COUNT(*) FILTER (WHERE LOWER(status) = 'completed') as completed,
       COUNT(*) FILTER (WHERE LOWER(status) = 'cancelled') as cancelled,
-      COUNT(*) FILTER (WHERE LOWER(COALESCE(risk_level, '')) IN ('high', 'critical')) as high_risk
+      0 as high_risk
     FROM public.journey
   `)
   const journeyRow = (journeyStatsResult as any).rows?.[0] ?? {}
