@@ -160,6 +160,17 @@ export function InspectionReports({ readOnly = false }: InspectionReportsProps) 
     setIsLoading(false)
   }, [filterType, filterStatus, search])
 
+  useEffect(() => {
+    const handleNotificationFilter = (event: Event) => {
+      const detail = (event as CustomEvent<{ status?: string; search?: string }>).detail
+      if (detail.status) setFilterStatus(detail.status)
+      if (detail.search !== undefined) setSearch(detail.search)
+      document.getElementById("inspection-reports")?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+    window.addEventListener("hse:filter-inspections", handleNotificationFilter)
+    return () => window.removeEventListener("hse:filter-inspections", handleNotificationFilter)
+  }, [])
+
   useEffect(() => { load() }, [load])
 
   const openAdd = () => { setForm(EMPTY_FORM); setIsAddOpen(true) }

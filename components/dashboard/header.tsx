@@ -183,10 +183,14 @@ export function DashboardHeader() {
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="#inspection-reports" className="flex cursor-pointer flex-col items-start gap-1 py-3">
+                <button
+                  type="button"
+                  className="flex w-full cursor-pointer flex-col items-start gap-1 py-3 text-left"
+                  onClick={() => window.dispatchEvent(new CustomEvent("hse:filter-inspections", { detail: { status: "Overdue" } }))}
+                >
                   <span className="font-medium">Overdue Inspection Alert</span>
                   <span className="text-sm text-muted-foreground">Chemical Storage Inspection is 3 days overdue</span>
-                </Link>
+                </button>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="#training-courses" className="flex cursor-pointer flex-col items-start gap-1 py-3">
