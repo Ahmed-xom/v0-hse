@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import {
   Plus, Search, RefreshCw, Eye, Edit, Trash2, UserPlus,
   Users, CalendarDays, ChevronDown, CheckCircle2, Clock,
-  ClipboardList, X, Mail,
+  ClipboardList, X, Mail, List, CalendarRange,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,7 +29,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { format, parseISO } from "date-fns"
+import { format, parseISO, isSameDay } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
 import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
@@ -120,6 +120,8 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
   const [search, setSearch] = useState("")
   const [filterType, setFilterType] = useState("all")
   const [filterStatus, setFilterStatus] = useState("all")
+  const [meetingView, setMeetingView] = useState<"list" | "calendar">("list")
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date())
 
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
@@ -148,6 +150,12 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
     window.addEventListener("hse:create-meeting", openMeetingForDate)
     return () => window.removeEventListener("hse:create-meeting", openMeetingForDate)
   }, [])
+
+  const openAddForDate = (date: Date) => {
+    setForm({ ...EMPTY_FORM, date: format(date, "yyyy-MM-dd") })
+    setAttendees([])
+    setIsAddOpen(true)
+  }
 
   const openAdd = () => {
     setForm(EMPTY_FORM)
@@ -410,7 +418,11 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
             ))}
           </SelectContent>
         </Select>
-        <Button variant="ghost" size="icon" onClick={load}><RefreshCw className="h-4 w-4" /></Button>
+        <Button variant="ghost" size="icon" onClick={load} aria-label="Refresh meetings"><RefreshCw className="h-4 w-4" /></Button>
+        <div className="flex items-center rounded-md border p-1">
+          <Button variant={meetingView === "list" ? "secondary" : "ghost"} size="sm" onClick={() => setMeetingView("list")} aria-label="List view"><List className="h-4 w-4" /></Button>
+          <Button variant={meetingView === "calendar" ? "secondary" : "ghost"} size="sm" onClick={() => setMeetingView("calendar")} aria-label="Calendar view"><CalendarRange className="h-4 w-4" /></Button>
+        </div>
         {canEdit && (
           <Button onClick={openAdd} className="gap-2">
             <Plus className="h-4 w-4" />New Meeting
@@ -418,7 +430,24 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
         )}
       </div>
 
-      {/* Table */}
+      {meetingView === "calendar" ? (
+        <div className="grid gap-4 lg:grid-cols-[380px_1fr]">
+          <Card className="border-border/50 p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div><p className="font-semibold">Meeting calendar</p><p className="text-xs text-muted-foreground">Select a day to create a meeting.</p></div>
+              {canEdit && <Button size="sm" variant="outline" onClick={() => openAddForDate(calendarDate)}><Plus className="mr-1 h-3.5 w-3.5" />Add</Button>}
+            </div>
+            <Calendar {...({ mode: "single", selected: calendarDate, onSelect: (date: Date | undefined) => date && (setCalendarDate(date), canEdit && openAddForDate(date)), modifiers: { meeting: records.map((r) => new Date(r.date)) }, modifiersClassNames: { meeting: "bg-primary/15 font-semibold text-primary" }, initialFocus: true } as any)} />
+          </Card>
+          <Card className="border-border/50">
+            <CardContent className="p-4">
+              <div className="mb-3 flex items-center justify-between"><div><p className="font-semibold">Scheduled meetings</p><p className="text-xs text-muted-foreground">{format(calendarDate, "dd MMMM yyyy")}</p></div><Badge variant="outline">{records.length} total</Badge></div>
+              <div className="space-y-2">{records.filter((r) => r.date && isSameDay(parseISO(r.date), calendarDate)).map((r) => <button type="button" key={r.id} onClick={() => openView(r)} className="flex w-full items-center justify-between rounded-md border p-3 text-left hover:bg-muted/50"><span><span className="block font-medium">{r.title}</span><span className="text-xs text-muted-foreground">{format(parseISO(r.date), "HH:mm")} · {r.location || "No location"}</span></span><Badge variant="outline" className={STATUS_COLORS[r.status] ?? ""}>{r.status}</Badge></button>)}{records.filter((r) => r.date && isSameDay(parseISO(r.date), calendarDate)).length === 0 && <p className="py-10 text-center text-sm text-muted-foreground">No meetings on this day.</p>}</div>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+      /* Table */
       <Card className="border-border/50">
         <Table>
           <TableHeader>
@@ -502,6 +531,7 @@ export function Meetings({ readOnly = false }: MeetingsProps) {
           </TableBody>
         </Table>
       </Card>
+      )}
 
       {/* Add Dialog */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
