@@ -91,7 +91,7 @@ export async function setInvoicePermission(input: { companyId: string; userId: s
 export async function getEmployeesForTicket(companyId: string) {
   if (!(await isXomCompany(companyId))) return []
   try {
-    const result = await pool.query(`SELECT id, name, email FROM public.employee WHERE status = 'Active' ORDER BY name ASC`)
+    const result = await pool.query(`SELECT id, name, email FROM public.employee WHERE name IS NOT NULL AND (status IS NULL OR UPPER(status) = 'ACTIVE') ORDER BY name ASC`)
     return result.rows
   } catch {
     return []
