@@ -42,17 +42,17 @@ export async function isXomCompanyActive(companyId: string) {
 
 export async function getTickets(companyId: string) {
   if (!(await isXomCompany(companyId))) return []
-  const result = await pool.query(`SELECT id, ticket_no AS "ticketNo", subject, description, priority, status, category, due_date AS "dueDate", created_at AS "createdAt" FROM public.ticket WHERE company_id = $1 ORDER BY created_at DESC`, [companyId])
+  const result = await pool.query(`SELECT t.id, t.ticket_no AS "ticketNo", t.subject, t.description, t.priority, t.status, t.category, t.due_date AS "dueDate", t.assignee_id AS "assigneeId", COALESCE(u.name, '') AS "assigneeName", t.created_at AS "createdAt" FROM public.ticket t LEFT JOIN neon_auth.user u ON u.id = t.assignee_id WHERE t.company_id = $1 ORDER BY t.created_at DESC`, [companyId])
   return result.rows
 }
 
-export async function createTicket(input: { companyId: string; subject: string; description?: string; priority: string; category: string; dueDate?: string }) {
+export async function createTicket(input: { companyId: string; subject: string; description?: string; priority: string; category: string; dueDate?: string; assigneeId?: string }) {
   const userId = await requireAdmin()
   if (!(await isXomCompany(input.companyId))) return { success: false, error: 'The invoice and ticket tracker is available only for XOM.' }
   if (!input.companyId || !input.subject.trim()) return { success: false, error: 'Company and subject are required' }
   const ticketNo = `XOM-${new Date().getFullYear()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`
   const ticketId = crypto.randomUUID()
-  await pool.query(`INSERT INTO public.ticket (id, company_id, ticket_no, subject, description, priority, category, due_date, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`, [ticketId, input.companyId, ticketNo, input.subject.trim(), input.description?.trim() || null, input.priority, input.category, input.dueDate || null, userId])
+  await pool.query(`INSERT INTO public.ticket (id, company_id, ticket_no, subject, description, priority, category, due_date, assignee_id, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, [ticketId, input.companyId, ticketNo, input.subject.trim(), input.description?.trim() || null, input.priority, input.category, input.dueDate || null, input.assigneeId || null, userId])
   revalidatePath('/')
   return { success: true, ticketId }
 }

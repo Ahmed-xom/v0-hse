@@ -32,10 +32,8 @@ export function DashboardNavigation() {
 
   useEffect(() => {
     let cancelled = false
-    if (!activeCompanyId) {
-      setShowXomTracker(false)
-      return
-    }
+    setShowXomTracker(false)
+    if (!activeCompanyId) return
     void isXomCompanyActive(activeCompanyId).then((isXom) => {
       if (!cancelled) setShowXomTracker(isXom)
     })
