@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/auth-context"
-import { createTicket, getCompanyUsers, getInvoicePermissions, getTickets, setInvoicePermission, updateTicket } from "@/app/actions/manage-trackers"
+import { createTicket, getCompanyUsers, getInvoicePermissions, getTickets, isXomCompanyActive, setInvoicePermission, updateTicket } from "@/app/actions/manage-trackers"
 
 type Ticket = { id: string; ticketNo: string; subject: string; description?: string; priority: string; status: string; category: string; dueDate?: string }
 type User = { id: string; name: string; email: string }
@@ -29,10 +29,17 @@ export function TicketInvoiceTracker() {
   const [form, setForm] = useState({ subject: "", description: "", priority: "Medium", category: "General", dueDate: "" })
   const [attachments, setAttachments] = useState<File[]>([])
   const [uploadError, setUploadError] = useState("")
+  const [isXom, setIsXom] = useState(false)
   const admin = isAdmin(user?.role)
 
   const load = async () => {
-    if (!activeCompanyId) return
+    if (!activeCompanyId) {
+      setIsXom(false)
+      return
+    }
+    const companyIsXom = await isXomCompanyActive(activeCompanyId)
+    setIsXom(companyIsXom)
+    if (!companyIsXom) return
     const [nextTickets, nextUsers] = await Promise.all([getTickets(activeCompanyId), admin ? getCompanyUsers(activeCompanyId) : Promise.resolve([])])
     setTickets(nextTickets)
     setUsers(nextUsers)
@@ -63,6 +70,8 @@ export function TicketInvoiceTracker() {
     await setInvoicePermission({ companyId: activeCompanyId, userId, permission })
     setPermissions(await getInvoicePermissions(activeCompanyId))
   }
+
+  if (!isXom) return null
 
   return (
     <Card className="border-border/70 shadow-sm">

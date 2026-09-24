@@ -26,14 +26,29 @@ async function requireAdmin() {
   return userId
 }
 
+async function isXomCompany(companyId: string) {
+  if (!companyId) return false
+  const result = await pool.query(`SELECT 1 FROM public.company WHERE id = $1 AND status = 'Active' AND (UPPER(COALESCE(code, '')) = 'XOM' OR UPPER(name) LIKE '%XOM%') LIMIT 1`, [companyId])
+  return result.rowCount === 1
+}
+
+export async function isXomCompanyActive(companyId: string) {
+  try {
+    return await isXomCompany(companyId)
+  } catch {
+    return false
+  }
+}
+
 export async function getTickets(companyId: string) {
-  if (!companyId) return []
+  if (!(await isXomCompany(companyId))) return []
   const result = await pool.query(`SELECT id, ticket_no AS "ticketNo", subject, description, priority, status, category, due_date AS "dueDate", created_at AS "createdAt" FROM public.ticket WHERE company_id = $1 ORDER BY created_at DESC`, [companyId])
   return result.rows
 }
 
 export async function createTicket(input: { companyId: string; subject: string; description?: string; priority: string; category: string; dueDate?: string }) {
   const userId = await requireAdmin()
+  if (!(await isXomCompany(input.companyId))) return { success: false, error: 'The invoice and ticket tracker is available only for XOM.' }
   if (!input.companyId || !input.subject.trim()) return { success: false, error: 'Company and subject are required' }
   const ticketNo = `XOM-${new Date().getFullYear()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`
   const ticketId = crypto.randomUUID()
@@ -50,7 +65,7 @@ export async function updateTicket(id: string, input: { status?: string; priorit
 }
 
 export async function getInvoicePermissions(companyId: string) {
-  if (!companyId) return []
+  if (!(await isXomCompany(companyId))) return []
   try {
     const adminId = await getAdminUserId()
     if (!adminId) return []
@@ -63,6 +78,7 @@ export async function getInvoicePermissions(companyId: string) {
 
 export async function setInvoicePermission(input: { companyId: string; userId: string; permission: 'view' | 'edit' | 'none' }) {
   const grantedBy = await requireAdmin()
+  if (!(await isXomCompany(input.companyId))) throw new Error('Invoice permissions are available only for XOM.')
   if (input.permission === 'none') {
     await pool.query('DELETE FROM public.invoice_permission WHERE company_id = $1 AND user_id = $2', [input.companyId, input.userId])
   } else {
@@ -73,7 +89,7 @@ export async function setInvoicePermission(input: { companyId: string; userId: s
 }
 
 export async function getCompanyUsers(companyId: string) {
-  if (!companyId) return []
+  if (!(await isXomCompany(companyId))) return []
   try {
     const adminId = await getAdminUserId()
     if (!adminId) return []
