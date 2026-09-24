@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight, Menu, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { isXomCompanyActive } from "@/app/actions/manage-trackers"
+import { useAuth } from "@/lib/auth-context"
 
 const sections = [
   ["Home", "dashboard-home"],
@@ -18,12 +20,25 @@ const sections = [
   ["Document Library", "document-library"],
   ["Company Management", "company-management"],
   ["Journey Tracker", "journey-tracker"],
+  ["Ticket & Invoice Tracker", "ticket-invoice-tracker"],
 ] as const
 
 export function DashboardNavigation() {
   const [open, setOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [active, setActive] = useState("dashboard-home")
+  const [showXomTracker, setShowXomTracker] = useState(false)
+  const { activeCompanyId } = useAuth()
+
+  useEffect(() => {
+    let cancelled = false
+    setShowXomTracker(false)
+    if (!activeCompanyId) return
+    void isXomCompanyActive(activeCompanyId).then((isXom) => {
+      if (!cancelled) setShowXomTracker(isXom)
+    })
+    return () => { cancelled = true }
+  }, [activeCompanyId])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -61,7 +76,7 @@ export function DashboardNavigation() {
           <button type="button" aria-label="Close options" onClick={() => setOpen(false)} className="rounded-md p-2 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground lg:hidden"><X className="h-4 w-4" /></button>
         </div>
         <nav aria-label="Dashboard options" className={cn("flex flex-1 flex-col gap-1 overflow-y-auto", collapsed && "lg:hidden")}>
-          {sections.map(([label, id]) => (
+          {sections.filter(([, id]) => id !== "ticket-invoice-tracker" || showXomTracker).map(([label, id]) => (
             <button key={id} type="button" onClick={() => navigate(id)} className={cn("rounded-md px-3 py-2.5 text-left text-sm transition-colors", active === id ? "bg-sidebar-primary font-medium text-sidebar-primary-foreground" : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground")}>{label}</button>
           ))}
         </nav>
