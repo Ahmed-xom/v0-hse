@@ -20,6 +20,7 @@ const sections = [
   ["Document Library", "document-library"],
   ["Company Management", "company-management"],
   ["Journey Tracker", "journey-tracker"],
+  ["Meetings", "meetings"],
   ["Ticket & Invoice Tracker", "ticket-invoice-tracker"],
 ] as const
 
