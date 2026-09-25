@@ -1,103 +1,20 @@
-import nodemailer from 'nodemailer';
-import crypto from 'crypto';
+import crypto from 'crypto'
+import { sendEmail } from '@/lib/send-email'
 
-// Initialize email transporter with Office365 SMTP
-const transporter = nodemailer.createTransport({
-  host: 'smtp.office365.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER, // hsesystem.xom@outlook.com
-    pass: process.env.EMAIL_PASSWORD, // Xom@2026
-  },
-  tls: {
-    ciphers: 'SSLv3',
-    rejectUnauthorized: false,
-  },
-});
-
-/**
- * Generate a secure temporary password
- */
 export function generateTemporaryPassword(): string {
-  return crypto.randomBytes(12).toString('hex').slice(0, 16).toUpperCase();
+  return crypto.randomBytes(12).toString('hex').slice(0, 16).toUpperCase()
 }
 
-/**
- * Send password reset email
- */
-export async function sendPasswordResetEmail(
-  userEmail: string,
-  userName: string,
-  temporaryPassword: string
-): Promise<boolean> {
-  try {
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: userEmail,
-      subject: 'Password Reset - HSE System',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Password Reset Request</h2>
-          <p>Hello ${userName},</p>
-          <p>Your password has been reset by an administrator. Your new temporary password is:</p>
-          <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <p style="font-size: 18px; font-weight: bold; letter-spacing: 2px; color: #333;">
-              ${temporaryPassword}
-            </p>
-          </div>
-          <p><strong>Important:</strong></p>
-          <ul>
-            <li>Use this temporary password to login to the HSE System</li>
-            <li>Change this password immediately after logging in</li>
-            <li>Do not share this password with anyone</li>
-            <li>This temporary password will expire in 24 hours</li>
-          </ul>
-          <p>If you did not request a password reset, please contact the system administrator.</p>
-          <hr />
-          <p style="color: #666; font-size: 12px;">
-            This is an automated message from the HSE System. Please do not reply to this email.
-          </p>
-        </div>
-      `,
-      text: `
-        Password Reset Request
-        
-        Hello ${userName},
-        
-        Your password has been reset by an administrator. Your new temporary password is:
-        
-        ${temporaryPassword}
-        
-        Important:
-        - Use this temporary password to login to the HSE System
-        - Change this password immediately after logging in
-        - Do not share this password with anyone
-        - This temporary password will expire in 24 hours
-        
-        If you did not request a password reset, please contact the system administrator.
-        
-        This is an automated message from the HSE System. Please do not reply to this email.
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
-    return true;
-  } catch (error) {
-    console.error('Error sending email:', error);
-    throw error;
-  }
+export async function sendPasswordResetEmail(userEmail: string, userName: string, temporaryPassword: string): Promise<boolean> {
+  const result = await sendEmail({
+    to: userEmail,
+    subject: 'AMNKO HSE Password Reset',
+    html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px"><h1 style="color:#059669">AMNKO HSE</h1><p>Hello ${userName || 'there'},</p><p>Your administrator issued a temporary password:</p><p style="font-size:20px;font-weight:700;letter-spacing:2px">${temporaryPassword}</p><p>Change it after signing in. If you did not request this, contact your administrator.</p></div>`,
+  })
+  return result.sent
 }
 
-/**
- * Verify transporter connection
- */
 export async function verifyEmailConnection(): Promise<boolean> {
-  try {
-    await transporter.verify();
-    return true;
-  } catch (error) {
-    console.error('Email connection error:', error);
-    return false;
-  }
+  const result = await sendEmail({ to: process.env.SMTP_USER || '', subject: 'AMNKO HSE SMTP verification', html: '<p>SMTP verification</p>' })
+  return result.sent
 }
