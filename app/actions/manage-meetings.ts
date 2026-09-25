@@ -135,13 +135,11 @@ export async function createMeeting(
     const meetingId = res.rows[0].id
 
     if (attendees?.length) {
-      for (const a of attendees) {
-        await client.query(
-          `INSERT INTO public.meeting_attendee (meeting_id, name, email, role, department)
-           VALUES ($1,$2,$3,$4,$5)`,
-          [meetingId, a.name, a.email ?? null, a.role ?? null, a.department ?? null]
-        )
-      }
+      await Promise.all(attendees.map((a) => client.query(
+        `INSERT INTO public.meeting_attendee (meeting_id, name, email, role, department)
+         VALUES ($1,$2,$3,$4,$5)`,
+        [meetingId, a.name, a.email ?? null, a.role ?? null, a.department ?? null]
+      )))
     }
 
     await client.query('COMMIT')

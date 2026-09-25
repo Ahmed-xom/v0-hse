@@ -79,9 +79,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: "Invalid password. Please try again." }
     }
 
-    // Fetch journey access flag from DB
-    const journeyAccess = await getUserJourneyAccess(email)
-    const journeyApprover = await getUserJourneyApprover(email)
+    // These independent lookups run together so login is not delayed by serial requests.
+    const [journeyAccess, journeyApprover] = await Promise.all([
+      getUserJourneyAccess(email),
+      getUserJourneyApprover(email),
+    ])
 
     const authUser: AuthUser = {
       id: foundUser.id,
