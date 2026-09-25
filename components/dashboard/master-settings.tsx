@@ -63,6 +63,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { masterCategories, getTotalMasterItems, getTotalSections, type MasterSection } from "@/lib/masters-data"
 import { addMasterItem, deleteMasterItem, getMasterValues, updateMasterItem } from "@/app/actions/manage-master-settings"
+import { CompanyManagement } from "@/components/dashboard/company-management"
 import { VehiclesSection } from "./vehicles-section"
 import { useAuth } from "@/lib/auth-context"
 import { getJourneyCutoffSettings, saveJourneyCutoffSettings } from "@/app/actions/journey-cutoff-actions"
@@ -129,7 +130,7 @@ export function MasterSettings() {
   }
 
   useEffect(() => {
-    if (!selectedSection || ["reviewer-approver", "vehicle-details", "jm-vehicle-detail"].includes(selectedSection.id)) return
+    if (!selectedSection || ["company", "reviewer-approver", "vehicle-details", "jm-vehicle-detail"].includes(selectedSection.id)) return
     setMasterValuesLoading(true)
     getMasterValues(selectedSection.id, activeCompanyId, true, masterSearch)
       .then((res) => { if (res.success) setMasterValues(res.data) })
@@ -270,7 +271,7 @@ export function MasterSettings() {
                 </div>
               </div>
             )}
-            {selectedSection && selectedSection.id !== "vehicle-details" && selectedSection.id !== "jm-vehicle-detail" && (
+            {selectedSection && !["company", "vehicle-details", "jm-vehicle-detail"].includes(selectedSection.id) && (
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
                   <Button size="sm" className="bg-primary hover:bg-primary/90">
@@ -464,6 +465,8 @@ export function MasterSettings() {
                 ))}
             </div>
           </ScrollArea>
+        ) : selectedSection.id === "company" ? (
+          <div className="p-6"><CompanyManagement /></div>
         ) : selectedSection.id === "reviewer-approver" ? (
           // ── Real Reviewer / Approver section ──────────────────────────────
           <div className="p-6">
