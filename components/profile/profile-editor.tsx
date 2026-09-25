@@ -1,7 +1,6 @@
 "use client"
 
 import { FormEvent, useState } from "react"
-import { useRouter } from "next/navigation"
 import { CheckCircle2, Loader2, UserRound } from "lucide-react"
 import { updateUser } from "@/app/actions/manage-users"
 import { useAuth } from "@/lib/auth-context"
@@ -13,7 +12,6 @@ import { Label } from "@/components/ui/label"
 
 export function ProfileEditor() {
   const { user, isLoading, updateProfile } = useAuth()
-  const router = useRouter()
   const [name, setName] = useState(user?.name ?? "")
   const [designation, setDesignation] = useState(user?.designation ?? "")
   const [businessUnit, setBusinessUnit] = useState(user?.businessUnit ?? "")
@@ -39,7 +37,6 @@ export function ProfileEditor() {
     updateProfile({ name: name.trim(), designation: designation.trim(), businessUnit: businessUnit.trim() })
     setStatus("success")
     setMessage("Your profile was updated successfully.")
-    router.refresh()
   }
 
   return (
