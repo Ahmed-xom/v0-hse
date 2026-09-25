@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Eye, EyeOff, Loader2, Mail, Lock } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
@@ -17,7 +16,6 @@ export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const router = useRouter()
   const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +26,9 @@ export default function SignInPage() {
     try {
       const result = await login(email, password)
       if (result.success) {
-        router.push("/")
+        // Use a full navigation after the client auth state is persisted. This avoids
+        // dispatching a router action while the App Router is still initializing.
+        window.location.assign("/")
       } else {
         setError(result.error || "Login failed")
       }
