@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState, useCallback, useMemo } from "react"
-import { useRouter } from "next/navigation"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { useAuth } from "@/lib/auth-context"
 import {
@@ -56,7 +55,6 @@ const emptyForm = {
 
 export default function JourneyTrackerPage() {
   const { user, isLoading } = useAuth()
-  const router = useRouter()
   const { toast } = useToast()
 
   const [journeys, setJourneys]         = useState<JourneyRecord[]>([])
@@ -72,9 +70,9 @@ export default function JourneyTrackerPage() {
   const [vehicleFilter, setVehicleFilter]   = useState("all")
 
   useEffect(() => {
-    if (!isLoading && !user) router.push("/sign-in")
-    if (!isLoading && user && !user.journeyAccess) router.push("/")
-  }, [user, isLoading, router])
+    if (!isLoading && !user) window.location.replace("/sign-in")
+    if (!isLoading && user && !user.journeyAccess) window.location.replace("/")
+  }, [user, isLoading])
 
   const fetchJourneys = useCallback(async () => {
     if (!user?.email) return

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Bell, Calendar, ChevronDown, Home, LogOut, Menu, Moon, Search, Settings, Sun, User, X } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -43,7 +42,6 @@ export function DashboardHeader() {
   }
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
-  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
@@ -51,7 +49,7 @@ export function DashboardHeader() {
 
   const handleLogout = () => {
     logout()
-    router.push("/sign-in")
+    window.location.replace("/sign-in")
   }
 
   const getInitials = (name: string) => {
