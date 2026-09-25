@@ -26,9 +26,13 @@ export async function POST(request: NextRequest) {
     const resetLink = `${baseUrl.replace(/\/$/, '')}/reset-password?token=${encodeURIComponent(signedToken)}`
     const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#1f2937"><h1 style="color:#059669">AMNKO HSE</h1><p>Hello ${user.name || 'there'},</p><p>We received a request to reset your AMNKO HSE password.</p><p><a href="${resetLink}" style="display:inline-block;background:#059669;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Reset Password</a></p><p>This link expires in one hour and can only be used once.</p><p>If you did not request this, you can safely ignore this email.</p><hr><small>This is an automated security message from the AMNKO HSE Management System.</small></div>`
     const sent = await sendEmail({ to: user.email, subject: 'Reset Your AMNKO HSE Password', html })
-    if (!sent.sent) return NextResponse.json({ error: 'Email delivery is unavailable.' }, { status: 503 })
+    if (!sent.sent) {
+      console.error('[password-reset] email delivery failed', { email: user.email, error: sent.error })
+      return NextResponse.json({ error: 'Unable to send password reset email. Please try again later.' }, { status: 503 })
+    }
     return NextResponse.json({ success: true, message: genericMessage })
-  } catch {
-    return NextResponse.json({ error: 'Unable to send the reset email right now.' }, { status: 500 })
+  } catch (error) {
+    console.error('[password-reset] unexpected failure', { error: error instanceof Error ? error.message : String(error) })
+    return NextResponse.json({ error: 'Unable to send password reset email. Please try again later.' }, { status: 500 })
   }
 }
