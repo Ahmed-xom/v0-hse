@@ -7,7 +7,6 @@ type SmtpConfiguration = {
   user: string
   pass: string
   from: string
-  fromName: string
 }
 
 function getSmtpConfiguration(): { config?: SmtpConfiguration; missing?: string } {
@@ -24,7 +23,7 @@ function getSmtpConfiguration(): { config?: SmtpConfiguration; missing?: string 
   const port = Number(values.SMTP_PORT)
   if (!Number.isInteger(port) || port < 1 || port > 65535) return { missing: 'SMTP_PORT must be a valid port' }
   if (values.SMTP_SECURE !== 'true' && values.SMTP_SECURE !== 'false') return { missing: 'SMTP_SECURE must be true or false' }
-  return { config: { host: values.SMTP_HOST!, port, secure: values.SMTP_SECURE === 'true', user: values.SMTP_USER!, pass: values.SMTP_PASS!, from: values.SMTP_FROM!, fromName: process.env.SMTP_FROM_NAME?.trim() || 'AMNKO HSE Management System' } }
+  return { config: { host: values.SMTP_HOST!, port, secure: values.SMTP_SECURE === 'true', user: values.SMTP_USER!, pass: values.SMTP_PASS!, from: values.SMTP_FROM! } }
 }
 
 function getSmtpTransporter(config: SmtpConfiguration) {
@@ -33,7 +32,19 @@ function getSmtpTransporter(config: SmtpConfiguration) {
 
 export function getEmailConfiguration() {
   const { config, missing } = getSmtpConfiguration()
-  return { provider: 'Hostinger SMTP', host: config?.host || 'not configured', port: config?.port || null, secure: config?.secure ?? null, senderName: config?.fromName || 'AMNKO HSE Management System', senderEmail: config?.from || '', username: config?.user || '', missing }
+  return { provider: 'Hostinger SMTP', host: config?.host || 'not configured', port: config?.port || null, secure: config?.secure ?? null, senderEmail: config?.from || '', username: config?.user || '', missing }
+}
+
+function getSmtpError(error: unknown) {
+  const smtpError = error as { name?: string; code?: string; command?: string; responseCode?: number; response?: string; message?: string }
+  return {
+    name: smtpError.name || 'Error',
+    code: smtpError.code || 'unknown',
+    command: smtpError.command || 'unknown',
+    responseCode: smtpError.responseCode ?? null,
+    response: smtpError.response || 'none',
+    message: smtpError.message || String(error),
+  }
 }
 
 export async function sendEmail(opts: {
@@ -47,16 +58,33 @@ export async function sendEmail(opts: {
     return { sent: false, error: `Email service is not configured: ${missing || 'SMTP configuration is invalid'}.` }
   }
 
+  console.info('[email] SMTP runtime configuration', {
+    SMTP_HOST: config.host,
+    SMTP_PORT: config.port,
+    SMTP_SECURE: config.secure,
+    SMTP_USER: config.user,
+    SMTP_FROM: config.from,
+  })
+
+  const smtp = getSmtpTransporter(config)
+  try {
+    await smtp.verify()
+    console.info('[email] SMTP connection successful')
+  } catch (err) {
+    const smtpError = getSmtpError(err)
+    console.error('[email] SMTP connection failed', smtpError)
+    return { sent: false, error: 'SMTP connection failed' }
+  }
+
   try {
     const globalBcc = process.env.ALERT_BCC_EMAIL?.trim() || undefined
-    const smtp = getSmtpTransporter(config)
-    const info = await smtp.sendMail({ from: `${config.fromName} <${config.from}>`, to: opts.to, bcc: globalBcc, subject: opts.subject, html: opts.html })
+    const info = await smtp.sendMail({ from: config.from, to: opts.to, bcc: globalBcc, subject: opts.subject, html: opts.html })
     console.info(`[email] SMTP accepted message ${info.messageId} via ${config.host}:${config.port}`)
     return { sent: true }
   } catch (err) {
-    const smtpError = err as { code?: string; response?: string; message?: string }
-    console.error('[email] SMTP send failed', { host: config.host, port: config.port, username: config.user, code: smtpError.code || 'unknown', response: smtpError.response || 'none', message: smtpError.message || String(err) })
-    return { sent: false, error: smtpError.message || 'SMTP send failed' }
+    const smtpError = getSmtpError(err)
+    console.error('[email] SMTP send failed', smtpError)
+    return { sent: false, error: 'SMTP send failed' }
   }
 }
 
