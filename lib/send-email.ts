@@ -1,22 +1,21 @@
-import { Resend } from 'resend'
 import nodemailer from 'nodemailer'
 
-function getResend(): Resend | null {
-  const key = process.env.RESEND_API_KEY
-  return key?.startsWith('re_') ? new Resend(key) : null
-}
+const SMTP_HOST = process.env.SMTP_HOST?.trim() || 'smtp.hostinger.com'
+const SMTP_PORT = Number(process.env.SMTP_PORT || 465)
+const SMTP_SECURE = process.env.SMTP_SECURE !== 'false'
+const SMTP_USER = process.env.SMTP_USER?.trim()
+const SMTP_PASS = process.env.SMTP_PASS
+const SMTP_FROM = process.env.SMTP_FROM?.trim() || SMTP_USER
+const SMTP_FROM_NAME = process.env.SMTP_FROM_NAME?.trim() || 'AMNKO HSE Management System'
 
 function getSmtpTransporter() {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) return null
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT ?? 587),
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-  })
+  if (!SMTP_USER || !SMTP_PASS || !SMTP_FROM) return null
+  return nodemailer.createTransport({ host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_SECURE, auth: { user: SMTP_USER, pass: SMTP_PASS } })
 }
 
-const FROM = process.env.RESEND_FROM_EMAIL?.trim() || process.env.SMTP_FROM?.trim() || process.env.SENDGRID_FROM_EMAIL?.trim() || 'AMNKO HSE <no-reply@amnkoo.online>'
+export function getEmailConfiguration() {
+  return { provider: 'Hostinger SMTP', host: SMTP_HOST, port: SMTP_PORT, secure: SMTP_SECURE, senderName: SMTP_FROM_NAME, senderEmail: SMTP_FROM, username: SMTP_USER || '' }
+}
 
 export async function sendEmail(opts: {
   to: string | string[]
@@ -25,15 +24,9 @@ export async function sendEmail(opts: {
 }): Promise<{ sent: boolean; error?: string }> {
   try {
     const globalBcc = process.env.ALERT_BCC_EMAIL?.trim() || undefined
-    const resend = getResend()
-    if (resend) {
-      const { error } = await resend.emails.send({ from: FROM, to: opts.to, bcc: globalBcc, subject: opts.subject, html: opts.html })
-      if (!error) return { sent: true }
-    }
-
     const smtp = getSmtpTransporter()
     if (smtp) {
-      await smtp.sendMail({ from: FROM, to: opts.to, bcc: globalBcc, subject: opts.subject, html: opts.html })
+      await smtp.sendMail({ from: `${SMTP_FROM_NAME} <${SMTP_FROM}>`, to: opts.to, bcc: globalBcc, subject: opts.subject, html: opts.html })
       return { sent: true }
     }
 
