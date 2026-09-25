@@ -62,6 +62,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { masterCategories, getTotalMasterItems, getTotalSections, type MasterSection } from "@/lib/masters-data"
+import { addMasterItem, deleteMasterItem, getMasterValues, updateMasterItem } from "@/app/actions/manage-master-settings"
 import { VehiclesSection } from "./vehicles-section"
 import { useAuth } from "@/lib/auth-context"
 import { getJourneyCutoffSettings, saveJourneyCutoffSettings } from "@/app/actions/journey-cutoff-actions"
@@ -92,6 +93,11 @@ export function MasterSettings() {
   const [selectedSection, setSelectedSection] = useState<MasterSection | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [masterValues, setMasterValues] = useState<Array<{ id: string; name: string; description: string | null; isActive: boolean }>>([])
+  const [masterValuesLoading, setMasterValuesLoading] = useState(false)
+  const [masterSearch, setMasterSearch] = useState("")
+  const [newMasterName, setNewMasterName] = useState("")
+  const [newMasterDescription, setNewMasterDescription] = useState("")
 
   // Reviewer/Approver real data state
   const [raUsers, setRaUsers] = useState<ReviewerApproverUser[]>([])
@@ -121,6 +127,14 @@ export function MasterSettings() {
     setSavingCutoff(false)
     toast({ title: result.success ? "Settings saved" : "Could not save settings", description: result.success ? "Night journey cutoff updated." : result.error, variant: result.success ? "default" : "destructive" })
   }
+
+  useEffect(() => {
+    if (!selectedSection || ["reviewer-approver", "vehicle-details", "jm-vehicle-detail"].includes(selectedSection.id)) return
+    setMasterValuesLoading(true)
+    getMasterValues(selectedSection.id, activeCompanyId, true, masterSearch)
+      .then((res) => { if (res.success) setMasterValues(res.data) })
+      .finally(() => setMasterValuesLoading(false))
+  }, [selectedSection, activeCompanyId, masterSearch])
 
   // Load real reviewer/approver users when that section is opened
   useEffect(() => {
@@ -189,6 +203,17 @@ export function MasterSettings() {
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleSaveMasterValue = async () => {
+    if (!selectedSection) return
+    const result = await addMasterItem({ sectionId: selectedSection.id, name: newMasterName, description: newMasterDescription, companyId: activeCompanyId })
+    if (!result.success) { toast({ title: "Could not save value", description: result.error, variant: "destructive" }); return }
+    setMasterValues((prev) => [...prev, result.data])
+    setNewMasterName("")
+    setNewMasterDescription("")
+    setIsAddDialogOpen(false)
+    toast({ title: "Value added", description: `${newMasterName} is now available in ${selectedSection.name}.` })
   }
 
   const handleBackToCategories = () => {
@@ -301,12 +326,12 @@ export function MasterSettings() {
                     ) : (
                       <div className="grid gap-2">
                         <Label htmlFor="name">Name</Label>
-                        <Input id="name" placeholder="Enter name" />
+                          <Input id="name" placeholder="Enter name" value={newMasterName} onChange={(e) => setNewMasterName(e.target.value)} />
                       </div>
                     )}
                     <div className="grid gap-2">
                       <Label htmlFor="description">Description</Label>
-                      <Textarea id="description" placeholder="Enter description" rows={3} />
+                      <Textarea id="description" placeholder="Enter description" rows={3} value={newMasterDescription} onChange={(e) => setNewMasterDescription(e.target.value)} />
                     </div>
                     {selectedSection?.id === "reviewer-approver" ? (
                       <div className="grid gap-2">
@@ -341,7 +366,7 @@ export function MasterSettings() {
                       Cancel
                     </Button>
                     <Button
-                      onClick={selectedSection?.id === "reviewer-approver" ? handleSaveReviewerApprover : () => setIsAddDialogOpen(false)}
+                      onClick={selectedSection?.id === "reviewer-approver" ? handleSaveReviewerApprover : handleSaveMasterValue}
                       disabled={isSaving}
                     >
                       {isSaving ? "Saving..." : "Save"}
@@ -600,103 +625,31 @@ export function MasterSettings() {
           // ── Real Vehicles section ─────────────────────────────────────────
           <VehiclesSection />
         ) : (
-          // ── Generic mock detail view (all other sections) ─────────────────
           <div className="p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Input
-                  placeholder="Search items..."
-                  className="w-64 bg-background/50"
-                />
-                <Select defaultValue="all">
-                  <SelectTrigger className="w-32">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {selectedSection.itemCount} total items
-              </p>
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <Input placeholder="Search items..." value={masterSearch} onChange={(e) => setMasterSearch(e.target.value)} className="max-w-sm bg-background/50" />
+              <p className="text-sm text-muted-foreground">{masterValues.length} items</p>
             </div>
             <div className="rounded-lg border border-border/50">
               <div className="grid grid-cols-12 gap-4 border-b border-border/50 bg-muted/30 p-3 text-sm font-medium text-muted-foreground">
-                <div className="col-span-4">Name</div>
-                <div className="col-span-4">Description</div>
-                <div className="col-span-2">Status</div>
-                <div className="col-span-2 text-right">Actions</div>
+                <div className="col-span-4">Name</div><div className="col-span-4">Description</div><div className="col-span-2">Status</div><div className="col-span-2 text-right">Actions</div>
               </div>
-              <div className="divide-y divide-border/50">
-                {Array.from({ length: Math.min(10, selectedSection.itemCount) }).map((_, index) => (
-                  <div key={index} className="grid grid-cols-12 items-center gap-4 p-3">
-                    <div className="col-span-4">
-                      <p className="font-medium text-foreground">
-                        {selectedSection.name} Item {index + 1}
-                      </p>
+              {masterValuesLoading ? <div className="p-8 text-center text-sm text-muted-foreground">Loading master values...</div> : (
+                <div className="divide-y divide-border/50">
+                  {masterValues.map((item) => (
+                    <div key={item.id} className="grid grid-cols-12 items-center gap-4 p-3">
+                      <div className="col-span-4 font-medium">{item.name}</div>
+                      <div className="col-span-4 text-sm text-muted-foreground">{item.description || "—"}</div>
+                      <div className="col-span-2"><Badge variant="outline" className={item.isActive ? "border-emerald-500/50 text-emerald-500" : "border-amber-500/50 text-amber-500"}>{item.isActive ? "Active" : "Inactive"}</Badge></div>
+                      <div className="col-span-2 flex justify-end">
+                        <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onClick={async () => { const res = await updateMasterItem(item.id, { isActive: !item.isActive }); if (res.success) setMasterValues((prev) => prev.map((value) => value.id === item.id ? { ...value, isActive: !value.isActive } : value)) }}><Edit className="mr-2 h-4 w-4" />{item.isActive ? "Deactivate" : "Reactivate"}</DropdownMenuItem><DropdownMenuItem className="text-destructive" onClick={async () => { const res = await deleteMasterItem(item.id); if (res.success) setMasterValues((prev) => prev.map((value) => value.id === item.id ? { ...value, isActive: false } : value)) }}><Trash2 className="mr-2 h-4 w-4" />Deactivate</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+                      </div>
                     </div>
-                    <div className="col-span-4">
-                      <p className="text-sm text-muted-foreground">
-                        Sample description for item {index + 1}
-                      </p>
-                    </div>
-                    <div className="col-span-2">
-                      <Badge
-                        variant={index % 5 === 0 ? "outline" : "default"}
-                        className={
-                          index % 5 === 0
-                            ? "border-amber-500/50 text-amber-500"
-                            : "bg-emerald-500/10 text-emerald-500"
-                        }
-                      >
-                        {index % 5 === 0 ? "Inactive" : "Active"}
-                      </Badge>
-                    </div>
-                    <div className="col-span-2 flex justify-end">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Copy className="mr-2 h-4 w-4" />
-                            Duplicate
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            {selectedSection.itemCount > 10 && (
-              <div className="mt-4 flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Showing 1-10 of {selectedSection.itemCount} items
-                </p>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" disabled>
-                    Previous
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Next
-                  </Button>
+                  ))}
+                  {!masterValues.length && <div className="p-8 text-center text-sm text-muted-foreground">No values yet. Add the first value for this section.</div>}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
       </CardContent>

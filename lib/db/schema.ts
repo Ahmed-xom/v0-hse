@@ -172,9 +172,24 @@ export const master = pgTable('master', {
   value: text('value'),
   description: text('description'),
   isActive: boolean('isActive').default(true),
-  createdAt: timestamp('createdAt').notNull().default(sql`now()`),
-  updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
+  createdAt: timestamp('created_at').notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
 })
+
+export const masterValue = pgTable('master_value', {
+  id: text('id').primaryKey(),
+  sectionKey: text('section_key').notNull(),
+  companyId: text('company_id'),
+  name: text('name').notNull(),
+  description: text('description'),
+  isActive: boolean('is_active').notNull().default(true),
+  sortOrder: integer('sort_order').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().default(sql`now()`),
+}, (table) => ({
+  sectionActiveIdx: index('master_value_section_active_idx').on(table.sectionKey, table.companyId, table.isActive, table.sortOrder),
+}))
+
 
 // Observations Table
 export const observation = pgTable('observation', {
