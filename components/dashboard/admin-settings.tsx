@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Settings, Users, Mail, Plus, Eye, EyeOff, Database, LifeBuoy, PhoneCall } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -55,7 +54,6 @@ const BUSINESS_UNITS = [
 const STATUSES = ["Active", "Inactive"]
 
 export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
-  const router = useRouter()
   const { toast } = useToast()
   const { user: currentUser } = useAuth()
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
@@ -160,9 +158,6 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
       if (onUserAdded) {
         onUserAdded()
       }
-
-      // Refresh the page to reload users from database
-      router.refresh()
 
       // Reset form
       setFormData({
