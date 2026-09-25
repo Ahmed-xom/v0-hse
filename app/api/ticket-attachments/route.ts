@@ -39,6 +39,12 @@ export async function GET(request: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const ticketId = new URL(request.url).searchParams.get('ticketId')
   if (!ticketId) return NextResponse.json({ error: 'Ticket is required' }, { status: 400 })
-  const result = await pool.query('SELECT id, file_name AS "fileName", pathname, content_type AS "contentType", size_bytes AS "sizeBytes" FROM public.ticket_attachment WHERE ticket_id = $1 ORDER BY created_at DESC', [ticketId])
+  const result = await pool.query(`SELECT a.id, a.file_name AS "fileName", a.pathname, a.content_type AS "contentType", a.size_bytes AS "sizeBytes"
+    FROM public.ticket_attachment a
+    JOIN public.ticket t ON t.id = a.ticket_id
+    WHERE a.ticket_id = $1 AND EXISTS (
+      SELECT 1 FROM public.company_membership cm
+      WHERE cm.company_id = t.company_id AND cm.user_id = $2 AND cm.status = 'Active'
+    ) ORDER BY a.created_at DESC`, [ticketId, session.user.id])
   return NextResponse.json(result.rows.map((row) => ({ ...row, url: `/api/ticket-attachments/file?pathname=${encodeURIComponent(row.pathname)}` })))
 }

@@ -4,6 +4,20 @@ import { Pool } from 'pg'
 import { revalidatePath } from 'next/cache'
 import type { Meeting, MeetingAttendee, MeetingStatus } from '@/lib/meeting-types'
 import { sendEmail, meetingInviteHtml } from '@/lib/send-email'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
+
+const ADMIN_ROLES = new Set(['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'])
+
+async function requireMeetingSession(requireAdmin = false) {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session?.user?.id) throw new Error('Unauthorized')
+  if (requireAdmin) {
+    const result = await pool.query('SELECT role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
+    if (!ADMIN_ROLES.has(String(result.rows[0]?.role ?? '').trim().toUpperCase())) throw new Error('Forbidden')
+  }
+  return session
+}
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
@@ -106,6 +120,9 @@ export async function createMeeting(
 ): Promise<{ success: boolean; id?: string; emailsSent?: number; error?: string }> {
   const client = await pool.connect()
   try {
+    const session = await requireMeetingSession()
+    data.created_by = session.user.name ?? data.created_by
+    data.created_by_email = session.user.email
     await client.query('BEGIN')
     const ref_no = `MTG-${Date.now().toString().slice(-6)}`
     const res = await client.query(
@@ -199,15 +216,15 @@ export async function updateMeeting(
 ): Promise<{ success: boolean; error?: string }> {
   const client = await pool.connect()
   try {
+    await requireMeetingSession(true)
     await client.query('BEGIN')
     const { attendees: _att, ...fields } = data as any
-    const keys = Object.keys(fields)
+    const allowedKeys = new Set(['meeting_type', 'title', 'date', 'location', 'business_unit', 'chairperson', 'chairperson_email', 'agenda', 'minutes', 'action_items', 'status', 'company_id'])
+    const safeFields = Object.fromEntries(Object.entries(fields).filter(([key, value]) => allowedKeys.has(key) && value !== undefined))
+    const keys = Object.keys(safeFields)
     if (keys.length) {
-      const setClause = keys.map((k, i) => `${k} = $${i + 2}`).join(', ')
-      await client.query(
-        `UPDATE public.meeting SET ${setClause}, updated_at = NOW() WHERE id = $1`,
-        [id, ...Object.values(fields)]
-      )
+      const setClause = keys.map((key, i) => `${key} = $${i + 2}`).join(', ')
+      await client.query(`UPDATE public.meeting SET ${setClause}, updated_at = NOW() WHERE id = $1`, [id, ...keys.map((key) => safeFields[key])])
     }
 
     if (attendees !== undefined) {
@@ -234,6 +251,7 @@ export async function updateMeeting(
 
 export async function deleteMeeting(id: string): Promise<{ success: boolean; error?: string }> {
   try {
+    await requireMeetingSession(true)
     await pool.query('DELETE FROM public.meeting WHERE id = $1', [id])
     revalidatePath('/')
     return { success: true }
