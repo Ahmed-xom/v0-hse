@@ -37,11 +37,10 @@ export const auth = betterAuth({
   ],
   secret: authSecret,
   advanced: {
-    ...(process.env.NODE_ENV === "development" && {
-      defaultCookieAttributes: {
-        sameSite: "none",
-        secure: true,
-      },
-    }),
+    defaultCookieAttributes: {
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+    },
   },
 })

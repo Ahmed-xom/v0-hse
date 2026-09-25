@@ -53,13 +53,14 @@ export function TicketInvoiceTracker() {
     setUploadError("")
     const result = await createTicket({ companyId: activeCompanyId, ...form })
     if (!result.success || !result.ticketId) return
-    for (const file of attachments) {
+    const uploadResults = await Promise.all(attachments.map(async (file) => {
       const body = new FormData()
-      body.append("ticketId", result.ticketId)
+      body.append("ticketId", result.ticketId!)
       body.append("file", file)
       const response = await fetch("/api/ticket-attachments", { method: "POST", body })
-      if (!response.ok) setUploadError("Ticket created, but one or more attachments could not be uploaded.")
-    }
+      return response.ok
+    }))
+    if (uploadResults.some((uploaded) => !uploaded)) setUploadError("Ticket created, but one or more attachments could not be uploaded.")
     setAttachments([])
     setEmployeeName("")
     setForm({ subject: "", description: "", priority: "Medium", category: "General", dueDate: "", assigneeId: "" })
