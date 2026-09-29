@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/lib/db'
-import { employee, journey, vehicle } from '@/lib/db/schema'
+import { employee, journey, masterValue, vehicle } from '@/lib/db/schema'
 import { eq, desc, asc, ilike, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
@@ -40,12 +40,30 @@ export type DriverRecord = {
 
 export async function getDrivers() {
   try {
-    const rows = await db
+    const masterDrivers = await db
+      .select({ id: masterValue.id, name: masterValue.name, description: masterValue.description })
+      .from(masterValue)
+      .where(and(eq(masterValue.sectionKey, 'driver'), eq(masterValue.isActive, true)))
+      .orderBy(asc(masterValue.sortOrder), asc(masterValue.name))
+
+    if (masterDrivers.length > 0) {
+      return {
+        success: true,
+        data: masterDrivers.map((driver) => ({
+          id: driver.id,
+          name: driver.name,
+          payrollNo: null,
+          designation: driver.description,
+        })),
+      }
+    }
+
+    const employeeDrivers = await db
       .select({ id: employee.id, name: employee.name, payrollNo: employee.payrollNo, designation: employee.designation })
       .from(employee)
       .where(and(eq(employee.status, 'Active'), ilike(employee.designation, '%driver%')))
       .orderBy(asc(employee.name))
-    return { success: true, data: rows.filter((row): row is DriverRecord => Boolean(row.name)) }
+    return { success: true, data: employeeDrivers.filter((row): row is DriverRecord => Boolean(row.name)) }
   } catch (error: any) {
     console.error('[manage-journeys] getDrivers error:', error)
     return { success: false, data: [], error: error.message }
