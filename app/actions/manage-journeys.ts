@@ -92,6 +92,7 @@ export type JourneyRecord = {
   notes: string | null
   attachmentUrl: string | null
   attachmentName: string | null
+  templateDetails: Record<string, unknown>
   createdAt: Date
 }
 
@@ -149,6 +150,7 @@ export async function createJourney(data: {
   notes?: string
   attachmentUrl?: string
   attachmentName?: string
+  templateDetails?: Record<string, unknown>
 }) {
   try {
     const session = await auth.api.getSession({ headers: await headers() })
@@ -175,6 +177,7 @@ export async function createJourney(data: {
       notes: data.notes || null,
       attachmentUrl: data.attachmentUrl || null,
       attachmentName: data.attachmentName || null,
+      templateDetails: data.templateDetails ?? {},
     })
     revalidatePath('/journey-tracker')
     return { success: true, id }

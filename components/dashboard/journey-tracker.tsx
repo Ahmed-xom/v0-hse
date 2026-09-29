@@ -236,6 +236,7 @@ export function JourneyTracker() {
       notes:           form.notes || undefined,
       attachmentUrl,
       attachmentName,
+      templateDetails: { businessUnit: activeCompanyId, inspection, weatherHazards, roadHazards, passengers: form.passengers, notes: form.notes },
     })
     setIsSaving(false)
     if (res.success) {
@@ -248,6 +249,8 @@ export function JourneyTracker() {
       toast({ title: "Error", description: res.error, variant: "destructive" })
     }
   }
+
+  const downloadJmDetail = (id: string) => { window.open(`/api/journeys/${encodeURIComponent(id)}/jm-detail`, '_blank', 'noopener,noreferrer') }
 
   const handleStatusChange = async (id: string, status: string) => {
     const res = await updateJourneyStatus(id, status)
@@ -533,6 +536,8 @@ export function JourneyTracker() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => downloadJmDetail(j.id)}><Download className="mr-2 h-4 w-4" /> Download JM Detail</DropdownMenuItem>
+                            <DropdownMenuSeparator />
                             {STATUSES.filter((s) => s !== j.status).map((s) => (
                               <DropdownMenuItem key={s} onClick={() => handleStatusChange(j.id, s)}>
                                 Mark as {s}
