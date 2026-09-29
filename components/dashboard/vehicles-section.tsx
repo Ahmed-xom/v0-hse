@@ -57,6 +57,9 @@ export function VehiclesSection() {
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [attachment, setAttachment] = useState<File | null>(null)
+  const [renewalVehicle, setRenewalVehicle] = useState<Vehicle | null>(null)
+  const [renewalDate, setRenewalDate] = useState("")
 
   const load = async () => {
     setLoading(true)
@@ -78,6 +81,7 @@ export function VehiclesSection() {
   const openAdd = () => {
     setEditingVehicle(null)
     setForm(EMPTY_FORM)
+    setAttachment(null)
     setIsFormOpen(true)
   }
 
@@ -91,14 +95,25 @@ export function VehiclesSection() {
       km_reading: v.km_reading,
       description: v.description,
     })
+    setAttachment(null)
     setIsFormOpen(true)
   }
 
   const handleSave = async () => {
     setSaving(true)
+    let attachment_path = editingVehicle?.attachment_path ?? ""
+    if (attachment) {
+      const upload = new FormData()
+      upload.append("file", attachment)
+      const response = await fetch("/api/master-attachments", { method: "POST", body: upload })
+      const uploaded = await response.json()
+      if (!response.ok) { setSaving(false); toast({ title: "Attachment upload failed", description: uploaded.error, variant: "destructive" }); return }
+      attachment_path = uploaded.pathname
+    }
+    const payload = { ...form, attachment_path }
     const res = editingVehicle
-      ? await updateVehicle(editingVehicle.id, form)
-      : await createVehicle(form)
+      ? await updateVehicle(editingVehicle.id, payload)
+      : await createVehicle(payload)
     setSaving(false)
     if (res.success) {
       toast({ title: editingVehicle ? "Vehicle updated" : "Vehicle added", description: `${form.plate_no} saved successfully.` })
@@ -107,6 +122,13 @@ export function VehiclesSection() {
     } else {
       toast({ title: "Error", description: res.error, variant: "destructive" })
     }
+  }
+
+  const handleRenewal = async () => {
+    if (!renewalVehicle || !renewalDate) return
+    const res = await updateVehicle(renewalVehicle.id, { expiry_date: renewalDate })
+    if (res.success) { toast({ title: "Vehicle licence renewed" }); setRenewalVehicle(null); setRenewalDate(""); load() }
+    else toast({ title: "Could not renew vehicle licence", description: res.error, variant: "destructive" })
   }
 
   const handleDelete = async () => {
@@ -205,6 +227,7 @@ export function VehiclesSection() {
                 <div className="col-span-2 text-muted-foreground">{v.allowable_load || "—"}</div>
                 <div className="col-span-2 text-muted-foreground">{v.km_reading ? Number(v.km_reading).toLocaleString() : "—"}</div>
                 <div className="col-span-1 text-xs text-muted-foreground">
+                  {v.attachment_path && <a className="mb-1 block text-primary underline" href={`/api/master-attachments/file?pathname=${encodeURIComponent(v.attachment_path)}`} target="_blank" rel="noreferrer">Document</a>}
                   {v.expiry_date ? new Date(v.expiry_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" }) : "—"}
                 </div>
                 <div className="col-span-1">
@@ -215,6 +238,7 @@ export function VehiclesSection() {
                   </button>
                 </div>
                 <div className="col-span-1 flex justify-end gap-1">
+                  <Button variant="outline" size="sm" className="h-7 px-2 text-xs" onClick={() => { setRenewalVehicle(v); setRenewalDate(v.expiry_date ? new Date(v.expiry_date).toISOString().split("T")[0] : "") }}>Renew</Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(v)}>
                     <Edit className="h-3.5 w-3.5" />
                   </Button>
@@ -248,8 +272,13 @@ export function VehiclesSection() {
                 <Input id="vehicle_type" placeholder="e.g. Fuso Truck" value={form.vehicle_type} onChange={(e) => setForm((f) => ({ ...f, vehicle_type: e.target.value }))} />
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
+              <div className="grid gap-2">
+                <Label htmlFor="vehicle-attachment">Attachment</Label>
+                <Input id="vehicle-attachment" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" onChange={(e) => setAttachment(e.target.files?.[0] ?? null)} />
+                <p className="text-xs text-muted-foreground">PDF, JPG, PNG or WEBP up to 10 MB.</p>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="description">Description</Label>
               <Input id="description" placeholder="e.g. Fuso Truck with Crane FOF" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -302,6 +331,10 @@ export function VehiclesSection() {
             </Button>
           </DialogFooter>
         </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(renewalVehicle)} onOpenChange={(open) => { if (!open) setRenewalVehicle(null) }}>
+        <DialogContent className="sm:max-w-sm"><DialogHeader><DialogTitle>Renew vehicle licence</DialogTitle><DialogDescription>Set a new expiry date for {renewalVehicle?.plate_no}.</DialogDescription></DialogHeader><div className="grid gap-2 py-4"><Label htmlFor="vehicle-renewal-date">New expiry date</Label><Input id="vehicle-renewal-date" type="date" value={renewalDate} onChange={(e) => setRenewalDate(e.target.value)} /></div><DialogFooter><Button variant="outline" onClick={() => setRenewalVehicle(null)}>Cancel</Button><Button onClick={handleRenewal} disabled={!renewalDate}>Save renewal</Button></DialogFooter></DialogContent>
       </Dialog>
 
       {/* Delete Confirmation */}
