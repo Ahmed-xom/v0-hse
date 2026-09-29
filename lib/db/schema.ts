@@ -182,6 +182,7 @@ export const masterValue = pgTable('master_value', {
   companyId: text('company_id'),
   name: text('name').notNull(),
   description: text('description'),
+  expiryDate: date('expiry_date'),
   isActive: boolean('is_active').notNull().default(true),
   sortOrder: integer('sort_order').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),

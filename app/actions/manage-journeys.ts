@@ -36,12 +36,13 @@ export type DriverRecord = {
   name: string
   payrollNo: string | null
   designation: string | null
+  expiryDate: string | null
 }
 
 export async function getDrivers() {
   try {
     const masterDrivers = await db
-      .select({ id: masterValue.id, name: masterValue.name, description: masterValue.description })
+      .select({ id: masterValue.id, name: masterValue.name, description: masterValue.description, expiryDate: masterValue.expiryDate })
       .from(masterValue)
       .where(and(eq(masterValue.sectionKey, 'driver'), eq(masterValue.isActive, true)))
       .orderBy(asc(masterValue.sortOrder), asc(masterValue.name))
@@ -54,6 +55,7 @@ export async function getDrivers() {
           name: driver.name,
           payrollNo: null,
           designation: driver.description,
+          expiryDate: driver.expiryDate,
         })),
       }
     }
@@ -63,7 +65,7 @@ export async function getDrivers() {
       .from(employee)
       .where(and(eq(employee.status, 'Active'), ilike(employee.designation, '%driver%')))
       .orderBy(asc(employee.name))
-    return { success: true, data: employeeDrivers.filter((row): row is DriverRecord => Boolean(row.name)) }
+    return { success: true, data: employeeDrivers.filter((row): row is DriverRecord => Boolean(row.name)).map((row) => ({ ...row, expiryDate: null })) }
   } catch (error: any) {
     console.error('[manage-journeys] getDrivers error:', error)
     return { success: false, data: [], error: error.message }

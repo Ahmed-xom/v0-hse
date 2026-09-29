@@ -94,11 +94,12 @@ export function MasterSettings() {
   const [selectedSection, setSelectedSection] = useState<MasterSection | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [masterValues, setMasterValues] = useState<Array<{ id: string; name: string; description: string | null; isActive: boolean }>>([])
+  const [masterValues, setMasterValues] = useState<Array<{ id: string; name: string; description: string | null; expiryDate?: string | null; isActive: boolean }>>([])
   const [masterValuesLoading, setMasterValuesLoading] = useState(false)
   const [masterSearch, setMasterSearch] = useState("")
   const [newMasterName, setNewMasterName] = useState("")
   const [newMasterDescription, setNewMasterDescription] = useState("")
+  const [newMasterExpiryDate, setNewMasterExpiryDate] = useState("")
 
   // Reviewer/Approver real data state
   const [raUsers, setRaUsers] = useState<ReviewerApproverUser[]>([])
@@ -208,11 +209,12 @@ export function MasterSettings() {
 
   const handleSaveMasterValue = async () => {
     if (!selectedSection) return
-    const result = await addMasterItem({ sectionId: selectedSection.id, name: newMasterName, description: newMasterDescription, companyId: activeCompanyId, actorEmail: user?.email })
+    const result = await addMasterItem({ sectionId: selectedSection.id, name: newMasterName, description: newMasterDescription, expiryDate: newMasterExpiryDate, companyId: activeCompanyId, actorEmail: user?.email })
     if (!result.success) { toast({ title: "Could not save value", description: result.error, variant: "destructive" }); return }
     setMasterValues((prev) => [...prev, result.data])
     setNewMasterName("")
     setNewMasterDescription("")
+    setNewMasterExpiryDate("")
     setIsAddDialogOpen(false)
     toast({ title: "Value added", description: `${newMasterName} is now available in ${selectedSection.name}.` })
   }
@@ -333,6 +335,7 @@ export function MasterSettings() {
                     <div className="grid gap-2">
                       <Label htmlFor="description">Description</Label>
                       <Textarea id="description" placeholder="Enter description" rows={3} value={newMasterDescription} onChange={(e) => setNewMasterDescription(e.target.value)} />
+                      {selectedSection?.id === "driver" && <div className="grid gap-2"><Label htmlFor="license-expiry">Driving Licence Expiry Date</Label><Input id="license-expiry" type="date" value={newMasterExpiryDate} onChange={(e) => setNewMasterExpiryDate(e.target.value)} /></div>}
                     </div>
                     {selectedSection?.id === "reviewer-approver" ? (
                       <div className="grid gap-2">
