@@ -183,6 +183,7 @@ export const masterValue = pgTable('master_value', {
   name: text('name').notNull(),
   description: text('description'),
   expiryDate: date('expiry_date'),
+  attachmentPath: text('attachment_path'),
   isActive: boolean('is_active').notNull().default(true),
   sortOrder: integer('sort_order').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
@@ -248,6 +249,7 @@ export const vehicle = pgTable('vehicle', {
   allowableLoad: text('allowable_load'),
   kmReading:     text('km_reading'),
   description:   text('description'),
+  attachmentPath: text('attachment_path'),
   isActive:      boolean('is_active').notNull().default(true),
   createdAt:     timestamp('created_at').notNull().default(sql`now()`),
 })

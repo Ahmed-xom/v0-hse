@@ -100,6 +100,10 @@ export function MasterSettings() {
   const [newMasterName, setNewMasterName] = useState("")
   const [newMasterDescription, setNewMasterDescription] = useState("")
   const [newMasterExpiryDate, setNewMasterExpiryDate] = useState("")
+  const [newMasterAttachment, setNewMasterAttachment] = useState<File | null>(null)
+  const [uploadingAttachment, setUploadingAttachment] = useState(false)
+  const [renewalItem, setRenewalItem] = useState<{ id: string; name: string; expiryDate?: string | null } | null>(null)
+  const [renewalDate, setRenewalDate] = useState("")
 
   // Reviewer/Approver real data state
   const [raUsers, setRaUsers] = useState<ReviewerApproverUser[]>([])
@@ -209,14 +213,36 @@ export function MasterSettings() {
 
   const handleSaveMasterValue = async () => {
     if (!selectedSection) return
-    const result = await addMasterItem({ sectionId: selectedSection.id, name: newMasterName, description: newMasterDescription, expiryDate: newMasterExpiryDate, companyId: activeCompanyId, actorEmail: user?.email })
+    setUploadingAttachment(true)
+    let attachmentPath = ""
+    if (newMasterAttachment) {
+      const upload = new FormData()
+      upload.append("file", newMasterAttachment)
+      const response = await fetch("/api/master-attachments", { method: "POST", body: upload })
+      const uploaded = await response.json()
+      if (!response.ok) { setUploadingAttachment(false); toast({ title: "Attachment upload failed", description: uploaded.error, variant: "destructive" }); return }
+      attachmentPath = uploaded.pathname
+    }
+    const result = await addMasterItem({ sectionId: selectedSection.id, name: newMasterName, description: newMasterDescription, expiryDate: newMasterExpiryDate, attachmentPath, companyId: activeCompanyId, actorEmail: user?.email })
+    setUploadingAttachment(false)
     if (!result.success) { toast({ title: "Could not save value", description: result.error, variant: "destructive" }); return }
     setMasterValues((prev) => [...prev, result.data])
     setNewMasterName("")
     setNewMasterDescription("")
     setNewMasterExpiryDate("")
+    setNewMasterAttachment(null)
     setIsAddDialogOpen(false)
     toast({ title: "Value added", description: `${newMasterName} is now available in ${selectedSection.name}.` })
+  }
+
+  const handleRenewal = async () => {
+    if (!renewalItem || !renewalDate) return
+    const result = await updateMasterItem(renewalItem.id, { expiryDate: renewalDate })
+    if (!result.success) { toast({ title: "Could not renew licence", description: result.error, variant: "destructive" }); return }
+    setMasterValues((prev) => prev.map((value) => value.id === renewalItem.id ? { ...value, expiryDate: renewalDate } : value))
+    setRenewalItem(null)
+    setRenewalDate("")
+    toast({ title: "Licence renewed", description: `${renewalItem.name} now expires on ${renewalDate}.` })
   }
 
   const handleBackToCategories = () => {
@@ -335,6 +361,7 @@ export function MasterSettings() {
                     <div className="grid gap-2">
                       <Label htmlFor="description">Description</Label>
                       <Textarea id="description" placeholder="Enter description" rows={3} value={newMasterDescription} onChange={(e) => setNewMasterDescription(e.target.value)} />
+                      {(selectedSection?.id === "driver" || selectedSection?.id === "vehicle-details" || selectedSection?.id === "jm-vehicle-detail") && <div className="grid gap-2"><Label htmlFor="master-attachment">Attachment</Label><Input id="master-attachment" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" onChange={(e) => setNewMasterAttachment(e.target.files?.[0] ?? null)} /><p className="text-xs text-muted-foreground">PDF, JPG, PNG or WEBP up to 10 MB.</p></div>}
                       {selectedSection?.id === "driver" && <div className="grid gap-2"><Label htmlFor="license-expiry">Driving Licence Expiry Date</Label><Input id="license-expiry" type="date" value={newMasterExpiryDate} onChange={(e) => setNewMasterExpiryDate(e.target.value)} /></div>}
                     </div>
                     {selectedSection?.id === "reviewer-approver" ? (
@@ -373,7 +400,7 @@ export function MasterSettings() {
                       onClick={selectedSection?.id === "reviewer-approver" ? handleSaveReviewerApprover : handleSaveMasterValue}
                       disabled={isSaving}
                     >
-                      {isSaving ? "Saving..." : "Save"}
+                      {isSaving || uploadingAttachment ? "Saving..." : "Save"}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -648,7 +675,7 @@ export function MasterSettings() {
                       <div className="col-span-4 text-sm text-muted-foreground">{item.description || "—"}</div>
                       <div className="col-span-2"><Badge variant="outline" className={item.isActive ? "border-emerald-500/50 text-emerald-500" : "border-amber-500/50 text-amber-500"}>{item.isActive ? "Active" : "Inactive"}</Badge></div>
                       <div className="col-span-2 flex justify-end">
-                        <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem onClick={async () => { const res = await updateMasterItem(item.id, { isActive: !item.isActive }); if (res.success) setMasterValues((prev) => prev.map((value) => value.id === item.id ? { ...value, isActive: !value.isActive } : value)) }}><Edit className="mr-2 h-4 w-4" />{item.isActive ? "Deactivate" : "Reactivate"}</DropdownMenuItem><DropdownMenuItem className="text-destructive" onClick={async () => { const res = await deleteMasterItem(item.id); if (res.success) setMasterValues((prev) => prev.map((value) => value.id === item.id ? { ...value, isActive: false } : value)) }}><Trash2 className="mr-2 h-4 w-4" />Deactivate</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+                        <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">{(selectedSection?.id === "driver") && <DropdownMenuItem onClick={() => { setRenewalItem(item); setRenewalDate(item.expiryDate ?? "") }}>Renew licence</DropdownMenuItem>}<DropdownMenuItem onClick={async () => { const res = await updateMasterItem(item.id, { isActive: !item.isActive }); if (res.success) setMasterValues((prev) => prev.map((value) => value.id === item.id ? { ...value, isActive: !value.isActive } : value)) }}><Edit className="mr-2 h-4 w-4" />{item.isActive ? "Deactivate" : "Reactivate"}</DropdownMenuItem><DropdownMenuItem className="text-destructive" onClick={async () => { const res = await deleteMasterItem(item.id); if (res.success) setMasterValues((prev) => prev.map((value) => value.id === item.id ? { ...value, isActive: false } : value)) }}><Trash2 className="mr-2 h-4 w-4" />Deactivate</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
                       </div>
                     </div>
                   ))}
@@ -659,6 +686,13 @@ export function MasterSettings() {
           </div>
         )}
       </CardContent>
+      <Dialog open={Boolean(renewalItem)} onOpenChange={(open) => { if (!open) setRenewalItem(null) }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader><DialogTitle>Renew driving licence</DialogTitle><DialogDescription>Set a new expiry date for {renewalItem?.name}.</DialogDescription></DialogHeader>
+          <div className="grid gap-2 py-4"><Label htmlFor="renewal-date">New expiry date</Label><Input id="renewal-date" type="date" value={renewalDate} onChange={(e) => setRenewalDate(e.target.value)} /></div>
+          <DialogFooter><Button variant="outline" onClick={() => setRenewalItem(null)}>Cancel</Button><Button onClick={handleRenewal} disabled={!renewalDate}>Save renewal</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

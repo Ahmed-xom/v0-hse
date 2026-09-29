@@ -41,7 +41,7 @@ export async function getMasterValues(sectionKey: string, companyId?: string | n
   return { success: true as const, data: rows }
 }
 
-export async function addMasterItem(data: { sectionId: string; name: string; description?: string; expiryDate?: string; companyId?: string | null; actorEmail?: string }) {
+export async function addMasterItem(data: { sectionId: string; name: string; description?: string; expiryDate?: string; attachmentPath?: string; companyId?: string | null; actorEmail?: string }) {
   const { session, canManage } = await getActor()
   const legacyAdmin = data.actorEmail?.trim().toLowerCase() === 'xom-it-admin@xomoman.com'
   if ((!session?.user && !legacyAdmin) || (!canManage && !legacyAdmin)) return { success: false as const, error: 'Admin or Master User access required.' }
@@ -52,17 +52,18 @@ export async function addMasterItem(data: { sectionId: string; name: string; des
   const duplicate = await db.select({ id: masterValue.id }).from(masterValue).where(and(eq(masterValue.sectionKey, data.sectionId), eq(masterValue.name, name), data.companyId ? eq(masterValue.companyId, data.companyId) : eq(masterValue.companyId, ''))).limit(1)
   if (duplicate.length) return { success: false as const, error: 'An item with this name already exists.' }
   const id = crypto.randomUUID()
-  const [created] = await db.insert(masterValue).values({ id, sectionKey: data.sectionId, companyId: data.companyId || null, name, description: clean(data.description) || null, expiryDate: clean(data.expiryDate) || null }).returning()
+  const [created] = await db.insert(masterValue).values({ id, sectionKey: data.sectionId, companyId: data.companyId || null, name, description: clean(data.description) || null, expiryDate: clean(data.expiryDate) || null, attachmentPath: clean(data.attachmentPath) || null }).returning()
   revalidatePath('/settings')
   return { success: true as const, data: created }
 }
 
-export async function updateMasterItem(id: string, data: { name?: string; description?: string; isActive?: boolean }) {
+export async function updateMasterItem(id: string, data: { name?: string; description?: string; expiryDate?: string; isActive?: boolean }) {
   const { session, canManage } = await getActor()
   if (!session?.user || !canManage) return { success: false as const, error: 'Admin or Master User access required.' }
   const updates: Partial<typeof masterValue.$inferInsert> = { updatedAt: new Date() }
   if (data.name !== undefined) { const name = clean(data.name); if (!name) return { success: false as const, error: 'Item name is required.' }; updates.name = name }
   if (data.description !== undefined) updates.description = clean(data.description) || null
+  if (data.expiryDate !== undefined) updates.expiryDate = clean(data.expiryDate) || null
   if (data.isActive !== undefined) updates.isActive = data.isActive
   const [updated] = await db.update(masterValue).set(updates).where(eq(masterValue.id, id)).returning()
   if (!updated) return { success: false as const, error: 'Master item not found.' }

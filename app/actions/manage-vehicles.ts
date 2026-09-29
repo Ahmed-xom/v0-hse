@@ -13,12 +13,13 @@ export interface Vehicle {
   description: string
   is_active: boolean
   created_at: string
+  attachment_path: string | null
 }
 
 export async function getVehicles(): Promise<{ success: boolean; data?: Vehicle[]; error?: string }> {
   try {
     const result = await pool.query(
-      `SELECT id, plate_no, vehicle_type, expiry_date, allowable_load, km_reading, description, is_active, created_at
+      `SELECT id, plate_no, vehicle_type, expiry_date, allowable_load, km_reading, description, is_active, created_at, attachment_path
        FROM public.vehicle
        ORDER BY is_active DESC, id ASC`
     )
@@ -35,14 +36,15 @@ export async function createVehicle(input: {
   allowable_load: string
   km_reading: string
   description: string
+  attachment_path?: string
 }): Promise<{ success: boolean; data?: Vehicle; error?: string }> {
   try {
     if (!input.plate_no?.trim()) return { success: false, error: 'Plate number is required' }
     if (!input.vehicle_type?.trim()) return { success: false, error: 'Vehicle type is required' }
 
     const result = await pool.query(
-      `INSERT INTO public.vehicle (plate_no, vehicle_type, expiry_date, allowable_load, km_reading, description, is_active, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, true, NOW())
+      `INSERT INTO public.vehicle (plate_no, vehicle_type, expiry_date, allowable_load, km_reading, description, attachment_path, is_active, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, true, NOW())
        RETURNING *`,
       [
         input.plate_no.trim(),
@@ -51,6 +53,7 @@ export async function createVehicle(input: {
         input.allowable_load?.trim() || '',
         input.km_reading?.trim() || '0',
         input.description?.trim() || '',
+        input.attachment_path?.trim() || null,
       ]
     )
     revalidateTag('vehicles', 'max')
@@ -69,6 +72,7 @@ export async function updateVehicle(
     allowable_load?: string
     km_reading?: string
     description?: string
+    attachment_path?: string
     is_active?: boolean
   }
 ): Promise<{ success: boolean; data?: Vehicle; error?: string }> {
@@ -83,8 +87,9 @@ export async function updateVehicle(
            allowable_load= COALESCE($4, allowable_load),
            km_reading    = COALESCE($5, km_reading),
            description   = COALESCE($6, description),
-           is_active     = COALESCE($7, is_active)
-       WHERE id = $8
+           attachment_path = COALESCE($7, attachment_path),
+           is_active     = COALESCE($8, is_active)
+       WHERE id = $9
        RETURNING *`,
       [
         input.plate_no?.trim() ?? null,
@@ -93,6 +98,7 @@ export async function updateVehicle(
         input.allowable_load?.trim() ?? null,
         input.km_reading?.trim() ?? null,
         input.description?.trim() ?? null,
+        input.attachment_path?.trim() ?? null,
         input.is_active ?? null,
         id,
       ]
