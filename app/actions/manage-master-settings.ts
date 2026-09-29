@@ -10,6 +10,7 @@ import { getMasterSection } from '@/lib/master-registry'
 import { isAdminRole } from '@/lib/auth-roles'
 
 const ADMIN_ROLES = new Set(['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER', 'MANAGEMENT'])
+const ADMIN_EMAILS = new Set(['xom-it-admin@xomoman.com'])
 
 async function getActor() {
   const session = await auth.api.getSession({ headers: await headers() })
@@ -23,7 +24,7 @@ async function getActor() {
 
   const role = String(record?.role ?? (session.user as { role?: string }).role ?? '').trim().toUpperCase()
   const email = String(session.user.email ?? '').trim().toLowerCase()
-  return { session, canManage: ADMIN_ROLES.has(role) || isAdminRole(role, email) }
+  return { session, canManage: ADMIN_EMAILS.has(email) || ADMIN_ROLES.has(role) || isAdminRole(role, email) }
 }
 
 function clean(value: unknown, fallback = '') {
