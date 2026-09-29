@@ -5,15 +5,23 @@ import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { masterValue } from '@/lib/db/schema'
+import { masterValue, user } from '@/lib/db/schema'
 import { getMasterSection } from '@/lib/master-registry'
 
 const ADMIN_ROLES = new Set(['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER', 'MANAGEMENT'])
 
 async function getActor() {
   const session = await auth.api.getSession({ headers: await headers() })
-  const role = String((session?.user as { role?: string } | undefined)?.role ?? '').toUpperCase()
-  return { session, canManage: Boolean(session?.user && ADMIN_ROLES.has(role)) }
+  if (!session?.user) return { session, canManage: false }
+
+  const [record] = await db
+    .select({ role: user.role })
+    .from(user)
+    .where(eq(user.id, session.user.id))
+    .limit(1)
+
+  const role = String(record?.role ?? (session.user as { role?: string }).role ?? '').trim().toUpperCase()
+  return { session, canManage: ADMIN_ROLES.has(role) }
 }
 
 function clean(value: unknown, fallback = '') {
