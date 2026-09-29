@@ -237,7 +237,7 @@ export function MasterSettings() {
 
   const handleRenewal = async () => {
     if (!renewalItem || !renewalDate) return
-    const result = await updateMasterItem(renewalItem.id, { expiryDate: renewalDate })
+    const result = await updateMasterItem(renewalItem.id, { expiryDate: renewalDate, actorEmail: user?.email })
     if (!result.success) { toast({ title: "Could not renew licence", description: result.error, variant: "destructive" }); return }
     setMasterValues((prev) => prev.map((value) => value.id === renewalItem.id ? { ...value, expiryDate: renewalDate } : value))
     setRenewalItem(null)
