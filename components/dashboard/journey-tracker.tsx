@@ -107,6 +107,8 @@ export function JourneyTracker() {
   const [thirdPartyOpen, setThirdPartyOpen] = useState(false)
   const [thirdPartyName, setThirdPartyName] = useState("")
   const [thirdPartyId, setThirdPartyId] = useState("")
+  const [selectedPassengerIds, setSelectedPassengerIds] = useState<string[]>([])
+  const [thirdPartyPassengers, setThirdPartyPassengers] = useState<Array<{ name: string; id: string }>>([])
 
   const [attachedFile, setAttachedFile]     = useState<File | null>(null)
   const [isUploading, setIsUploading]       = useState(false)
