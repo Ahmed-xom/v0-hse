@@ -7,6 +7,7 @@ import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { masterValue, user } from '@/lib/db/schema'
 import { getMasterSection } from '@/lib/master-registry'
+import { isAdminRole } from '@/lib/auth-roles'
 
 const ADMIN_ROLES = new Set(['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER', 'MANAGEMENT'])
 
@@ -21,7 +22,8 @@ async function getActor() {
     .limit(1)
 
   const role = String(record?.role ?? (session.user as { role?: string }).role ?? '').trim().toUpperCase()
-  return { session, canManage: ADMIN_ROLES.has(role) }
+  const email = String(session.user.email ?? '').trim().toLowerCase()
+  return { session, canManage: ADMIN_ROLES.has(role) || isAdminRole(role, email) }
 }
 
 function clean(value: unknown, fallback = '') {
