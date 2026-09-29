@@ -208,7 +208,7 @@ export function MasterSettings() {
 
   const handleSaveMasterValue = async () => {
     if (!selectedSection) return
-    const result = await addMasterItem({ sectionId: selectedSection.id, name: newMasterName, description: newMasterDescription, companyId: activeCompanyId })
+    const result = await addMasterItem({ sectionId: selectedSection.id, name: newMasterName, description: newMasterDescription, companyId: activeCompanyId, actorEmail: user?.email })
     if (!result.success) { toast({ title: "Could not save value", description: result.error, variant: "destructive" }); return }
     setMasterValues((prev) => [...prev, result.data])
     setNewMasterName("")

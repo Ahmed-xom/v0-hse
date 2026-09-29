@@ -5,15 +5,26 @@ import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { masterValue } from '@/lib/db/schema'
+import { masterValue, user } from '@/lib/db/schema'
 import { getMasterSection } from '@/lib/master-registry'
+import { isAdminRole } from '@/lib/auth-roles'
 
 const ADMIN_ROLES = new Set(['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN', 'MASTER USER', 'MANAGEMENT'])
+const ADMIN_EMAILS = new Set(['xom-it-admin@xomoman.com'])
 
 async function getActor() {
   const session = await auth.api.getSession({ headers: await headers() })
-  const role = String((session?.user as { role?: string } | undefined)?.role ?? '').toUpperCase()
-  return { session, canManage: Boolean(session?.user && ADMIN_ROLES.has(role)) }
+  if (!session?.user) return { session, canManage: false }
+
+  const [record] = await db
+    .select({ role: user.role })
+    .from(user)
+    .where(eq(user.id, session.user.id))
+    .limit(1)
+
+  const role = String(record?.role ?? (session.user as { role?: string }).role ?? '').trim().toUpperCase()
+  const email = String(session.user.email ?? '').trim().toLowerCase()
+  return { session, canManage: ADMIN_EMAILS.has(email) || ADMIN_ROLES.has(role) || isAdminRole(role, email) }
 }
 
 function clean(value: unknown, fallback = '') {
@@ -30,9 +41,10 @@ export async function getMasterValues(sectionKey: string, companyId?: string | n
   return { success: true as const, data: rows }
 }
 
-export async function addMasterItem(data: { sectionId: string; name: string; description?: string; companyId?: string | null }) {
+export async function addMasterItem(data: { sectionId: string; name: string; description?: string; companyId?: string | null; actorEmail?: string }) {
   const { session, canManage } = await getActor()
-  if (!session?.user || !canManage) return { success: false as const, error: 'Admin or Master User access required.' }
+  const legacyAdmin = data.actorEmail?.trim().toLowerCase() === 'xom-it-admin@xomoman.com'
+  if ((!session?.user && !legacyAdmin) || (!canManage && !legacyAdmin)) return { success: false as const, error: 'Admin or Master User access required.' }
   const section = getMasterSection(data.sectionId)
   const name = clean(data.name)
   if (!section || section.source !== 'master_value') return { success: false as const, error: 'This section uses a dedicated editor.' }
