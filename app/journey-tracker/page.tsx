@@ -30,8 +30,8 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import {
-  getJourneys, createJourney, updateJourneyStatus, deleteJourney,
-  type JourneyRecord,
+  getJourneys, getDrivers, createJourney, updateJourneyStatus, deleteJourney,
+  type JourneyRecord, type DriverRecord,
 } from "@/app/actions/manage-journeys"
 import * as XLSX from "xlsx"
 
@@ -49,7 +49,7 @@ const statusColors: Record<string, string> = {
 
 const emptyForm = {
   origin: "", destination: "", purpose: "", vehicleType: "",
-  vehiclePlate: "", departureDate: "", departureTime: "",
+  vehiclePlate: "", driver: "", secondDriver: "", departureDate: "", departureTime: "",
   estimatedReturn: "", passengers: "1", notes: "",
 }
 
@@ -58,6 +58,7 @@ export default function JourneyTrackerPage() {
   const { toast } = useToast()
 
   const [journeys, setJourneys]         = useState<JourneyRecord[]>([])
+  const [drivers, setDrivers]           = useState<DriverRecord[]>([])
   const [isFetching, setIsFetching]     = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isSaving, setIsSaving]         = useState(false)
@@ -83,7 +84,11 @@ export default function JourneyTrackerPage() {
   }, [user?.email])
 
   useEffect(() => {
-    if (user?.journeyAccess) fetchJourneys()
+    if (!user?.journeyAccess) return
+    fetchJourneys()
+    getDrivers().then((res) => {
+      if (res.success) setDrivers(res.data)
+    })
   }, [user?.journeyAccess, fetchJourneys])
 
   const filteredJourneys = useMemo(() => {
@@ -112,7 +117,7 @@ export default function JourneyTrackerPage() {
   }), [journeys])
 
   const handleSubmit = async () => {
-    if (!form.origin || !form.destination || !form.vehicleType || !form.departureDate || !form.departureTime || !form.purpose) {
+    if (!form.origin || !form.destination || !form.vehicleType || !form.driver || !form.departureDate || !form.departureTime || !form.purpose) {
       toast({ title: "Required fields missing", description: "Please fill in all required fields.", variant: "destructive" })
       return
     }
@@ -126,6 +131,8 @@ export default function JourneyTrackerPage() {
       purpose:         form.purpose,
       vehicleType:     form.vehicleType,
       vehiclePlate:    form.vehiclePlate || undefined,
+      driver:          form.driver,
+      secondDriver:    form.secondDriver || undefined,
       departureDate:   form.departureDate,
       departureTime:   form.departureTime,
       estimatedReturn: form.estimatedReturn || undefined,
@@ -164,6 +171,8 @@ export default function JourneyTrackerPage() {
       ID:               j.id,
       Date:             j.departureDate,
       "Driver/User":    j.userName,
+      "Primary Driver": j.driver ?? "",
+      "Second Driver":  j.secondDriver ?? "",
       Origin:           j.origin,
       Destination:      j.destination,
       Purpose:          j.purpose,
@@ -467,6 +476,36 @@ export default function JourneyTrackerPage() {
                     onChange={(e) => setForm((f) => ({ ...f, vehiclePlate: e.target.value }))}
                   />
                 </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Primary Driver <span className="text-destructive">*</span></Label>
+                <Select value={form.driver} onValueChange={(v) => setForm((f) => ({ ...f, driver: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select driver..." /></SelectTrigger>
+                  <SelectContent>
+                    {drivers.map((driver) => (
+                      <SelectItem key={driver.id} value={driver.name}>
+                        {driver.name}{driver.payrollNo ? ` · ${driver.payrollNo}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Second Driver <span className="text-muted-foreground">(Optional)</span></Label>
+                <Select value={form.secondDriver || "none"} onValueChange={(v) => setForm((f) => ({ ...f, secondDriver: v === "none" ? "" : v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select second driver..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No second driver</SelectItem>
+                    {drivers.filter((driver) => driver.name !== form.driver).map((driver) => (
+                      <SelectItem key={driver.id} value={driver.name}>
+                        {driver.name}{driver.payrollNo ? ` · ${driver.payrollNo}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

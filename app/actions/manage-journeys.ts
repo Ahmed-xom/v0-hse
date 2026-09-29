@@ -1,8 +1,8 @@
 'use server'
 
 import { db } from '@/lib/db'
-import { journey, vehicle } from '@/lib/db/schema'
-import { eq, desc, asc } from 'drizzle-orm'
+import { employee, journey, vehicle } from '@/lib/db/schema'
+import { eq, desc, asc, ilike, and } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
@@ -31,6 +31,27 @@ export async function getVehicles() {
   }
 }
 
+export type DriverRecord = {
+  id: string
+  name: string
+  payrollNo: string | null
+  designation: string | null
+}
+
+export async function getDrivers() {
+  try {
+    const rows = await db
+      .select({ id: employee.id, name: employee.name, payrollNo: employee.payrollNo, designation: employee.designation })
+      .from(employee)
+      .where(and(eq(employee.status, 'Active'), ilike(employee.designation, '%driver%')))
+      .orderBy(asc(employee.name))
+    return { success: true, data: rows.filter((row): row is DriverRecord => Boolean(row.name)) }
+  } catch (error: any) {
+    console.error('[manage-journeys] getDrivers error:', error)
+    return { success: false, data: [], error: error.message }
+  }
+}
+
 export type JourneyRecord = {
   id: string
   userEmail: string
@@ -40,6 +61,8 @@ export type JourneyRecord = {
   purpose: string
   vehicleType: string
   vehiclePlate: string | null
+  driver: string | null
+  secondDriver: string | null
   departureDate: string
   departureTime: string
   journeyType: 'morning' | 'night'
@@ -96,6 +119,8 @@ export async function createJourney(data: {
   purpose: string
   vehicleType: string
   vehiclePlate?: string
+  driver?: string
+  secondDriver?: string
   departureDate: string
   departureTime: string
   journeyType?: 'morning' | 'night'
@@ -119,6 +144,8 @@ export async function createJourney(data: {
       purpose: data.purpose,
       vehicleType: data.vehicleType,
       vehiclePlate: data.vehiclePlate || null,
+      driver: data.driver || sessionUser.name || data.userName,
+      secondDriver: data.secondDriver || null,
       departureDate: data.departureDate,
       departureTime: data.departureTime,
       journeyType: data.journeyType || 'morning',
