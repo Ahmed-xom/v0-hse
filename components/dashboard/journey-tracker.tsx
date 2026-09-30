@@ -236,7 +236,7 @@ export function JourneyTracker() {
       notes:           form.notes || undefined,
       attachmentUrl,
       attachmentName,
-      templateDetails: { businessUnit: activeCompanyId, inspection, weatherHazards, roadHazards, passengers: form.passengers, notes: form.notes },
+      templateDetails: { ...form, businessUnit: activeCompanyId, inspection, weatherHazards, roadHazards, passengers: form.passengers, notes: form.notes },
     })
     setIsSaving(false)
     if (res.success) {

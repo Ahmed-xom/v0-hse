@@ -828,12 +828,13 @@ export function Reports({ journeyAccess = false }: { journeyAccess?: boolean }) 
                         <TableHead className="text-xs text-muted-foreground">Departure</TableHead>
                         <TableHead className="text-xs text-muted-foreground">Passengers</TableHead>
                         <TableHead className="text-xs text-muted-foreground">Status</TableHead>
+                        <TableHead className="text-xs text-muted-foreground">JM Detail</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {pagedJourneys.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
+                          <TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">
                             No journey records found
                           </TableCell>
                         </TableRow>
@@ -868,6 +869,11 @@ export function Reports({ journeyAccess = false }: { journeyAccess?: boolean }) 
                               }`}>
                                 {j.status}
                               </span>
+                            </TableCell>
+                            <TableCell>
+                              <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={() => window.open(`/api/journeys/${encodeURIComponent(j.id)}/jm-detail`, '_blank', 'noopener,noreferrer')}>
+                                <Download className="mr-1 h-3.5 w-3.5" /> Word
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))
