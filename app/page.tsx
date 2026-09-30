@@ -19,7 +19,9 @@ import { DashboardNavigation } from "@/components/dashboard/dashboard-navigation
 import { StorageUsage } from "@/components/dashboard/storage-usage"
 import { JourneyTracker } from "@/components/dashboard/journey-tracker"
 import { TicketInvoiceTracker } from "@/components/dashboard/ticket-invoice-tracker"
-import { Meetings } from "@/components/dashboard/meetings"
+  import { Meetings } from "@/components/dashboard/meetings"
+  import { Reports } from "@/components/dashboard/reports"
+
 
 export default function HSEDashboard() {
   const { activeCompanyId, user } = useAuth()
@@ -119,8 +121,13 @@ export default function HSEDashboard() {
             <Meetings />
           </section>
 
-          {/* Ticket and invoice access */}
-          <section id="ticket-invoice-tracker" aria-label="Ticket and Invoice Tracker">
+  {/* Reports */}
+  <section id="reports" aria-label="Reports">
+  <Reports journeyAccess={canImport} />
+  </section>
+
+  {/* Ticket and invoice access */}
+  <section id="ticket-invoice-tracker" aria-label="Ticket and Invoice Tracker">
             <TicketInvoiceTracker />
           </section>
 
