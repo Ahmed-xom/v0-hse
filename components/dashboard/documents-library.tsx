@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import {
-  Plus, Search, RefreshCw, Eye, Edit, Trash2, FileText,
+  Plus, Search, RefreshCw, Eye, Edit, Trash2, FileText, FilePlus,
   Download, ExternalLink, ChevronDown, FolderOpen, Upload,
   Lock, Globe, Users, Shield, X, FileUp, CheckCircle2,
   FileSpreadsheet, FileCode, File,
@@ -97,7 +97,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
   const isReviewer = !isAdmin && isReviewerRole(currentUser?.role ?? '')
   const canEdit = !readOnly && (isAdmin || isReviewer)
-  const canUpload = !readOnly && Boolean(currentUser)
+  const canUpload = !readOnly && Boolean(currentUser) && ['ADMIN SYSTEM', 'HSE ADMIN', 'MASTER USER', 'ADMIN', 'MANAGEMENT'].includes((currentUser?.role ?? '').toUpperCase())
   const { toast } = useToast()
 
   // list state
@@ -245,6 +245,10 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
   // ── save ─────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
+    if (!canUpload) {
+      toast({ title: 'Permission denied', description: 'Only Admin and Master users can create library documents.', variant: 'destructive' })
+      return
+    }
     if (!form.title.trim()) {
       toast({ title: 'Title is required', variant: 'destructive' }); return
     }
@@ -339,7 +343,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
         <div className="bg-emerald-100/70 px-5 py-4 sm:px-7">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div><h1 className="text-3xl font-semibold tracking-tight text-primary">View Library</h1><p className="mt-1 text-sm text-muted-foreground">{stats.total} documents for this company</p></div>
-            {canUpload && <Button size="sm" onClick={openCreate}><Upload className="mr-2 h-4 w-4" />Upload File</Button>}
+            {canUpload && <div className="flex gap-2"><Button size="sm" variant="outline" onClick={openCreate}><FilePlus className="mr-2 h-4 w-4" />Create Document</Button><Button size="sm" onClick={openCreate}><Upload className="mr-2 h-4 w-4" />Choose File</Button></div>}
           </div>
         </div>
         <div className="space-y-5 p-5 sm:p-7">
@@ -376,8 +380,9 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                   }
                 }}
               >
-                <input
-                  ref={fileRef}
+  <input
+  ref={fileRef}
+  aria-label="Choose library file"
                   type="file"
                   className="hidden"
                   accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.txt,.png,.jpg,.jpeg,.zip"
