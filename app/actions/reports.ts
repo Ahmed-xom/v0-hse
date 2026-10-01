@@ -66,6 +66,7 @@ export interface JourneyReportRow {
   passengers: number
   status: string
   notes: string | null
+  templateDetails: Record<string, unknown>
   createdAt: string
 }
 
@@ -216,8 +217,8 @@ export async function getJourneysReport(
     const res = await pool.query(
       `SELECT id, user_name, user_email, origin, destination, purpose,
               vehicle_type, vehicle_plate, departure_date, departure_time,
-              estimated_return, passengers, status, notes, created_at
-       FROM public.journey
+  estimated_return, passengers, status, notes, template_details, created_at
+  FROM public.journey
        ${where}
        ORDER BY created_at DESC`,
       params,
@@ -239,8 +240,9 @@ export async function getJourneysReport(
         estimatedReturn: r.estimated_return,
         passengers: r.passengers,
         status: r.status,
-        notes: r.notes,
-        createdAt: r.created_at,
+  notes: r.notes,
+  templateDetails: r.template_details ?? {},
+  createdAt: r.created_at,
       })),
     }
   } catch (error: any) {

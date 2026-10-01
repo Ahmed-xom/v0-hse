@@ -21,6 +21,7 @@ const sections = [
   ["Company Management", "company-management"],
   ["Journey Tracker", "journey-tracker"],
   ["Meetings", "meetings"],
+  ["Reports", "reports"],
   ["Ticket & Invoice Tracker", "ticket-invoice-tracker"],
 ] as const
 

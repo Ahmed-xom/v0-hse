@@ -275,6 +275,7 @@ export const journey = pgTable('journey', {
   notes: text('notes'),
   attachmentUrl: text('attachment_url'),
   attachmentName: text('attachment_name'),
+  templateDetails: jsonb('template_details').notNull().default(sql`'{}'::jsonb`),
   createdAt: timestamp('created_at').notNull().default(sql`now()`),
   updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
 })
