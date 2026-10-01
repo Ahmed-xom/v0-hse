@@ -190,6 +190,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
       // Use server action to avoid CORS/iframe origin issues in the preview environment
       const fd = new FormData()
       fd.append('file', uploadFile)
+      if (activeCompanyId) fd.append('companyId', activeCompanyId)
       setUploadProgress(50)
       const result = await uploadFileAction(fd)
       setUploadProgress(100)
@@ -257,7 +258,13 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
       fileData = { file_url: uploaded.url, blob_pathname: uploaded.pathname }
     }
 
-    const payload = { ...form, ...fileData, company_id: selected?.company_id ?? activeCompanyId }
+    const companyId = selected?.company_id ?? activeCompanyId
+    if (!companyId) {
+      toast({ title: 'Company is required', description: 'Select a company before saving a library document.', variant: 'destructive' })
+      setSaving(false)
+      return
+    }
+    const payload = { ...form, ...fileData, company_id: companyId }
     const res = selected
       ? await updateDocument(selected.id, payload)
       : await createDocument(payload)

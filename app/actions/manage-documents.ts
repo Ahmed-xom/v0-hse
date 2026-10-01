@@ -44,8 +44,11 @@ export async function uploadFileAction(
     if (!file || file.size === 0) return { success: false, error: 'No file provided' }
     if (file.size > 50 * 1024 * 1024) return { success: false, error: 'File exceeds 50 MB limit' }
 
+    const companyId = String(formData.get('companyId') ?? '').trim()
+    if (!companyId) return { success: false, error: 'Select a company before uploading a document' }
+    const safeCompanyId = companyId.replace(/[^a-zA-Z0-9_-]/g, '_')
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-    const pathname = `hse-files/${Date.now()}-${safeName}`
+    const pathname = `hse-files/${safeCompanyId}/${Date.now()}-${safeName}`
     const blob = await put(pathname, file, { access: 'public' })
 
     return { success: true, url: blob.url, pathname: blob.pathname }
@@ -62,7 +65,7 @@ export async function getDocuments(userEmail?: string, isAdmin?: boolean, compan
     let query: string
     let params: string[]
     if (isAdmin && companyId) {
-      query = 'SELECT * FROM public.document WHERE company_id = $1 OR company_id IS NULL ORDER BY category, title'
+      query = 'SELECT * FROM public.document WHERE company_id = $1 ORDER BY category, title'
       params = [companyId]
     } else if (isAdmin) {
       query = 'SELECT * FROM public.document ORDER BY category, title'
