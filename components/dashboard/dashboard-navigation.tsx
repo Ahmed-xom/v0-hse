@@ -68,16 +68,16 @@ export function DashboardNavigation() {
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="fixed bottom-5 left-5 z-40 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-lg lg:hidden">
-        <Menu className="h-4 w-4" /> Options
+        <Menu className="h-4 w-4" /> {t("Options")}
       </button>
-      {open && <button aria-label="Close options" className="fixed inset-0 z-40 bg-foreground/20 lg:hidden" onClick={() => setOpen(false)} />}
+      {open && <button aria-label={t("Close options")} className="fixed inset-0 z-40 bg-foreground/20 lg:hidden" onClick={() => setOpen(false)} />}
       <aside className={cn("fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar px-4 py-6 shadow-xl transition-all lg:sticky lg:top-0 lg:z-30 lg:h-screen lg:translate-x-0 lg:shadow-none", collapsed && "lg:w-16", open ? "translate-x-0" : "-translate-x-full")}>
         <div className={cn("mb-6 flex items-center justify-between", collapsed ? "lg:px-0" : "px-2")}>
           <div className={cn(collapsed && "lg:hidden")}>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-sidebar-foreground/60">Workspace</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-sidebar-foreground/60">{t("Workspace")}</p>
             <h2 className="mt-1 text-lg font-semibold text-sidebar-foreground">{t("All options")}</h2>
           </div>
-          <button type="button" aria-label="Close options" onClick={() => setOpen(false)} className="rounded-md p-2 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground lg:hidden"><X className="h-4 w-4" /></button>
+          <button type="button" aria-label={t("Close options")} onClick={() => setOpen(false)} className="rounded-md p-2 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground lg:hidden"><X className="h-4 w-4" /></button>
         </div>
         <nav aria-label="Dashboard options" className={cn("flex flex-1 flex-col gap-1 overflow-y-auto", collapsed && "lg:hidden")}>
           {sections.filter(([, id]) => id !== "ticket-invoice-tracker" || showXomTracker).map(([label, id]) => (
@@ -86,7 +86,7 @@ export function DashboardNavigation() {
         </nav>
         <button type="button" onClick={toggleLanguage} aria-label={isArabic ? "Switch to English" : "Switch to Arabic"} className="mb-2 rounded-md border border-sidebar-border px-3 py-2 text-sm text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground">{isArabic ? "English" : "العربية"}</button>
         <button type="button" onClick={() => setCollapsed((value) => !value)} aria-label={collapsed ? "Show options" : "Hide options"} className="mt-auto hidden items-center justify-center gap-2 rounded-md border border-sidebar-border px-3 py-2 text-sm text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground lg:flex">
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <><ChevronLeft className="h-4 w-4" /> Hide list</>}
+          {collapsed ? <ChevronRight className="h-4 w-4" /> : <><ChevronLeft className="h-4 w-4" /> {t("Hide list")}</>}
         </button>
       </aside>
     </>

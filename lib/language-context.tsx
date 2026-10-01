@@ -36,6 +36,7 @@ const translations: Record<string, string> = {
   Workspace: "مساحة العمل",
   "All options": "كل الخيارات",
   "Hide list": "إخفاء القائمة",
+  "Close options": "إغلاق الخيارات",
   Options: "الخيارات",
   Search: "بحث",
   "Search...": "بحث...",
