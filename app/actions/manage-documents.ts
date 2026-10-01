@@ -3,6 +3,17 @@
 import { Pool } from 'pg'
 import { put, del } from '@vercel/blob'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
+
+const LIBRARY_MANAGER_ROLES = new Set(['MASTER USER', 'ADMIN SYSTEM', 'HSE ADMIN', 'ADMIN'])
+
+async function requireLibraryManager() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  const role = String((session?.user as { role?: string } | undefined)?.role ?? '').trim().toUpperCase()
+  if (!session?.user?.id || !LIBRARY_MANAGER_ROLES.has(role)) throw new Error('Only Admin and Master users can manage library documents')
+  return session.user
+}
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
@@ -40,12 +51,16 @@ export async function uploadFileAction(
   formData: FormData
 ): Promise<{ success: boolean; url?: string; pathname?: string; error?: string }> {
   try {
+    await requireLibraryManager()
     const file = formData.get('file') as File | null
     if (!file || file.size === 0) return { success: false, error: 'No file provided' }
     if (file.size > 50 * 1024 * 1024) return { success: false, error: 'File exceeds 50 MB limit' }
 
+    const companyId = String(formData.get('companyId') ?? '').trim()
+    if (!companyId) return { success: false, error: 'Select a company before uploading a document' }
+    const safeCompanyId = companyId.replace(/[^a-zA-Z0-9_-]/g, '_')
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-    const pathname = `hse-files/${Date.now()}-${safeName}`
+    const pathname = `hse-files/${safeCompanyId}/${Date.now()}-${safeName}`
     const blob = await put(pathname, file, { access: 'public' })
 
     return { success: true, url: blob.url, pathname: blob.pathname }
@@ -62,7 +77,7 @@ export async function getDocuments(userEmail?: string, isAdmin?: boolean, compan
     let query: string
     let params: string[]
     if (isAdmin && companyId) {
-      query = 'SELECT * FROM public.document WHERE company_id = $1 OR company_id IS NULL ORDER BY category, title'
+      query = 'SELECT * FROM public.document WHERE company_id = $1 ORDER BY category, title'
       params = [companyId]
     } else if (isAdmin) {
       query = 'SELECT * FROM public.document ORDER BY category, title'
@@ -98,6 +113,7 @@ export async function createDocument(
   data: Partial<HSEDocument> & { title: string; category: string }
 ): Promise<{ success: boolean; id?: string }> {
   try {
+    await requireLibraryManager()
     const year = new Date().getFullYear()
     const count = await pool.query("SELECT COUNT(*) FROM public.document WHERE doc_no LIKE $1", [`DOC-${year}-%`])
     const seq = String(Number(count.rows[0].count) + 1).padStart(4, '0')
@@ -133,10 +149,11 @@ export async function createDocument(
 export async function updateDocument(
   id: string,
   data: Partial<HSEDocument>
-): Promise<{ success: boolean }> {
-  try {
-    await pool.query(`
-      UPDATE public.document SET
+  ): Promise<{ success: boolean }> {
+    try {
+      await requireLibraryManager()
+      await pool.query(`
+  UPDATE public.document SET
         title=$1, category=$2, sub_category=$3, description=$4, version=$5, status=$6,
         file_url=$7, file_name=$8, file_size=$9, file_type=$10, blob_pathname=$11,
         business_unit=$12, owner=$13, owner_email=$14,
@@ -164,6 +181,7 @@ export async function updateDocument(
 
 export async function deleteDocument(id: string): Promise<{ success: boolean }> {
   try {
+    await requireLibraryManager()
     // Delete the blob file if one exists
     const r = await pool.query('SELECT file_url FROM public.document WHERE id=$1', [id])
     if (r.rows[0]?.file_url) {
@@ -183,10 +201,11 @@ export async function updateDocumentAccess(
   id: string,
   allowedEmails: string[],
   isPublic: boolean
-): Promise<{ success: boolean }> {
-  try {
-    await pool.query(
-      'UPDATE public.document SET allowed_emails=$1, is_public=$2, updated_at=NOW() WHERE id=$3',
+  ): Promise<{ success: boolean }> {
+    try {
+      await requireLibraryManager()
+      await pool.query(
+    'UPDATE public.document SET allowed_emails=$1, is_public=$2, updated_at=NOW() WHERE id=$3',
       [allowedEmails, isPublic, id]
     )
     revalidatePath('/')

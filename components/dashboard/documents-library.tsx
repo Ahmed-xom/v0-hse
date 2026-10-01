@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import {
-  Plus, Search, RefreshCw, Eye, Edit, Trash2, FileText,
+  Plus, Search, RefreshCw, Eye, Edit, Trash2, FileText, FilePlus,
   Download, ExternalLink, ChevronDown, FolderOpen, Upload,
   Lock, Globe, Users, Shield, X, FileUp, CheckCircle2,
   FileSpreadsheet, FileCode, File,
@@ -97,7 +97,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
   const isReviewer = !isAdmin && isReviewerRole(currentUser?.role ?? '')
   const canEdit = !readOnly && (isAdmin || isReviewer)
-  const canUpload = !readOnly && Boolean(currentUser)
+  const canUpload = !readOnly && Boolean(currentUser) && ['ADMIN SYSTEM', 'HSE ADMIN', 'MASTER USER', 'ADMIN', 'MANAGEMENT'].includes((currentUser?.role ?? '').toUpperCase())
   const { toast } = useToast()
 
   // list state
@@ -190,6 +190,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
       // Use server action to avoid CORS/iframe origin issues in the preview environment
       const fd = new FormData()
       fd.append('file', uploadFile)
+      if (activeCompanyId) fd.append('companyId', activeCompanyId)
       setUploadProgress(50)
       const result = await uploadFileAction(fd)
       setUploadProgress(100)
@@ -244,6 +245,10 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
   // ── save ─────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
+    if (!canUpload) {
+      toast({ title: 'Permission denied', description: 'Only Admin and Master users can create library documents.', variant: 'destructive' })
+      return
+    }
     if (!form.title.trim()) {
       toast({ title: 'Title is required', variant: 'destructive' }); return
     }
@@ -257,7 +262,13 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
       fileData = { file_url: uploaded.url, blob_pathname: uploaded.pathname }
     }
 
-    const payload = { ...form, ...fileData, company_id: selected?.company_id ?? activeCompanyId }
+    const companyId = selected?.company_id ?? activeCompanyId
+    if (!companyId) {
+      toast({ title: 'Company is required', description: 'Select a company before saving a library document.', variant: 'destructive' })
+      setSaving(false)
+      return
+    }
+    const payload = { ...form, ...fileData, company_id: companyId }
     const res = selected
       ? await updateDocument(selected.id, payload)
       : await createDocument(payload)
@@ -328,176 +339,21 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
   return (
     <div className="space-y-6">
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {[
-          { label: 'Total Files', value: stats.total, icon: <FolderOpen className="h-7 w-7 text-primary" /> },
-          { label: 'Active', value: stats.active, icon: <CheckCircle2 className="h-7 w-7 text-emerald-500" /> },
-          { label: 'Policies', value: stats.policies, icon: <FileText className="h-7 w-7 text-blue-500" /> },
-          { label: 'Restricted', value: stats.restricted, icon: <Lock className="h-7 w-7 text-amber-500" /> },
-        ].map(s => (
-          <Card key={s.label}>
-            <CardContent className="flex items-center gap-3 p-4">
-              {s.icon}
-              <div>
-                <p className="text-2xl font-bold">{s.value}</p>
-                <p className="text-xs text-muted-foreground">{s.label}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Toolbar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 flex-wrap gap-2">
-          <div className="relative flex-1 min-w-[180px] max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search files, tags..."
-              className="pl-9"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+      <section className="overflow-hidden rounded-xl border border-emerald-900/10 bg-card shadow-sm">
+        <div className="bg-emerald-100/70 px-5 py-4 sm:px-7">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div><h1 className="text-3xl font-semibold tracking-tight text-primary">View Library</h1><p className="mt-1 text-sm text-muted-foreground">{stats.total} documents for this company</p></div>
+            {canUpload && <div className="flex gap-2"><Button size="sm" variant="outline" onClick={openCreate}><FilePlus className="mr-2 h-4 w-4" />Create Document</Button><Button size="sm" onClick={openCreate}><Upload className="mr-2 h-4 w-4" />Choose File</Button></div>}
           </div>
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-44"><SelectValue placeholder="Category" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {DOCUMENT_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {Object.keys(STATUS_STYLES).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-            </SelectContent>
-          </Select>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={load} aria-label="Refresh">
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-          {canUpload && (
-            <Button size="sm" onClick={openCreate}>
-              <Upload className="mr-2 h-4 w-4" />Upload File
-            </Button>
-          )}
+        <div className="space-y-5 p-5 sm:p-7">
+          <div className="flex gap-2"><div className="relative flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Enter Keyword To Search" className="pl-9" value={search} onChange={e => setSearch(e.target.value)} /></div><Button onClick={() => setSearch(search.trim())}>Go</Button><Button variant="outline" size="icon" onClick={load} aria-label="Refresh"><RefreshCw className="h-4 w-4" /></Button></div>
+          <div className="flex flex-wrap gap-2 border-b pb-4"><Select value={filterCategory} onValueChange={setFilterCategory}><SelectTrigger className="w-44"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="all">All Categories</SelectItem>{DOCUMENT_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem>{Object.keys(STATUS_STYLES).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
+          <div className="min-h-[360px] font-sans text-sm">
+            {loading ? <p className="py-8 text-muted-foreground">Loading files...</p> : filtered.length === 0 ? <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground"><FolderOpen className="h-12 w-12 opacity-30" /><p>{search ? 'No matching files found' : 'No files in this company library'}</p></div> : <div className="space-y-1"><div className="flex items-center gap-1 font-medium text-primary"><ChevronDown className="h-4 w-4" /><FolderOpen className="h-4 w-4 text-amber-500" />Library</div>{Array.from(new Set(filtered.map(d => d.category))).map(category => <div key={category} className="ml-5"><div className="flex items-center gap-1 py-1 text-foreground"><ChevronDown className="h-4 w-4 text-muted-foreground" /><FolderOpen className="h-4 w-4 text-amber-500" />{category}</div><div className="ml-6 space-y-1">{filtered.filter(d => d.category === category).map(d => <div key={d.id} className="group flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted"><span className="shrink-0">{fileIcon(d.file_name, d.file_type)}</span><button className="min-w-0 flex-1 truncate text-left text-primary hover:underline" onClick={() => { setSelected(d); setIsViewOpen(true) }}>{d.title}</button><span className="hidden text-xs text-muted-foreground sm:inline">v{d.version} · {d.status}</span><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-48"><DropdownMenuItem onClick={() => { setSelected(d); setIsViewOpen(true) }}><Eye className="mr-2 h-4 w-4" />View Details</DropdownMenuItem>{d.file_url && <DropdownMenuItem asChild><a href={d.file_url} target="_blank" rel="noopener noreferrer" download={d.file_name ?? true}><Download className="mr-2 h-4 w-4" />Download File</a></DropdownMenuItem>}{canEdit && <><DropdownMenuItem onClick={() => openEdit(d)}><Edit className="mr-2 h-4 w-4" />Edit Details</DropdownMenuItem>{isAdmin && <DropdownMenuItem onClick={() => openAccess(d)}><Shield className="mr-2 h-4 w-4" />Manage Access</DropdownMenuItem>}<DropdownMenuSeparator /><DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(d.id)}><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem></>}</DropdownMenuContent></DropdownMenu></div>)}</div></div>)}</div>}
+          </div>
         </div>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-lg border overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-10"></TableHead>
-              <TableHead>Title</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Version</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Access</TableHead>
-              <TableHead>Uploaded By</TableHead>
-              <TableHead>Review Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={9} className="py-12 text-center text-muted-foreground">
-                  Loading files...
-                </TableCell>
-              </TableRow>
-            ) : filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={9} className="py-16 text-center">
-                  <div className="flex flex-col items-center gap-3 text-muted-foreground">
-                    <FolderOpen className="h-12 w-12 opacity-30" />
-                    <p className="font-medium">No files found</p>
-                    {canUpload && <p className="text-sm">Upload your first file to the HSE library.</p>}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : filtered.map(d => (
-              <TableRow key={d.id} className="group">
-                <TableCell>{fileIcon(d.file_name, d.file_type)}</TableCell>
-                <TableCell>
-                  <div>
-                    <p className="font-medium leading-tight max-w-[220px] truncate">{d.title}</p>
-                    {d.doc_no && <p className="text-xs text-muted-foreground font-mono">{d.doc_no}</p>}
-                    {d.sub_category && <p className="text-xs text-muted-foreground">{d.sub_category}</p>}
-                  </div>
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">{d.category}</TableCell>
-                <TableCell className="text-sm">v{d.version}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className={STATUS_STYLES[d.status]}>
-                    {d.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  {d.is_public ? (
-                    <Badge variant="outline" className="gap-1 text-emerald-600 border-emerald-500/30 bg-emerald-500/5">
-                      <Globe className="h-3 w-3" />All Users
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="gap-1 text-amber-600 border-amber-500/30 bg-amber-500/5">
-                      <Lock className="h-3 w-3" />
-                      {d.allowed_emails?.length ? `${d.allowed_emails.length} user(s)` : 'Restricted'}
-                    </Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {d.uploaded_by ?? d.owner ?? '—'}
-                </TableCell>
-                <TableCell className="text-xs text-muted-foreground">{fmtDate(d.review_date)}</TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuItem onClick={() => { setSelected(d); setIsViewOpen(true) }}>
-                        <Eye className="mr-2 h-4 w-4" />View Details
-                      </DropdownMenuItem>
-                      {d.file_url && (
-                        <DropdownMenuItem asChild>
-                          <a href={d.file_url} target="_blank" rel="noopener noreferrer" download={d.file_name ?? true}>
-                            <Download className="mr-2 h-4 w-4" />Download File
-                          </a>
-                        </DropdownMenuItem>
-                      )}
-                      {canEdit && (
-                        <>
-                          <DropdownMenuItem onClick={() => openEdit(d)}>
-                            <Edit className="mr-2 h-4 w-4" />Edit Details
-                          </DropdownMenuItem>
-                          {isAdmin && (
-                            <DropdownMenuItem onClick={() => openAccess(d)}>
-                              <Shield className="mr-2 h-4 w-4" />Manage Access
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => handleDelete(d.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />Delete
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      </section>
 
       {/* ── Upload / Edit Dialog ─────────────────────────────────────────── */}
       {canUpload && (
@@ -524,8 +380,9 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                   }
                 }}
               >
-                <input
-                  ref={fileRef}
+  <input
+  ref={fileRef}
+  aria-label="Choose library file"
                   type="file"
                   className="hidden"
                   accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.txt,.png,.jpg,.jpeg,.zip"
