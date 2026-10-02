@@ -21,7 +21,7 @@ import { JourneyTracker } from "@/components/dashboard/journey-tracker"
 import { TicketInvoiceTracker } from "@/components/dashboard/ticket-invoice-tracker"
   import { Meetings } from "@/components/dashboard/meetings"
   import { Reports } from "@/components/dashboard/reports"
-
+import { LanguageProvider } from "@/lib/language-context"
 
 export default function HSEDashboard() {
   const { activeCompanyId, user } = useAuth()
@@ -29,6 +29,7 @@ export default function HSEDashboard() {
 
   return (
     <ProtectedRoute>
+      <LanguageProvider>
       <div key={activeCompanyId ?? "company-xom-llc"} className="min-h-screen bg-background">
         <DashboardHeader />
         <div className="flex items-start">
@@ -152,6 +153,7 @@ export default function HSEDashboard() {
           </div>
         </footer>
       </div>
+      </LanguageProvider>
     </ProtectedRoute>
   )
 }

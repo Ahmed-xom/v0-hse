@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { AuthProvider } from '@/lib/auth-context'
+import { LanguageProvider } from '@/lib/language-context'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
@@ -58,7 +59,9 @@ export default function RootLayout({
       <body className="font-sans antialiased bg-background">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="hse-theme">
           <AuthProvider>
-            {children}
+            <LanguageProvider>
+              {children}
+            </LanguageProvider>
             <Toaster />
           </AuthProvider>
           {process.env.NODE_ENV === 'production' && (

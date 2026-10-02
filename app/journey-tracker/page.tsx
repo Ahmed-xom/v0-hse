@@ -1,5 +1,6 @@
 import { JourneyTracker } from "@/components/dashboard/journey-tracker"
+import { LanguageProvider } from "@/lib/language-context"
 
 export default function JourneyTrackerPage() {
-  return <JourneyTracker />
+  return <LanguageProvider><JourneyTracker /></LanguageProvider>
 }
