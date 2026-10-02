@@ -172,37 +172,16 @@ const translations: Record<string, string> = {
 const LanguageContext = createContext<LanguageContextValue | null>(null)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("ar")
+  const [language, setLanguageState] = useState<Language>(() => {
+    if (typeof document === "undefined") return "ar"
+    return document.cookie.match(/(?:^|; )hse-language=(en|ar)/)?.[1] as Language ?? "ar"
+  })
   const isArabic = language === "ar"
 
   useEffect(() => {
     document.documentElement.lang = language
     document.documentElement.dir = isArabic ? "rtl" : "ltr"
-    if (!isArabic) return
-
-    const translatePage = () => {
-      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
-      const nodes: Text[] = []
-      let node: Node | null
-      while ((node = walker.nextNode())) nodes.push(node as Text)
-      for (const textNode of nodes) {
-        const value = textNode.nodeValue?.trim()
-        if (!value || textNode.parentElement?.closest("script,style,textarea")) continue
-        const translated = translations[value]
-        if (translated) textNode.nodeValue = textNode.nodeValue!.replace(value, translated)
-      }
-      document.querySelectorAll<HTMLElement>("[aria-label], [placeholder], [title]").forEach((element) => {
-        for (const attribute of ["aria-label", "placeholder", "title"]) {
-          const value = element.getAttribute(attribute)
-          if (value && translations[value]) element.setAttribute(attribute, translations[value])
-        }
-      })
-    }
-
-    translatePage()
-    const observer = new MutationObserver(() => translatePage())
-    observer.observe(document.body, { childList: true, subtree: true })
-    return () => observer.disconnect()
+    document.cookie = `hse-language=${language}; path=/; max-age=31536000; SameSite=Lax`
   }, [isArabic, language])
 
   const value = useMemo<LanguageContextValue>(() => ({
