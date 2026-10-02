@@ -182,6 +182,47 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.lang = language
     document.documentElement.dir = isArabic ? "rtl" : "ltr"
     document.cookie = `hse-language=${language}; path=/; max-age=31536000; SameSite=Lax`
+
+    const originalText = new WeakMap<Text, string>()
+    const originalAttributes = new WeakMap<HTMLElement, Record<string, string | null>>()
+    const attributes = ["aria-label", "placeholder", "title"] as const
+
+    const translatePage = () => {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+      const nodes: Text[] = []
+      let node: Node | null
+      while ((node = walker.nextNode())) nodes.push(node as Text)
+
+      for (const textNode of nodes) {
+        const parent = textNode.parentElement
+        if (!parent || parent.closest("script,style,textarea,input,[data-language-ignore]")) continue
+        const current = textNode.nodeValue ?? ""
+        const value = current.trim()
+        if (!value) continue
+        if (!originalText.has(textNode)) originalText.set(textNode, current)
+        const source = originalText.get(textNode)!.trim()
+        const translated = translations[source]
+        if (isArabic && translated) textNode.nodeValue = current.replace(value, translated)
+        if (!isArabic) textNode.nodeValue = originalText.get(textNode)!
+      }
+
+      document.querySelectorAll<HTMLElement>("[aria-label], [placeholder], [title]").forEach((element) => {
+        if (!originalAttributes.has(element)) {
+          originalAttributes.set(element, Object.fromEntries(attributes.map((attribute) => [attribute, element.getAttribute(attribute)])))
+        }
+        const originals = originalAttributes.get(element)!
+        for (const attribute of attributes) {
+          const source = originals[attribute]
+          if (isArabic && source && translations[source]) element.setAttribute(attribute, translations[source])
+          if (!isArabic && source !== null) element.setAttribute(attribute, source)
+        }
+      })
+    }
+
+    translatePage()
+    const observer = new MutationObserver(translatePage)
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true })
+    return () => observer.disconnect()
   }, [isArabic, language])
 
   const value = useMemo<LanguageContextValue>(() => {
