@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 import Link from "next/link"
 import Image from "next/image"
-import { Bell, Calendar, ChevronDown, Home, LogOut, Menu, Moon, Search, Settings, Sun, User, X } from "lucide-react"
+import { Bell, Calendar, ChevronDown, Globe2, Home, LogOut, Menu, Moon, Search, Settings, Sun, User, X } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -227,8 +227,9 @@ export function DashboardHeader() {
             onClick={toggleLanguage}
             aria-label={isArabic ? t("Switch to English") : t("Switch to Arabic")}
             title={isArabic ? t("Switch to English") : t("Switch to Arabic")}
-            className="hidden min-w-20 sm:inline-flex"
+            className="inline-flex min-w-24 gap-2 border-primary/30 bg-background px-3"
           >
+            <Globe2 className="h-4 w-4" />
             {isArabic ? "English" : "العربية"}
           </Button>
 
