@@ -184,13 +184,20 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.cookie = `hse-language=${language}; path=/; max-age=31536000; SameSite=Lax`
   }, [isArabic, language])
 
-  const value = useMemo<LanguageContextValue>(() => ({
-    language,
-    isArabic,
-    setLanguage: setLanguageState,
-    toggleLanguage: () => setLanguageState((current) => current === "en" ? "ar" : "en"),
-    t: (english) => isArabic ? translations[english] ?? english : english,
-  }), [isArabic, language])
+  const value = useMemo<LanguageContextValue>(() => {
+    const setLanguage = (nextLanguage: Language) => {
+      document.cookie = `hse-language=${nextLanguage}; path=/; max-age=31536000; SameSite=Lax`
+      setLanguageState(nextLanguage)
+    }
+
+    return {
+      language,
+      isArabic,
+      setLanguage,
+      toggleLanguage: () => setLanguage(language === "en" ? "ar" : "en"),
+      t: (english) => isArabic ? translations[english] ?? english : english,
+    }
+  }, [isArabic, language])
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>
 }
