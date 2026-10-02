@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { useAuth, isMasterUser } from "@/lib/auth-context"
+import { useLanguage } from "@/lib/language-context"
 import { CompanySwitcher } from "@/components/dashboard/company-switcher"
 import { Calendar as DatePicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -42,6 +43,7 @@ export function DashboardHeader() {
   }
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
+  const { isArabic, toggleLanguage, t } = useLanguage()
 
   useEffect(() => {
     setMounted(true)
@@ -218,6 +220,17 @@ export function DashboardHeader() {
               </Button>
             </Link>
           )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleLanguage}
+            aria-label={isArabic ? t("Switch to English") : t("Switch to Arabic")}
+            title={isArabic ? t("Switch to English") : t("Switch to Arabic")}
+            className="hidden min-w-20 sm:inline-flex"
+          >
+            {isArabic ? "English" : "العربية"}
+          </Button>
 
           {/* User Menu */}
           <DropdownMenu>
