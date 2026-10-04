@@ -16,12 +16,6 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  socialProviders: {
-    microsoft: {
-      clientId: process.env.MICROSOFT_CLIENT_ID ?? "",
-      clientSecret: process.env.MICROSOFT_CLIENT_SECRET ?? "",
-    },
-  },
   session: {
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 0,
