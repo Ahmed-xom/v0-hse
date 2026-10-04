@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Eye, EyeOff, Loader2, Mail, Lock } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
+import { authClient } from "@/lib/auth-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,6 +18,19 @@ export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const { login } = useAuth()
+
+  const handleMicrosoftSignIn = async () => {
+    setError("")
+    setIsLoading(true)
+    const result = await authClient.signIn.social({
+      provider: "microsoft",
+      callbackURL: "/",
+    })
+    if (result.error) {
+      setError("Microsoft sign-in failed. Please try again.")
+      setIsLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -141,6 +155,15 @@ export default function SignInPage() {
                 ) : (
                   "Sign In"
                 )}
+              </Button>
+
+              <div className="relative py-1 text-center text-xs text-muted-foreground">
+                <span className="bg-card px-2">or</span>
+                <div className="absolute inset-x-0 top-1/2 -z-10 border-t border-border" />
+              </div>
+
+              <Button type="button" variant="outline" className="w-full" disabled={isLoading} onClick={handleMicrosoftSignIn}>
+                Continue with Microsoft
               </Button>
             </form>
           </CardContent>
