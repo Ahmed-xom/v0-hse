@@ -47,7 +47,7 @@ export default function SignInPage() {
         <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
       </div>
 
-      <div className="w-full max-w-md relative z-10">
+      <div className="relative z-10 w-full max-w-md pointer-events-auto">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center justify-center gap-3 text-center">
           <Image
@@ -65,7 +65,7 @@ export default function SignInPage() {
           </div>
         </div>
 
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+          <Card className="relative z-20 pointer-events-auto border-border/50 bg-card/50 backdrop-blur-sm">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
             <CardDescription>Sign in to your account to continue</CardDescription>
