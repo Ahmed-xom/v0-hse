@@ -43,18 +43,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check for existing session
-    const storedCompanyId = localStorage.getItem("hse_active_company")
-    if (storedCompanyId) setActiveCompanyIdState(storedCompanyId)
-    const storedUser = localStorage.getItem("hse_user")
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser))
-      } catch {
-        localStorage.removeItem("hse_user")
+    // Storage can be unavailable in embedded previews or privacy-restricted browsers.
+    try {
+      const storedCompanyId = window.localStorage.getItem("hse_active_company")
+      if (storedCompanyId) setActiveCompanyIdState(storedCompanyId)
+
+      const storedUser = window.localStorage.getItem("hse_user")
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser))
+        } catch {
+          window.localStorage.removeItem("hse_user")
+        }
       }
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }, [])
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
