@@ -32,7 +32,7 @@ export function DashboardNavigation() {
   const [active, setActive] = useState("dashboard-home")
   const [showXomTracker, setShowXomTracker] = useState(false)
   const { activeCompanyId } = useAuth()
-  const { t } = useLanguage()
+  const { language, t } = useLanguage()
 
   useEffect(() => {
     let cancelled = false
@@ -81,7 +81,7 @@ export function DashboardNavigation() {
         </div>
         <nav aria-label="Dashboard options" className={cn("flex flex-1 flex-col gap-1 overflow-y-auto", collapsed && "lg:hidden")}>
           {sections.filter(([, id]) => id !== "ticket-invoice-tracker" || showXomTracker).map(([label, id]) => (
-            <button key={id} type="button" onClick={() => navigate(id)} className={cn("rounded-md px-3 py-2.5 text-left text-sm transition-colors", active === id ? "bg-sidebar-primary font-medium text-sidebar-primary-foreground" : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground")}>{t(label)}</button>
+            <button key={`${language}-${id}`} type="button" onClick={() => navigate(id)} className={cn("rounded-md px-3 py-2.5 text-left text-sm transition-colors", active === id ? "bg-sidebar-primary font-medium text-sidebar-primary-foreground" : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground")}>{t(label)}</button>
           ))}
         </nav>
         <button type="button" onClick={() => setCollapsed((value) => !value)} aria-label={collapsed ? "Show options" : "Hide options"} className="mt-auto hidden items-center justify-center gap-2 rounded-md border border-sidebar-border px-3 py-2 text-sm text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground lg:flex">
