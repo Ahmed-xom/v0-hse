@@ -89,7 +89,7 @@ export const hseUser = pgTable('hse_user', {
   updatedAt: timestamp('updatedAt').notNull().default(sql`now()`),
 })
 
-// Password reset tracking
+// Legacy administrative reset audit table
 export const passwordReset = pgTable('password_reset', {
   id: text('id').primaryKey(),
   userId: text('userId').notNull(),
@@ -97,6 +97,15 @@ export const passwordReset = pgTable('password_reset', {
   newPassword: text('newPassword').notNull(),
   resetAt: timestamp('resetAt').notNull().default(sql`now()`),
   ipAddress: text('ipAddress'),
+})
+
+export const passwordResetToken = pgTable('password_reset_token', {
+  id: text('id').primaryKey(),
+  userId: uuid('user_id').notNull(),
+  tokenHash: text('token_hash').notNull().unique(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().default(sql`now()`),
 })
 
 // Generic table for Excel data - will be used for flexible data storage
