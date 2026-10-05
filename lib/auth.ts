@@ -36,14 +36,11 @@ export const auth = betterAuth({
     process.env.V0_RUNTIME_URL || "http://localhost:3000",
   ],
   secret: authSecret,
-  ...(process.env.NODE_ENV === "development"
-    ? {
-        advanced: {
-          defaultCookieAttributes: {
-            sameSite: "none" as const,
-            secure: true,
-          },
-        },
-      }
-    : {}),
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+    },
+  },
 })
