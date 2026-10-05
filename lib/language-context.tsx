@@ -166,7 +166,63 @@ const translations: Record<string, string> = {
   "Forgot password?": "هل نسيت كلمة المرور؟",
   "Sign In": "تسجيل الدخول",
   "By signing in, you agree to our Terms of Service and Privacy Policy": "بتسجيل الدخول، فإنك توافق على شروط الخدمة وسياسة الخصوصية",
+  "By signing in, you agree to our": "بتسجيل الدخول، فإنك توافق على",
+  "and": "و",
+  "or": "أو",
+  "Required": "مطلوب",
+  "Optional": "اختياري",
+  "No data": "لا توجد بيانات",
+  "All": "الكل",
+  "Previous": "السابق",
+  "Next": "التالي",
+  "Back": "رجوع",
+  "Continue": "متابعة",
+  "Confirm": "تأكيد",
+  "Yes": "نعم",
+  "No": "لا",
+  "Export": "تصدير",
+  "Filter": "تصفية",
+  "Clear": "مسح",
+  "Apply": "تطبيق",
+  "View": "عرض",
+  "Details": "التفاصيل",
+  "Select": "اختيار",
+  "Select date": "اختيار التاريخ",
+  "Select a date": "اختيار تاريخ",
   "AMNKO | HSE Management System": "AMNKO | نظام إدارة الصحة والسلامة والبيئة",
+  "Go to home page": "الانتقال إلى الصفحة الرئيسية",
+  "Choose date range": "اختيار نطاق التاريخ",
+  "Switch to light mode": "التبديل إلى الوضع الفاتح",
+  "Switch to dark mode": "التبديل إلى الوضع الداكن",
+  "Toggle color theme": "تبديل مظهر الألوان",
+  Notifications: "الإشعارات",
+  "Overdue Inspection Alert": "تنبيه تفتيش متأخر",
+  "Chemical Storage Inspection is 3 days overdue": "تفتيش تخزين المواد الكيميائية متأخر 3 أيام",
+  "Training Reminder": "تذكير بالتدريب",
+  "12 employees have pending safety training": "لدى 12 موظفاً تدريب سلامة معلقاً",
+  "New Incident Report": "تقرير حادث جديد",
+  "Minor incident reported at Warehouse C": "تم الإبلاغ عن حادث بسيط في المستودع C",
+  "Dashboard options": "خيارات لوحة التحكم",
+  "Show options": "إظهار الخيارات",
+  "Hide options": "إخفاء الخيارات",
+  "AMNKO HSE logo": "شعار AMNKO HSE",
+  "Journey completion": "إكمال الرحلة",
+  "Completion is based on saved user data and the fields completed in this journey.": "يعتمد الإكمال على بيانات المستخدم المحفوظة والحقول المكتملة في هذه الرحلة.",
+  "steps": "خطوات",
+  "Sign Up": "التسجيل",
+  "Not Completed": "غير مكتملة",
+  "Pre-Trip Inspection": "تفتيش ما قبل الرحلة",
+  "Check-In": "تسجيل الوصول",
+  "Route Changes": "تغييرات المسار",
+  "Road Hazards": "مخاطر الطريق",
+  "Attachments": "المرفقات",
+  "Resources": "الموارد",
+  "Summary": "الملخص",
+  "Journey": "الرحلة",
+  "Vehicle": "المركبة",
+  "Emergency": "الطوارئ",
+  "Search results": "نتائج البحث",
+  "No results found": "لم يتم العثور على نتائج",
 }
 
 const arabicToEnglish = Object.fromEntries(Object.entries(translations).map(([english, arabic]) => [arabic, english])) as Record<string, string>
@@ -180,31 +236,43 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     document.documentElement.lang = language
     document.documentElement.dir = isArabic ? "rtl" : "ltr"
-    if (!isArabic) return
+
+    let translating = false
+    const translateValue = (value: string) => {
+      const dictionary = isArabic ? translations : arabicToEnglish
+      const exact = dictionary[value.trim()]
+      if (exact) return value.replace(value.trim(), exact)
+      return value.replace(/[^.!?,;:\n]+/g, (part) => dictionary[part.trim()] ?? part)
+    }
 
     const translatePage = () => {
+      if (translating) return
+      translating = true
       const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
       const nodes: Text[] = []
       let node: Node | null
       while ((node = walker.nextNode())) nodes.push(node as Text)
       for (const textNode of nodes) {
-        const value = textNode.nodeValue?.trim()
-        if (!value || textNode.parentElement?.closest("script,style,textarea")) continue
-        const translated = isArabic ? translations[value] : arabicToEnglish[value]
-        if (translated) textNode.nodeValue = textNode.nodeValue!.replace(value, translated)
+        const value = textNode.nodeValue
+        if (!value?.trim() || textNode.parentElement?.closest("script,style,textarea,[data-no-translate]")) continue
+        const translated = translateValue(value)
+        if (translated !== value) textNode.nodeValue = translated
       }
       document.querySelectorAll<HTMLElement>("[aria-label], [placeholder], [title]").forEach((element) => {
         for (const attribute of ["aria-label", "placeholder", "title"] as const) {
           const value = element.getAttribute(attribute)
-          const translated = value ? (isArabic ? translations[value] : arabicToEnglish[value]) : undefined
-          if (translated) element.setAttribute(attribute, translated)
+          if (value) {
+            const translated = translateValue(value)
+            if (translated !== value) element.setAttribute(attribute, translated)
+          }
         }
       })
+      translating = false
     }
 
     translatePage()
     const observer = new MutationObserver(() => translatePage())
-    observer.observe(document.body, { childList: true, subtree: true })
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true })
     return () => observer.disconnect()
   }, [isArabic, language])
 
