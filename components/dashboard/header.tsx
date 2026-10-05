@@ -88,7 +88,7 @@ export function DashboardHeader() {
               priority
             />
             <div className="hidden sm:block">
-              <span className="text-lg font-semibold tracking-tight">AMNKO HSE</span>
+              <span className="text-lg font-semibold tracking-tight">{t("AMNKO HSE")}</span>
               <Badge variant="secondary" className="ml-2 text-xs">
                 HSE
               </Badge>
@@ -198,8 +198,8 @@ export function DashboardHeader() {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="#training-courses" className="flex cursor-pointer flex-col items-start gap-1 py-3">
-                  <span className="font-medium">Training Reminder</span>
-                  <span className="text-sm text-muted-foreground">12 employees have pending safety training</span>
+                  <span className="font-medium">{t("Training Reminder")}</span>
+                  <span className="text-sm text-muted-foreground">{t("12 employees have pending safety training")}</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
