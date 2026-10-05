@@ -21,6 +21,14 @@ export function ProtectedRoute({ children, requiredRoles }: ProtectedRouteProps)
     // All authenticated users are allowed through the application.
   }, [])
 
+  if (isLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background px-4" aria-live="polite">
+        <p className="text-sm text-muted-foreground">Loading your workspace…</p>
+      </main>
+    )
+  }
+
   if (!user) {
     return null
   }
