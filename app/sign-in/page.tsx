@@ -17,6 +17,7 @@ export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const { login } = useAuth()
+  const resetSuccess = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("reset") === "success"
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,6 +73,7 @@ export default function SignInPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {resetSuccess && <div className="rounded-lg border border-primary/20 bg-primary/10 p-3 text-sm text-primary">Password updated successfully. Sign in with your new password.</div>}
               {error && (
                 <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive">
                   {error}

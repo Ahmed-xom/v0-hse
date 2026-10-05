@@ -32,7 +32,7 @@ export function DashboardNavigation() {
   const [active, setActive] = useState("dashboard-home")
   const [showXomTracker, setShowXomTracker] = useState(false)
   const { activeCompanyId } = useAuth()
-  const { isArabic, toggleLanguage, t } = useLanguage()
+  const { t } = useLanguage()
 
   useEffect(() => {
     let cancelled = false
@@ -84,7 +84,6 @@ export function DashboardNavigation() {
             <button key={id} type="button" onClick={() => navigate(id)} className={cn("rounded-md px-3 py-2.5 text-left text-sm transition-colors", active === id ? "bg-sidebar-primary font-medium text-sidebar-primary-foreground" : "text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground")}>{t(label)}</button>
           ))}
         </nav>
-        <button type="button" onClick={toggleLanguage} aria-label={isArabic ? "Switch to English" : "Switch to Arabic"} className="mb-2 rounded-md border border-sidebar-border px-3 py-2 text-sm text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground">{isArabic ? "English" : "العربية"}</button>
         <button type="button" onClick={() => setCollapsed((value) => !value)} aria-label={collapsed ? "Show options" : "Hide options"} className="mt-auto hidden items-center justify-center gap-2 rounded-md border border-sidebar-border px-3 py-2 text-sm text-sidebar-foreground/75 hover:bg-sidebar-accent hover:text-sidebar-foreground lg:flex">
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <><ChevronLeft className="h-4 w-4" /> {t("Hide list")}</>}
         </button>

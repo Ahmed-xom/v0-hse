@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { useAuth, isMasterUser } from "@/lib/auth-context"
+import { useLanguage } from "@/lib/language-context"
 import { CompanySwitcher } from "@/components/dashboard/company-switcher"
 import { Calendar as DatePicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -42,6 +43,7 @@ export function DashboardHeader() {
   }
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
+  const { isArabic, toggleLanguage, t } = useLanguage()
 
   useEffect(() => {
     setMounted(true)
@@ -106,7 +108,7 @@ export function DashboardHeader() {
                         : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                     }`}
                   >
-                    {item.label}
+                    {t(item.label)}
                   </Link>
                 </li>
               ))}
@@ -116,7 +118,7 @@ export function DashboardHeader() {
                     href="/settings"
                     className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary/50 hover:text-foreground"
                   >
-                    Settings
+                    {t("Settings")}
                   </Link>
                 </li>
               )}
@@ -127,12 +129,16 @@ export function DashboardHeader() {
         {/* Right Section */}
         <div className="flex items-center gap-3">
           {/* Search */}
-          <div className="relative hidden md:block">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search..." className="w-64 pl-9" />
-          </div>
+              <div className="relative hidden md:block">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input placeholder={t("Search...")} className="w-64 pl-9" />
+              </div>
 
-          <CompanySwitcher />
+              <Button type="button" variant="outline" size="sm" onClick={toggleLanguage} aria-label={isArabic ? "Switch to English" : "Switch to Arabic"}>
+                {isArabic ? "English" : "العربية"}
+              </Button>
+
+              <CompanySwitcher />
 
           {/* Date Range */}
           <Popover>
