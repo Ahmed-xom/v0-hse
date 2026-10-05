@@ -121,11 +121,20 @@ export function JourneyTracker() {
   const [journeyTab, setJourneyTab] = useState<"all" | "morning" | "night">("all")
   const [formStep, setFormStep] = useState("summary")
   const formSteps = [['summary','Summary'],['driver','Driver Details'],['resources','Resources'],['journey','Journey'],['vehicle','Vehicle'],['checkin','Check-In'],['attachments','Attachments'],['inspection','Pre-Trip Inspection'],['route','Route Plan'],['changes','Route Changes'],['passengers','Passengers'],['night','Night Driving'],['hazards','Road Hazards'],['emergency','Emergency Contacts'],['risk','Risk Assessment']] as const
+  const isFormStepComplete = (step: string) => {
+    if (step === "summary") return Boolean(form.origin && form.destination && form.journeyType && form.purpose && form.vehiclePlate && form.departureDate && form.departureTime)
+    if (step === "driver") return Boolean(form.driver)
+    if (step === "resources") return Boolean(form.vehiclePlate && form.driver)
+    if (step === "attachments") return Boolean(attachedFile)
+    if (step === "inspection") return Object.keys(inspection).length === inspectionItems.length && inspectionItems.every((item) => inspection[item])
+    return false
+  }
   const [inspection, setInspection] = useState<Record<string, "yes" | "no" | "na">>({})
   const inspectionItems = ["Air Bags", "Air Compressor", "Air Conditioning", "Brakes – Hand Brakes", "Drinking Water / Food", "Defensive Driving Certificate", "Driving License", "Fire Extinguisher", "First Aid Box", "Front & Side Mirrors", "Fuel Level", "Goods / Cargo Manifest", "IVMS / Drive Right", "Jack, Tools, Jack Plates", "Lights & Indicators", "Load Secured", "Oil Level", "Radiator Coolant Level", "Reflective Triangle", "Rollover Bar", "Seat Belts", "Spare Tire", "Tires", "Vehicle License"]
   const weatherHazards = ["Cloudy", "Fog", "High Temperature / Hot", "Low Temperature / Cold", "Rain", "Sand Storm", "Snow", "Storm", "Sunny", "Wind"]
   const roadHazards = ["Black Top", "Clear Visibility", "Dry", "Foggy", "Graded", "Gravel", "High Wind", "Low Visibility", "Mud", "Others", "Poor Visibility", "Sand", "Snow / Ice", "Unpaved", "Wet"]
   const riskFactors = ["Driver condition", "Driver competency", "Vehicle condition", "Route", "Weather", "Road conditions", "Journey duration", "Night driving", "Remote location", "Load", "Other hazards"]
+  const completedFormSteps = formSteps.filter(([value]) => isFormStepComplete(value)).length
 
   const [searchQuery, setSearchQuery]     = useState("")
   const [statusFilter, setStatusFilter]   = useState("all")
@@ -571,9 +580,35 @@ export function JourneyTracker() {
             <DialogDescription>Fill in the details below to log a new journey.</DialogDescription>
           </DialogHeader>
 
+          <div className="mb-4 rounded-lg border border-border/50 bg-muted/20 p-3">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold">Journey completion</p>
+                <p className="text-xs text-muted-foreground">Completion is based on saved user data and the fields completed in this journey.</p>
+              </div>
+              <Badge variant="outline">{completedFormSteps} / {formSteps.length} steps</Badge>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${user?.id ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" : "border-border text-muted-foreground"}`}>
+                {user?.id ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                <span>Sign Up</span><span className="text-[10px] opacity-80">{user?.id ? "Completed" : "Pending"}</span>
+              </div>
+              {formSteps.map(([value, label]) => {
+                const completed = isFormStepComplete(value)
+                return <div key={value} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${completed ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" : "border-border text-muted-foreground"}`}>
+                  {completed ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                  <span>{label}</span><span className="text-[10px] opacity-80">{completed ? "Completed" : "Not Completed"}</span>
+                </div>
+              })}
+            </div>
+          </div>
+
           <Tabs value={formStep} onValueChange={setFormStep} className="mt-2">
             <TabsList className="grid h-auto w-full grid-cols-2 gap-1 overflow-visible bg-muted/50 p-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-              {formSteps.map(([value, label], index) => <TabsTrigger key={value} value={value} className="h-auto w-full min-w-0 whitespace-normal px-2 py-2 text-center text-[11px] leading-tight sm:text-xs"><span className="mr-1 font-semibold">{index + 1}.</span>{label}</TabsTrigger>)}
+              {formSteps.map(([value, label], index) => {
+                const completed = isFormStepComplete(value)
+                return <TabsTrigger key={value} value={value} className="h-auto w-full min-w-0 whitespace-normal px-2 py-2 text-center text-[11px] leading-tight sm:text-xs"><span className="mr-1 font-semibold">{index + 1}.</span>{completed ? <Check className="mr-1 inline h-3.5 w-3.5 text-emerald-600" aria-label="Completed" /> : null}{label}</TabsTrigger>
+              })}
             </TabsList>
             <TabsContent value="summary" className="grid gap-4 py-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
