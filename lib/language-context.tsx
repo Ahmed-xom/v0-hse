@@ -169,6 +169,8 @@ const translations: Record<string, string> = {
   "AMNKO | HSE Management System": "AMNKO | نظام إدارة الصحة والسلامة والبيئة",
 }
 
+const arabicToEnglish = Object.fromEntries(Object.entries(translations).map(([english, arabic]) => [arabic, english])) as Record<string, string>
+
 const LanguageContext = createContext<LanguageContextValue | null>(null)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
@@ -188,13 +190,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       for (const textNode of nodes) {
         const value = textNode.nodeValue?.trim()
         if (!value || textNode.parentElement?.closest("script,style,textarea")) continue
-        const translated = translations[value]
+        const translated = isArabic ? translations[value] : arabicToEnglish[value]
         if (translated) textNode.nodeValue = textNode.nodeValue!.replace(value, translated)
       }
       document.querySelectorAll<HTMLElement>("[aria-label], [placeholder], [title]").forEach((element) => {
-        for (const attribute of ["aria-label", "placeholder", "title"]) {
+        for (const attribute of ["aria-label", "placeholder", "title"] as const) {
           const value = element.getAttribute(attribute)
-          if (value && translations[value]) element.setAttribute(attribute, translations[value])
+          const translated = value ? (isArabic ? translations[value] : arabicToEnglish[value]) : undefined
+          if (translated) element.setAttribute(attribute, translated)
         }
       })
     }
