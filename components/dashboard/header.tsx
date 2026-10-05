@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
 import Link from "next/link"
 import Image from "next/image"
-import { Bell, Calendar, ChevronDown, Globe2, Home, LogOut, Menu, Moon, Search, Settings, Sun, User, X } from "lucide-react"
+import { Bell, Calendar, ChevronDown, Home, LogOut, Menu, Moon, Search, Settings, Sun, User, X } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { useAuth, isMasterUser } from "@/lib/auth-context"
-import { useLanguage } from "@/lib/language-context"
 import { CompanySwitcher } from "@/components/dashboard/company-switcher"
 import { Calendar as DatePicker } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -43,7 +42,6 @@ export function DashboardHeader() {
   }
   const { theme, setTheme } = useTheme()
   const { user, logout } = useAuth()
-  const { isArabic, toggleLanguage, t } = useLanguage()
 
   useEffect(() => {
     setMounted(true)
@@ -220,18 +218,6 @@ export function DashboardHeader() {
               </Button>
             </Link>
           )}
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleLanguage}
-            aria-label={isArabic ? t("Switch to English") : t("Switch to Arabic")}
-            title={isArabic ? t("Switch to English") : t("Switch to Arabic")}
-            className="inline-flex min-w-24 gap-2 border-primary/30 bg-background px-3"
-          >
-            <Globe2 className="h-4 w-4" />
-            {isArabic ? "English" : "العربية"}
-          </Button>
 
           {/* User Menu */}
           <DropdownMenu>

@@ -45,7 +45,6 @@ function SearchableDriverSelect({ value, onChange, drivers, placeholder = "Selec
 import { useToast } from "@/hooks/use-toast"
 import { getUsers } from "@/app/actions/manage-users"
 import { useAuth } from "@/lib/auth-context"
-import { useLanguage } from "@/lib/language-context"
 import {
   getJourneys, getAllJourneys, getDrivers, createJourney, updateJourneyStatus, deleteJourney,
   getVehicles,
@@ -93,7 +92,6 @@ function JourneyRiskMatrix() {
 
 export function JourneyTracker() {
   const { user, activeCompanyId } = useAuth()
-  const { isArabic } = useLanguage()
   const { toast } = useToast()
   const [nightCutoff, setNightCutoff] = useState({ nightStart: "18:00", nightEnd: "06:00" })
 
@@ -194,25 +192,8 @@ export function JourneyTracker() {
   }), [journeys])
 
   const handleSubmit = async () => {
-    const requiredFields = [
-      { key: "origin", value: form.origin, step: "summary", en: "Origin", ar: "نقطة الانطلاق" },
-      { key: "destination", value: form.destination, step: "summary", en: "Destination", ar: "الوجهة" },
-      { key: "purpose", value: form.purpose, step: "summary", en: "Purpose", ar: "الغرض من الرحلة" },
-      { key: "driver", value: form.driver, step: "driver", en: "Primary Driver", ar: "السائق الأساسي" },
-      { key: "vehiclePlate", value: form.vehiclePlate, step: "vehicle", en: "Vehicle Plate", ar: "لوحة المركبة" },
-      { key: "departureDate", value: form.departureDate, step: "journey", en: "Departure Date", ar: "تاريخ المغادرة" },
-      { key: "departureTime", value: form.departureTime, step: "journey", en: "Departure Time", ar: "وقت المغادرة" },
-    ]
-    const missingFields = requiredFields.filter((field) => !String(field.value ?? "").trim())
-    if (missingFields.length) {
-      const firstMissingStep = missingFields[0].step
-      setFormStep(firstMissingStep)
-      const fieldNames = missingFields.map((field) => isArabic ? field.ar : field.en).join(isArabic ? "، " : ", ")
-      toast({
-        title: isArabic ? "حقول مطلوبة ناقصة" : "Required fields missing",
-        description: isArabic ? `يرجى تعبئة: ${fieldNames}` : `Please fill in: ${fieldNames}`,
-        variant: "destructive",
-      })
+    if (!form.origin || !form.destination || !form.vehiclePlate || !form.driver || !form.departureDate || !form.departureTime || !form.purpose) {
+      toast({ title: "Required fields missing", description: "Please fill in all required fields.", variant: "destructive" })
       return
     }
     if (!user) return
