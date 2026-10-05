@@ -40,7 +40,7 @@ const ADMIN_EMAIL = "xom-it-admin@xomoman.com"
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [activeCompanyId, setActiveCompanyIdState] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     // Storage can be unavailable in embedded previews or privacy-restricted browsers.
