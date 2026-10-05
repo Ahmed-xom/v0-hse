@@ -82,6 +82,8 @@
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.8",
     "postcss": "^8.4.49",
     "tailwindcss": "^4.2.0",
     "typescript": "^5.7.2"

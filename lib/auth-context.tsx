@@ -44,8 +44,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Storage can be unavailable in embedded previews or privacy-restricted browsers.
-    const finishLoading = window.setTimeout(() => setIsLoading(false), 1500)
-
     try {
       const storedCompanyId = window.localStorage.getItem("hse_active_company")
       if (storedCompanyId) setActiveCompanyIdState(storedCompanyId)
@@ -59,11 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     } finally {
-      window.clearTimeout(finishLoading)
       setIsLoading(false)
     }
-
-    return () => window.clearTimeout(finishLoading)
   }, [])
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
