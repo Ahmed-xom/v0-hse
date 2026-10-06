@@ -59,6 +59,27 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isExportingMetadata, setIsExportingMetadata] = useState(false)
+
+  const handleExportAegisMetadata = async () => {
+    setIsExportingMetadata(true)
+    try {
+      const response = await fetch("/api/admin/aegis/metadata", { credentials: "include" })
+      if (!response.ok) throw new Error("Metadata export failed")
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = "Aegis_XOM_Metadata.json"
+      link.click()
+      URL.revokeObjectURL(url)
+      toast({ title: "Export complete", description: "Aegis_XOM_Metadata.json has been downloaded." })
+    } catch {
+      toast({ title: "Export unavailable", description: "The SQL Server metadata source could not be reached.", variant: "destructive" })
+    } finally {
+      setIsExportingMetadata(false)
+    }
+  }
 
   const [formData, setFormData] = useState({
     name: "",
@@ -250,6 +271,14 @@ export function AdminSettings({ onUserAdded }: { onUserAdded?: () => void }) {
               </CardContent>
             </Card>
           </div>
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base"><Database className="h-5 w-5 text-primary" />Aegis SQL Server Metadata</CardTitle>
+              <CardDescription>Export read-only SQL Server catalog metadata for migration analysis. No business data or authentication secrets are exported.</CardDescription>
+            </CardHeader>
+            <CardContent><Button type="button" onClick={handleExportAegisMetadata} disabled={isExportingMetadata}><Database className="mr-2 h-4 w-4" />{isExportingMetadata ? "Exporting metadata..." : "Export Aegis Metadata"}</Button></CardContent>
+          </Card>
+
           {/* Support Contact */}
           <Card className="border-primary/20">
             <CardHeader className="pb-3">
