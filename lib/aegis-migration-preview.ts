@@ -1,5 +1,6 @@
 import type { ExportPackage } from "@/lib/aegis-export-package"
 import type { NormalizedMetadata } from "@/lib/migration-analysis"
+import { buildFieldMappingProposal } from "@/lib/aegis-field-mapping"
 
 const requiredTables = [
   "tblHSEINC", "tblInvestigation", "tblAssetLoss", "tblAutomotiveLoss", "tblEnvironmentalLoss", "tblPersonalLoss", "tblHSESafetyAlert", "tblImmediateCauseSA", "tblImmediateCauseSC", "tblInvestigation_Has_Papers", "tblInvestigation_Has_Parts", "tblInvestigation_has_PeopleAndPositions", "tblInvestigation_Has_Processes", "tblJobFactor", "tblManagementFactor", "tblPersonalFactor",
@@ -21,6 +22,6 @@ export function buildMigrationPreview(pkg: ExportPackage, metadata: NormalizedMe
   })
   const incidentRows = rowsFor(pkg, "tblHSEINC"); const incidentStatus = { total: incidentRows.length, active: incidentRows.filter((row) => !isDeleted(row)).length, deleted: incidentRows.filter(isDeleted).length, severityPreserved: incidentRows.every((row) => Object.keys(row).some((key) => /severity/i.test(key))) }
   const lookupTables = pkg.tables.map(rowTable).filter((name) => name && !requiredTables.some((required) => required.toLowerCase() === name.toLowerCase())).map((table) => ({ aegisSourceTable: table, classification: "LOOKUP_OR_REFERENCE_REVIEW_REQUIRED", sourceRowCount: rowCount(pkg, table), targetNeonTable: "NOT MAPPED", rowsWouldBeInserted: 0, rowsWouldBeUpdated: 0, rowsSkipped: rowCount(pkg, table), note: "Included for reconciliation; no guessed lookup mapping." }))
-  return { requiredTables: rows, lookupTables, incidentRules: { ...incidentStatus, deletedRemainHistorical: true, severityRemapping: "NOT PERFORMED", operationalWrites: 0 }, totals: { sourceRows: rows.reduce((sum, row) => sum + row.sourceRowCount, 0), eligible: 0, alreadyMigrated: 0, wouldInsert: 0, wouldUpdate: 0, skipped: rows.reduce((sum, row) => sum + row.rowsSkipped, 0) }, readOnly: true }
+  return { requiredTables: rows, lookupTables, incidentRules: { ...incidentStatus, deletedRemainHistorical: true, severityRemapping: "NOT PERFORMED", operationalWrites: 0 }, totals: { sourceRows: rows.reduce((sum, row) => sum + row.sourceRowCount, 0), eligible: 0, alreadyMigrated: 0, wouldInsert: 0, wouldUpdate: 0, skipped: rows.reduce((sum, row) => sum + row.rowsSkipped, 0) }, mappingProposal: buildFieldMappingProposal(pkg, metadata), readOnly: true }
 }
 export { requiredTables }
