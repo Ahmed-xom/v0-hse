@@ -10,7 +10,7 @@ type MigrationAnalysis = {
   orphanAnalysis?: Array<Record<string, unknown>>
 }
 
-export async function findExistingImport(packageSha256: string) { const result = await db.execute(sql`SELECT id, manifest FROM public.aegis_migration_import WHERE package_sha256 = ${packageSha256} LIMIT 1`); const row = (result.rows as Array<{ id?: string; manifest?: { summary?: Record<string, unknown> } }>)[0]; return row?.id ? { importId: row.id, summary: row.manifest?.summary ?? null } : null }
+export async function findExistingImport(packageSha256: string) { const result = await db.execute(sql`SELECT id, manifest FROM public.aegis_migration_import WHERE package_sha256 = ${packageSha256} LIMIT 1`); const row = (result.rows as Array<{ id?: string; manifest?: { summary?: Record<string, unknown>; artifact?: Record<string, unknown> } }>)[0]; return row?.id ? { importId: row.id, summary: row.manifest?.summary ?? null, artifact: row.manifest?.artifact ?? null } : null }
 
 export async function recordReconciliationIssues(importId: string, analysis: MigrationAnalysis) {
   const issues: Array<{ type: string; severity: string; table?: string; details: Record<string, unknown> }> = []
