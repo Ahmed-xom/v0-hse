@@ -36,7 +36,7 @@ export function StorageUsage() {
           <p className="mt-1 text-sm text-muted-foreground">Current database and file storage footprint</p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
-          <Link href="/admin/database-migration" className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted" aria-label="Open database migration">
+          <Link href="/admin/data-migration" className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted" aria-label="Open database migration">
             <DatabaseBackup className="size-4" />
             Database Migration
           </Link>
