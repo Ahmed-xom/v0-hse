@@ -1,7 +1,8 @@
 "use client"
 
+import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Database, FileArchive, RefreshCw } from "lucide-react"
+import { Database, FileArchive, RefreshCw, DatabaseBackup } from "lucide-react"
 import { getStorageUsage, type StorageUsage } from "@/app/actions/get-storage-usage"
 
 export function StorageUsage() {
@@ -34,10 +35,16 @@ export function StorageUsage() {
           <h2 id="storage-usage-title" className="mt-1 text-lg font-semibold">Storage usage</h2>
           <p className="mt-1 text-sm text-muted-foreground">Current database and file storage footprint</p>
         </div>
-        <button type="button" onClick={() => void refresh()} disabled={isLoading} className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60" aria-label="Refresh storage usage">
-          <RefreshCw className={isLoading ? "size-4 animate-spin" : "size-4"} />
-          Refresh
-        </button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Link href="/admin/database-migration" className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted" aria-label="Open database migration">
+            <DatabaseBackup className="size-4" />
+            Database Migration
+          </Link>
+          <button type="button" onClick={() => void refresh()} disabled={isLoading} className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60" aria-label="Refresh storage usage">
+            <RefreshCw className={isLoading ? "size-4 animate-spin" : "size-4"} />
+            Refresh
+          </button>
+        </div>
       </div>
 
       {error ? (
