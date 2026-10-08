@@ -19,7 +19,11 @@ export default function SignInPage() {
   const { login } = useAuth()
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null
   const requestedCallbackUrl = searchParams?.get("callbackUrl")
-  const callbackUrl = requestedCallbackUrl?.startsWith("/") && !requestedCallbackUrl.startsWith("//") ? requestedCallbackUrl : "/"
+  const currentOrigin = typeof window !== "undefined" ? window.location.origin : null
+  const referrerUrl = typeof document !== "undefined" && document.referrer ? new URL(document.referrer) : null
+  const referrerPath = currentOrigin && referrerUrl?.origin === currentOrigin ? `${referrerUrl.pathname}${referrerUrl.search}` : null
+  const rawCallbackUrl = requestedCallbackUrl || referrerPath || "/"
+  const destination = rawCallbackUrl.startsWith("/") && !rawCallbackUrl.startsWith("//") ? rawCallbackUrl : "/"
   const resetSuccess = searchParams?.get("reset") === "success"
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +36,7 @@ export default function SignInPage() {
       if (result.success) {
         // Use a full navigation after the client auth state is persisted. This avoids
         // dispatching a router action while the App Router is still initializing.
-        window.location.assign(callbackUrl)
+        window.location.replace(destination)
       } else {
         setError(result.error || "Login failed")
       }
