@@ -1,9 +1,20 @@
 import { headers } from "next/headers"
+import { redirect } from "next/navigation"
 import Link from "next/link"
+import { eq } from "drizzle-orm"
 import { ArrowLeft, CheckCircle2, Database, FileSpreadsheet, ListChecks, PlayCircle, Server, ShieldCheck } from "lucide-react"
 import { auth } from "@/lib/auth"
+import { db } from "@/lib/db"
+import { user } from "@/lib/db/schema"
 
-const AUTHORIZED_ADMIN_EMAIL = "xom-it-admin@xomoman.com"
+const ADMIN_ROLES = new Set([
+  "ADMIN",
+  "ADMIN SYSTEM",
+  "SYSTEM ADMINISTRATOR",
+  "MANAGEMENT",
+  "HSE ADMIN",
+  "MASTER USER",
+])
 
 function LoginRequired() {
   return (
@@ -14,9 +25,9 @@ function LoginRequired() {
           <p className="mt-6 font-mono text-xs uppercase tracking-[0.2em] text-primary">Restricted workspace</p>
           <h1 id="login-required-title" className="mt-3 text-balance text-3xl font-semibold tracking-tight">Administrator Login Required</h1>
           <p className="mx-auto mt-4 max-w-xl leading-6 text-muted-foreground">
-            This migration center is available only to {AUTHORIZED_ADMIN_EMAIL}. Sign in with the authorized administrator account to continue.
+            This migration center is available only to authorized administrator roles. Sign in with an authorized administrator account to continue.
           </p>
-          <Link href="/sign-in" className="mt-8 inline-flex items-center justify-center rounded-md bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+          <Link href="/sign-in?callbackUrl=%2Fadmin%2Fdata-migration" className="mt-8 inline-flex items-center justify-center rounded-md bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
             Go to Sign in
           </Link>
         </section>
@@ -34,7 +45,7 @@ function AccessDenied() {
           <p className="mt-6 font-mono text-xs uppercase tracking-[0.2em] text-destructive">Restricted workspace</p>
           <h1 id="access-denied-title" className="mt-3 text-balance text-3xl font-semibold tracking-tight">Access Denied</h1>
           <p className="mx-auto mt-4 max-w-xl leading-6 text-muted-foreground">
-            Your account is authenticated, but this center is available only to {AUTHORIZED_ADMIN_EMAIL}.
+            Your account is authenticated, but its role is not authorized for this center.
           </p>
           <Link href="/" className="mt-8 inline-flex items-center justify-center rounded-md border border-border px-5 py-3 text-sm font-medium transition-colors hover:bg-muted">
             Return to Dashboard
@@ -108,10 +119,22 @@ function MigrationWorkspace({ email }: { email: string }) {
 }
 
 export default async function DataMigrationPage() {
-  const session = await auth.api.getSession({ headers: await headers() })
+  const requestHeaders = await headers()
+  const session = await auth.api.getSession({ headers: requestHeaders })
 
-  if (!session?.user) return <LoginRequired />
-  if (session.user.email !== AUTHORIZED_ADMIN_EMAIL) return <AccessDenied />
+  if (!session?.user?.id) {
+    redirect(`/sign-in?callbackUrl=${encodeURIComponent("/admin/data-migration")}`)
+  }
+
+  const [currentUser] = await db
+    .select({ role: user.role })
+    .from(user)
+    .where(eq(user.id, session.user.id))
+    .limit(1)
+
+  const role = String(currentUser?.role ?? "").trim().toUpperCase()
+
+  if (!ADMIN_ROLES.has(role)) return <AccessDenied />
 
   return <MigrationWorkspace email={session.user.email} />
 }
