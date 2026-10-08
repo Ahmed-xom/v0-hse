@@ -1,16 +1,16 @@
 import { headers } from "next/headers"
-import { redirect } from "next/navigation"
+import { forbidden, redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { user } from "@/lib/db/schema"
 import { DatabaseMigrationDashboard } from "@/components/dashboard/database-migration-dashboard"
 import { eq } from "drizzle-orm"
 
-const adminRoles = new Set(["ADMIN", "ADMIN SYSTEM", "SYSTEM ADMINISTRATOR", "MANAGEMENT", "HSE ADMIN"])
+const adminRoles = new Set(["ADMIN", "ADMIN SYSTEM", "SYSTEM ADMINISTRATOR", "MANAGEMENT", "HSE ADMIN", "MASTER USER"])
 
 export default async function DatabaseMigrationPage() {
   const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user) redirect("/sign-in")
+  if (!session?.user) redirect(`/sign-in?callbackUrl=${encodeURIComponent("/admin/database-migration")}`)
 
   const [currentUser] = await db
     .select({ role: user.role })
@@ -19,6 +19,6 @@ export default async function DatabaseMigrationPage() {
     .limit(1)
   const role = String(currentUser?.role ?? "").trim().toUpperCase()
 
-  if (!adminRoles.has(role)) redirect("/")
+  if (!adminRoles.has(role)) forbidden()
   return <DatabaseMigrationDashboard />
 }
