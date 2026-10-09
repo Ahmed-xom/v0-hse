@@ -21,7 +21,7 @@ for (const mapping of review.mappings) {
   if (!dataEntry) throw new Error(`Missing source data file for ${mapping.source}`)
   const raw = await zip.file(dataEntry).async("string")
   const parsed = raw.trim() ? JSON.parse(raw) : []
-  const sourceRows = Array.isArray(parsed) ? parsed : parsed.rows ?? parsed.data ?? []
+  const sourceRows = Array.isArray(parsed) ? parsed : Array.isArray(parsed.rows) ? parsed.rows : Array.isArray(parsed.data) ? parsed.data : parsed && typeof parsed === "object" ? [parsed] : []
   const targetColumns = (await pool.query("SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema=$1 AND table_name=$2 ORDER BY ordinal_position", [targetSchema, targetTable])).rows
   const targetColumnSet = new Set(targetColumns.map((column) => column.column_name))
   const missingTargets = mapping.columnMapping.filter((column) => column.destination && !targetColumnSet.has(column.destination)).map((column) => column.destination)
