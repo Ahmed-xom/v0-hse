@@ -1,11 +1,8 @@
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
+"use client"
+
 import Link from "next/link"
-import { eq } from "drizzle-orm"
 import { ArrowLeft, CheckCircle2, Database, FileSpreadsheet, ListChecks, PlayCircle, Server, ShieldCheck } from "lucide-react"
-import { auth } from "@/lib/auth"
-import { db } from "@/lib/db"
-import { user } from "@/lib/db/schema"
+import { useAuth } from "@/lib/auth-context"
 
 const ADMIN_ROLES = new Set([
   "ADMIN",
@@ -118,28 +115,21 @@ function MigrationWorkspace({ email }: { email: string }) {
   )
 }
 
-export default async function DataMigrationPage() {
-  const requestHeaders = await headers()
-  const session = await auth.api.getSession({ headers: requestHeaders })
+export default function DataMigrationPage() {
+  const { user, isLoading } = useAuth()
 
-  if (!session?.user?.id) {
-    redirect(`/sign-in?callbackUrl=${encodeURIComponent("/admin/data-migration")}`)
+  if (isLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground">
+        <p className="text-sm text-muted-foreground">Checking administrator session...</p>
+      </main>
+    )
   }
 
-  const [currentUser] = await db
-    .select({ role: user.role })
-    .from(user)
-    .where(eq(user.id, session.user.id))
-    .limit(1)
+  if (!user) return <LoginRequired />
 
-  const role = String(currentUser?.role ?? "").trim().toUpperCase()
-
+  const role = String(user.role ?? "").trim().toUpperCase()
   if (!ADMIN_ROLES.has(role)) return <AccessDenied />
 
-  return <MigrationWorkspace email={session.user.email} />
-}
-
-export const metadata = {
-  title: "Database Migration | AMNKO HSE",
-  description: "Controlled HSE database migration review workspace.",
+  return <MigrationWorkspace email={user.email} />
 }
