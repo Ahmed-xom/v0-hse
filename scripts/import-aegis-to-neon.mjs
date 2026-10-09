@@ -14,6 +14,7 @@ const reportPath = value("--report", "aegis-import-report.json")
 const checkpointPath = value("--checkpoint", `${reportPath}.checkpoint.json`)
 if (!zipPath) throw new Error("Usage: node scripts/import-aegis-to-neon.mjs --zip <export.zip> --mapping <mapping.json> [--dry-run]")
 const dryRun = !args.has("--write")
+const batchSize = Math.max(1, Number(value("--batch-size", "100")))
 if (!dryRun && !args.has("--confirm-non-production")) throw new Error("Refusing writes without --confirm-non-production.")
 if (!dryRun && process.env.NODE_ENV === "production") throw new Error("Refusing writes in production.")
 const mapping = JSON.parse(await fs.readFile(mappingPath, "utf8"))
@@ -30,12 +31,16 @@ for (const item of approvedMappings) {
   const checkpointKey = `${item.sourceSchema}.${item.sourceTable}`
   if (checkpoint[checkpointKey] === "complete") continue
   const sourceKey = `table_data/${item.sourceSchema}__${item.sourceTable}.json`
-  const entry = zip.file(sourceKey)
+  const entryName = Object.keys(zip.files).find((name) => name.replaceAll("\\", "/") === sourceKey)
+  const entry = entryName ? zip.file(entryName) : null
   if (!entry) throw new Error(`Missing data file: ${sourceKey}`)
-  const rows = JSON.parse(await entry.async("string"))
+  const parsed = JSON.parse(await entry.async("string"))
+  const rows = Array.isArray(parsed) ? parsed : parsed && typeof parsed === "object" ? [parsed] : []
   const sourceColumns = (item.columns ?? []).filter((column) => column.status === "APPROVED" && column.targetColumn)
   const tableReport = { sourceTable: sourceKey, targetTable: `${item.targetSchema}.${item.targetTable}`, source: rows.length, eligible: 0, inserted: 0, skipped: 0, errors: 0 }
-  for (const row of rows) {
+  for (let batchStart = 0; batchStart < rows.length; batchStart += batchSize) {
+    const batch = rows.slice(batchStart, batchStart + batchSize)
+    for (const row of batch) {
     report.totals.source++
     const values = sourceColumns.map((column) => row[column.sourceColumn] ?? null)
     if (values.every((value) => value === null)) { tableReport.skipped++; report.totals.skipped++; continue }
@@ -47,6 +52,7 @@ for (const item of approvedMappings) {
       const result = await pool.query(`INSERT INTO "${String(item.targetSchema).replaceAll('"', '""')}"."${String(item.targetTable).replaceAll('"', '""')}" (${columns}) VALUES (${placeholders}) ON CONFLICT DO NOTHING`, values)
       if (result.rowCount) { tableReport.inserted++; report.totals.inserted++ } else { tableReport.skipped++; report.totals.skipped++ }
     } catch (error) { tableReport.errors++; report.totals.errors++; tableReport.lastError = error instanceof Error ? error.message : String(error) }
+    }
   }
   report.tables.push(tableReport)
   if (!tableReport.errors) { checkpoint[checkpointKey] = "complete"; await fs.writeFile(checkpointPath, JSON.stringify(checkpoint, null, 2)) }
