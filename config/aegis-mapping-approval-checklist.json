@@ -1,0 +1,582 @@
+{
+  "generatedAt": "2026-10-09T10:15:59.833Z",
+  "source": {
+    "zip": ".tmp/Aegis_XOM_Export.zip",
+    "database": "Aegis_XOM",
+    "sourceTables": 341,
+    "sourceRows": 139123
+  },
+  "safety": {
+    "approved": false,
+    "writesExecuted": false,
+    "schemaChanged": false,
+    "authChanged": false,
+    "betterAuthAccessed": false,
+    "deploymentExecuted": false
+  },
+  "counts": {
+    "totalMappings": 15,
+    "approveForPilotReview": 0,
+    "needsDecision": 3,
+    "noSafeDestination": 12
+  },
+  "pilotScope": [
+    "dbo.tblCompany -> public.company (1 row)",
+    "dbo.tblBusinessUnit -> public.business_unit (7 rows)",
+    "dbo.tblEmployee -> public.employee (378 rows)"
+  ],
+  "readOnlyValidationCommands": [
+    "node scripts/validate-aegis-export.mjs .tmp/Aegis_XOM_Export.zip .tmp/aegis-export-validation.json",
+    "node --env-file-if-exists=/vercel/share/.env.project scripts/reconcile-aegis-export.mjs .tmp/Aegis_XOM_Export.zip config/aegis-table-mapping-proposal.json .tmp/aegis-full-reconciliation.json",
+    "node --env-file-if-exists=/vercel/share/.env.project scripts/import-aegis-to-neon.mjs --zip .tmp/Aegis_XOM_Export.zip --mapping config/aegis-table-mapping.json --dry-run --batch-size 100 --report .tmp/aegis-pilot-dry-run.json",
+    "node --env-file-if-exists=/vercel/share/.env.project scripts/verify-aegis-import.mjs --zip .tmp/Aegis_XOM_Export.zip --report .tmp/aegis-pilot-dry-run.json"
+  ],
+  "businessDecisionsRequired": [
+    "Confirm source-to-Neon company identity and whether the singleton source company may be represented by deterministic id aegis:company:8.",
+    "Confirm whether BU CId/Client_Id are authoritative company references and how BU_Under_Id hierarchy should be preserved.",
+    "Confirm employee status-code dictionary, nullable payroll policy, and whether employee imports may create rows without Better Auth links.",
+    "Confirm explicit timezone policy for SQL Server datetime values and treatment of CreatedBy/UpdatedBy audit identities.",
+    "Confirm whether unmatched source fields (tax, logo, birth date, department/designation lookups) are quarantined or require a separate staging model."
+  ],
+  "records": [
+    {
+      "priority": 1,
+      "source": "dbo.tblCompany",
+      "destination": "public.company",
+      "sourceRowCount": 1,
+      "destinationRowCount": 3,
+      "evidence": [
+        "HIGH confidence proposal for Companies and business units.",
+        "Source row count is 1; source PK is Cmp_Id.",
+        "Destination is an existing application table; no table creation is proposed.",
+        "Latest read-only review recorded 3 destination rows."
+      ],
+      "requiredColumnConversions": [
+        {
+          "source": "Cmp_Id",
+          "target": "id",
+          "conversion": "numeric to stable text id"
+        },
+        {
+          "source": "Cmp_Name",
+          "target": "name",
+          "conversion": "nvarchar to text"
+        },
+        {
+          "source": "Cmp_Code",
+          "target": "code",
+          "conversion": "nvarchar to text"
+        }
+      ],
+      "primaryKeyStrategy": "Preserve source Cmp_Id as prefixed text id; verify collision with existing public.company.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "Source has one row; image/blob and tax fields have no current destination.",
+        "Existing company uniqueness constraints must be checked."
+      ],
+      "blockingIssues": [
+        "Existing company name/code uniqueness may conflict.",
+        "Source company sample values are unavailable in the archive data file.",
+        "CreatedBy/UpdatedBy cannot be mapped to auth users under this review.",
+        "No destination fields exist for tax, logo, short-name, or opening-date fields."
+      ],
+      "recommendedAction": "NEEDS_DECISION",
+      "approved": false
+    },
+    {
+      "priority": 2,
+      "source": "dbo.tblBusinessUnit",
+      "destination": "public.business_unit",
+      "sourceRowCount": 7,
+      "destinationRowCount": 7,
+      "evidence": [
+        "MEDIUM confidence proposal for Companies and business units.",
+        "Source row count is 7; source PK is BU_Id.",
+        "Destination is an existing application table; no table creation is proposed.",
+        "Latest read-only review recorded 7 destination rows.",
+        "Representative source records reviewed: BU_Id 1 / XOM Oman; BU_Id 2 / XOM LLC HO; BU_Id 3 / XOM Drilling System."
+      ],
+      "requiredColumnConversions": [
+        {
+          "source": "BU_Id",
+          "target": "id",
+          "conversion": "numeric to stable text id"
+        },
+        {
+          "source": "BU_Name",
+          "target": "name",
+          "conversion": "nvarchar to text"
+        },
+        {
+          "source": "BU_Desc",
+          "target": "description",
+          "conversion": "nvarchar to text"
+        },
+        {
+          "source": "BU_Under_Id",
+          "target": "parent relationship",
+          "conversion": "requires explicit hierarchy decision"
+        }
+      ],
+      "primaryKeyStrategy": "Preserve source BU_Id as prefixed text id; map companyId only after Cmp_Id/CId relationship is confirmed.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "BU_Id is numeric and destination companyId is required.",
+        "Parent hierarchy has no direct destination column."
+      ],
+      "blockingIssues": [
+        "company_id cannot be safely derived from CId/Client_Id without confirming source semantics.",
+        "Parent BU hierarchy has no destination parent column.",
+        "Source has semicolon-delimited email values and numeric type/status conventions.",
+        "Existing destination has exactly seven rows, so identity/name conflicts must be quarantined."
+      ],
+      "recommendedAction": "NEEDS_DECISION",
+      "approved": false
+    },
+    {
+      "priority": 3,
+      "source": "dbo.tblEmployee",
+      "destination": "public.employee",
+      "sourceRowCount": 378,
+      "destinationRowCount": 369,
+      "evidence": [
+        "MEDIUM confidence proposal for Employees and user references.",
+        "Source row count is 378; source PK is Emp_Id.",
+        "Destination is an existing application table; no table creation is proposed.",
+        "Latest read-only review recorded 369 destination rows."
+      ],
+      "requiredColumnConversions": [
+        {
+          "source": "Emp_Id",
+          "target": "id",
+          "conversion": "numeric to stable text id"
+        },
+        {
+          "source": "Emp_Payroll_No",
+          "target": "payrollNo",
+          "conversion": "nvarchar to varchar"
+        },
+        {
+          "source": "Emp_Name",
+          "target": "name",
+          "conversion": "nvarchar to varchar"
+        },
+        {
+          "source": "Emp_EmailId",
+          "target": "email",
+          "conversion": "nvarchar to varchar"
+        },
+        {
+          "source": "BU_Id",
+          "target": "businessUnit",
+          "conversion": "requires BU mapping"
+        },
+        {
+          "source": "Emp_Status",
+          "target": "status",
+          "conversion": "int status dictionary required"
+        }
+      ],
+      "primaryKeyStrategy": "Never target neon_auth.user/account/session. Create/update employee records only after email and role matching is approved.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "378 rows; email may be null or duplicate.",
+        "Source employee/user identity is not sufficient to create Better Auth accounts."
+      ],
+      "blockingIssues": [
+        "Source has 378 rows versus 369 destination rows.",
+        "Live destination payroll_no is NOT NULL while source payroll number is nullable.",
+        "Source status is numeric and its code dictionary was not established.",
+        "BU/department/designation are numeric identifiers but destination stores text.",
+        "Destination employee data is used by application actions; automatic updates could alter operational behavior.",
+        "No Better Auth users, memberships, or roles may be queried or linked."
+      ],
+      "recommendedAction": "NEEDS_DECISION",
+      "approved": false
+    },
+    {
+      "priority": null,
+      "source": "dbo.AuditCategory",
+      "destination": "null.null",
+      "sourceRowCount": 11,
+      "destinationRowCount": null,
+      "evidence": [
+        "LOW confidence proposal for Master/reference data.",
+        "Source row count is 11; source PK is CategoryType_Id.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [],
+      "primaryKeyStrategy": "No safe destination until audit taxonomy is mapped to observation_type/inspection_type or master.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "Category taxonomy differs from current app tables."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    },
+    {
+      "priority": null,
+      "source": "dbo.AuditSubCategory",
+      "destination": "null.null",
+      "sourceRowCount": 71,
+      "destinationRowCount": null,
+      "evidence": [
+        "LOW confidence proposal for Master/reference data.",
+        "Source row count is 71; source PK is SubCategoryType_Id.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [],
+      "primaryKeyStrategy": "No safe destination until parent category and semantics are approved.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "Requires parent category mapping."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    },
+    {
+      "priority": null,
+      "source": "dbo.tblIncidentType",
+      "destination": "public.master",
+      "sourceRowCount": 25,
+      "destinationRowCount": null,
+      "evidence": [
+        "MEDIUM confidence proposal for Master/reference data.",
+        "Source row count is 25; source PK is IncType_Id.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [
+        {
+          "source": "IncType_Id",
+          "target": "key",
+          "conversion": "numeric to text"
+        },
+        {
+          "source": "IncType_Name",
+          "target": "value",
+          "conversion": "nvarchar to text"
+        },
+        {
+          "source": "IncType_Desc",
+          "target": "description",
+          "conversion": "nvarchar to text"
+        }
+      ],
+      "primaryKeyStrategy": "Use generated stable master ids and type=incident_type; do not reuse source numeric id as primary key without collision check.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "25 rows; ForHSE/ForSQ flags have no direct master column."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    },
+    {
+      "priority": null,
+      "source": "dbo.AuditQuestions",
+      "destination": "null.null",
+      "sourceRowCount": 3408,
+      "destinationRowCount": null,
+      "evidence": [
+        "LOW confidence proposal for Inspections.",
+        "Source row count is 3408; source PK is Question_Id.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [],
+      "primaryKeyStrategy": "Requires manual mapping to inspection_type or a new approved detail model.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "3408 rows; no destination question/checklist model identified in current Drizzle schema."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    },
+    {
+      "priority": null,
+      "source": "dbo.Inspections",
+      "destination": "public.inspection_type",
+      "sourceRowCount": 29,
+      "destinationRowCount": null,
+      "evidence": [
+        "MEDIUM confidence proposal for Inspections.",
+        "Source row count is 29; source PK is Inspection_Id.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [
+        {
+          "source": "Inspection_Id",
+          "target": "id",
+          "conversion": "bigint to stable text id"
+        },
+        {
+          "source": "Inspection_Name",
+          "target": "name",
+          "conversion": "nvarchar to varchar"
+        },
+        {
+          "source": "Inspection_Desc",
+          "target": "description",
+          "conversion": "nvarchar to text"
+        },
+        {
+          "source": "Threshold",
+          "target": "frequency",
+          "conversion": "not compatible; manual decision required"
+        },
+        {
+          "source": "State",
+          "target": "isActive",
+          "conversion": "bit to boolean"
+        }
+      ],
+      "primaryKeyStrategy": "Preserve source Inspection_Id as prefixed text id after collision check.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "Threshold is not a frequency.",
+        "Category/subcategory references require separate mapping."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    },
+    {
+      "priority": null,
+      "source": "dbo.AuditInspectionsHeader",
+      "destination": "public.inspection",
+      "sourceRowCount": 97,
+      "destinationRowCount": null,
+      "evidence": [
+        "LOW confidence proposal for Inspections.",
+        "Source row count is 97; source PK is AssignAudit_Id.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [
+        {
+          "source": "AssignAudit_Id",
+          "target": "id",
+          "conversion": "bigint to stable text id"
+        },
+        {
+          "source": "Emp_Id",
+          "target": "userId",
+          "conversion": "numeric employee identity to Better Auth UUID; unresolved"
+        },
+        {
+          "source": "AuditCompliance",
+          "target": "findings",
+          "conversion": "numeric summary to text or structured value"
+        },
+        {
+          "source": "CreatedAt",
+          "target": "createdAt",
+          "conversion": "datetime to timestamp"
+        }
+      ],
+      "primaryKeyStrategy": "Do not import until Emp_Id to approved userId mapping exists.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "Required inspectionTypeId and businessUnitId need validated joins."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    },
+    {
+      "priority": null,
+      "source": "dbo.InspectionAssignment",
+      "destination": "null.null",
+      "sourceRowCount": 78,
+      "destinationRowCount": null,
+      "evidence": [
+        "LOW confidence proposal for Inspections.",
+        "Source row count is 78; source PK is AssignInspection_Id.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [],
+      "primaryKeyStrategy": "Requires manual review; no safe one-table destination.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "78 rows and multiple business-unit/user foreign keys."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    },
+    {
+      "priority": null,
+      "source": "dbo.tblCourses",
+      "destination": "public.training",
+      "sourceRowCount": 111,
+      "destinationRowCount": null,
+      "evidence": [
+        "LOW confidence proposal for Training and training notifications.",
+        "Source row count is 111; source PK is CourseId.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [
+        {
+          "source": "CourseId",
+          "target": "id",
+          "conversion": "bigint to stable text id"
+        },
+        {
+          "source": "CourseTitle",
+          "target": "courseName",
+          "conversion": "nvarchar to text"
+        },
+        {
+          "source": "Description",
+          "target": "result",
+          "conversion": "not semantically compatible"
+        },
+        {
+          "source": "RecertificationInterval",
+          "target": "expiryDate",
+          "conversion": "interval requires employee completion date"
+        }
+      ],
+      "primaryKeyStrategy": "Course catalog cannot map directly to training rows because destination training requires employeeName and employeeCode.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "111 course rows; needs separate course destination or approved denormalization."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    },
+    {
+      "priority": 3,
+      "source": "dbo.tblEmployee",
+      "destination": "public.training",
+      "sourceRowCount": 378,
+      "destinationRowCount": null,
+      "evidence": [
+        "LOW confidence proposal for Training and training notifications.",
+        "Source row count is 378; source PK is Emp_Id.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [
+        {
+          "source": "Emp_Name",
+          "target": "employeeName",
+          "conversion": "nvarchar to text"
+        },
+        {
+          "source": "Emp_Payroll_No",
+          "target": "employeeCode",
+          "conversion": "nvarchar to text"
+        }
+      ],
+      "primaryKeyStrategy": "Not a standalone mapping; requires training completion source tables and employee matching.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "Do not create training rows from employee rows."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    },
+    {
+      "priority": null,
+      "source": "dbo.tblJMVehicleDetail",
+      "destination": "public.vehicle",
+      "sourceRowCount": 54,
+      "destinationRowCount": null,
+      "evidence": [
+        "MEDIUM confidence proposal for Journeys and vehicles.",
+        "Source row count is 54; source PK is VDId.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [
+        {
+          "source": "VehicleRegistrationNo",
+          "target": "plate_no",
+          "conversion": "nvarchar to text"
+        },
+        {
+          "source": "AllowableLoad",
+          "target": "allowable_load",
+          "conversion": "nvarchar to text"
+        },
+        {
+          "source": "KMReading",
+          "target": "km_reading",
+          "conversion": "nvarchar to text"
+        },
+        {
+          "source": "Description",
+          "target": "description",
+          "conversion": "nvarchar to text"
+        }
+      ],
+      "primaryKeyStrategy": "Destination vehicle id is generated identity; match by normalized plate_no, never source numeric id alone.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "Vehicle table name/row count must be confirmed from source catalog; duplicate plates need review."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    },
+    {
+      "priority": null,
+      "source": "dbo.ActionItems",
+      "destination": "null.null",
+      "sourceRowCount": 669,
+      "destinationRowCount": null,
+      "evidence": [
+        "LOW confidence proposal for Other relevant HSE modules.",
+        "Source row count is 669; source PK is ActionItemId.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [],
+      "primaryKeyStrategy": "Requires manual review; likely action-item/audit history and no direct destination table.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "669 rows; depends on audits, employees, priorities, statuses and parent objects."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    },
+    {
+      "priority": null,
+      "source": "dbo.ActionItems_AuditTrail",
+      "destination": "null.null",
+      "sourceRowCount": 1109,
+      "destinationRowCount": null,
+      "evidence": [
+        "LOW confidence proposal for Other relevant HSE modules.",
+        "Source row count is 1109; source PK is none.",
+        "Destination is an existing application table; no table creation is proposed."
+      ],
+      "requiredColumnConversions": [],
+      "primaryKeyStrategy": "Legacy/audit data; retain as archive until audit destination is approved.",
+      "foreignKeyDependencies": [],
+      "duplicateConflictPolicy": "REQUIRES_MANUAL_REVIEW; default must remain insert-only and skip conflicts.",
+      "risksToExistingApplicationBehavior": [
+        "1109 rows; no safe destination in current schema."
+      ],
+      "blockingIssues": [],
+      "recommendedAction": "NO_SAFE_DESTINATION",
+      "approved": false
+    }
+  ]
+}
