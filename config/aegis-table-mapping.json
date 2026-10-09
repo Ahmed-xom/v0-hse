@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "source": { "database": "Aegis_XOM", "schema": "dbo" },
+  "approved": false,
+  "notes": "Generated mappings must be reviewed against the validated export and live Neon catalog before approval.",
+  "tables": []
+}
