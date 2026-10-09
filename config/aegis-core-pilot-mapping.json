@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "approved": false,
+  "mode": "pilot-review-only",
+  "source": { "database": "Aegis_XOM", "schema": "dbo" },
+  "target": { "database": "Neon", "schema": "public" },
+  "tables": [
+    {
+      "sourceSchema": "dbo", "sourceTable": "tblCompany", "targetSchema": "public", "targetTable": "company", "status": "REVIEW", "approved": false,
+      "sourceKey": "Cmp_Id", "targetKey": "id", "keyStrategy": "aegis:company:<Cmp_Id>",
+      "requiredDecisions": ["company identity", "name/code conflict policy", "timezone"],
+      "columns": [
+        {"sourceColumn":"Cmp_Id","targetColumn":"id","status":"REVIEW"},
+        {"sourceColumn":"Cmp_Name","targetColumn":"name","status":"REVIEW"},
+        {"sourceColumn":"Cmp_Code","targetColumn":"code","status":"REVIEW"},
+        {"sourceColumn":"CreatedAt","targetColumn":"created_at","status":"REVIEW"},
+        {"sourceColumn":"UpdatedAt","targetColumn":"updated_at","status":"REVIEW"}
+      ],
+      "unmappedPolicy": "quarantine tax/logo/short-name/opening-date/audit identities"
+    },
+    {
+      "sourceSchema": "dbo", "sourceTable": "tblBusinessUnit", "targetSchema": "public", "targetTable": "business_unit", "status": "REVIEW", "approved": false,
+      "sourceKey": "BU_Id", "targetKey": "id", "keyStrategy": "aegis:business-unit:<BU_Id>",
+      "requiredDecisions": ["company relationship", "parent hierarchy", "status/type dictionaries", "timezone"],
+      "columns": [
+        {"sourceColumn":"BU_Id","targetColumn":"id","status":"REVIEW"},
+        {"sourceColumn":"BU_Name","targetColumn":"name","status":"REVIEW"},
+        {"sourceColumn":"BU_Desc","targetColumn":"description","status":"REVIEW"},
+        {"sourceColumn":"BU_EmailId","targetColumn":"email","status":"REVIEW"},
+        {"sourceColumn":"BU_TypeName","targetColumn":"type","status":"REVIEW"},
+        {"sourceColumn":"Is_Deleted","targetColumn":"status","status":"REVIEW"},
+        {"sourceColumn":"CreatedAt","targetColumn":"created_at","status":"REVIEW"},
+        {"sourceColumn":"UpdatedAt","targetColumn":"updated_at","status":"REVIEW"}
+      ],
+      "unmappedPolicy": "quarantine BU_Under_Id, CId/Client_Id until semantics are approved"
+    },
+    {
+      "sourceSchema": "dbo", "sourceTable": "tblEmployee", "targetSchema": "public", "targetTable": "employee", "status": "REVIEW", "approved": false,
+      "sourceKey": "Emp_Id", "targetKey": "id", "keyStrategy": "aegis:employee:<Emp_Id>",
+      "requiredDecisions": ["payroll nullability", "status dictionary", "BU/department/designation lookups", "timezone"],
+      "columns": [
+        {"sourceColumn":"Emp_Id","targetColumn":"id","status":"REVIEW"},
+        {"sourceColumn":"Emp_Payroll_No","targetColumn":"payroll_no","status":"BLOCKED"},
+        {"sourceColumn":"Emp_Name","targetColumn":"name","status":"REVIEW"},
+        {"sourceColumn":"Emp_EmailId","targetColumn":"email","status":"REVIEW"},
+        {"sourceColumn":"Emp_Desig_Id","targetColumn":"designation","status":"BLOCKED"},
+        {"sourceColumn":"BU_Id","targetColumn":"businessUnit","status":"BLOCKED"},
+        {"sourceColumn":"Emp_Dept_Id","targetColumn":"department","status":"BLOCKED"},
+        {"sourceColumn":"Emp_Status","targetColumn":"status","status":"BLOCKED"},
+        {"sourceColumn":"CreatedAt","targetColumn":"createdAt","status":"REVIEW"},
+        {"sourceColumn":"UpdatedAt","targetColumn":"updatedAt","status":"REVIEW"}
+      ],
+      "unmappedPolicy": "quarantine rows lacking required payroll/status/lookup evidence; never link Better Auth"
+    }
+  ],
+  "importOrder": ["public.company", "public.business_unit", "public.employee"],
+  "safety": { "insertOnly": true, "neverUpdate": true, "neverDelete": true, "neverAuth": true, "requiresVerifiedNonProductionTarget": true }
+}

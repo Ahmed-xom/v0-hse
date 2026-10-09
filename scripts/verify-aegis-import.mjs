@@ -12,7 +12,10 @@ const zip = await JSZip.loadAsync(await fs.readFile(zipPath), { checkCRC32: true
 const pool = new Pool({ connectionString: process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL })
 const verification = { readOnly: true, startedAt: new Date().toISOString(), dryRun: sourceReport.dryRun, tables: [], totals: { source: 0, eligible: 0, inserted: 0, skipped: 0, errors: 0, mismatches: 0 } }
 for (const table of sourceReport.tables ?? []) {
-  const rows = JSON.parse(await zip.file(table.sourceTable).async("string"))
+  const entryName = Object.keys(zip.files).find((name) => name.replaceAll("\\", "/") === String(table.sourceTable).replaceAll("\\", "/"))
+  if (!entryName) throw new Error(`Missing source data file: ${table.sourceTable}`)
+  const parsed = JSON.parse(await zip.file(entryName).async("string"))
+  const rows = Array.isArray(parsed) ? parsed : parsed && typeof parsed === "object" ? [parsed] : []
   const [schema, target] = String(table.targetTable).split(".")
   const result = await pool.query("SELECT to_regclass($1) AS relation", [`${schema}.${target}`])
   const relationExists = Boolean(result.rows[0]?.relation)
