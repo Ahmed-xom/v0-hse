@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import {
   Plus, Search, RefreshCw, Eye, Edit, Trash2, FileText, FilePlus,
   Download, ExternalLink, ChevronDown, FolderOpen, Upload,
-  Lock, Globe, Users, Shield, X, FileUp, CheckCircle2,
+  Lock, Globe, Users, Shield, X, FileUp, CheckCircle2, AlertTriangle,
+  CalendarClock,
   FileSpreadsheet, FileCode, File,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -74,6 +75,15 @@ function fmtDate(d: string | null) {
   try { return format(parseISO(d), 'dd MMM yyyy') } catch { return d }
 }
 
+function expiryState(expiryDate: string | null) {
+  if (!expiryDate) return { label: 'No expiry date', className: 'text-muted-foreground', icon: CalendarClock }
+  const expiry = parseISO(expiryDate)
+  const days = Math.ceil((expiry.getTime() - Date.now()) / 86400000)
+  if (days < 0) return { label: 'Expired', className: 'text-destructive', icon: AlertTriangle }
+  if (days <= 30) return { label: `Expires in ${days}d`, className: 'text-amber-600', icon: CalendarClock }
+  return { label: `Valid until ${fmtDate(expiryDate)}`, className: 'text-emerald-600', icon: CheckCircle2 }
+}
+
 // ── types ─────────────────────────────────────────────────────────────────────
 
 type FormData = Omit<HSEDocument, 'id' | 'doc_no' | 'created_at' | 'updated_at'>
@@ -106,6 +116,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
+  const [filterExpiry, setFilterExpiry] = useState('all')
 
   // dialogs
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -149,11 +160,20 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
     const matchSearch = !search ||
       d.title.toLowerCase().includes(q) ||
       (d.doc_no ?? '').toLowerCase().includes(q) ||
+      (d.file_name ?? '').toLowerCase().includes(q) ||
+      (d.category ?? '').toLowerCase().includes(q) ||
+      (d.business_unit ?? '').toLowerCase().includes(q) ||
       (d.owner ?? '').toLowerCase().includes(q) ||
       d.tags?.some(t => t.toLowerCase().includes(q))
     const matchCat = filterCategory === 'all' || d.category === filterCategory
     const matchStatus = filterStatus === 'all' || d.status === filterStatus
-    return matchSearch && matchCat && matchStatus
+    const expiry = d.expiry_date ? Math.ceil((parseISO(d.expiry_date).getTime() - Date.now()) / 86400000) : null
+    const matchExpiry = filterExpiry === 'all' ||
+      (filterExpiry === 'expired' && expiry !== null && expiry < 0) ||
+      (filterExpiry === 'soon' && expiry !== null && expiry >= 0 && expiry <= 30) ||
+      (filterExpiry === 'missing' && expiry === null) ||
+      (filterExpiry === 'valid' && expiry !== null && expiry > 30)
+    return matchSearch && matchCat && matchStatus && matchExpiry
   })
 
   const stats = {
@@ -161,6 +181,14 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
     active: docs.filter(d => d.status === 'Active').length,
     policies: docs.filter(d => d.category === 'Policy').length,
     restricted: docs.filter(d => !d.is_public).length,
+    expired: docs.filter(d => d.expiry_date && parseISO(d.expiry_date).getTime() < Date.now()).length,
+    expiringSoon: docs.filter(d => {
+      if (!d.expiry_date) return false
+      const days = Math.ceil((parseISO(d.expiry_date).getTime() - Date.now()) / 86400000)
+      return days >= 0 && days <= 30
+    }).length,
+    missingExpiry: docs.filter(d => !d.expiry_date).length,
+    missingFile: docs.filter(d => !d.file_url || !d.file_name).length,
   }
 
   // ── file upload ───────────────────────────────────────────────────────────
@@ -347,8 +375,14 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
           </div>
         </div>
         <div className="space-y-5 p-5 sm:p-7">
-          <div className="flex gap-2"><div className="relative flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Enter Keyword To Search" className="pl-9" value={search} onChange={e => setSearch(e.target.value)} /></div><Button onClick={() => setSearch(search.trim())}>Go</Button><Button variant="outline" size="icon" onClick={load} aria-label="Refresh"><RefreshCw className="h-4 w-4" /></Button></div>
-          <div className="flex flex-wrap gap-2 border-b pb-4"><Select value={filterCategory} onValueChange={setFilterCategory}><SelectTrigger className="w-44"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="all">All Categories</SelectItem>{DOCUMENT_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem>{Object.keys(STATUS_STYLES).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Document audit summary">
+            <AuditStat label="Active" value={stats.active} tone="text-emerald-600" />
+            <AuditStat label="Expired" value={stats.expired} tone="text-destructive" />
+            <AuditStat label="Expiring in 30 days" value={stats.expiringSoon} tone="text-amber-600" />
+            <AuditStat label="Missing file / expiry" value={`${stats.missingFile} / ${stats.missingExpiry}`} tone="text-muted-foreground" />
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row"><div className="relative flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input aria-label="Search documents" placeholder="Search title, file, category, company, owner, or document number" className="pl-9" value={search} onChange={e => setSearch(e.target.value)} /></div><Button onClick={() => setSearch(search.trim())}>Go</Button><Button variant="outline" size="icon" onClick={load} aria-label="Refresh"><RefreshCw className="h-4 w-4" /></Button></div>
+          <div className="flex flex-wrap gap-2 border-b pb-4"><Select value={filterCategory} onValueChange={setFilterCategory}><SelectTrigger className="w-44"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="all">All Categories</SelectItem>{DOCUMENT_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem>{Object.keys(STATUS_STYLES).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><Select value={filterExpiry} onValueChange={setFilterExpiry}><SelectTrigger className="w-44"><SelectValue placeholder="Expiry" /></SelectTrigger><SelectContent><SelectItem value="all">All expiry states</SelectItem><SelectItem value="valid">Valid</SelectItem><SelectItem value="soon">Expiring soon</SelectItem><SelectItem value="expired">Expired</SelectItem><SelectItem value="missing">Missing expiry</SelectItem></SelectContent></Select></div>
           <div className="min-h-[360px] font-sans text-sm">
             {loading ? <p className="py-8 text-muted-foreground">Loading files...</p> : filtered.length === 0 ? <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground"><FolderOpen className="h-12 w-12 opacity-30" /><p>{search ? 'No matching files found' : 'No files in this company library'}</p></div> : <div className="space-y-1"><div className="flex items-center gap-1 font-medium text-primary"><ChevronDown className="h-4 w-4" /><FolderOpen className="h-4 w-4 text-amber-500" />Library</div>{Array.from(new Set(filtered.map(d => d.category))).map(category => <div key={category} className="ml-5"><div className="flex items-center gap-1 py-1 text-foreground"><ChevronDown className="h-4 w-4 text-muted-foreground" /><FolderOpen className="h-4 w-4 text-amber-500" />{category}</div><div className="ml-6 space-y-1">{filtered.filter(d => d.category === category).map(d => <div key={d.id} className="group flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted"><span className="shrink-0">{fileIcon(d.file_name, d.file_type)}</span><button className="min-w-0 flex-1 truncate text-left text-primary hover:underline" onClick={() => { setSelected(d); setIsViewOpen(true) }}>{d.title}</button><span className="hidden text-xs text-muted-foreground sm:inline">v{d.version} · {d.status}</span><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-48"><DropdownMenuItem onClick={() => { setSelected(d); setIsViewOpen(true) }}><Eye className="mr-2 h-4 w-4" />View Details</DropdownMenuItem>{d.file_url && <DropdownMenuItem asChild><a href={d.file_url} target="_blank" rel="noopener noreferrer" download={d.file_name ?? true}><Download className="mr-2 h-4 w-4" />Download File</a></DropdownMenuItem>}{canEdit && <><DropdownMenuItem onClick={() => openEdit(d)}><Edit className="mr-2 h-4 w-4" />Edit Details</DropdownMenuItem>{isAdmin && <DropdownMenuItem onClick={() => openAccess(d)}><Shield className="mr-2 h-4 w-4" />Manage Access</DropdownMenuItem>}<DropdownMenuSeparator /><DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(d.id)}><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem></>}</DropdownMenuContent></DropdownMenu></div>)}</div></div>)}</div>}
           </div>
@@ -589,6 +623,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                 }
               </div>
               {selected.description && <p className="text-muted-foreground leading-relaxed">{selected.description}</p>}
+              {(() => { const state = expiryState(selected.expiry_date); const Icon = state.icon; return <div className={`flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 ${state.className}`}><Icon className="h-4 w-4" /><span className="font-medium">{state.label}</span></div> })()}
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg bg-muted/40 p-3">
                 <Row label="Doc No." value={selected.doc_no} />
                 <Row label="Sub-Category" value={selected.sub_category} />
@@ -729,8 +764,13 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
   )
 }
 
-// ── small helper ──────────────────────────────────────────────────────────────
-function Row({ label, value }: { label: string; value: string | null | undefined }) {
+  // ── small helper ──────────────────────────────────────────────────────────────
+function AuditStat({ label, value, tone }: { label: string; value: string | number; tone: string }) {
+  return <div className="rounded-lg border border-border/70 bg-background/60 p-3"><p className="text-xs text-muted-foreground">{label}</p><p className={`mt-1 text-xl font-semibold ${tone}`}>{value}</p></div>
+}
+
+ function Row({ label, value }: { label: string; value: string | null | undefined }) {
+
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>
