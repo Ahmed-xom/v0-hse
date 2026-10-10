@@ -1,0 +1,52 @@
+{
+  "generatedAt": "2026-10-09T09:47:44.243Z",
+  "export": {
+    "path": ".tmp/Aegis_XOM_Export.zip",
+    "format": "Aegis_XOM_ReadOnly_Export_v1",
+    "database": "Aegis_XOM",
+    "exportedAt": "2026-10-07T06:56:38.6349217Z",
+    "sourceTables": 341,
+    "populatedTables": 269,
+    "emptyTables": 72,
+    "totalRows": 139123,
+    "rowCountEntries": 341,
+    "dataFiles": 341,
+    "archiveEntries": 350,
+    "summedRowCounts": 139123,
+    "sourceColumns": 3665,
+    "sourcePrimaryKeyRows": 253,
+    "sourceForeignKeyRows": 535
+  },
+  "neon": {
+    "liveBaseTables": 120,
+    "livePublicTables": 110,
+    "liveAuthTables": 10,
+    "authExcluded": [
+      "neon_auth.invitation",
+      "neon_auth.session",
+      "neon_auth.organization",
+      "neon_auth.account",
+      "neon_auth.verification",
+      "neon_auth.jwks",
+      "neon_auth.member",
+      "neon_auth.project_config",
+      "neon_auth.employee",
+      "neon_auth.user"
+    ],
+    "liveColumnRows": 751,
+    "constraintRows": 129
+  },
+  "compatibility": {
+    "exactPublicNameMatches": 0,
+    "exactMatches": [],
+    "missingByExactName": 341,
+    "plannerReport": ".tmp/aegis-compatibility-report.json"
+  },
+  "safety": {
+    "readOnly": true,
+    "importRun": false,
+    "schemaChanged": false,
+    "authImported": false,
+    "approved": false
+  }
+}
