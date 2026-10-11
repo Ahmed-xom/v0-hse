@@ -118,6 +118,7 @@ const translations: Record<string, string> = {
   "Behaviour Observations": "ملاحظات السلوك",
   "Company Document Library": "مكتبة مستندات الشركة",
   "Files for the active company": "ملفات الشركة النشطة",
+  "for this company": "لهذه الشركة",
   "Ticket and Invoice Tracker": "متابعة التذاكر والفواتير",
   "Privacy Policy": "سياسة الخصوصية",
   "Terms of Service": "شروط الخدمة",
@@ -238,6 +239,27 @@ const translations: Record<string, string> = {
   "Emergency": "الطوارئ",
   "Search results": "نتائج البحث",
   "No results found": "لم يتم العثور على نتائج",
+  User: "المستخدم",
+  "Log out": "تسجيل الخروج",
+  "Toggle menu": "تبديل القائمة",
+  "Open database migration": "فتح تحليل ترحيل قاعدة البيانات",
+  "Refresh storage usage": "تحديث استخدام التخزين",
+  "Storage usage is temporarily unavailable.": "استخدام التخزين غير متاح مؤقتاً.",
+  "Platform health": "سلامة المنصة",
+  "Current database and file storage footprint": "الحجم الحالي لقاعدة البيانات وتخزين الملفات",
+  Incident: "الحادث",
+  "Near Miss": "شبه حادث",
+  Hazard: "مصدر الخطر",
+  "Corrective Action": "إجراء تصحيحي",
+  "Preventive Action": "إجراء وقائي",
+  Audit: "التدقيق",
+  "Training Certificate": "شهادة تدريب",
+  "Permit to Work": "تصريح العمل",
+  "Safety Observation": "ملاحظة سلامة",
+  "Personal Protective Equipment (PPE)": "معدات الوقاية الشخصية",
+  "Root Cause Analysis": "تحليل السبب الجذري",
+  "Emergency Response": "الاستجابة للطوارئ",
+  "Cold iron": "الحديد البارد",
 }
 
 const arabicToEnglish = Object.fromEntries(Object.entries(translations).map(([english, arabic]) => [arabic, english])) as Record<string, string>
@@ -249,6 +271,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const isArabic = language === "ar"
 
   useEffect(() => {
+    const savedLanguage = window.localStorage.getItem("hse-language")
+    if (savedLanguage === "en" || savedLanguage === "ar") setLanguageState(savedLanguage)
+  }, [])
+
+  useEffect(() => {
+    window.localStorage.setItem("hse-language", language)
     document.documentElement.lang = language
     document.documentElement.dir = isArabic ? "rtl" : "ltr"
 

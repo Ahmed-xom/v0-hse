@@ -73,8 +73,8 @@ export function DashboardHeader() {
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              aria-label="Go to home page"
-              title="Home"
+              aria-label={t("Go to home page")}
+              title={t("Home")}
               className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <Home className="size-4" />
@@ -184,7 +184,7 @@ export function DashboardHeader() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("Notifications")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <button
@@ -192,8 +192,8 @@ export function DashboardHeader() {
                   className="flex w-full cursor-pointer flex-col items-start gap-1 py-3 text-left"
                   onClick={() => window.dispatchEvent(new CustomEvent("hse:filter-inspections", { detail: { status: "Overdue" } }))}
                 >
-                  <span className="font-medium">Overdue Inspection Alert</span>
-                  <span className="text-sm text-muted-foreground">Chemical Storage Inspection is 3 days overdue</span>
+                  <span className="font-medium">{t("Overdue Inspection Alert")}</span>
+                  <span className="text-sm text-muted-foreground">{t("Chemical Storage Inspection is 3 days overdue")}</span>
                 </button>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -252,7 +252,8 @@ export function DashboardHeader() {
           <DropdownMenuItem asChild>
             <Link href="/profile">
               <User className="mr-2 h-4 w-4" />
-              Profile
+                  {t("Profile")}
+
             </Link>
           </DropdownMenuItem>
               {showSettings && (
@@ -266,7 +267,7 @@ export function DashboardHeader() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
-                Log out
+                {t("Log out")}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -294,7 +295,7 @@ export function DashboardHeader() {
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  {item.label}
+                  {t(item.label)}
                 </Link>
               </li>
             ))}
@@ -317,7 +318,7 @@ export function DashboardHeader() {
                 }}
                 className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-destructive transition-colors hover:bg-secondary/50"
               >
-                Log out
+                {t("Log out")}
               </button>
             </li>
           </ul>
