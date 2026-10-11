@@ -33,6 +33,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { format, parseISO } from "date-fns"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
+import { useLanguage } from "@/lib/language-context"
 import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
 import {
   getDocuments, createDocument, updateDocument, deleteDocument,
@@ -104,6 +105,7 @@ interface Props { readOnly?: boolean; activeCompanyId?: string | null }
 
 export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: Props) {
   const { currentUser } = useAuth()
+  const { t } = useLanguage()
   const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
   const isReviewer = !isAdmin && isReviewerRole(currentUser?.role ?? '')
   const canEdit = !readOnly && (isAdmin || isReviewer)
@@ -354,7 +356,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
     )
   }
 
-  // ── tags ──────────────────────────────────────────────────────────────────
+  // ── tags ──────────────────────────────��───────────────────────────────────
 
   const addTag = () => {
     const t = tagInput.trim()
@@ -362,7 +364,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
     setTagInput('')
   }
 
-  // ── render ────────────────────────────────────────────────────────────────
+  // ── render ────────────────────��───────────────────────────────────────────
 
   return (
     <div className="space-y-6">
@@ -370,8 +372,8 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
       <section className="overflow-hidden rounded-xl border border-emerald-900/10 bg-card shadow-sm">
         <div className="bg-emerald-100/70 px-5 py-4 sm:px-7">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div><h1 className="text-3xl font-semibold tracking-tight text-primary">View Library</h1><p className="mt-1 text-sm text-muted-foreground">{stats.total} documents for this company</p></div>
-            {canUpload && <div className="flex gap-2"><Button size="sm" variant="outline" onClick={openCreate}><FilePlus className="mr-2 h-4 w-4" />Create Document</Button><Button size="sm" onClick={openCreate}><Upload className="mr-2 h-4 w-4" />Choose File</Button></div>}
+            <div><h1 className="text-3xl font-semibold tracking-tight text-primary">{t("View Library")}</h1><p className="mt-1 text-sm text-muted-foreground">{stats.total} {t("Documents")} {t("for this company")}</p></div>
+            {canUpload && <div className="flex gap-2"><Button size="sm" variant="outline" onClick={openCreate}><FilePlus className="me-2 h-4 w-4" />{t("Create Document")}</Button><Button size="sm" onClick={openCreate}><Upload className="me-2 h-4 w-4" />{t("Choose File")}</Button></div>}
           </div>
         </div>
         <div className="space-y-5 p-5 sm:p-7">
