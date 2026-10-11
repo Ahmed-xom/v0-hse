@@ -8,9 +8,11 @@ import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/lib/auth-context'
+import { useLanguage } from '@/lib/language-context'
 
 export function CompanySwitcher() {
   const { user, activeCompanyId, setActiveCompanyId } = useAuth()
+  const { t } = useLanguage()
   const [open, setOpen] = useState(false)
   const [companies, setCompanies] = useState<{ id: string; name: string; code?: string | null }[]>([])
   const activeId = activeCompanyId ?? 'company-xom-llc'
@@ -41,12 +43,12 @@ export function CompanySwitcher() {
       setActiveCompanyId(result.company.id)
       setName('')
     } else {
-      window.alert(result.error || 'Could not create company')
+      window.alert(t(result.error || 'Could not create company'))
     }
     setIsCreating(false)
   }
   return <Popover open={open} onOpenChange={(value) => { setOpen(value); if (value) loadCompanies() }}>
     <PopoverTrigger asChild><Button variant="outline" className="hidden max-w-48 gap-2 sm:flex"><Building2 data-icon="inline-start" /><span className="truncate">{companies.find((c) => c.id === activeId)?.name || 'AMNKO'}</span></Button></PopoverTrigger>
-    <PopoverContent align="end" className="w-72"><div className="flex flex-col gap-3"><div><p className="font-semibold">Active company</p><p className="text-sm text-muted-foreground">Choose the company workspace</p></div><div className="flex flex-col gap-1">{companies.length > 0 ? companies.map((company) => <Button key={company.id} variant="ghost" className="justify-between" onClick={() => {       setActiveCompanyId(company.id); setOpen(false) }}>{company.name}{activeId === company.id && <Check />}</Button>) : <p className="px-3 py-2 text-sm text-muted-foreground">No companies assigned</p>}</div>{canManage && <><Separator /><Label htmlFor="company-name">Add company</Label><div className="flex gap-2"><Input id="company-name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Company name" /><Button size="icon" onClick={addCompany} disabled={isCreating} aria-label="Add company"><Plus /></Button></div></>}</div></PopoverContent>
+    <PopoverContent align="end" className="w-72"><div className="flex flex-col gap-3"><div><p className="font-semibold">{t("Active company")}</p><p className="text-sm text-muted-foreground">{t("Choose the company workspace")}</p></div><div className="flex flex-col gap-1">{companies.length > 0 ? companies.map((company) => <Button key={company.id} variant="ghost" className="justify-between" onClick={() => { setActiveCompanyId(company.id); setOpen(false) }}>{company.name}{activeId === company.id && <Check />}</Button>) : <p className="px-3 py-2 text-sm text-muted-foreground">{t("No companies assigned")}</p>}</div>{canManage && <><Separator /><Label htmlFor="company-name">{t("Add company")}</Label><div className="flex gap-2"><Input id="company-name" value={name} onChange={(event) => setName(event.target.value)} placeholder={t("Company name")} /><Button size="icon" onClick={addCompany} disabled={isCreating} aria-label={t("Add company")}><Plus /></Button></div></>}</div></PopoverContent>
   </Popover>
 }
