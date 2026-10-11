@@ -262,8 +262,6 @@ const translations: Record<string, string> = {
   "Cold iron": "الحديد البارد",
 }
 
-const arabicToEnglish = Object.fromEntries(Object.entries(translations).map(([english, arabic]) => [arabic, english])) as Record<string, string>
-
 const LanguageContext = createContext<LanguageContextValue | null>(null)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
@@ -280,43 +278,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.lang = language
     document.documentElement.dir = isArabic ? "rtl" : "ltr"
 
-    let translating = false
-    const translateValue = (value: string) => {
-      const dictionary = isArabic ? translations : arabicToEnglish
-      const exact = dictionary[value.trim()]
-      if (exact) return value.replace(value.trim(), exact)
-      return value.replace(/[^.!?,;:\n]+/g, (part) => dictionary[part.trim()] ?? part)
-    }
-
-    const translatePage = () => {
-      if (translating) return
-      translating = true
-      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
-      const nodes: Text[] = []
-      let node: Node | null
-      while ((node = walker.nextNode())) nodes.push(node as Text)
-      for (const textNode of nodes) {
-        const value = textNode.nodeValue
-        if (!value?.trim() || textNode.parentElement?.closest("script,style,textarea,[data-no-translate]")) continue
-        const translated = translateValue(value)
-        if (translated !== value) textNode.nodeValue = translated
-      }
-      document.querySelectorAll<HTMLElement>("[aria-label], [placeholder], [title]").forEach((element) => {
-        for (const attribute of ["aria-label", "placeholder", "title"] as const) {
-          const value = element.getAttribute(attribute)
-          if (value) {
-            const translated = translateValue(value)
-            if (translated !== value) element.setAttribute(attribute, translated)
-          }
-        }
-      })
-      translating = false
-    }
-
-    translatePage()
-    const observer = new MutationObserver(() => translatePage())
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true })
-    return () => observer.disconnect()
+    // Components translate their own labels through `t()`. Avoid mutating the
+    // React-managed DOM globally because it can overwrite controlled labels and
+    // interrupt interactions in menus, dialogs, and upload forms.
   }, [isArabic, language])
 
   const value = useMemo<LanguageContextValue>(() => ({
