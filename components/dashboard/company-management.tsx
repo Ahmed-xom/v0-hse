@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
+import { useLanguage } from "@/lib/language-context"
 
 interface Company { id: string; name: string; code?: string | null; status?: string | null }
 const adminRoles = ["ADMIN SYSTEM", "ADMIN", "HSE ADMIN"]
@@ -17,6 +18,7 @@ const companyViewerRoles = ["MASTER USER", ...adminRoles]
 export function CompanyManagement() {
   const { user, activeCompanyId, setActiveCompanyId } = useAuth()
   const { toast } = useToast()
+  const { t } = useLanguage()
   const [companies, setCompanies] = useState<Company[]>([])
   const [editing, setEditing] = useState<string | null>(null)
   const [form, setForm] = useState({ name: "", code: "" })
@@ -46,14 +48,14 @@ export function CompanyManagement() {
     const result = await response.json()
     setIsSaving(false)
     if (!result.success) {
-      toast({ title: "Company not saved", description: result.error, variant: "destructive" })
+      toast({ title: t("Company not saved"), description: t(result.error || "Company not saved"), variant: "destructive" })
       return
     }
     setCompanies((items) => editing ? items.map((item) => item.id === result.company.id ? result.company : item) : [...items, result.company])
     setActiveCompanyId(result.company.id)
     setEditing(null)
     setForm({ name: "", code: "" })
-    toast({ title: editing ? "Company updated" : "Company created", description: result.company.name })
+    toast({ title: t(editing ? "Company updated" : "Company created"), description: result.company.name })
   }
 
   const editCompany = (company: Company) => {
@@ -81,25 +83,25 @@ export function CompanyManagement() {
       <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><Building2 className="h-5 w-5 text-primary" /></div>
-          <div><CardTitle>Company Management</CardTitle><CardDescription>Create, edit, activate, and switch company workspaces.</CardDescription></div>
+          <div><CardTitle>{t("Company Management")}</CardTitle><CardDescription>{t("Create, edit, activate, and switch company workspaces.")}</CardDescription></div>
         </div>
-        {isAdmin && <Button variant="outline" onClick={() => { setEditing(null); setForm({ name: "", code: "" }) }}><Plus className="mr-2 h-4 w-4" />New company</Button>}
+        {isAdmin && <Button variant="outline" onClick={() => { setEditing(null); setForm({ name: "", code: "" }) }}><Plus className="me-2 h-4 w-4" />{t("New company")}</Button>}
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="grid gap-3 sm:grid-cols-2">
           {companies.map((company) => <div key={company.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 p-4">
-            <button className="flex min-w-0 items-center gap-3 text-left" onClick={() => isAdmin && setActiveCompanyId(company.id)} disabled={!isAdmin} aria-label={isAdmin ? `Switch to ${company.name}` : company.name}>
+            <button className="flex min-w-0 items-center gap-3 text-start" onClick={() => isAdmin && setActiveCompanyId(company.id)} disabled={!isAdmin} aria-label={isAdmin ? `${t("Switch to")} ${company.name}` : company.name}>
               <Building2 className="h-5 w-5 shrink-0 text-muted-foreground" />
               <span className="min-w-0"><span className="block truncate font-medium">{company.name}</span><span className="text-xs text-muted-foreground">{company.code || company.id}</span></span>
               {activeCompanyId === company.id && <Check className="h-4 w-4 text-primary" />}
             </button>
-            <div className="flex items-center gap-2"><Badge variant={company.status === "Inactive" ? "secondary" : "default"}>{company.status || "Active"}</Badge>{isAdmin && <><Button variant="ghost" size="icon" onClick={() => editCompany(company)} aria-label={`Edit ${company.name}`}><Edit3 className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => toggleCompany(company)} aria-label={`Toggle ${company.name}`}><Power className="h-4 w-4" /></Button></>}</div>
+            <div className="flex items-center gap-2"><Badge variant={company.status === "Inactive" ? "secondary" : "default"}>{t(company.status || "Active")}</Badge>{isAdmin && <><Button variant="ghost" size="icon" onClick={() => editCompany(company)} aria-label={`${t("Edit")} ${company.name}`}><Edit3 className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => toggleCompany(company)} aria-label={`${t("Toggle")} ${company.name}`}><Power className="h-4 w-4" /></Button></>}</div>
           </div>)}
         </div>
         {isAdmin && <div className="grid gap-3 rounded-lg border border-dashed border-border/70 p-4 sm:grid-cols-[1fr_180px_auto] sm:items-end">
-          <div className="grid gap-2"><Label htmlFor="company-management-name">Company name</Label><Input id="company-management-name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Enter company name" /></div>
-          <div className="grid gap-2"><Label htmlFor="company-management-code">Code</Label><Input id="company-management-code" value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value })} placeholder="Optional code" /></div>
-          <div className="flex gap-2"><Button onClick={saveCompany} disabled={isSaving || !form.name.trim()}>{editing ? "Save changes" : "Create company"}</Button>{editing && <Button variant="ghost" onClick={() => { setEditing(null); setForm({ name: "", code: "" }) }}>Cancel</Button>}</div>
+          <div className="grid gap-2"><Label htmlFor="company-management-name">{t("Company name")}</Label><Input id="company-management-name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder={t("Enter company name")} /></div>
+          <div className="grid gap-2"><Label htmlFor="company-management-code">{t("Code")}</Label><Input id="company-management-code" value={form.code} onChange={(event) => setForm({ ...form, code: event.target.value })} placeholder={t("Optional code")} /></div>
+          <div className="flex gap-2"><Button onClick={saveCompany} disabled={isSaving || !form.name.trim()}>{editing ? t("Save changes") : t("Create company")}</Button>{editing && <Button variant="ghost" onClick={() => { setEditing(null); setForm({ name: "", code: "" }) }}>{t("Cancel")}</Button>}</div>
         </div>}
       </CardContent>
     </Card>
