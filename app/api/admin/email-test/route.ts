@@ -37,10 +37,10 @@ export async function POST(_request: NextRequest) {
     html: `<p>This is an authorized AMNKO HSE SMTP diagnostic.</p><p>Test ID: ${testId}</p><p>SMTP submission was accepted only if this request returns success.</p>`,
   })
   if (result.sent) {
-    console.info('[email-test] SMTP submission accepted', { testId, recipient: authorizedRecipient, at: new Date().toISOString() })
-    return NextResponse.json({ success: true, testId, recipient: authorizedRecipient, message: 'SMTP accepted the diagnostic message. Inbox delivery must be confirmed separately.' })
+    console.info('[email-test] SMTP submission accepted', { testId, recipient: authorizedRecipient, responseCode: result.responseCode ?? null, messageId: result.messageId ?? null, at: new Date().toISOString() })
+    return NextResponse.json({ success: true, testId, recipient: authorizedRecipient, smtp: { responseCode: result.responseCode ?? null, response: result.response ?? null, messageId: result.messageId ?? null }, message: 'SMTP accepted the diagnostic message. Inbox delivery must be confirmed separately.' })
   }
-  console.error('[email-test] SMTP diagnostic failed', { testId, reason: result.error || 'unknown', at: new Date().toISOString() })
+  console.error('[email-test] SMTP diagnostic failed', { testId, reason: result.error || 'unknown', responseCode: result.responseCode ?? null, response: result.response ?? null, at: new Date().toISOString() })
   const status = configuration.missing ? 503 : 502
-  return NextResponse.json({ error: 'SMTP diagnostic failed.', testId, missing: configuration.missing || undefined }, { status })
+  return NextResponse.json({ error: 'SMTP diagnostic failed.', testId, missing: configuration.missing || undefined, smtp: { responseCode: result.responseCode ?? null, response: result.response ?? null } }, { status })
 }
