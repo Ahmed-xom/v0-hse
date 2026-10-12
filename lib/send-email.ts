@@ -23,6 +23,9 @@ function getSmtpConfiguration(): { config?: SmtpConfiguration; missing?: string 
   const port = Number(values.SMTP_PORT)
   if (!Number.isInteger(port) || port < 1 || port > 65535) return { missing: 'SMTP_PORT must be a valid port' }
   if (values.SMTP_SECURE !== 'true' && values.SMTP_SECURE !== 'false') return { missing: 'SMTP_SECURE must be true or false' }
+  if (values.SMTP_HOST !== 'smtp.hostinger.com') return { missing: 'SMTP_HOST must be smtp.hostinger.com' }
+  if (port !== 465 || values.SMTP_SECURE !== 'true') return { missing: 'SMTP_PORT must be 465 and SMTP_SECURE must be true for Hostinger SSL' }
+  if (values.SMTP_FROM !== 'AMNKO HSE <no-replay@amnkoo.online>') return { missing: 'SMTP_FROM must be AMNKO HSE <no-replay@amnkoo.online>' }
   return { config: { host: values.SMTP_HOST!, port, secure: values.SMTP_SECURE === 'true', user: values.SMTP_USER!, pass: values.SMTP_PASS!, from: values.SMTP_FROM! } }
 }
 
@@ -62,8 +65,8 @@ export async function sendEmail(opts: {
     SMTP_HOST: config.host,
     SMTP_PORT: config.port,
     SMTP_SECURE: config.secure,
-    SMTP_USER: config.user,
-    SMTP_FROM: config.from,
+    SMTP_USER: '[configured]',
+    SMTP_FROM: '[configured]',
   })
 
   const smtp = getSmtpTransporter(config)

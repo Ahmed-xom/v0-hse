@@ -40,7 +40,9 @@ export async function POST(request: NextRequest) {
       const updated = await tx.execute(sql`UPDATE neon_auth."account" SET password = ${passwordHash}, "updatedAt" = now() WHERE "userId" = ${reset.user_id} AND "providerId" = 'credential'`)
       const updatedCount = Number((updated as unknown as { rowCount?: number }).rowCount || 0)
       if (updatedCount !== 1) throw new Error("credential account not found")
-      await tx.execute(sql`UPDATE public.password_reset_token SET used_at = now() WHERE token_hash = ${tokenHash} AND used_at IS NULL`)
+      const consumed = await tx.execute(sql`UPDATE public.password_reset_token SET used_at = now() WHERE token_hash = ${tokenHash} AND used_at IS NULL AND expires_at > now()`)
+      const consumedCount = Number((consumed as unknown as { rowCount?: number }).rowCount || 0)
+      if (consumedCount !== 1) throw new Error("reset token already used")
       await tx.execute(sql`DELETE FROM neon_auth.session WHERE "userId" = ${reset.user_id}`)
     })
 

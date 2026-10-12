@@ -41,8 +41,7 @@ export async function POST(request: NextRequest) {
     const signedToken = `${rawToken}.${signToken(user.id, expiresAt, rawToken)}`
     await db.execute(sql`INSERT INTO public.password_reset_token (id, user_id, token_hash, expires_at) VALUES (${randomUUID()}, ${user.id}, ${hashToken(rawToken)}, to_timestamp(${expiresAt} / 1000.0))`)
 
-    const baseUrl = process.env.BETTER_AUTH_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || process.env.V0_RUNTIME_URL || "http://localhost:3000"
-    const origin = baseUrl.startsWith("http") ? baseUrl : `https://${baseUrl}`
+    const origin = process.env.NODE_ENV === "production" ? "https://www.amnkoo.online" : (process.env.BETTER_AUTH_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || process.env.V0_RUNTIME_URL || "http://localhost:3000").replace(/\/$/, "")
     const resetLink = `${origin.replace(/\/$/, "")}/reset-password?token=${encodeURIComponent(signedToken)}`
     const safeName = user.name.replace(/[<>]/g, "") || "there"
     const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#1f2937"><h1 style="color:#059669">AMNKO HSE</h1><p>Hello ${safeName},</p><p>We received a request to reset your password.</p><p><a href="${resetLink}" style="display:inline-block;background:#059669;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Reset Password</a></p><p>This link expires in one hour and can only be used once.</p><p>If you did not request this, you can safely ignore this email.</p></div>`
