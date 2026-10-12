@@ -76,15 +76,15 @@ export type JourneyRecord = {
   id: string
   userEmail: string
   userName: string
-  origin: string
-  destination: string
-  purpose: string
-  vehicleType: string
+  origin: string | null
+  destination: string | null
+  purpose: string | null
+  vehicleType: string | null
   vehiclePlate: string | null
   driver: string | null
   secondDriver: string | null
-  departureDate: string
-  departureTime: string
+  departureDate: string | null
+  departureTime: string | null
   journeyType: 'morning' | 'night'
   estimatedReturn: string | null
   passengers: number
@@ -101,90 +101,34 @@ export async function getJourneys(userEmail: string) {
     const session = await auth.api.getSession({ headers: await headers() })
     const sessionEmail = session?.user?.email
     if (!sessionEmail || sessionEmail.toLowerCase() !== userEmail.toLowerCase()) return { success: false, data: [], error: 'Unauthorized' }
-    const rows = await db
-      .select()
-      .from(journey)
-      .where(eq(journey.userEmail, sessionEmail))
-      .orderBy(desc(journey.createdAt))
+    const rows = await db.select().from(journey).where(eq(journey.userEmail, sessionEmail)).orderBy(desc(journey.createdAt))
     return { success: true, data: rows as JourneyRecord[] }
-  } catch (error: any) {
-    console.error('[manage-journeys] getJourneys error:', error)
-    return { success: false, data: [], error: error.message }
-  }
+  } catch (error: any) { return { success: false, data: [], error: error.message } }
 }
 
 export async function getAllJourneys(companyId?: string | null) {
   try {
     const session = await auth.api.getSession({ headers: await headers() })
-    const email = session?.user?.email
-    if (!email) return { success: false, data: [], error: 'Unauthorized' }
-    const role = String((session.user as any).role ?? '').toUpperCase()
-    const canReview = await getUserJourneyApprover(email)
-    if (!email) return { success: false, data: [], error: 'Unauthorized' }
-    const rows = await db
-      .select()
-      .from(journey)
-      .orderBy(desc(journey.createdAt))
+    if (!session?.user?.email) return { success: false, data: [], error: 'Unauthorized' }
+    const rows = await db.select().from(journey).orderBy(desc(journey.createdAt))
     return { success: true, data: rows as JourneyRecord[] }
-  } catch (error: any) {
-    console.error('[manage-journeys] getAllJourneys error:', error)
-    return { success: false, data: [], error: error.message }
-  }
+  } catch (error: any) { return { success: false, data: [], error: error.message } }
 }
 
 export async function createJourney(data: {
-  userEmail: string
-  userName: string
-  origin: string
-  destination: string
-  purpose: string
-  vehicleType: string
-  vehiclePlate?: string
-  driver?: string
-  secondDriver?: string
-  departureDate: string
-  departureTime: string
-  journeyType?: 'morning' | 'night'
-  estimatedReturn?: string
-  passengers: number
-  notes?: string
-  attachmentUrl?: string
-  attachmentName?: string
-  templateDetails?: Record<string, unknown>
+  userEmail: string; userName: string; origin?: string; destination?: string; purpose?: string; vehicleType?: string
+  vehiclePlate?: string; driver?: string; secondDriver?: string; departureDate?: string; departureTime?: string
+  journeyType?: 'morning' | 'night'; estimatedReturn?: string; passengers: number; notes?: string
+  attachmentUrl?: string; attachmentName?: string; templateDetails?: Record<string, unknown>
 }) {
   try {
     const session = await auth.api.getSession({ headers: await headers() })
     if (!session?.user?.email || session.user.email.toLowerCase() !== data.userEmail.toLowerCase()) return { success: false, error: 'Unauthorized' }
     const id = `jrn-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-    const sessionUser = session.user as { name?: string | null }
-    await db.insert(journey).values({
-      id,
-      userEmail: session.user.email,
-      userName: sessionUser.name || data.userName,
-      origin: data.origin,
-      destination: data.destination,
-      purpose: data.purpose,
-      vehicleType: data.vehicleType,
-      vehiclePlate: data.vehiclePlate || null,
-      driver: data.driver || sessionUser.name || data.userName,
-      secondDriver: data.secondDriver || null,
-      departureDate: data.departureDate,
-      departureTime: data.departureTime,
-      journeyType: data.journeyType || 'morning',
-      estimatedReturn: data.estimatedReturn || null,
-      passengers: data.passengers,
-      status: 'Planned',
-      notes: data.notes || null,
-      attachmentUrl: data.attachmentUrl || null,
-      attachmentName: data.attachmentName || null,
-      templateDetails: data.templateDetails ?? {},
-    })
+    await db.insert(journey).values({ id, userEmail: session.user.email, userName: session.user.name || data.userName, origin: data.origin?.trim() || null, destination: data.destination?.trim() || null, purpose: data.purpose?.trim() || null, vehicleType: data.vehicleType?.trim() || null, vehiclePlate: data.vehiclePlate || null, driver: data.driver?.trim() || null, secondDriver: data.secondDriver?.trim() || null, departureDate: data.departureDate?.trim() || null, departureTime: data.departureTime?.trim() || null, journeyType: data.journeyType || 'morning', estimatedReturn: data.estimatedReturn || null, passengers: data.passengers, status: 'Planned', notes: data.notes || null, attachmentUrl: data.attachmentUrl || null, attachmentName: data.attachmentName || null, templateDetails: data.templateDetails ?? {} })
     revalidatePath('/journey-tracker')
     return { success: true, id }
-  } catch (error: any) {
-    console.error('[manage-journeys] createJourney error:', error)
-    return { success: false, error: error.message }
-  }
+  } catch (error: any) { console.error('[manage-journeys] createJourney error:', error); return { success: false, error: error.message } }
 }
 
 export async function updateJourneyStatus(id: string, status: string) {
