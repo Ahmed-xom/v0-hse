@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       const fresh = await db.execute(sql`SELECT password FROM neon_auth."account" WHERE "userId" = ${result.userId} AND "providerId" = 'credential'`)
       const freshRows = (fresh as unknown as { rows?: Array<{ password?: string }> }).rows || []
       console.info("[password-reset] fresh credential read completed", { requestId, diagnosticCorrelationId, rows: freshRows.length })
-      const freshVerified = freshRows.length === 1 && typeof freshRows[0].password === "string" && await verifyPassword(freshRows[0].password, password)
+      const freshVerified = freshRows.length > 0 && freshRows.every((row) => typeof row.password === "string") && (await Promise.all(freshRows.map((row) => verifyPassword(row.password as string, password)))).every(Boolean)
       console.info("[password-reset] new password verification result", { requestId, diagnosticCorrelationId, verified: freshVerified })
       return result
     })

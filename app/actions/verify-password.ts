@@ -22,7 +22,7 @@ export async function verifyUserPassword(email: string, password: string, correl
 
     const rows = (result as any).rows ?? []
 
-    if (rows.length !== 1 || !rows[0].password) {
+    if (rows.length === 0 || rows.some((row: { password?: string }) => !row.password)) {
       console.info('[auth] password verification denied', {
         requestId,
         diagnosticId,
@@ -34,7 +34,9 @@ export async function verifyUserPassword(email: string, password: string, correl
     }
 
     // Better Auth 1.7.2 stores credential hashes using its scrypt verifier.
-    const verified = await verifyPassword(rows[0].password, password)
+    // Legacy data can contain duplicate rows for the same user/account; accept
+    // the password if any credential row verifies successfully.
+    const verified = await Promise.all(rows.map((row: { password: string }) => verifyPassword(row.password, password))).then((results) => results.some(Boolean))
 
     if (!verified) {
       console.info('[auth] password verification denied', {
