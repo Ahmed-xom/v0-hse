@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto"
-import { hashPassword } from "@better-auth/utils/password"
+import { hashPassword, verifyPassword } from "@better-auth/utils/password"
 import { db } from "@/lib/db"
 import { resetPasswordInTransaction } from "@/lib/auth/reset-password-transaction"
+import { createAuthDiagnosticId, getAuthRuntimeContext } from "@/lib/auth/diagnostic"
+import { sql } from "drizzle-orm"
 
 function getSecret() {
   if (!process.env.BETTER_AUTH_SECRET) throw new Error("BETTER_AUTH_SECRET is not configured")
@@ -21,6 +23,9 @@ function validSignature(userId: string, expiresAt: string | Date, rawToken: stri
 
 export async function POST(request: NextRequest) {
   const requestId = randomUUID()
+  const diagnosticCorrelationId = createAuthDiagnosticId()
+  const runtime = getAuthRuntimeContext()
+  console.info("[password-reset] started", { requestId, diagnosticCorrelationId, runtime })
 
   try {
     const body = await request.json().catch(() => ({}))
@@ -34,7 +39,9 @@ export async function POST(request: NextRequest) {
     const [rawToken, signature] = token.split(".")
     if (!rawToken || !signature) throw new Error("invalid reset token")
     const tokenHash = hashToken(rawToken)
+    console.info("[password-reset] token validated", { requestId, diagnosticCorrelationId, stage: "token_format_valid" })
     const passwordHash = await hashPassword(password)
+    console.info("[password-reset] hash generated", { requestId, diagnosticCorrelationId })
 
     await db.transaction(async (tx) => {
       const result = await resetPasswordInTransaction(tx, {
@@ -44,11 +51,20 @@ export async function POST(request: NextRequest) {
         passwordHash,
         validSignature: validSignature,
       })
-      console.info("[password-reset] credential update", { requestId, outcome: "validated", affectedRows: result.updatedCount })
+      console.info("[password-reset] credential update", { requestId, diagnosticCorrelationId, stage: "credential_update_executed", affectedRows: result.updatedCount, consumedRows: result.consumedCount, userId: result.userId })
+      return result
+    }).then(async (result) => {
+      console.info("[password-reset] transaction committed", { requestId, diagnosticCorrelationId, userId: result.userId })
+      const fresh = await db.execute(sql`SELECT password FROM neon_auth."account" WHERE "userId" = ${result.userId} AND "providerId" = 'credential'`)
+      const freshRows = (fresh as unknown as { rows?: Array<{ password?: string }> }).rows || []
+      console.info("[password-reset] fresh credential read completed", { requestId, diagnosticCorrelationId, rows: freshRows.length })
+      const freshVerified = freshRows.length === 1 && typeof freshRows[0].password === "string" && await verifyPassword(freshRows[0].password, password)
+      console.info("[password-reset] new password verification result", { requestId, diagnosticCorrelationId, verified: freshVerified })
+      return result
     })
 
-    console.info("[password-reset] request completed", { requestId, outcome: "success" })
-    return NextResponse.json({ success: true, message: "Password updated successfully." })
+    console.info("[password-reset] request completed", { requestId, diagnosticCorrelationId, outcome: "success" })
+    return NextResponse.json({ success: true, message: "Password updated successfully.", diagnosticCorrelationId })
   } catch (error) {
     const message = error instanceof Error ? error.message : "unknown"
     const category = message === "invalid reset token" || message === "reset token already used"

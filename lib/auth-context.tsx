@@ -74,7 +74,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // Verify password against the hashed value stored in neon_auth.account
-    const passwordValid = await verifyUserPassword(email, password)
+    const correlationId = typeof window !== "undefined" ? window.sessionStorage.getItem("password-reset-diagnostic-id") || undefined : undefined
+    const passwordValid = await verifyUserPassword(email, password, correlationId)
     if (!passwordValid) {
       return { success: false, error: "Invalid password. Please try again." }
     }

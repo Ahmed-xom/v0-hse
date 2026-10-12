@@ -24,6 +24,9 @@ function ResetPasswordForm() {
     setStatus("loading")
     const response = await fetch("/api/auth/reset-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token, password }) })
     const result = await response.json()
+    if (response.ok && typeof result.diagnosticCorrelationId === "string") {
+      window.sessionStorage.setItem("password-reset-diagnostic-id", result.diagnosticCorrelationId)
+    }
     setStatus(response.ok ? "success" : "error")
     setMessage(result.message || result.error || "Unable to reset your password.")
   }
