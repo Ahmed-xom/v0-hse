@@ -15,12 +15,11 @@ export async function verifyUserPassword(email: string, password: string): Promi
       JOIN neon_auth."user" u ON u.id = a."userId"
       WHERE lower(u.email) = ${email.toLowerCase()}
         AND a."providerId" = 'credential'
-      LIMIT 1
     `)
 
     const rows = (result as any).rows ?? []
 
-    if (rows.length === 0 || !rows[0].password) {
+    if (rows.length !== 1 || !rows[0].password) {
       console.info('[auth] password verification denied', {
         requestId,
         reason: 'credential_not_found',
