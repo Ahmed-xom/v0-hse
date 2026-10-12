@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "test:password-reset-rate-limit": "node scripts/test-password-reset-rate-limit.mjs",
     "test:password-reset-compatibility": "node scripts/test-password-reset-compatibility.mjs",
-    "test:password-reset-flow": "node scripts/test-password-reset-flow.mjs"
+    "test:password-reset-flow": "tsx scripts/test-password-reset-flow.mjs"
   },
   "dependencies": {
     "@better-auth/utils": "0.5.0",
@@ -92,6 +92,7 @@
     "@types/react-dom": "^19.2.3",
     "postcss": "^8.4.49",
     "tailwindcss": "^4.2.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.2"
   },
   "packageManager": "pnpm@10.4.1"
