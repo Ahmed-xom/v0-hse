@@ -32,7 +32,7 @@ export async function resetPasswordInTransaction(
 
   const updated = (await tx.execute(sql`UPDATE neon_auth."account" SET password = ${options.passwordHash}, "updatedAt" = now() WHERE "userId" = ${reset.user_id} AND "providerId" = 'credential'`)) as QueryResult
   const updatedCount = Number(updated.rowCount || 0)
-  if (updatedCount !== 1) throw new Error("credential account not found")
+  if (updatedCount < 1) throw new Error("credential account not found")
 
   const consumed = (await tx.execute(sql`UPDATE public.password_reset_token SET used_at = now() WHERE token_hash = ${options.tokenHash} AND used_at IS NULL AND expires_at > now()`)) as QueryResult
   const consumedCount = Number(consumed.rowCount || 0)

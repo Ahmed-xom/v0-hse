@@ -3,9 +3,12 @@
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { verifyPassword } from '@better-auth/utils/password'
+import { createAuthDiagnosticId, getAuthRuntimeContext } from '@/lib/auth/diagnostic'
 
-export async function verifyUserPassword(email: string, password: string): Promise<boolean> {
-  const requestId = crypto.randomUUID()
+export async function verifyUserPassword(email: string, password: string, correlationId?: string): Promise<boolean> {
+  const requestId = createAuthDiagnosticId()
+  const diagnosticId = correlationId || requestId
+  console.info('[auth] verification started', { requestId, diagnosticId, runtime: getAuthRuntimeContext() })
 
   try {
     // Look up the hashed password from neon_auth.account for this user
@@ -19,20 +22,27 @@ export async function verifyUserPassword(email: string, password: string): Promi
 
     const rows = (result as any).rows ?? []
 
-    if (rows.length !== 1 || !rows[0].password) {
+    if (rows.length === 0 || rows.some((row: { password?: string }) => !row.password)) {
       console.info('[auth] password verification denied', {
         requestId,
+        diagnosticId,
+        runtime: getAuthRuntimeContext(),
         reason: 'credential_not_found',
+        rowCount: rows.length,
       })
       return false
     }
 
     // Better Auth 1.7.2 stores credential hashes using its scrypt verifier.
-    const verified = await verifyPassword(rows[0].password, password)
+    // Legacy data can contain duplicate rows for the same user/account; accept
+    // the password if any credential row verifies successfully.
+    const verified = await Promise.all(rows.map((row: { password: string }) => verifyPassword(row.password, password))).then((results) => results.some(Boolean))
 
     if (!verified) {
       console.info('[auth] password verification denied', {
         requestId,
+        diagnosticId,
+        runtime: getAuthRuntimeContext(),
         reason: 'password_mismatch',
         userId: rows[0].userId,
       })
@@ -42,6 +52,8 @@ export async function verifyUserPassword(email: string, password: string): Promi
   } catch (error) {
     console.error('[auth] password verification error', {
       requestId,
+      diagnosticId,
+      runtime: getAuthRuntimeContext(),
       reason: 'database_or_hash_error',
       errorType: error instanceof Error ? error.name : 'unknown',
     })

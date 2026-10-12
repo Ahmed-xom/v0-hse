@@ -61,10 +61,10 @@ const baseOptions = {
   validSignature: () => true,
 }
 
-const success = createTransaction()
+const success = createTransaction({ updatedRows: 3 })
 const result = await success.run(baseOptions)
 assert.equal(result.userId, "user-id")
-assert.deepEqual(result, { userId: "user-id", updatedCount: 1, consumedCount: 1 })
+assert.deepEqual(result, { userId: "user-id", updatedCount: 3, consumedCount: 1 })
 assert.equal(success.calls.length, 4)
 assert.equal(success.committed, true)
 assert.equal(success.rolledBack, false)
