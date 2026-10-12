@@ -38,7 +38,8 @@ import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
 import {
   getDocuments, createDocument, updateDocument, deleteDocument,
   updateDocumentAccess, getAllUserEmails, uploadFileAction,
-  type HSEDocument,
+  getDocumentFolders, createDocumentFolder, renameDocumentFolder, deleteDocumentFolder,
+  type HSEDocument, type DocumentFolder,
 } from "@/app/actions/manage-documents"
 import { DOCUMENT_CATEGORIES } from "@/lib/hse-constants"
 
@@ -96,7 +97,7 @@ const EMPTY_FORM: FormData = {
   business_unit: '', owner: '', owner_email: '',
   uploaded_by: '', uploaded_by_email: '',
   review_date: '', expiry_date: '',
-  tags: [], is_public: true, allowed_emails: [],
+  tags: [], is_public: true, allowed_emails: [], folder_id: null,
 }
 
 interface Props { readOnly?: boolean; activeCompanyId?: string | null }
@@ -114,7 +115,12 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
 
   // list state
   const [docs, setDocs] = useState<HSEDocument[]>([])
+  const [folders, setFolders] = useState<DocumentFolder[]>([])
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false)
+  const [folderName, setFolderName] = useState('')
+  const [folderDescription, setFolderDescription] = useState('')
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
@@ -148,14 +154,21 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
 
   const load = useCallback(async () => {
     setLoading(true)
-    const data = await getDocuments(currentUser?.email ?? '', isAdmin, isAdmin ? null : activeCompanyId)
+    const companyId = activeCompanyId
+    const data = await getDocuments(currentUser?.email ?? '', isAdmin, isAdmin ? companyId : activeCompanyId)
+    const folderData = currentUser?.email && companyId ? await getDocumentFolders(currentUser.email, companyId) : []
     setDocs(data)
+    setFolders(folderData)
     setLoading(false)
   }, [currentUser?.email, isAdmin, activeCompanyId])
 
   useEffect(() => { load() }, [load])
 
   // ── filtering ─────────────────────────────────────────────────────────────
+
+  const visibleFolders = folders.filter(folder => folder.parent_id === currentFolderId)
+  const currentFolder = folders.find(folder => folder.id === currentFolderId) ?? null
+  const breadcrumbs = currentFolderId ? (() => { const chain: DocumentFolder[] = []; let cursor = currentFolder; while (cursor) { chain.unshift(cursor); cursor = folders.find(folder => folder.id === cursor?.parent_id) ?? null } return chain })() : []
 
   const filtered = docs.filter(d => {
     const q = search.toLowerCase()
@@ -175,7 +188,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
       (filterExpiry === 'soon' && expiry !== null && expiry >= 0 && expiry <= 30) ||
       (filterExpiry === 'missing' && expiry === null) ||
       (filterExpiry === 'valid' && expiry !== null && expiry > 30)
-    return matchSearch && matchCat && matchStatus && matchExpiry
+    return d.folder_id === currentFolderId && matchSearch && matchCat && matchStatus && matchExpiry
   })
 
   const stats = {
@@ -246,6 +259,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
       owner_email: currentUser?.email ?? '',
       uploaded_by: currentUser?.name ?? '',
       uploaded_by_email: currentUser?.email ?? '',
+      folder_id: currentFolderId,
     })
     setUploadFile(null)
     setTagInput('')
@@ -265,7 +279,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
       uploaded_by: d.uploaded_by ?? '', uploaded_by_email: d.uploaded_by_email ?? '',
       review_date: d.review_date ? d.review_date.slice(0, 10) : '',
       expiry_date: d.expiry_date ? d.expiry_date.slice(0, 10) : '',
-      tags: d.tags ?? [], is_public: d.is_public, allowed_emails: d.allowed_emails ?? [],
+      tags: d.tags ?? [], is_public: d.is_public, allowed_emails: d.allowed_emails ?? [], folder_id: d.folder_id ?? null,
     })
     setUploadFile(null)
     setTagInput('')
@@ -314,6 +328,15 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
     }
   }
 
+  const handleCreateFolder = async () => {
+    if (!activeCompanyId) { toast({ title: 'Company is required', variant: 'destructive' }); return }
+    const result = await createDocumentFolder(activeCompanyId, currentFolderId, folderName, folderDescription)
+    if (!result.success) { toast({ title: 'Could not create folder', description: result.error, variant: 'destructive' }); return }
+    setFolders(previous => [...previous, result.folder!].sort((a, b) => a.name.localeCompare(b.name)))
+    setFolderName(''); setFolderDescription(''); setFolderDialogOpen(false)
+    toast({ title: 'Folder created' })
+  }
+
   // ── delete ────────────────────────────────────────────────────────────────
 
   const handleDelete = async (id: string) => {
@@ -356,7 +379,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
     )
   }
 
-  // ── tags ──────────────────────────────��───────────────────────────────────
+  // ── tags ─��────────────────────────────��───────────────────────────────────
 
   const addTag = () => {
     const t = tagInput.trim()
@@ -373,7 +396,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
         <div className="bg-emerald-100/70 px-5 py-4 sm:px-7">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div><h1 className="text-3xl font-semibold tracking-tight text-primary">{t("View Library")}</h1><p className="mt-1 text-sm text-muted-foreground">{stats.total} {t("Documents")} {t("for this company")}</p></div>
-            {canUpload && <div className="flex gap-2"><Button size="sm" variant="outline" onClick={openCreate}><FilePlus className="me-2 h-4 w-4" />{t("Create Document")}</Button><Button size="sm" onClick={openCreate}><Upload className="me-2 h-4 w-4" />{t("Choose File")}</Button></div>}
+            {canUpload && <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => setFolderDialogOpen(true)}><FolderOpen className="me-2 h-4 w-4" />{t("Create Folder")}</Button><Button size="sm" variant="outline" onClick={openCreate}><FilePlus className="me-2 h-4 w-4" />{t("Create Document")}</Button><Button size="sm" onClick={openCreate}><Upload className="me-2 h-4 w-4" />{t("Choose File")}</Button></div>}
           </div>
         </div>
         <div className="space-y-5 p-5 sm:p-7">
@@ -385,11 +408,14 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
           </div>
           <div className="flex flex-col gap-2 sm:flex-row"><div className="relative flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input aria-label="Search documents" placeholder="Search title, file, category, company, owner, or document number" className="pl-9" value={search} onChange={e => setSearch(e.target.value)} /></div><Button onClick={() => setSearch(search.trim())}>Go</Button><Button variant="outline" size="icon" onClick={load} aria-label="Refresh"><RefreshCw className="h-4 w-4" /></Button></div>
           <div className="flex flex-wrap gap-2 border-b pb-4"><Select value={filterCategory} onValueChange={setFilterCategory}><SelectTrigger className="w-44"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="all">All Categories</SelectItem>{DOCUMENT_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem>{Object.keys(STATUS_STYLES).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><Select value={filterExpiry} onValueChange={setFilterExpiry}><SelectTrigger className="w-44"><SelectValue placeholder="Expiry" /></SelectTrigger><SelectContent><SelectItem value="all">All expiry states</SelectItem><SelectItem value="valid">Valid</SelectItem><SelectItem value="soon">Expiring soon</SelectItem><SelectItem value="expired">Expired</SelectItem><SelectItem value="missing">Missing expiry</SelectItem></SelectContent></Select></div>
+          <div className="flex flex-wrap items-center gap-1 text-sm" aria-label="Folder breadcrumbs"><button type="button" className="font-medium text-primary hover:underline" onClick={() => setCurrentFolderId(null)}>Library</button>{breadcrumbs.map(folder => <span key={folder.id} className="flex items-center gap-1"><span className="text-muted-foreground">/</span><button type="button" className="text-primary hover:underline" onClick={() => setCurrentFolderId(folder.id)}>{folder.name}</button></span>)}</div>
           <div className="min-h-[360px] font-sans text-sm">
-            {loading ? <p className="py-8 text-muted-foreground">Loading files...</p> : filtered.length === 0 ? <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground"><FolderOpen className="h-12 w-12 opacity-30" /><p>{search ? 'No matching files found' : 'No files in this company library'}</p></div> : <div className="space-y-1"><div className="flex items-center gap-1 font-medium text-primary"><ChevronDown className="h-4 w-4" /><FolderOpen className="h-4 w-4 text-amber-500" />Library</div>{Array.from(new Set(filtered.map(d => d.category))).map(category => <div key={category} className="ml-5"><div className="flex items-center gap-1 py-1 text-foreground"><ChevronDown className="h-4 w-4 text-muted-foreground" /><FolderOpen className="h-4 w-4 text-amber-500" />{category}</div><div className="ml-6 space-y-1">{filtered.filter(d => d.category === category).map(d => <div key={d.id} className="group flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted"><span className="shrink-0">{fileIcon(d.file_name, d.file_type)}</span><button className="min-w-0 flex-1 truncate text-left text-primary hover:underline" onClick={() => { setSelected(d); setIsViewOpen(true) }}>{d.title}</button><span className="hidden text-xs text-muted-foreground sm:inline">v{d.version} · {d.status}</span><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-48"><DropdownMenuItem onClick={() => { setSelected(d); setIsViewOpen(true) }}><Eye className="mr-2 h-4 w-4" />View Details</DropdownMenuItem>{d.file_url && <DropdownMenuItem asChild><a href={d.file_url} target="_blank" rel="noopener noreferrer" download={d.file_name ?? true}><Download className="mr-2 h-4 w-4" />Download File</a></DropdownMenuItem>}{canEdit && <><DropdownMenuItem onClick={() => openEdit(d)}><Edit className="mr-2 h-4 w-4" />Edit Details</DropdownMenuItem>{isAdmin && <DropdownMenuItem onClick={() => openAccess(d)}><Shield className="mr-2 h-4 w-4" />Manage Access</DropdownMenuItem>}<DropdownMenuSeparator /><DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(d.id)}><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem></>}</DropdownMenuContent></DropdownMenu></div>)}</div></div>)}</div>}
+            {loading ? <p className="py-8 text-muted-foreground">Loading files...</p> : filtered.length === 0 ? <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground"><FolderOpen className="h-12 w-12 opacity-30" /><p>{search ? 'No matching files found' : 'No files in this company library'}</p></div> : <div className="space-y-1"><div className="flex items-center gap-1 font-medium text-primary"><FolderOpen className="h-4 w-4 text-amber-500" />{currentFolder?.name ?? 'Library'}</div>{visibleFolders.map(folder => <button type="button" key={folder.id} className="flex w-full items-center gap-2 rounded px-2 py-2 text-start hover:bg-muted" onClick={() => setCurrentFolderId(folder.id)}><FolderOpen className="h-5 w-5 text-amber-500" /><span className="font-medium">{folder.name}</span>{folder.description && <span className="truncate text-xs text-muted-foreground">{folder.description}</span>}</button>)}{Array.from(new Set(filtered.map(d => d.category))).map(category => <div key={category} className="ml-5"><div className="flex items-center gap-1 py-1 text-foreground"><ChevronDown className="h-4 w-4 text-muted-foreground" /><FolderOpen className="h-4 w-4 text-amber-500" />{category}</div><div className="ml-6 space-y-1">{filtered.filter(d => d.category === category).map(d => <div key={d.id} className="group flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted"><span className="shrink-0">{fileIcon(d.file_name, d.file_type)}</span><button className="min-w-0 flex-1 truncate text-left text-primary hover:underline" onClick={() => { setSelected(d); setIsViewOpen(true) }}>{d.title}</button><span className="hidden text-xs text-muted-foreground sm:inline">v{d.version} · {d.status}</span><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-48"><DropdownMenuItem onClick={() => { setSelected(d); setIsViewOpen(true) }}><Eye className="mr-2 h-4 w-4" />View Details</DropdownMenuItem>{d.file_url && <DropdownMenuItem asChild><a href={d.file_url} target="_blank" rel="noopener noreferrer" download={d.file_name ?? true}><Download className="mr-2 h-4 w-4" />Download File</a></DropdownMenuItem>}{canEdit && <><DropdownMenuItem onClick={() => openEdit(d)}><Edit className="mr-2 h-4 w-4" />Edit Details</DropdownMenuItem>{isAdmin && <DropdownMenuItem onClick={() => openAccess(d)}><Shield className="mr-2 h-4 w-4" />Manage Access</DropdownMenuItem>}<DropdownMenuSeparator /><DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(d.id)}><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem></>}</DropdownMenuContent></DropdownMenu></div>)}</div></div>)}</div>}
           </div>
         </div>
       </section>
+
+      {canUpload && <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}><DialogContent className="max-w-md"><DialogHeader><DialogTitle>{t("Create Folder")}</DialogTitle></DialogHeader><div className="space-y-4"><div className="space-y-1.5"><Label htmlFor="folder-name">{t("Folder name")}</Label><Input id="folder-name" value={folderName} onChange={event => setFolderName(event.target.value)} placeholder={t("Enter folder name")} maxLength={120} /></div><div className="space-y-1.5"><Label htmlFor="folder-description">{t("Description")}</Label><Textarea id="folder-description" value={folderDescription} onChange={event => setFolderDescription(event.target.value)} placeholder={t("Optional description")} rows={3} /></div></div><DialogFooter><Button variant="outline" onClick={() => setFolderDialogOpen(false)}>{t("Cancel")}</Button><Button onClick={handleCreateFolder} disabled={!folderName.trim()}>{t("Create Folder")}</Button></DialogFooter></DialogContent></Dialog>}
 
       {/* ── Upload / Edit Dialog ─────────────────────────────────────────── */}
       {canUpload && (
@@ -506,6 +532,8 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                   placeholder="Brief description of this document"
                 />
               </div>
+
+              <div className="space-y-1.5"><Label>Destination folder</Label><Select value={form.folder_id ?? 'root'} onValueChange={value => setForm(f => ({ ...f, folder_id: value === 'root' ? null : value }))}><SelectTrigger><SelectValue placeholder="Library root" /></SelectTrigger><SelectContent><SelectItem value="root">Library root</SelectItem>{folders.map(folder => <SelectItem key={folder.id} value={folder.id}>{folder.parent_id ? `↳ ${folder.name}` : folder.name}</SelectItem>)}</SelectContent></Select></div>
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1.5">

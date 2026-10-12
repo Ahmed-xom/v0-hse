@@ -72,6 +72,27 @@ const emptyForm = {
   estimatedReturn: "", passengers: "1", notes: "",
 }
 
+type JourneyValidationError = { step: string; field: string; label: string; message: string }
+
+function validateJourneyForm(form: typeof emptyForm, inspection: Record<string, string>, inspectionItems: string[]): JourneyValidationError[] {
+  const errors: JourneyValidationError[] = []
+  const required = [
+    ["summary", "origin", "Origin", form.origin],
+    ["summary", "destination", "Destination", form.destination],
+    ["summary", "journeyType", "Journey type", form.journeyType],
+    ["summary", "purpose", "Purpose", form.purpose],
+    ["summary", "vehiclePlate", "Vehicle", form.vehiclePlate],
+    ["summary", "departureDate", "Departure date", form.departureDate],
+    ["summary", "departureTime", "Departure time", form.departureTime],
+    ["driver", "driver", "Primary driver", form.driver],
+  ] as const
+  for (const [step, field, label, value] of required) if (!String(value ?? "").trim()) errors.push({ step, field, label, message: `${label} is required` })
+  if (form.departureDate && Number.isNaN(new Date(`${form.departureDate}T00:00:00`).getTime())) errors.push({ step: "summary", field: "departureDate", label: "Departure date", message: "Enter a valid date" })
+  if (form.departureTime && !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(form.departureTime)) errors.push({ step: "summary", field: "departureTime", label: "Departure time", message: "Enter a valid time" })
+  for (const item of inspectionItems) if (!inspection[item]) errors.push({ step: "inspection", field: `inspection-${item}`, label: item, message: "Inspection response is required" })
+  return errors
+}
+
 function JourneyRiskMatrix() {
   const [severity, setSeverity] = useState(0)
   const [likelihood, setLikelihood] = useState(0)
@@ -121,16 +142,13 @@ export function JourneyTracker() {
   const [journeyTab, setJourneyTab] = useState<"all" | "morning" | "night">("all")
   const [formStep, setFormStep] = useState("summary")
   const formSteps = [['summary','Summary'],['driver','Driver Details'],['resources','Resources'],['journey','Journey'],['vehicle','Vehicle'],['checkin','Check-In'],['attachments','Attachments'],['inspection','Pre-Trip Inspection'],['route','Route Plan'],['changes','Route Changes'],['passengers','Passengers'],['night','Night Driving'],['hazards','Road Hazards'],['emergency','Emergency Contacts'],['risk','Risk Assessment']] as const
-  const isFormStepComplete = (step: string) => {
-    if (step === "summary") return Boolean(form.origin && form.destination && form.journeyType && form.purpose && form.vehiclePlate && form.departureDate && form.departureTime)
-    if (step === "driver") return Boolean(form.driver)
-    if (step === "resources") return Boolean(form.vehiclePlate && form.driver)
-    if (step === "attachments") return Boolean(attachedFile)
-    if (step === "inspection") return Object.keys(inspection).length === inspectionItems.length && inspectionItems.every((item) => inspection[item])
-    return false
-  }
   const [inspection, setInspection] = useState<Record<string, "yes" | "no" | "na">>({})
   const inspectionItems = ["Air Bags", "Air Compressor", "Air Conditioning", "Brakes – Hand Brakes", "Drinking Water / Food", "Defensive Driving Certificate", "Driving License", "Fire Extinguisher", "First Aid Box", "Front & Side Mirrors", "Fuel Level", "Goods / Cargo Manifest", "IVMS / Drive Right", "Jack, Tools, Jack Plates", "Lights & Indicators", "Load Secured", "Oil Level", "Radiator Coolant Level", "Reflective Triangle", "Rollover Bar", "Seat Belts", "Spare Tire", "Tires", "Vehicle License"]
+  const validationErrors = useMemo(() => validateJourneyForm(form, inspection, inspectionItems), [form, inspection])
+  const errorsByStep = useMemo(() => validationErrors.reduce<Record<string, JourneyValidationError[]>>((groups, error) => { (groups[error.step] ??= []).push(error); return groups }, {}), [validationErrors])
+  const firstErrorFor = (field: string) => validationErrors.find((error) => error.field === field)
+  const fieldClass = (field: string) => firstErrorFor(field) ? "border-destructive focus-visible:ring-destructive" : ""
+  const isFormStepComplete = (step: string) => !(errorsByStep[step]?.length)
   const weatherHazards = ["Cloudy", "Fog", "High Temperature / Hot", "Low Temperature / Cold", "Rain", "Sand Storm", "Snow", "Storm", "Sunny", "Wind"]
   const roadHazards = ["Black Top", "Clear Visibility", "Dry", "Foggy", "Graded", "Gravel", "High Wind", "Low Visibility", "Mud", "Others", "Poor Visibility", "Sand", "Snow / Ice", "Unpaved", "Wet"]
   const riskFactors = ["Driver condition", "Driver competency", "Vehicle condition", "Route", "Weather", "Road conditions", "Journey duration", "Night driving", "Remote location", "Load", "Other hazards"]
@@ -171,9 +189,9 @@ export function JourneyTracker() {
       const q = searchQuery.toLowerCase()
       const matchesSearch =
         !q ||
-        j.origin.toLowerCase().includes(q) ||
-        j.destination.toLowerCase().includes(q) ||
-        j.purpose.toLowerCase().includes(q) ||
+        (j.origin ?? "").toLowerCase().includes(q) ||
+        (j.destination ?? "").toLowerCase().includes(q) ||
+        (j.purpose ?? "").toLowerCase().includes(q) ||
         (j.vehiclePlate ?? "").toLowerCase().includes(q) ||
         j.userName.toLowerCase().includes(q)
       const matchesStatus  = statusFilter  === "all" || j.status      === statusFilter
@@ -201,11 +219,10 @@ export function JourneyTracker() {
   }), [journeys])
 
   const handleSubmit = async () => {
-    if (!form.origin || !form.destination || !form.vehiclePlate || !form.driver || !form.departureDate || !form.departureTime || !form.purpose) {
-      toast({ title: "Required fields missing", description: "Please fill in all required fields.", variant: "destructive" })
-      return
-    }
     if (!user) return
+    const errors = validateJourneyForm(form, inspection, inspectionItems)
+    const isDraft = errors.length > 0
+    if (isDraft) setFormStep(errors[0].step)
     setIsSaving(true)
 
     // Upload attachment if selected
@@ -249,9 +266,9 @@ export function JourneyTracker() {
     })
     setIsSaving(false)
     if (res.success) {
-      toast({ title: "Journey logged", description: "Your journey has been saved successfully." })
-      setIsDialogOpen(false)
-      setForm(emptyForm)
+      toast({ title: isDraft ? "Journey draft saved" : "Journey logged", description: isDraft ? `Incomplete Journey – ${errors.length} required fields missing. Complete the highlighted fields before final submission.` : "Your journey has been saved successfully." })
+      if (!isDraft) setIsDialogOpen(false)
+      if (!isDraft) setForm(emptyForm)
       setAttachedFile(null)
       fetchJourneys()
     } else {
@@ -580,6 +597,12 @@ export function JourneyTracker() {
             <DialogDescription>Fill in the details below to log a new journey.</DialogDescription>
           </DialogHeader>
 
+          {validationErrors.length > 0 && <div role="alert" className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-destructive">
+            <p className="font-semibold">Incomplete Journey – {validationErrors.length} required fields missing</p>
+            <p className="mt-1 text-sm">بيانات ناقصة · Complete the highlighted fields before final submission.</p>
+            <div className="mt-2 flex flex-wrap gap-2">{formSteps.filter(([step]) => errorsByStep[step]?.length).map(([step, label]) => <button type="button" key={step} className="rounded-full border border-destructive/40 px-2 py-1 text-xs hover:bg-destructive/10" onClick={() => { setFormStep(step); requestAnimationFrame(() => document.getElementById(errorsByStep[step][0].field)?.focus()) }}>⚠ {label}: {errorsByStep[step].length} missing</button>)}</div>
+            <ul className="mt-2 space-y-1 text-sm">{validationErrors.map((error) => <li key={`${error.step}-${error.field}`}><button type="button" className="underline underline-offset-2" onClick={() => { setFormStep(error.step); requestAnimationFrame(() => document.getElementById(error.field)?.focus()) }}>{error.label}: {error.message}</button></li>)}</ul>
+          </div>}
           <div className="mb-4 rounded-lg border border-border/50 bg-muted/20 p-3">
             <div className="mb-2 flex items-center justify-between gap-3">
               <div>
@@ -595,10 +618,11 @@ export function JourneyTracker() {
               </div>
               {formSteps.map(([value, label]) => {
                 const completed = isFormStepComplete(value)
-                return <div key={value} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${completed ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" : "border-border text-muted-foreground"}`}>
-                  {completed ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
-                  <span>{label}</span><span className="text-[10px] opacity-80">{completed ? "Completed" : "Not Completed"}</span>
-                </div>
+                const missing = errorsByStep[value]?.length ?? 0
+                return <button type="button" key={value} onClick={() => setFormStep(value)} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${missing ? "border-destructive/50 bg-destructive/10 text-destructive" : completed ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" : "border-border text-muted-foreground"}`}>
+                  {missing ? <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" /> : completed ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                  <span>{label}</span><span className="text-[10px] opacity-80">{missing ? `${missing} missing` : completed ? "Completed" : "Not Completed"}</span>
+                </button>
               })}
             </div>
           </div>
@@ -607,7 +631,8 @@ export function JourneyTracker() {
             <TabsList className="grid h-auto w-full grid-cols-2 gap-1 overflow-visible bg-muted/50 p-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {formSteps.map(([value, label], index) => {
                 const completed = isFormStepComplete(value)
-                return <TabsTrigger key={value} value={value} className="h-auto w-full min-w-0 whitespace-normal px-2 py-2 text-center text-[11px] leading-tight sm:text-xs"><span className="mr-1 font-semibold">{index + 1}.</span>{completed ? <Check className="mr-1 inline h-3.5 w-3.5 text-emerald-600" aria-label="Completed" /> : null}{label}</TabsTrigger>
+                const missing = errorsByStep[value]?.length ?? 0
+                return <TabsTrigger key={value} value={value} className={`h-auto w-full min-w-0 whitespace-normal px-2 py-2 text-center text-[11px] leading-tight sm:text-xs ${missing ? "text-destructive" : ""}`}><span className="mr-1 font-semibold">{index + 1}.</span>{missing ? <AlertCircle className="mr-1 inline h-3.5 w-3.5" aria-label="Missing required data" /> : completed ? <Check className="mr-1 inline h-3.5 w-3.5 text-emerald-600" aria-label="Completed" /> : null}{label}{missing ? <span className="ml-1 text-[10px]">({missing} missing)</span> : null}</TabsTrigger>
               })}
             </TabsList>
             <TabsContent value="summary" className="grid gap-4 py-4">
@@ -617,8 +642,10 @@ export function JourneyTracker() {
                 <div className="relative">
                   <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
+                    id="origin"
                     placeholder="Departure location"
-                    className="pl-8"
+                    className={`pl-8 ${fieldClass("origin")}`}
+                    aria-invalid={Boolean(firstErrorFor("origin"))}
                     value={form.origin}
                     onChange={(e) => setForm((f) => ({ ...f, origin: e.target.value }))}
                   />
@@ -629,8 +656,10 @@ export function JourneyTracker() {
                 <div className="relative">
                   <MapPin className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
+                    id="destination"
                     placeholder="Arrival location"
-                    className="pl-8"
+                    className={`pl-8 ${fieldClass("destination")}`}
+                    aria-invalid={Boolean(firstErrorFor("destination"))}
                     value={form.destination}
                     onChange={(e) => setForm((f) => ({ ...f, destination: e.target.value }))}
                   />
@@ -649,7 +678,7 @@ export function JourneyTracker() {
             <div className="space-y-1.5">
               <Label>Purpose <span className="text-destructive">*</span></Label>
               <Select value={form.purpose} onValueChange={(v) => setForm((f) => ({ ...f, purpose: v }))}>
-                <SelectTrigger><SelectValue placeholder="Select purpose..." /></SelectTrigger>
+                <SelectTrigger id="purpose" className={fieldClass("purpose")} aria-invalid={Boolean(firstErrorFor("purpose"))}><SelectValue placeholder="Select purpose..." /></SelectTrigger>
                 <SelectContent>
                   {PURPOSES.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                 </SelectContent>
@@ -669,7 +698,7 @@ export function JourneyTracker() {
                   }))
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger id="vehiclePlate" className={fieldClass("vehiclePlate")} aria-invalid={Boolean(firstErrorFor("vehiclePlate"))}>
                   <Car className="mr-2 h-4 w-4 text-muted-foreground" />
                   <SelectValue placeholder="Select vehicle (plate no.)..." />
                 </SelectTrigger>
@@ -702,7 +731,10 @@ export function JourneyTracker() {
               <div className="space-y-1.5">
                 <Label>Departure Date <span className="text-destructive">*</span></Label>
                 <Input
+                  id="departureDate"
                   type="date"
+                  className={fieldClass("departureDate")}
+                  aria-invalid={Boolean(firstErrorFor("departureDate"))}
                   value={form.departureDate}
                   onChange={(e) => setForm((f) => ({ ...f, departureDate: e.target.value }))}
                 />
@@ -710,7 +742,10 @@ export function JourneyTracker() {
               <div className="space-y-1.5">
                 <Label>Departure Time <span className="text-destructive">*</span></Label>
                 <Input
+                  id="departureTime"
                   type="time"
+                  className={fieldClass("departureTime")}
+                  aria-invalid={Boolean(firstErrorFor("departureTime"))}
                   value={form.departureTime}
                   onChange={(e) => setForm((f) => ({ ...f, departureTime: e.target.value }))}
                 />
