@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
-import bcrypt from 'bcryptjs'
+import { verifyPassword } from '@better-auth/utils/password'
 
 export async function verifyUserPassword(email: string, password: string): Promise<boolean> {
   try {
@@ -19,8 +19,8 @@ export async function verifyUserPassword(email: string, password: string): Promi
     const rows = (result as any).rows ?? []
 
     if (rows.length > 0 && rows[0].password) {
-      // Compare against the hashed password stored in DB
-      return bcrypt.compare(password, rows[0].password)
+      // Better Auth 1.7.2 stores credential hashes using its scrypt verifier.
+      return verifyPassword(rows[0].password, password)
     }
 
     // No account record found — deny access
