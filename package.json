@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:password-reset-rate-limit": "node scripts/test-password-reset-rate-limit.mjs"
   },
   "dependencies": {
     "@better-auth/utils": "0.5.0",
