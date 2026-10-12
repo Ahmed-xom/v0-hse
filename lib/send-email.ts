@@ -54,7 +54,7 @@ export async function sendEmail(opts: {
   to: string | string[]
   subject: string
   html: string
-}): Promise<{ sent: boolean; error?: string }> {
+}): Promise<{ sent: boolean; error?: string; responseCode?: number | null; response?: string | null; messageId?: string | null }> {
   const { config, missing } = getSmtpConfiguration()
   if (missing || !config) {
     console.error(`[email] SMTP configuration missing: ${missing || 'unknown configuration error'}`)
@@ -75,19 +75,27 @@ export async function sendEmail(opts: {
     console.info('[email] SMTP connection successful')
   } catch (err) {
     const smtpError = getSmtpError(err)
-    console.error('[email] SMTP connection failed', smtpError)
-    return { sent: false, error: 'SMTP connection failed' }
+    console.error('[email] SMTP connection/authentication failed', smtpError)
+    return { sent: false, error: 'SMTP connection failed', responseCode: smtpError.responseCode, response: smtpError.response }
   }
 
   try {
     const globalBcc = process.env.ALERT_BCC_EMAIL?.trim() || undefined
     const info = await smtp.sendMail({ from: config.from, to: opts.to, bcc: globalBcc, subject: opts.subject, html: opts.html })
-    console.info(`[email] SMTP accepted message ${info.messageId} via ${config.host}:${config.port}`)
-    return { sent: true }
+    const deliveryInfo = info as typeof info & { responseCode?: number }
+    const responseCode = deliveryInfo.responseCode ?? (Number(String(info.response || '').match(/\b(\d{3})\b/)?.[1] || 0) || null)
+    console.info('[email] SMTP message accepted', {
+      messageId: info.messageId || null,
+      responseCode,
+      response: info.response || null,
+      host: config.host,
+      port: config.port,
+    })
+    return { sent: true, responseCode, response: info.response || null, messageId: info.messageId || null }
   } catch (err) {
     const smtpError = getSmtpError(err)
-    console.error('[email] SMTP send failed', smtpError)
-    return { sent: false, error: 'SMTP send failed' }
+    console.error('[email] SMTP message rejected', smtpError)
+    return { sent: false, error: 'SMTP send failed', responseCode: smtpError.responseCode, response: smtpError.response }
   }
 }
 
