@@ -6,6 +6,8 @@ import { sendEmail } from "@/lib/send-email"
 
 const genericMessage = "If an account with that email exists, a password reset link has been sent."
 const expirationMs = 60 * 60 * 1000
+const resetRequestLimit = 3
+const resetRequestWindowMinutes = 12 * 60
 
 function getSecret() {
   if (!process.env.BETTER_AUTH_SECRET) throw new Error("BETTER_AUTH_SECRET is not configured")
@@ -32,9 +34,9 @@ export async function POST(request: NextRequest) {
     const user = (userResult as unknown as { rows?: Array<{ id: string; email: string; name: string }> }).rows?.[0]
     if (!user) return NextResponse.json({ success: true, message: genericMessage })
 
-    const recentResult = await db.execute(sql`SELECT count(*)::int AS count FROM public.password_reset_token WHERE user_id = ${user.id} AND created_at > now() - interval '15 minutes'`)
+    const recentResult = await db.execute(sql`SELECT count(*)::int AS count FROM public.password_reset_token WHERE user_id = ${user.id} AND created_at > now() - make_interval(mins => ${resetRequestWindowMinutes})`)
     const recentCount = Number((recentResult as unknown as { rows?: Array<{ count: number }> }).rows?.[0]?.count || 0)
-    if (recentCount >= 3) return NextResponse.json({ success: true, message: genericMessage })
+    if (recentCount >= resetRequestLimit) return NextResponse.json({ success: true, message: genericMessage })
 
     const expiresAt = Date.now() + expirationMs
     const rawToken = randomBytes(32).toString("base64url")
