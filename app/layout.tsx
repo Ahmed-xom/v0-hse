@@ -6,6 +6,7 @@ import { AuthProvider } from '@/lib/auth-context'
 import { LanguageProvider } from '@/lib/language-context'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
+import { AmnkoIntro } from '@/components/amnko-intro'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -63,6 +64,7 @@ export default function RootLayout({
               {children}
             </LanguageProvider>
             <Toaster />
+            <AmnkoIntro />
           </AuthProvider>
           {process.env.NODE_ENV === 'production' && (
             <>
