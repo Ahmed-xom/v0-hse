@@ -10,6 +10,7 @@ function workflowErrorMessage(error: unknown) {
     TOO_MANY_ENTRIES: "Archive exceeds the 10,000-entry safety limit.",
     ENTRY_TOO_LARGE: "An archive entry exceeds the 50 MB safety limit.",
     ARCHIVE_UNCOMPRESSED_LIMIT: "Archive exceeds the 500 MB decompression safety limit.",
+    STORAGE_FAILED: "One or more archive files could not be stored.",
   } as Record<string, string>)[code] ?? "The legacy archive inspection failed."
 }
 
