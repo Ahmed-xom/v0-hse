@@ -1,5 +1,23 @@
 # Legacy migration dry-run
 
+## One-command Windows workflow
+
+From a PowerShell window in the repository:
+
+```powershell
+& .\scripts\start-legacy-migration.ps1 -SharingUrl 'https://falconinvs-my.sharepoint.com/:u:/g/personal/xom-it-admin_xomoman_com/IQBatEkNAXLOR4XRjJDs8ZK-AUA7g8r24ClOhAhmeCPFyGM?e=RObKeG'
+```
+
+The command opens SharePoint in the default browser, allows the authorized Microsoft 365 user to sign in and choose **Download**, verifies that `XOM_Files.zip` exists and records its SHA-256, then runs the local read-only inventory. It never copies cookies, handles tokens, calls an anonymous download endpoint, or sends credentials to the project.
+
+For a previously downloaded archive:
+
+```powershell
+& .\scripts\start-legacy-migration.ps1 -SharingUrl 'https://falconinvs-my.sharepoint.com/...' -UseExistingArchive
+```
+
+The current workflow intentionally stops after the dry-run report. There is no production commit command until the report is approved and a separately reviewed import phase is implemented.
+
 ## Secure download
 
 The SharePoint link must be opened by an authorized Microsoft 365 user. Do not bypass authentication or copy session cookies. In SharePoint, choose **Download** and save `XOM_Files.zip` to a local Windows folder.
