@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 
 type ScanReport = { sourceName: string; sourceBytes: number; sourceCounts: Record<string, number>; folders: string[]; detected: Record<string, string[]>; duplicateFiles: Array<{ sha256: string; paths: string[] }>; companyMappingCandidates: string[]; issues: Array<{ code: string; message: string }>; scannedAt: string }
+type WorkflowResult = { report: ScanReport; source: { name: string; bytes: number } }
 const SHARE_URL = "https://falconinvs-my.sharepoint.com/:u:/g/personal/xom-it-admin_xomoman_com/IQBatEkNAXLOR4XRjJDs8ZK-AUA7g8r24ClOhAhmeCPFyGM?e=RObKeG"
 
 export function SharePointMigrationControls() {
@@ -21,6 +22,35 @@ export function SharePointMigrationControls() {
     const payload = await response.json() as { report?: ScanReport; error?: string }
     if (!response.ok || !payload.report) { setStatus(payload.error ?? "The archive could not be scanned."); setProgress(0); setBusy(false); return }
     setReport(payload.report); setProgress(100); setStatus("Read-only scan complete. No Neon or production storage data was changed."); setBusy(false)
+  }
+
+  async function authorizeMicrosoft() {
+    const response = await fetch("/api/admin/legacy-migration/sharepoint-authorize")
+    const payload = await response.json() as { url?: string; error?: string }
+    if (!response.ok || !payload.url) { setStatus(payload.error ?? "Microsoft authorization could not be started."); return }
+    if (window.self !== window.top) window.open(payload.url, "_blank", "noopener,noreferrer")
+    else window.location.href = payload.url
+  }
+
+  async function runPhase1() {
+    setBusy(true); setProgress(10); setReport(null); setStatus("Starting protected Phase 1 inspection…")
+    try {
+      const start = await fetch("/api/admin/legacy-migration/start", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ sharingUrl: SHARE_URL }) })
+      const started = await start.json() as { runId?: string; error?: string }
+      if (start.status === 428 || started.error?.toLowerCase().includes("authorization")) { setStatus("Microsoft consent is required before Phase 1 can run."); await authorizeMicrosoft(); return }
+      if (!start.ok || !started.runId) { setStatus(started.error ?? "Phase 1 could not be started."); return }
+      setStatus(`Phase 1 started. Run ID: ${started.runId}`); setProgress(20)
+      for (let attempt = 0; attempt < 120; attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 5000))
+        const response = await fetch(`/api/admin/legacy-migration/status?runId=${encodeURIComponent(started.runId)}`, { cache: "no-store" })
+        const payload = await response.json() as { status?: string; result?: WorkflowResult; error?: string }
+        if (payload.status === "completed" && payload.result) { setReport(payload.result.report); setProgress(100); setStatus(`Phase 1 completed. Run ID: ${started.runId}. Read-only inspection only.`); return }
+        if (payload.status === "failed" || payload.status === "cancelled") { setStatus(`Phase 1 ${payload.status}: ${payload.error ?? "The workflow did not produce a report."}`); setProgress(0); return }
+        setProgress(Math.min(95, 20 + Math.round((attempt / 120) * 75))); setStatus(`Phase 1 is ${payload.status ?? "running"}. Run ID: ${started.runId}`)
+      }
+      setStatus(`Phase 1 is still running. Run ID: ${started.runId}. Refresh later to check status.`)
+    } catch { setStatus("Phase 1 could not be reached. Check the Preview deployment and try again.") }
+    finally { setBusy(false) }
   }
 
   async function downloadAndScan() {
@@ -43,7 +73,8 @@ export function SharePointMigrationControls() {
     <h2 className="mt-2 text-xl font-semibold">SharePoint archive scan</h2>
     <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">Transfer the archive through the signed-in Microsoft account or choose a downloaded ZIP. The server scans it in memory with size, entry-count, decompression, and path-traversal limits. Nothing is imported.</p>
     <div className="mt-5 flex flex-wrap gap-3">
-      <Button onClick={downloadAndScan} disabled={busy}>Connect, transfer, and scan</Button>
+      <Button onClick={runPhase1} disabled={busy}>Run Phase 1 — Inspect SharePoint Archive</Button>
+      <Button variant="outline" onClick={downloadAndScan} disabled={busy}>Connect, transfer, and scan</Button>
       <label className="inline-flex cursor-pointer items-center rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50">Choose ZIP to scan<input className="sr-only" type="file" accept=".zip,application/zip" disabled={busy} onChange={(event) => { const file = event.target.files?.[0]; if (file) void scanArchive(file) }} /></label>
     </div>
     {busy || progress > 0 ? <div className="mt-5 space-y-2"><Progress value={progress} aria-label="Scan progress" /><p className="text-sm text-muted-foreground" role="status">{status}</p></div> : <p className="mt-4 text-sm text-muted-foreground" role="status">{status}</p>}
