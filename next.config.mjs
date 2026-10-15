@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+import { withWorkflow } from "@workflow/next"
+
 const nextConfig = {
   images: {
     unoptimized: true,
@@ -17,4 +19,4 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+export default withWorkflow(nextConfig)
