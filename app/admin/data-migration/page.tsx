@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { pool } from "@/lib/db"
 import { DataMigrationPreview } from "@/components/admin/data-migration-preview"
+import { SharePointMigrationControls } from "@/components/admin/sharepoint-migration-controls"
 
 const ADMIN_ROLES = new Set(["ADMIN", "ADMIN SYSTEM", "SYSTEM ADMINISTRATOR", "MANAGEMENT", "HSE ADMIN", "MASTER USER"])
 
@@ -33,6 +34,7 @@ export default async function DataMigrationPage() {
             </div>
           </div>
         </header>
+        <SharePointMigrationControls />
         <DataMigrationPreview />
       </div>
     </main>
