@@ -20,7 +20,7 @@ export function getSharePointTokenParams(userId: string): ConnectTokenParams {
 
 export async function startSharePointAuthorization(userId: string) {
   return startAuthorization(SHAREPOINT_CONNECTOR_UID, getSharePointTokenParams(userId), {
-    callbackUrl: `${await getOrigin()}/admin/data-migration?sharepoint=connected`,
+    callbackUrl: `${await getOrigin()}/api/admin/legacy-migration/sharepoint-callback`,
   })
 }
 
