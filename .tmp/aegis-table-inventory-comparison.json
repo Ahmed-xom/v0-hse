@@ -1,0 +1,46 @@
+{
+  "reportVersion": 1,
+  "generatedAt": "2026-10-19T00:00:00.000Z",
+  "mode": "read-only",
+  "status": "BLOCKED_MISSING_COMPARISON_INPUTS",
+  "sourceInventory": {
+    "expectedFields": ["schema_name", "table_name", "row_count", "classification"],
+    "sourceDatabase": "Aegis_XOM",
+    "reportedTableCount": 341,
+    "reportedRowCount": 139123,
+    "availableArtifact": ".tmp/aegis-readonly-inspection.json",
+    "completeTableInventoryAvailable": false,
+    "missingArtifact": "Per-table source inventory containing schema_name, table_name, row_count, and classification"
+  },
+  "existingImportedInventory": {
+    "completeTableInventoryAvailable": false,
+    "missingArtifact": "Machine-readable inventory of previously imported/staged Neon tables with schema_name and table_name (and source mapping where applicable)"
+  },
+  "comparison": {
+    "confirmedMissingTables": [],
+    "canDetermineConfirmedMissingTables": false,
+    "reason": "The repository contains aggregate counts and mapping proposals, but not both complete per-table inventories. No table is classified as missing without both sides."
+  },
+  "availableEvidence": {
+    "sourceTables": 341,
+    "populatedTables": 269,
+    "emptyTables": 72,
+    "sourceColumns": 3665,
+    "sourcePrimaryKeyRows": 253,
+    "sourceForeignKeyRows": 535,
+    "neonLiveBaseTables": 120,
+    "neonLivePublicTables": 110,
+    "neonConstraintRows": 129,
+    "exactPublicNameMatches": 0
+  },
+  "safety": {
+    "sqlServerAccessed": false,
+    "neonAccessed": false,
+    "neonWritten": false,
+    "blobAccessed": false,
+    "blobModified": false,
+    "archiveExtracted": false,
+    "productionModified": false
+  },
+  "nextAction": "Provide or attach the two machine-readable per-table inventories: (1) source Aegis_XOM inventory with schema_name, table_name, row_count, classification; (2) previously imported/staged Neon inventory with target schema/table and source mapping. Then rerun this read-only comparison through the v0 interface."
+}
