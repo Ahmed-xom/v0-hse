@@ -39,8 +39,21 @@ export async function getStorageUsage(): Promise<StorageUsage> {
   let blobCount = 0
   let cursor: string | undefined
 
+  const blobToken =
+    process.env.VERCEL_ENV === 'preview'
+      ? process.env.BLOB1_READ_WRITE_TOKEN
+      : process.env.BLOB_READ_WRITE_TOKEN
+
+  if (!blobToken) {
+    throw new Error(
+      process.env.VERCEL_ENV === 'preview'
+        ? 'BLOB1_READ_WRITE_TOKEN is required in Preview'
+        : 'BLOB_READ_WRITE_TOKEN is required'
+    )
+  }
+
   do {
-    const result = await list({ cursor, limit: 1000 })
+    const result = await list({ cursor, limit: 1000, token: blobToken })
     blobBytes += result.blobs.reduce((total, blob) => total + (blob.size ?? 0), 0)
     blobCount += result.blobs.length
     cursor = result.cursor
