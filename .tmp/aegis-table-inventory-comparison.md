@@ -1,31 +1,25 @@
-# Aegis_XOM → Neon table inventory comparison
+# Aegis table inventory comparison
 
-## Result
+Status: BLOCKED_MISSING_STAGING_INVENTORY
 
-**BLOCKED_MISSING_COMPARISON_INPUTS**
+## Recovered
+- Source inventory: `.tmp/aegis-source-table-inventory.json`
+- Entries: 341
+- Fields: `schema_name`, `table_name`, `row_count`
+- `classification`: `unknown` because no recovered artifact states it per table.
+- Provenance: historical Git revision `bb95a79^`, archive metadata read in memory without extraction.
 
-No confirmed missing tables are reported. Determining missing tables requires both complete per-table inventories; the available repository artifacts do not provide them.
+## Not recovered
+- Per-table Neon staging/import inventory with target schema/table, imported row count, and source mapping.
 
-## Available source evidence
-
-- Source database: `Aegis_XOM`
-- Reported source tables: `341`
-- Populated tables: `269`
-- Empty tables: `72`
-- Reported source rows: `139123`
-- Existing aggregate artifact: `.tmp/aegis-readonly-inspection.json`
-
-## Missing artifacts
-
-1. **Source per-table inventory:** a machine-readable list preserving `schema_name`, `table_name`, `row_count`, and `classification` for all source tables.
-2. **Imported/staged Neon per-table inventory:** a machine-readable list of imported/staged target tables, including target schema/table and source mapping where applicable.
-
-The mapping proposal and aggregate compatibility report are not substitutes for either inventory. The compatibility report states `341` missing by exact name, but that is not a confirmed migration gap because the migration uses proposed mappings and may intentionally use different target names.
+## Comparison
+- Confirmed missing tables: none.
+- Unverified source tables: 341.
+- Count mismatches: none reported because the staging side is absent.
+- Proposed mappings remain unapproved and were not used as confirmed imports.
 
 ## Safety
+No SQL Server or Neon connection, query, import, write, Blob operation, archive extraction, environment change, or Production deployment occurred.
 
-This report was generated read-only. SQL Server and Neon were not accessed; Neon, Production, DATABASE_URL, Blob contents, and the 2.18 GB archive were not modified or extracted.
-
-## Next step through v0
-
-Attach or import the two per-table JSON/CSV inventories into the project through the v0 interface. Then run a read-only comparison to produce confirmed missing tables without connecting to SQL Server, writing to Neon, or creating a deployment.
+## Next step
+Attach the machine-readable Neon staging inventory, then rerun this comparison read-only through v0.
