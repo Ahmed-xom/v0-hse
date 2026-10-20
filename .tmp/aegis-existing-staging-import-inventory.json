@@ -1,0 +1,63 @@
+{
+  "artifact": "aegis-existing-staging-import-inventory",
+  "version": 1,
+  "status": "unverified",
+  "verifiedRecords": [],
+  "records": [],
+  "evidence": {
+    "repositorySearchCompleted": true,
+    "gitHistorySearchCompleted": true,
+    "databaseAccessPerformed": false,
+    "sqlServerAccessPerformed": false,
+    "neonAccessPerformed": false,
+    "blobAccessPerformed": false,
+    "unsupportedEvidenceExcluded": [
+      "proposed mappings",
+      "pilot plans",
+      "read-only destination counts",
+      "unexecuted import or reconciliation scripts"
+    ]
+  },
+  "missingEvidence": [
+    {
+      "artifact": "per-table Neon staging import inventory",
+      "requiredFields": [
+        "source_schema",
+        "source_table",
+        "target_schema",
+        "target_table",
+        "imported_row_count",
+        "evidence_file",
+        "verification_status"
+      ],
+      "reason": "No historical file or commit object was found that records completed Neon staging imports with per-table row counts and evidence references."
+    },
+    {
+      "artifact": "historical reconciliation or import audit output",
+      "requiredEvidence": [
+        "completed import status",
+        "source-to-target mapping",
+        "per-table imported row count",
+        "evidence file reference"
+      ],
+      "reason": "Available reconciliation and import code is unexecuted; available reports explicitly describe read-only or unapproved work."
+    }
+  ],
+  "provenance": {
+    "searchedPaths": [
+      ".tmp",
+      "config",
+      "scripts",
+      "lib"
+    ],
+    "searchedGitHistory": true,
+    "generatedBy": "read-only repository and Git evidence inspection"
+  },
+  "safety": {
+    "readOnly": true,
+    "writesExecuted": false,
+    "schemaChanged": false,
+    "archiveExtracted": false,
+    "productionChanged": false
+  }
+}
