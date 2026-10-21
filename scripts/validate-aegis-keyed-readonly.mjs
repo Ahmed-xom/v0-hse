@@ -2,6 +2,7 @@ import process from "node:process"
 import fs from "node:fs/promises"
 import crypto from "node:crypto"
 import pg from "pg"
+import { assertConnectionMatchesIdentity, fetchVerifiedNeonIdentity } from "./aegis-neon-identity.mjs"
 
 const { Client } = pg
 const ENABLE = "AEGIS_READ_ONLY_CONFIRM"
@@ -43,11 +44,9 @@ function validateContract(contract) {
 }
 
 function validateIdentity(identity, connectionString) {
-  assertExactKeys(identity, ["projectId", "branchId", "host", "databaseName", "verifiedAt", "verificationMethod"], "staging identity")
-  const url = new URL(connectionString)
-  if (url.protocol !== "postgresql:" && url.protocol !== "postgres:") fail("DATABASE_URL_INVALID", "Database URL scheme is not PostgreSQL.")
-  if (url.hostname !== identity.host || !identity.projectId || !identity.branchId || !identity.databaseName || !identity.verifiedAt || identity.verificationMethod !== "trusted-provider-attestation") fail("STAGING_IDENTITY_UNVERIFIED", "A trusted staging project, branch, host, and database attestation is required.")
-  if (!url.searchParams.has("sslmode") || !["verify-full", "verify-ca"].includes(url.searchParams.get("sslmode"))) fail("TLS_NOT_VERIFIED", "The database URL must require certificate verification.")
+  assertExactKeys(identity, ["projectId", "branchId", "branchName", "host", "databaseName", "verifiedAt", "verificationMethod"], "staging identity")
+  if (identity.projectId !== "spring-surf-19710398" || identity.branchId !== "br-wispy-hill-apxr32tq" || identity.branchName !== "aegis-pilot-20261009" || identity.verificationMethod !== "neon-provider-api-v2") fail("STAGING_IDENTITY_UNVERIFIED", "A verified Neon provider identity is required.")
+  assertConnectionMatchesIdentity(connectionString, identity)
 }
 
 function validateInput(input, contract) {
