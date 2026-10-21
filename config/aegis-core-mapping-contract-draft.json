@@ -33,6 +33,13 @@
         ],
         "unmappedOrBlocked": ["TANNo", "VATNo", "Cmp_Short_Name", "Cmp_Logo_File", "Cmp_Logo", "Book_Op_Date", "CreatedBy", "UpdatedBy", "Rowguid"]
       },
+      "quarantineDecision": {
+        "approved": false,
+        "action": "quarantine_and_skip",
+        "scope": "Rows with unresolved keyed identity conflicts or target name/code uniqueness conflicts",
+        "writeAllowed": false,
+        "reason": "Do not update or overwrite existing company rows; hold conflicts for explicit review."
+      },
       "unresolvedDecisions": [
         "Approve deterministic source-key namespace and collision policy for Cmp_Id -> id.",
         "Resolve source 1 versus target 3 using keyed identity evidence; never use count or name alone.",
@@ -62,6 +69,13 @@
         ],
         "unmappedOrBlocked": ["BU_Under_Id", "BU_Type", "Client_Id", "CId", "CreatedBy", "UpdatedBy", "DeletedBy", "DeletedAt", "Rowguid", "EqpCId"]
       },
+      "quarantineDecision": {
+        "approved": false,
+        "action": "quarantine_and_skip",
+        "scope": "Rows whose company FK, parent hierarchy, or soft-delete semantics cannot be proven",
+        "writeAllowed": false,
+        "reason": "Do not invent company_id or parent_id; hold unresolved relationship rows for explicit review."
+      },
       "unresolvedDecisions": [
         "Confirm whether CId or Client_Id identifies the source company and approve the company_id FK translation.",
         "Decide how BU_Under_Id is preserved because target parent_id is not evidenced.",
@@ -89,6 +103,13 @@
           {"source": "Emp_EmailId", "target": "email", "status": "needs_approval", "transformation": "lowercase for comparison only; never auth linking"}
         ],
         "unmappedOrBlocked": ["Emp_Desig_Id", "BU_Id", "Emp_Dept_Id", "Emp_Status", "Emp_First_Name", "Emp_Middle_Name", "Emp_Last_Name", "Emp_Gender", "Emp_Join_Date", "Emp_Birth_Date", "Loc_Id", "JobPositionId", "CreatedAt", "UpdatedAt", "Is_Deleted", "CreatedBy", "UpdatedBy", "DeletedBy", "Rowguid"]
+      },
+      "quarantineDecision": {
+        "approved": false,
+        "action": "quarantine_and_skip",
+        "scope": "Employees with missing payroll_no, unresolved keyed identity, or unresolved BU/lookup relationships",
+        "writeAllowed": false,
+        "reason": "Never invent payroll_no or foreign keys; exclude invalid rows from any future insert until separately approved."
       },
       "unresolvedDecisions": [
         "Approve Emp_Id -> id namespace/version and prove source-target identity with a non-PII keyed method.",
