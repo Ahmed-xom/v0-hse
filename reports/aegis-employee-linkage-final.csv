@@ -1,7 +1,7 @@
 OldEmp_Id,OldRowguid,OldPayrollNo,NewEmployeeId,NewBusinessUnitId,MatchStatus,Evidence,UnresolvedReason
-378,009e4d8e-de85-451d-b98c-8cbdedbb1148,1224,,,unresolved,"No stable, multi-field identity evidence sufficient for linkage.",NewEmployeeId and NewBusinessUnitId are not proven
+378,009e4d8e-de85-451d-b98c-8cbdedbb1148,1224,3,Falcon Oilfield Services,confirmed,"Payroll and email match; source and target names match after normalizing the target (S) suffix; existing target retained. Evidence: Aegis export + Neon staging read.",
 377,87041691-e169-4cbe-8f05-76bfdce32991,i,,,unresolved,"No stable, multi-field identity evidence sufficient for linkage.",NewEmployeeId and NewBusinessUnitId are not proven
-376,1601e462-4b50-4513-9ba1-b93e835551c2,2ejd,,,unresolved,"No stable, multi-field identity evidence sufficient for linkage.",NewEmployeeId and NewBusinessUnitId are not proven
+376,1601e462-4b50-4513-9ba1-b93e835551c2,2ejd,2ejd,Falcon Oilfield Services,confirmed,"Payroll and email match; source and target names match after normalizing the target (S) suffix; existing target retained. Evidence: Aegis export + Neon staging read.",
 375,6ba2930d-f6d6-467e-9e13-bb423c934f20,L-XOM-0052,,,unresolved,"No stable, multi-field identity evidence sufficient for linkage.",NewEmployeeId and NewBusinessUnitId are not proven
 374,a7939f44-de69-4d40-a6ed-e0696f8d3d23,Approver,Approver,,confirmed,Unique payroll plus exact normalized name match; target record already exists.,
 373,946cf38b-bed5-4003-9e75-bf4d1863e6f3,E-NSE-00,,,unresolved,"No stable, multi-field identity evidence sufficient for linkage.",NewEmployeeId and NewBusinessUnitId are not proven
