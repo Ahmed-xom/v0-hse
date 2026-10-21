@@ -23,7 +23,9 @@
       "evidenceBacked": {
         "sourcePrimaryKey": ["Cmp_Id"],
         "targetPrimaryKey": ["id"],
+        "candidateKey": {"source": "Cmp_Id", "target": "id", "approved": false, "requiredEvidence": ["source PK constraint and non-null uniqueness evidence", "stable cross-system identity/version contract", "target id namespace collision test", "source FK references to Cmp_Id and target FK translation"]},
         "targetUniqueConstraints": ["name", "code"],
+        "candidateKey": {"source": "Cmp_Id", "target": "id", "approved": false, "requiredEvidence": ["source PK constraint and non-null uniqueness evidence", "stable cross-system identity/version contract", "target id namespace collision test", "source FK references to Cmp_Id and target FK translation"]},
         "sourceRowCount": 1,
         "observedTargetRowCount": 3,
         "columns": [
@@ -56,7 +58,9 @@
       "evidenceBacked": {
         "sourcePrimaryKey": ["BU_Id"],
         "targetPrimaryKey": ["id"],
+        "candidateKey": {"source": "BU_Id", "target": "id", "approved": false, "requiredEvidence": ["source PK constraint and non-null uniqueness evidence", "stable cross-system identity/version contract", "target id namespace collision test", "proven company FK and BU_Under_Id parent FK mapping"]},
         "targetUniqueConstraints": ["company_id + name"],
+        "candidateKey": {"source": "BU_Id", "target": "id", "approved": false, "requiredEvidence": ["source PK constraint and non-null uniqueness evidence", "stable cross-system identity/version contract", "target id namespace collision test", "proven company FK and BU_Under_Id parent FK mapping"]},
         "sourceRowCount": 7,
         "observedTargetRowCount": 7,
         "columns": [
@@ -93,7 +97,9 @@
       "evidenceBacked": {
         "sourcePrimaryKey": ["Emp_Id"],
         "targetPrimaryKey": ["id"],
+        "candidateKey": {"source": "Emp_Id", "target": "id", "approved": false, "requiredEvidence": ["source PK constraint and non-null uniqueness evidence", "stable cross-system identity/version contract", "target id namespace collision test", "keyed identity evidence explaining 378 versus 369 without name/email matching", "approved payroll_no null/quarantine policy and BU FK mapping"]},
         "targetUniqueConstraints": ["payroll_no", "email"],
+        "candidateKey": {"source": "Emp_Id", "target": "id", "approved": false, "requiredEvidence": ["source PK constraint and non-null uniqueness evidence", "stable cross-system identity/version contract", "target id namespace collision test", "keyed identity evidence explaining 378 versus 369 without name/email matching", "approved payroll_no null/quarantine policy and BU FK mapping"]},
         "sourceRowCount": 378,
         "observedTargetRowCount": 369,
         "columns": [
