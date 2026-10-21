@@ -1,0 +1,79 @@
+{
+  "reportVersion": 1,
+  "generatedAt": "2026-10-21T00:00:00.000Z",
+  "mode": "read-only-local-evidence",
+  "status": "BLOCKED_MISSING_EXPORT_AND_STAGING_INVENTORIES",
+  "sourceInventory": {
+    "path": ".tmp/aegis-source-table-inventory.json",
+    "available": true,
+    "tableCount": 341,
+    "populatedTableCount": 269,
+    "emptyTableCount": 72,
+    "totalRowCount": 139123,
+    "classificationStatus": "unknown_for_all_entries"
+  },
+  "exportInventory": {
+    "path": ".tmp/aegis-local-export-manifest.json",
+    "available": true,
+    "tableJsonCount": 0,
+    "completePerTableEvidenceAvailable": false,
+    "reason": "The archive and table_data JSON files are not available locally; no extraction was performed."
+  },
+  "neonStagingInventory": {
+    "path": ".tmp/aegis-existing-staging-import-inventory.json",
+    "available": true,
+    "verifiedRecordCount": 0,
+    "status": "unverified",
+    "reason": "The artifact explicitly contains no verified per-table import records."
+  },
+  "comparison": {
+    "normalization": "lowercase trimmed schema/table name; not applied because export and staging entry sets are empty",
+    "sourceTablesMissingFromExport": {
+      "confirmedMissing": [],
+      "notVerifiable": "all 341 source tables"
+    },
+    "exportedTablesMissingFromRecordedNeonStaging": {
+      "confirmedMissing": [],
+      "notVerifiable": "no exported table entries available"
+    },
+    "rowCountMismatches": {
+      "confirmed": [],
+      "notVerifiable": "no per-table export or Neon staging row counts available"
+    },
+    "emptySourceTables": {
+      "count": 72,
+      "namesAvailable": true,
+      "names": [
+        "dbo.AegisTenant_dbo_tblEmailRouterStatus", "dbo.AegisTenant_dbo_tblTenant", "dbo.SQImmediateCause", "dbo.SQInvestigation", "dbo.SQManagementFailure", "dbo.SQNotification", "dbo.SQRootCause", "dbo.tblActionListQuickMenu", "dbo.tblBIStrategicKPI", "dbo.tblCertiBodyHasCertificates", "dbo.tblCertificationDetail", "dbo.tblCity", "dbo.tblCountry", "dbo.tblDailySheetDetail", "dbo.tblDailySheetEventAR", "dbo.tblDailySheetMaster", "dbo.tblEmailRouterGroup", "dbo.tblEqpCompliance", "dbo.tblEqpComplianceMatrix", "dbo.tblEqpSort", "dbo.tblEquipmentDBMailSent", "dbo.tblEquipmentTypeConfigDetail", "dbo.tblEquipmentTypeConfigMaster", "dbo.tblExtensionData", "dbo.tblExtensionDetail", "dbo.tblFTWDetail", "dbo.tblForum", "dbo.tblGenrateEmailRouterQueue", "dbo.tblHEMP", "dbo.tblHEMP_Has_HazardRiskControl", "dbo.tblMOCApproverHistory", "dbo.tblMOCMB", "dbo.tblMOCMBApprover", "dbo.tblMOCMBApproverHistory", "dbo.tblMOCMMBExpiryHistory", "dbo.tblMOCSubType", "dbo.tblMonthlySheetDateDetail", "dbo.tblNonConformance", "dbo.tblNonConformance_Has_AuditingParty", "dbo.tblOCWSAccess", "dbo.tblPTW", "dbo.tblPTWApprover", "dbo.tblPTWApproverHistory", "dbo.tblPTW_Has_Document", "dbo.tblPTW_Has_Precaution", "dbo.tblParameterDetails", "dbo.tblRIAApprover", "dbo.tblRIAApproverHistory", "dbo.tblRIAHazardsImpacts", "dbo.tblRIAPPMeasures", "dbo.tblRIARiskMatrix", "dbo.tblRIARiskMatrixX", "dbo.tblRIARiskMatrixY", "dbo.tblRIARiskType", "dbo.tblRIAStatus", "dbo.tblRIA_Has_AdditionalPreventative", "dbo.tblRIA_Has_ExistingPreventative", "dbo.tblReportEngineUserReportGroup", "dbo.tblSQCategory", "dbo.tblSQINCFailure", "dbo.tblSafeObservation", "dbo.tblSafeTrackO", "dbo.tblSafeTrack_Has_SafeObservation", "dbo.tblSafeTrack_Has_UnSafeObservation", "dbo.tblScheduleMail_AI", "dbo.tblSearchEngineFilters", "dbo.tblState", "dbo.tblTempTraning_Course_Compliance_dashboard", "dbo.tblTimeLossType", "dbo.tblTrainingDBMailSent", "dbo.tblUnSafeObservation", "dbo.tblUserLogExt"
+      ]
+    },
+    "unresolvedMappings": "all source-to-target mappings/import statuses remain unverified"
+  },
+  "unavailableEvidence": [
+    ".tmp/table_data/**/*.json or equivalent 341-file export inventory",
+    ".tmp/Aegis_XOM_Export.zip or Aegis_XOM_Export1 accessible to the workspace",
+    "per-table Neon staging/import inventory with source_schema, source_table, target_schema, target_table, imported_row_count, evidence_file, verification_status"
+  ],
+  "inspectedFiles": [
+    ".tmp/aegis-source-table-inventory.json",
+    ".tmp/aegis-local-export-manifest.json",
+    ".tmp/aegis-existing-staging-import-inventory.json",
+    ".tmp/aegis-table-inventory-comparison.json",
+    ".tmp/aegis-readonly-inspection.json",
+    ".tmp/aegis-compatibility-report.json",
+    "config/aegis-table-mapping-proposal.json",
+    "config/aegis-core-pilot-mapping.json",
+    "config/aegis-core-mapping-review.json",
+    "config/aegis-migration-status.md"
+  ],
+  "safety": {
+    "sqlServerAccessed": false,
+    "neonAccessed": false,
+    "blobAccessed": false,
+    "archiveExtracted": false,
+    "importExecuted": false,
+    "productionChanged": false,
+    "environmentChanged": false
+  },
+  "nextAction": "Attach the complete export table JSON inventory and the independent per-table Neon staging inventory, then rerun this comparison read-only."
+}
