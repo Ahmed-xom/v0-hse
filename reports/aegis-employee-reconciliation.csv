@@ -3,7 +3,7 @@ Emp_Id,Rowguid,Emp_Payroll_No,target_employee_id,match_status,reason
 377,87041691-e169-4cbe-8f05-76bfdce32991,i,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
 376,1601e462-4b50-4513-9ba1-b93e835551c2,2ejd,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
 375,6ba2930d-f6d6-467e-9e13-bb423c934f20,L-XOM-0052,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
-374,a7939f44-de69-4d40-a6ed-e0696f8d3d23,Approver,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
+374,a7939f44-de69-4d40-a6ed-e0696f8d3d23,Approver,Approver,confirmed_match,unique payroll match with exact employee name match; target company and business unit are approved
 373,946cf38b-bed5-4003-9e75-bf4d1863e6f3,E-NSE-00,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
 372,fa75ecbc-e1d4-419a-b636-9bb66cd79d43,E-NSE-0250,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
 371,ba5988ea-3a61-43c6-b3cf-1ae6e6684ace,E-NSE-0251,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
@@ -11,7 +11,7 @@ Emp_Id,Rowguid,Emp_Payroll_No,target_employee_id,match_status,reason
 369,58f5ccb0-9b4d-479e-911e-5184377e2e48,L-XOM-0024,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
 368,c27ca877-172a-4b4e-98db-9f7f44f4d0be,L-XOM-0040,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
 367,49d722f9-5765-47e9-9c91-8270bb8a377a,L-328543,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
-366,9f6329c8-9cd4-4179-86b9-2dd69936f0f1,00012,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
+366,9f6329c8-9cd4-4179-86b9-2dd69936f0f1,00012,00012,confirmed_match,unique payroll match with exact employee name match; target company and business unit are approved
 365,c666043b-bdee-4b99-9686-c6307cfa9927,L-XOM-0042,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
 364,7e15838a-4df6-452a-8c06-bb41ef09bf26,L-XDS-0055,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
 363,0b5178c2-4187-451e-ae57-b9b83536c2f1,L-XOM-0043,,isolated,no confirmed payroll-plus-name match with a stable target identity; no INSERT
