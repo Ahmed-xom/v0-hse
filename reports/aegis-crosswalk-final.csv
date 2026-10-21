@@ -1,0 +1,5 @@
+OldCompanyId,OldCompanyRowguid,OldBU_Id,OldEmp_Id,OldRowguid,NewCompanyId,NewBusinessUnitId,NewEmployeeId,evidence_source,status
+,,,,,company-xom-llc,,3,"Aegis export + Neon staging read; payroll/email/name/unit evidence",CONFIRMED_EXISTING
+,,,,,company-xom-llc,,2ejd,"Aegis export + Neon staging read; payroll/email/name/unit evidence",CONFIRMED_EXISTING
+,,,,,company-xom-llc,,Approver,"Aegis export + Neon staging read; unique payroll and normalized name; existing target retained",CONFIRMED_EXISTING
+,,,,,company-xom-llc,,00012,"Aegis export + Neon staging read; unique payroll and normalized name; existing target retained",CONFIRMED_EXISTING
