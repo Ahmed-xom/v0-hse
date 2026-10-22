@@ -10,9 +10,15 @@
 
 ## Exact next action
 
-Provide one approved, local target-evidence artifact containing one row for each required legacy parent with:
+Provide the single approved target-evidence artifact at:
 
-`ParentGroup`, `LegacyParentId`, `LegacyRowguid`, `TargetTable`, and the actual Neon `TargetId` (`public.incident.id` or `public.journey.id`), plus the evidence reference that proves the row-level match.
+`reports/amnko-required-target-export.csv`
+
+It contains one row for each of the 29 distinct legacy parents represented by the 46 attachment records, with these columns:
+
+`ParentGroup`, `LegacyParentId`, `LegacyRowguid`, `LegacyReference`, `LegacyTitle`, `TargetTable`, `TargetId`, `EvidenceArtifact`, `EvidenceRowReference`, `MappingStatus`.
+
+Fill only `TargetId`, `EvidenceArtifact`, `EvidenceRowReference`, and `MappingStatus` when an explicit row-level legacy-to-Neon match is proven. Keep unsupported rows as `UNRESOLVED_TARGET_ID`; do not use numeric equality, approximate titles, or test records.
 
 This is the single blocker that unblocks the crosswalk. Do not use numeric-ID equality, title similarity, aggregate counts, or test records as proof. After that artifact is reviewed locally, separately approve the proposed attachment-record storage design before any Blob upload or Neon link write.
 
