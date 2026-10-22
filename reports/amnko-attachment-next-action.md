@@ -31,4 +31,24 @@ This is the single blocker that unblocks the crosswalk. Do not use numeric-ID eq
 5. Never overwrite `incident` or `journey` single-attachment fields.
 6. Roll back only objects/records created by that migration run; never delete pre-existing data.
 
+## Neon read-only verification
+
+The existing Neon integration is connected and exposes read-only database access. Existing application schema confirms:
+
+- `public.incident`: `id`, `reference_no`, `title`, `date`, `created_at`, and one attachment URL/name pair.
+- `public.journey`: `id`, journey details, and one `attachment_url`/`attachment_name` pair; no legacy `JM-...` reference column is present.
+- `public.aegis_migration_record`: existing source-to-target crosswalk inventory.
+
+A read-only lookup of the eight incident references in this manifest returned zero rows. A read-only lookup of `public.aegis_migration_record` for all 29 source keys also returned zero rows. No actual Neon ID is therefore proven, and no crosswalk row was updated.
+
+## Minimal authorized target export required
+
+Export one read-only workbook/CSV package from the authorized Neon admin tooling containing:
+
+- `incident`: `id`, `reference_no`, `title`, `date`, `created_at`, `data_gathering_attachment`, `data_gathering_attachment_name`
+- `journey`: `id`, `departure_date`, `origin`, `destination`, `purpose`, `driver`, `vehicle_plate`, `created_at`, `attachment_url`, `attachment_name`
+- `aegis_migration_record`: `source_table`, `source_key`, `target_table`, `target_id`, `comparison_status`, `row_hash`, `created_at`
+
+Include the export date and exact evidence source. A row becomes VERIFIED only when the artifact contains an actual target `id` plus a traceable legacy key/Rowguid mapping; numeric equality, title similarity, and test records do not qualify.
+
 This report is read-only planning. No query, upload, schema change, environment change, commit, push, or production change was performed.
