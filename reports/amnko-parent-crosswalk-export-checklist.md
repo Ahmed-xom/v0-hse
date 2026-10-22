@@ -9,19 +9,18 @@ Input already available locally:
 
 Run `scripts/export-amnko-parent-crosswalk-readonly.sql` in SSMS against the authorized legacy `Aegis_XOM` database.
 
-## Workbook output
+## Minimum workbook output
 
-Export the result sets into one Excel workbook with these named sheets:
+The SQL returns six result sets. Put them into one Excel workbook with these exact sheet names:
 
-1. `SourceTableMetadata`
-2. `ParentGroupRequirements`
-3. `ParentTableKeys`
-4. `HSEINCMasterRows`
-5. `HSEINCMaster2Rows`
-6. `JMRows`
-7. `AttachmentParentEvidence`
+1. `SourceTableMetadata` — columns, PK columns, Rowguid/identity flags
+2. `ParentGroupRequirements` — distinct ParentGroups and source row counts
+3. `AttachmentParentEvidence` — attachment parent keys and deletion flags
+4. `HSEINCMasterRows` — complete source rows
+5. `HSEINCMaster2Rows` — complete source rows
+6. `JMRows` — complete source rows
 
-If SSMS cannot produce one workbook directly, save the seven result sets as CSV files with these exact names. Do not create additional exports.
+This is the minimum practical package: metadata and PK evidence are combined into one result set, while the three candidate parent tables remain separate so no table identity is guessed. If SSMS cannot create one workbook, save exactly six CSVs with these sheet names as filenames. Do not create additional exports.
 
 ## Minimum required evidence
 
@@ -33,13 +32,14 @@ If SSMS cannot produce one workbook directly, save the seven result sets as CSV 
 
 Do not infer a Neon ID from a legacy numeric ID. A mapping is VERIFIED only when a traceable legacy key/Rowguid and an actual Neon target ID are present in an approved crosswalk or target export. Unresolved groups remain unresolved.
 
-## SSMS steps
+## Exact SSMS steps
 
 1. Open the SQL script in SSMS and select the authorized `Aegis_XOM` database.
-2. Execute as Results to Grid; do not use SQLCMD mode.
-3. Save each result grid as a CSV, or copy all result sets into one workbook using the sheet names above.
-4. Preserve NULLs, GUIDs, numeric precision, and original path text.
-5. Send only the workbook/CSVs for local comparison; no production writes or uploads are required.
+2. Confirm **Results to Grid** and leave **SQLCMD Mode** off.
+3. Execute once; do not run individual statements separately.
+4. Copy each of the six result grids into one workbook using the sheet names above. If workbook export is unavailable, save exactly these files: `SourceTableMetadata.csv`, `ParentGroupRequirements.csv`, `AttachmentParentEvidence.csv`, `HSEINCMasterRows.csv`, `HSEINCMaster2Rows.csv`, and `JMRows.csv`.
+5. Preserve NULLs, GUIDs, numeric precision, `ParentId` values, `AttachmentPath` text, and `Is_Deleted` values. Do not filter out deleted rows.
+6. Send only the workbook or six CSVs for local comparison; no production writes or uploads are required.
 
 ## Local matching after export
 

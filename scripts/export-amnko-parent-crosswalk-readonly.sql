@@ -7,31 +7,7 @@
 
 SET NOCOUNT ON;
 
--- 1. ParentGroup values required by the local attachment export.
-SELECT
-    ParentGroup,
-    COUNT_BIG(*) AS AttachmentRowCount,
-    SUM(CASE WHEN LOWER(LTRIM(RTRIM(CONVERT(nvarchar(20), Is_Deleted)))) IN
-        (N'1', N'true', N'yes') THEN 1 ELSE 0 END) AS DeletedAttachmentRowCount
-FROM dbo.tblAttachments
-GROUP BY ParentGroup
-ORDER BY ParentGroup;
-
--- 2. Source attachment evidence. Preserve this result when validating
--- ParentGroup + ParentId and deleted-source handling.
-SELECT
-    AttachmentId,
-    ParentGroup,
-    ParentId,
-    AttachmentName,
-    AttachmentPath,
-    SrNo,
-    Is_Deleted,
-    Rowguid
-FROM dbo.tblAttachments
-ORDER BY ParentGroup, ParentId, AttachmentId;
-
--- 3. Metadata for candidate parent tables and attachment relationships.
+-- 1. Metadata, PK columns, Rowguid and identity flags in one result set.
 SELECT
     s.name AS schema_name,
     t.name AS table_name,
@@ -41,50 +17,48 @@ SELECT
     c.max_length,
     c.is_nullable,
     c.is_identity,
-    c.is_rowguidcol
+    c.is_rowguidcol,
+    CASE WHEN pk.column_id IS NULL THEN 0 ELSE 1 END AS is_primary_key,
+    pk.key_ordinal
 FROM sys.tables t
 JOIN sys.schemas s ON s.schema_id = t.schema_id
 JOIN sys.columns c ON c.object_id = t.object_id
 JOIN sys.types ty ON ty.user_type_id = c.user_type_id
+OUTER APPLY (
+    SELECT ic.column_id, ic.key_ordinal
+    FROM sys.indexes i
+    JOIN sys.index_columns ic
+      ON ic.object_id = i.object_id AND ic.index_id = i.index_id
+    WHERE i.object_id = t.object_id AND i.is_primary_key = 1
+      AND ic.column_id = c.column_id
+) AS pk
 WHERE t.name IN
     (N'tblAttachments', N'tblHSEINCMaster', N'tblHSEINCMaster2', N'tblJM')
 ORDER BY t.name, c.column_id;
 
--- 4. Primary-key metadata for the candidate tables.
+-- 2. Distinct ParentGroups and source counts. Unknown groups remain unresolved.
 SELECT
-    s.name AS schema_name,
-    t.name AS table_name,
-    kc.name AS primary_key_name,
-    ic.key_ordinal,
-    c.name AS column_name
-FROM sys.tables t
-JOIN sys.schemas s ON s.schema_id = t.schema_id
-JOIN sys.key_constraints kc
-  ON kc.parent_object_id = t.object_id
- AND kc.type = 'PK'
-JOIN sys.index_columns ic
-  ON ic.object_id = kc.parent_object_id
- AND ic.index_id = kc.unique_index_id
-JOIN sys.columns c
-  ON c.object_id = ic.object_id
- AND c.column_id = ic.column_id
-WHERE t.name IN
-    (N'tblAttachments', N'tblHSEINCMaster', N'tblHSEINCMaster2', N'tblJM')
-ORDER BY t.name, ic.key_ordinal;
+    ParentGroup,
+    COUNT_BIG(*) AS AttachmentRowCount,
+    SUM(CASE WHEN LOWER(LTRIM(RTRIM(CONVERT(nvarchar(20), Is_Deleted)))) IN
+        (N'1', N'true', N'yes') THEN 1 ELSE 0 END) AS DeletedAttachmentRowCount,
+    CASE
+        WHEN ParentGroup IN (N'HSEINCMaster', N'HSEINCMaster2', N'JM')
+            THEN N'CANDIDATE_ONLY__VERIFY_WITH_METADATA_AND_ROWS'
+        ELSE N'UNRESOLVED_PARENT_TABLE'
+    END AS ResolutionStatus
+FROM dbo.tblAttachments
+GROUP BY ParentGroup
+ORDER BY ParentGroup;
 
--- 5. Complete rows for schema-supported candidate parents.
--- No assumptions are made about which ParentGroup maps to which table.
+-- 3. Source attachment evidence; preserve ParentId and Is_Deleted.
+SELECT
+    AttachmentId, ParentGroup, ParentId, AttachmentName, AttachmentPath,
+    SrNo, Is_Deleted, Rowguid
+FROM dbo.tblAttachments
+ORDER BY ParentGroup, ParentId, AttachmentId;
+
+-- 4-6. Complete candidate parent rows. Do not infer ParentGroup mappings.
 SELECT * FROM dbo.tblHSEINCMaster;
 SELECT * FROM dbo.tblHSEINCMaster2;
 SELECT * FROM dbo.tblJM;
-
--- 6. Explicit unresolved notice for ParentGroups without schema proof.
-SELECT
-    ParentGroup,
-    CAST(N'UNRESOLVED_PARENT_TABLE' AS nvarchar(64)) AS ResolutionStatus,
-    CAST(NULL AS nvarchar(256)) AS ProposedParentTable,
-    CAST(NULL AS nvarchar(256)) AS ProposedParentKey
-FROM dbo.tblAttachments
-WHERE ParentGroup NOT IN (N'HSEINCMaster', N'HSEINCMaster2', N'JM')
-GROUP BY ParentGroup
-ORDER BY ParentGroup;
