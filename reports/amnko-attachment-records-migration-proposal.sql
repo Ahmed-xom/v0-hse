@@ -5,6 +5,7 @@
 -- UP (proposal; not executed)
 CREATE TABLE public.attachment_records (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  content bytea NOT NULL,
   target_table text NOT NULL CHECK (target_table IN ('incident', 'journey')),
   target_id text NOT NULL,
   legacy_parent_group text NOT NULL,
