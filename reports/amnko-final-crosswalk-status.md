@@ -19,6 +19,10 @@ Verified mappings remain 0/29 and safely linkable attachments remain 0/46. The f
 
 ## Exact next action
 
-Obtain one read-only, authoritative source-to-target import ledger or staging export for `dbo.tblHSEINCMaster`, `dbo.tblHSEINCMaster2`, and `dbo.tblJM` containing `source_table`, legacy primary key, `Rowguid`, `target_table`, actual Neon `target_id`, import status, and evidence row reference. Do not use numeric ID equality, title matching, or test records. Until that artifact exists, leave all parents unresolved and do not upload or link attachments.
+The authoritative source is the owner of the AMNKO HSE SQL Server export/import execution records, not the current Neon application/test dataset. That owner must provide one read-only source-to-target identity ledger covering `dbo.tblHSEINC`, `dbo.tblHSEINCMaster`, `dbo.tblHSEINCMaster2`, and `dbo.tblJM` with, for every relevant source row:
+
+`source_table`, legacy primary-key column/value, `Rowguid`, `target_table`, actual Neon `target_id`, import status, and exact evidence reference (export filename plus row number, or execution-log identifier).
+
+The ledger must exclude test/demo rows and must not infer identity from equal numeric IDs, titles, or approximate values. Until that authoritative artifact is supplied, all 29 parents remain unresolved and no attachment may be uploaded or linked.
 
 No attachment upload, storage/database write, schema change, deployment, commit, push, or archive rescan was performed. The separate multi-attachment record design remains unapproved and unimplemented.
