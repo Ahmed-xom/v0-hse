@@ -34,16 +34,26 @@ export function sha256Hex(data: Uint8Array) {
   return createHash('sha256').update(data).digest('hex')
 }
 
+export function normalizeObjectKey(key: string) {
+  const normalized = key
+    .split('/')
+    .map((segment) => segment.trim())
+    .filter(Boolean)
+    .join('/')
+  if (!normalized || normalized.includes('//')) throw new Error('INVALID_BLOB_OBJECT_KEY')
+  return normalized
+}
+
 export function deterministicObjectKey(mapping: VerifiedAttachmentMapping, sha256: string) {
   const filename = sanitizeSegment(mapping.attachmentName || mapping.sourceArchivePath.split(/[\\/]/).pop() || 'attachment')
-  return [
+  return normalizeObjectKey([
     'amnko-hse',
     mapping.targetTable,
-    sanitizeSegment(mapping.targetId),
-    sanitizeSegment(mapping.legacyRowguid),
-    sanitizeSegment(mapping.attachmentId),
+    mapping.targetId,
+    mapping.legacyRowguid,
+    mapping.attachmentId,
     `${sha256}-${filename}`,
-  ].join('/')
+  ].join('/'))
 }
 
 export function prepareAttachment(mapping: VerifiedAttachmentMapping, data: Uint8Array): PreparedAttachment {
