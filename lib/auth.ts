@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto"
 import { betterAuth } from "better-auth"
-import { pool } from "@/lib/db"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { db } from "@/lib/db"
 
 const configuredSecret = process.env.BETTER_AUTH_SECRET
 const authSecret = configuredSecret && configuredSecret.length >= 32
@@ -10,9 +11,10 @@ const authSecret = configuredSecret && configuredSecret.length >= 32
     : undefined
 
 export const auth = betterAuth({
-  // Pass the pg Pool directly — Better Auth uses its built-in pg adapter.
-  // The Pool's search_path (set in lib/db/index.ts) routes queries to neon_auth schema.
-  database: pool,
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schemaName: "neon_auth",
+  }),
   emailAndPassword: {
     enabled: true,
   },
