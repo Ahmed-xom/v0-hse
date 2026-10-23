@@ -2,6 +2,7 @@ import { createHash } from "node:crypto"
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { db } from "@/lib/db"
+import { account, session, user, verification } from "@/lib/db/schema"
 
 const configuredSecret = process.env.BETTER_AUTH_SECRET
 const authSecret = configuredSecret && configuredSecret.length >= 32
@@ -13,7 +14,12 @@ const authSecret = configuredSecret && configuredSecret.length >= 32
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
-    schemaName: "neon_auth",
+    schema: {
+      user,
+      session,
+      account,
+      verification,
+    },
   }),
   emailAndPassword: {
     enabled: true,
