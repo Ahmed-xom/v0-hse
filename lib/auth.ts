@@ -38,11 +38,23 @@ export const auth = betterAuth({
     process.env.V0_RUNTIME_URL || "http://localhost:3000",
   ],
   secret: authSecret,
-  advanced: {
-    defaultCookieAttributes: {
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-    },
-  },
+  ...(process.env.NODE_ENV === "development"
+    ? {
+        advanced: {
+          defaultCookieAttributes: {
+            sameSite: "none" as const,
+            secure: true,
+            httpOnly: true,
+          },
+        },
+      }
+    : {
+        advanced: {
+          defaultCookieAttributes: {
+            sameSite: "lax" as const,
+            secure: true,
+            httpOnly: true,
+          },
+        },
+      }),
 })
