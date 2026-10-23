@@ -35,6 +35,7 @@ export const auth = betterAuth({
       ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`]
       : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+    "https://sb-21xwitowwlwq.vercel.run",
     process.env.V0_RUNTIME_URL || "http://localhost:3000",
   ],
   secret: authSecret,
