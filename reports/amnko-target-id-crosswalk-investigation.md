@@ -116,3 +116,22 @@ The live schema inventory contains no `public.excel_data` table. Therefore no `e
 The four incident rows and one journey row are candidate target inventory only. Their IDs cannot be assigned to any of the 46 attachments: the rows expose no `Event_Id`, `JMId`, source Rowguid, legacy key, or migration record. Dates, reference numbers, origin/destination, and purpose were not used as matching evidence. Confirmed matches remain **0/46**; all **46/46** remain `UNRESOLVED`.
 
 To complete matching safely, provide a target-side row-level ledger or persisted target fields containing: `source_entity`, `source_key` (`Event_Id` or `JMId`), optional parent source `Rowguid`, `target_table`, and the actual target `id`. A migration export containing those fields is sufficient; a list of current target IDs alone is not.
+
+## Final decision
+
+A final local-only review of the migration/import code, crosswalk configuration, reports, and Git history found no direct mechanism that can rebuild or recover the current `public.incident.id` / `public.journey.id` values from `tblHSEINC.Event_Id` or `tblJM.JMId`. The importer requires explicit approved mappings and does not capture generated IDs; the attachment migration requires a pre-existing verified `targetId`; and the migration evidence artifacts contain no row-level source-to-target ledger.
+
+**Decision: automatic attachment linking is not possible safely at this time.**
+
+- Confirmed mappings: **0/46**
+- Ambiguous mappings accepted: **0/46**
+- Unresolved and preserved without linking: **46/46**
+- The 46 verified files remain preserved and unlinked; no target UUID was invented and no attachment record was changed.
+
+### Shortest practical path
+
+1. **Preferred:** recover the historical source-to-target crosswalk produced by the original migration, containing `tblHSEINC.Event_Id` / `tblJM.JMId` (and preferably parent `Rowguid`) mapped to the actual target UUID and table.
+2. **If the crosswalk cannot be recovered:** import/rebuild the 19 incident and 27 journey parent records through a controlled migration that explicitly preserves the source key and captures each newly generated target UUID in a ledger. Only after that ledger is reviewed should the 46 attachments be linked.
+3. A target inventory of four incidents and one journey, or matching by number/date/name/destination, is insufficient and must not be used.
+
+No Neon, Blob, environment, Production, UI, or attachment content was modified. No database write, DDL, commit, push, or deploy was performed.
