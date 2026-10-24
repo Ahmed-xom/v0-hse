@@ -157,3 +157,16 @@ Required additional evidence before execution:
 2. If no historical crosswalk exists, an approved migration design that adds source-key persistence/ledger storage and a dedicated row-level importer. This requires a separate schema/write approval; it is not covered by the current preparation approval.
 
 Until one of these is supplied and reviewed, the five current rows remain untouched and classified `EXISTING_UNMAPPED`; no parent insertion and no attachment linking may proceed.
+
+## Library importer preparation
+
+Prepared files:
+
+- `scripts/prepare-library-import.mjs` — read-only source-archive planner. It reads the existing `.tmp/Aegis_XOM_Export.zip`, excludes `Is_Deleted` rows from the active document plan, retains deleted rows in counts/output, records source IDs and parent IDs, detects candidate content-path fields, and never opens a database or Blob connection. It does not perform INSERT, UPDATE, DELETE, DDL, upload, or target-ID generation.
+- `reports/amnko-library-import-plan.json` — dry-preparation artifact containing the source hash, counts, per-row source/parent keys, content-source status, and safety gates.
+
+Verified locally: `tblLibrary` has 657 rows (487 active, 170 deleted), `tblLibraryHierarchy` has 1,903 rows, and `tblLibraryAccess` has 32 rows. The existing export exposes **zero** content-path/object mappings for the active library rows; it contains metadata only. Therefore no `public.document` row may be created as displayable/downloadable until a content inventory or object mapping is supplied.
+
+The UI reads `public.document` and `public.document_folder` through `app/actions/manage-documents.ts`, scoped by `company_id` and active membership. Before execution, obtain: verified target schema/constraints and target company ID; source content/object mapping; approved `LibraryId/LibraryParentId` folder transformation; a separately reviewed `tblLibraryAccess` principal/allow-deny mapping; and source-key ledger/idempotency approval. Existing target rows must be preserved, and any conflict must stop rather than overwrite.
+
+Final validation must prove active folder/document counts, zero missing content among documents marked displayable, deleted rows excluded from the default view but retained in the ledger, and ACL exceptions explicitly listed. Current execution blocker: **missing source file/object mapping plus unapproved target/company/ACL mapping**.
