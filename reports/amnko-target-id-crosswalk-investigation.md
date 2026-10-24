@@ -40,3 +40,57 @@ No. The reviewed local target exports and migration reports do not show target r
 - Unresolved target IDs: **46**
 
 The specific missing evidence is an authoritative row-level ledger or target export containing, for each source parent, the source entity and key (`dbo.tblHSEINC.Event_Id` or `dbo.tblJM.JMId`), preferably the parent source `Rowguid`, and the actual `public.incident.id` or `public.journey.id`. The current importer and reports do not create or preserve that relationship. No UUIDs were invented and no speculative map was created.
+
+## Safe read-only matching preparation
+
+### Target fields actually present in the project schema
+
+`lib/db/schema.ts:272-307` defines `journey` with `id`, user/trip attributes, dates, status, notes, and attachment URL/name fields. It has no `JMId`, `Event_Id`, `Event_Number`, `Rowguid`, legacy ID, or source-key column.
+
+`lib/db/schema.ts:311-347` defines `incident` with `id`, `referenceNo`, title, category/type, severity/status, date, location, reporter fields, narrative fields, and attachment-name/path fields. It has no `Event_Id`, `Event_Number`, `Rowguid`, legacy ID, or source-key column. `referenceNo` is an application reference string, not a proven legacy `Event_Number` mapping.
+
+The only generic source-shaped storage visible in the schema is `excel_data.data` (`lib/db/schema.ts:111-121`), a JSONB import area. No code reviewed establishes that it contains the target incident/journey rows or a source-to-target ID ledger.
+
+### Authorized minimum read set
+
+The eventual database read should be performed only through the existing authorized server-side database access path and an authenticated/admin-controlled read route or operator tool. It must use parameterized SQL, return no credentials/session data, and select only the columns below. It must not expose personal fields such as reporter emails, user emails, driver names, or narrative text.
+
+For incidents, the minimum safe projection is:
+
+```sql
+SELECT id, reference_no, date
+FROM public.incident
+ORDER BY id;
+```
+
+For journeys, the minimum safe projection is:
+
+```sql
+SELECT id, departure_date, origin, destination, purpose
+FROM public.journey
+ORDER BY id;
+```
+
+These projections are useful for inventory and audit, but they cannot prove a match by themselves because the schema has no stored legacy key. Do not use `title`, `origin`, `destination`, `purpose`, dates, or numeric/string similarity as a sole match key.
+
+If a schema inspection is separately authorized and required before the reads, the safe metadata query is:
+
+```sql
+SELECT table_name, column_name, data_type
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name IN ('incident', 'journey')
+ORDER BY table_name, ordinal_position;
+```
+
+This metadata query is read-only and contains no row data. It should be run only to verify that the selected columns exist; it is not a source crosswalk.
+
+### Required evidence to complete matching
+
+The following must be supplied or discovered in an authoritative target-side export before any attachment is linked:
+
+1. A row-level ledger with `source_entity` (`tblHSEINC` or `tblJM`), `source_key` (`Event_Id` or `JMId`), optionally the parent source `Rowguid`, `target_table`, and the actual target `id`.
+2. Alternatively, target rows containing a persisted legacy key/Rowguid column or a documented `excel_data` JSONB contract that stores the same source key alongside the target ID.
+3. Evidence that the ledger was produced by the migration/import that created the current records, not a manually inferred spreadsheet.
+
+Until that evidence exists, all 46 attachment rows remain `UNRESOLVED`. The two SELECTs above can safely inventory candidate target IDs, but cannot safely convert source keys into target IDs.
