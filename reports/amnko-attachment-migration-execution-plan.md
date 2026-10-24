@@ -119,6 +119,12 @@ Post-attachment linking:
 
 Rollback is by `run_id` and ledger entries only. Before execution, record all newly inserted target IDs and attachment record IDs created by that run. If review fails, delete only records created by that run, in reverse dependency order, after an explicit rollback approval. Never delete or modify pre-existing records, and never use a broad table-wide delete. If the target schema cannot identify run-owned rows safely, stop and require a reviewed rollback design before execution.
 
+## Ledger preparation completed
+
+The approved read-only ledger was created at `reports/amnko-parent-migration-ledger.csv` from the existing local source crosswalk evidence. It contains 29 distinct source parent records covering the 19 incident attachments and 27 journey attachments: 8 `tblHSEINC` parents and 21 `tblJM` parents. Every row has `status=UNRESOLVED` and an empty `target_id` because no authoritative target UUID evidence exists. The five current Neon records are preserved and untouched; no attachments were linked.
+
+CSV validation: header columns are exactly `source_table,source_id,source_rowguid,target_table,target_id,status,evidence`; 29 data rows; 0 confirmed; 29 unresolved; 0 blank source IDs; 0 non-empty target IDs. This is a preparation ledger, not a database migration or attachment-link operation.
+
 ## Current decision
 
-Do not execute yet. The practical next step is to approve preparation of the resumable parent ledger and confirm where the ledger may be stored without altering existing data. After the ledger is generated and reviewed, request a second explicit approval for parent insertion, followed by a separate approval for the 46 exact-key attachment links.
+Do not execute yet. The next step is a separate explicit approval for parent insertion using this reviewed ledger, followed only afterward by a separate approval for the 46 exact-key attachment links.
