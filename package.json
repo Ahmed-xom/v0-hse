@@ -15,6 +15,7 @@
     "test:aegis-staging-insert": "node scripts/test-aegis-staging-insert.mjs"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "1.7.2",
     "@better-auth/utils": "0.5.0",
     "@neondatabase/serverless": "^1.1.0",
     "@radix-ui/react-accordion": "^1.2.20",
