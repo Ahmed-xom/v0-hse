@@ -44,4 +44,23 @@ Before any actual link or upload, provide and approve one authoritative source-t
 
 The ledger must exclude test/demo rows and must not infer identity from numeric equality, approximate titles, or filenames. After the ledger is reviewed, separately approve the existing private, deterministic, non-overwriting attachment-record/Blob execution design. Only then should a write-enabled migration be considered.
 
+## Source-export crosswalk investigation (read-only)
+
+The original source export was inspected rather than relying only on the prior Neon query:
+
+- `.tmp/Aegis_XOM_Export.zip` is a 350-entry read-only export from Git history. Its metadata reports 341 tables, 269 populated tables, and 139,123 rows.
+- The original attachment table was found at `table_data\\dbo__tblAttachments.json`. Its discovered columns are `AttachmentId`, `ParentGroup`, `ParentId`, `AttachmentName`, `AttachmentPath`, `SrNo`, `Is_Deleted`, and `Rowguid`.
+- The 46 selected attachments are present in that table. Their source parent evidence is therefore confirmed at the source level: `ParentGroup` is `HSEINCMaster` or `JM`, `ParentId` is the legacy parent key, and `Rowguid` is the legacy parent Rowguid. The verified archive `index.csv` supplies the SHA-256 for all 46 files.
+- The incident source table was found as `table_data\\dbo__tblHSEINC.json`; its discovered identity fields include `Event_Id`, `Event_Number`, and `Rowguid`. This confirms the source table family, but it does not provide a Neon target UUID.
+- No populated original `JM`/journey source table or source-to-Neon target ledger was found in the recovered export artifacts. The only recovered Neon crosswalk export has headers but no rows, and `amnko-neon-aegis-migration-record-export.csv` is empty.
+- The available Neon incident and journey exports contain only test/current records and no matching legacy references or Rowguid values. They cannot be used as target mappings.
+
+The complete 46-row evidence CSV is `reports/amnko-attachment-source-crosswalk.csv`. It records source table/key/Rowguid, filename, SHA-256, target table/ID fields, evidence references, and status for every attachment. Source identity is evidenced for all 46, but target identity is not evidenced for any:
+
+- `CONFIRMED`: 0
+- `AMBIGUOUS`: 0
+- `UNRESOLVED`: 46
+
+Missing evidence is specifically the source-to-target crosswalk containing the actual Neon `incident.id` or `journey.id` for each legacy parent. No target IDs were inferred from filenames, numeric keys, titles, or counts.
+
 **Current result: 0/46 confirmed mappings; 46/46 unresolved.**
