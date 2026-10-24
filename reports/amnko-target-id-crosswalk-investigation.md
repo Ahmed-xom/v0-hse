@@ -94,3 +94,25 @@ The following must be supplied or discovered in an authoritative target-side exp
 3. Evidence that the ledger was produced by the migration/import that created the current records, not a manually inferred spreadsheet.
 
 Until that evidence exists, all 46 attachment rows remain `UNRESOLVED`. The two SELECTs above can safely inventory candidate target IDs, but cannot safely convert source keys into target IDs.
+
+## Verified staging read (2026-10-24)
+
+The requested branch was verified before querying:
+
+- Neon project: `spring-surf-19710398`
+- Branch name: `aegis-pilot-20261009`
+- Branch ID: `br-wispy-hill-apxr32tq`
+- State: `ready`
+- No writes were issued.
+
+Read-only results using only the requested target fields:
+
+- `public.incident`: 4 rows returned, each with `id`, `reference_no`, and `date`.
+- `public.journey`: 1 row returned, with `id`, `departure_date`, `origin`, `destination`, and `purpose`.
+- `public.aegis_migration_record`: 0 rows returned for `source_table`, `source_key`, `target_table`, `target_id`, and `comparison_status`.
+
+The live schema inventory contains no `public.excel_data` table. Therefore no `excel_data.data` evidence was assumed or queried. The available `aegis_import.source_rows` JSONB table is not treated as a crosswalk because no verified contract was supplied that it stores the target row ID alongside the source key.
+
+The four incident rows and one journey row are candidate target inventory only. Their IDs cannot be assigned to any of the 46 attachments: the rows expose no `Event_Id`, `JMId`, source Rowguid, legacy key, or migration record. Dates, reference numbers, origin/destination, and purpose were not used as matching evidence. Confirmed matches remain **0/46**; all **46/46** remain `UNRESOLVED`.
+
+To complete matching safely, provide a target-side row-level ledger or persisted target fields containing: `source_entity`, `source_key` (`Event_Id` or `JMId`), optional parent source `Rowguid`, `target_table`, and the actual target `id`. A migration export containing those fields is sufficient; a list of current target IDs alone is not.
