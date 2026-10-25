@@ -35,6 +35,7 @@ export const account = neonAuthSchema.table('account', {
   id: uuid('id').primaryKey(),
   accountId: text('accountId').notNull(),
   providerId: text('providerId').notNull(),
+  issuer: text('issuer'),
   userId: uuid('userId').notNull(),
   accessToken: text('accessToken'),
   refreshToken: text('refreshToken'),
