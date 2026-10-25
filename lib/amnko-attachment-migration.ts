@@ -63,11 +63,21 @@ export function prepareAttachment(mapping: VerifiedAttachmentMapping, data: Uint
   return { ...mapping, sha256, bytes: data.byteLength, objectKey: deterministicObjectKey(mapping, sha256) }
 }
 
+function getPrivateBlobConfig() {
+  const token = process.env.b1_READ_WRITE_TOKEN
+  const storeId = process.env.b1_STORE_ID
+  if (!token) throw new Error('b1_READ_WRITE_TOKEN is required for private AMNKO uploads')
+  if (!storeId) throw new Error('b1_STORE_ID is required for private AMNKO uploads')
+  return { token, storeId }
+}
+
 export async function uploadPreparedAttachment(prepared: PreparedAttachment, data: Uint8Array, contentType = 'application/octet-stream'): Promise<AttachmentUploadResult> {
   const actualHash = sha256Hex(data)
   if (actualHash !== prepared.sha256 || data.byteLength !== prepared.bytes) throw new Error('CONTENT_INTEGRITY_CHECK_FAILED')
+  const { token } = getPrivateBlobConfig()
   const blob = await put(prepared.objectKey, Buffer.from(data), {
     access: 'private',
+    token,
     addRandomSuffix: false,
     allowOverwrite: false,
     contentType,
@@ -76,11 +86,12 @@ export async function uploadPreparedAttachment(prepared: PreparedAttachment, dat
 }
 
 export async function rollbackNewUploads(results: AttachmentUploadResult[]) {
+  const { token } = getPrivateBlobConfig()
   const deleted: string[] = []
   const failed: Array<{ pathname: string; error: string }> = []
   for (const result of results) {
     try {
-      await del(result.pathname)
+      await del(result.pathname, { token })
       deleted.push(result.pathname)
     } catch (error) {
       failed.push({ pathname: result.pathname, error: error instanceof Error ? error.message : 'ROLLBACK_FAILED' })
