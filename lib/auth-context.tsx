@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // The server-protected APIs use Better Auth sessions, so establish the same
     // session before exposing the client-side user state.
-    const authResult = await authClient.signIn.email({ email, password })
+    const authResult = await authClient.signIn.email({ email: foundUser.email, password })
     if (authResult.error) {
       return { success: false, error: "Unable to establish a secure session. Please try again." }
     }
