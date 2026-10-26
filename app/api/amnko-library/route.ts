@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/admin-auth'
 import { pool } from '@/lib/db'
 
 export async function GET() {
-  const session = await requireAdmin()
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
   const result = await pool.query(`
     SELECT
       l.rowguid,
@@ -19,11 +15,11 @@ export async function GET() {
       d.file_size,
       d.category,
       d.status,
-      d.created_at
+      d.created_at,
+      d.is_public
     FROM public.amnko_library_document_link l
     INNER JOIN public.document d ON d.id = l.document_id
-    WHERE d.is_public = false
-      AND l.blob_pathname LIKE 'amnko-library/%'
+    WHERE l.blob_pathname LIKE 'amnko-library/%'
     ORDER BY d.title ASC
   `)
 
@@ -40,6 +36,8 @@ export async function GET() {
       status: row.status,
       createdAt: row.created_at,
       verified: row.verification_status === 'VERIFIED',
+      isPublic: row.is_public === true,
+      accessLabel: row.is_public === true ? 'public' : 'protected',
     })),
   })
 }
