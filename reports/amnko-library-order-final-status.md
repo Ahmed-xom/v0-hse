@@ -8,7 +8,9 @@ Generated from current repository evidence. No Neon, Blob, Production, DATABASE_
 - Current API documents: 348.
 - Manifest items with confirmed source linkage: 273.
 - API rows with confirmed reference order: 268.
+- API rows with fixed fallback order: 80 (the remaining current documents after reference-linked rows), using the stable current `document_id` key returned by the database; this is not claimed as original source order.
 - Difference: seven manifest pathnames are absent from the API set; two API rows use `.txt` for the same stem where the manifest has `.pdf`. No extension was rewritten.
+- The full original order remains unprovable with current data; only the 268 reference-linked rows have confirmed source order.
 
 ## Seven manifest/API differences
 

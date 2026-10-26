@@ -36,12 +36,12 @@ export async function GET() {
   }
 
   const orderedRows = result.rows
-    .map((row, sourceIndex) => ({
+    .map((row) => ({
       row,
-      sourceIndex,
+      fallbackKey: String(row.document_id),
       referenceOrder: orderByPathname.get(row.blob_pathname) ?? orderByStem.get(blobStem(row.blob_pathname)) ?? null,
     }))
-    .sort((a, b) => (a.referenceOrder ?? Number.MAX_SAFE_INTEGER) - (b.referenceOrder ?? Number.MAX_SAFE_INTEGER) || a.sourceIndex - b.sourceIndex)
+    .sort((a, b) => (a.referenceOrder ?? Number.MAX_SAFE_INTEGER) - (b.referenceOrder ?? Number.MAX_SAFE_INTEGER) || a.fallbackKey.localeCompare(b.fallbackKey))
 
   return NextResponse.json({
     orderSource: 'config/amnko-library-order.json',
