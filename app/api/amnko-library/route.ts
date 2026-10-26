@@ -1,5 +1,14 @@
 import { NextResponse } from 'next/server'
 import { pool } from '@/lib/db'
+import orderManifest from '@/config/amnko-library-order.json'
+
+const normalizeOrderKey = (value: string | null | undefined) => value
+  ?.toLocaleLowerCase('en')
+  .replace(/\.(docx?|xlsx?|pptx?|pdf|jpg|jpeg|png|zip)$/i, '')
+  .replace(/[^\p{L}\p{N}]+/gu, ' ')
+  .trim()
+
+const basename = (pathname: string | null | undefined) => pathname?.split('/').pop() ?? ''
 
 export async function GET() {
   const result = await pool.query(`
@@ -20,11 +29,36 @@ export async function GET() {
     FROM public.amnko_library_document_link l
     INNER JOIN public.document d ON d.id = l.document_id
     WHERE l.blob_pathname LIKE 'amnko-library/%'
-    ORDER BY d.title ASC
   `)
 
+  const orderByKey = new Map<string, number[]>()
+  for (const item of orderManifest.items) {
+    const orders = orderByKey.get(item.matchKey) ?? []
+    orders.push(item.order)
+    orderByKey.set(item.matchKey, orders)
+  }
+
+  const usedOrders = new Set<number>()
+  const orderedRows = result.rows
+    .map((row, sourceIndex) => {
+      const candidateKeys = [
+        normalizeOrderKey(row.title),
+        normalizeOrderKey(row.file_name),
+        normalizeOrderKey(basename(row.blob_pathname)),
+      ].filter((key): key is string => Boolean(key))
+      const referenceOrder = candidateKeys
+        .flatMap((key) => orderByKey.get(key) ?? [])
+        .find((order) => !usedOrders.has(order))
+
+      if (referenceOrder !== undefined) usedOrders.add(referenceOrder)
+      return { row, sourceIndex, referenceOrder }
+    })
+    .sort((a, b) => (a.referenceOrder ?? Number.MAX_SAFE_INTEGER) - (b.referenceOrder ?? Number.MAX_SAFE_INTEGER) || a.sourceIndex - b.sourceIndex)
+
   return NextResponse.json({
-    documents: result.rows.map((row) => ({
+    orderSource: 'config/amnko-library-order.json',
+    referenceItemCount: orderManifest.items.length,
+    documents: orderedRows.map(({ row, referenceOrder }) => ({
       rowguid: row.rowguid,
       documentId: row.document_id,
       pathname: row.blob_pathname,
@@ -38,6 +72,7 @@ export async function GET() {
       verified: row.verification_status === 'VERIFIED',
       isPublic: row.is_public === true,
       accessLabel: row.is_public === true ? 'public' : 'protected',
+      referenceOrder: referenceOrder ?? null,
     })),
   })
 }
