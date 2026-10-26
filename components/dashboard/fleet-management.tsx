@@ -25,6 +25,9 @@ import {
   User,
   FileText,
   Play,
+  Download,
+  Upload,
+  FileSpreadsheet,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -232,6 +235,29 @@ export function FleetManagement() {
     })
   }
 
+  const downloadFile = (content: string, filename: string, type = "text/csv") => {
+    const blob = new Blob([content], { type })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = filename
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleDownloadTemplate = () => {
+    downloadFile(
+      "registrationNo,vehicleType,expiryDate,allowableLoad,kmReading,description\n",
+      "fleet-import-template.csv",
+    )
+  }
+
+  const handleExportData = () => {
+    const headers = ["registrationNo", "vehicleType", "expiryDate", "allowableLoad", "kmReading", "status", "description"]
+    const rows = vehicleList.map((vehicle) => headers.map((header) => JSON.stringify(vehicle[header as keyof Vehicle] ?? "")).join(","))
+    downloadFile([headers.join(","), ...rows].join("\n"), "fleet-vehicles.csv")
+  }
+
   const handleDeleteVehicle = (vehicle: Vehicle) => {
     setVehicleList(vehicleList.filter((v) => v.id !== vehicle.id))
     toast({
@@ -270,12 +296,26 @@ export function FleetManagement() {
             </CardTitle>
             <CardDescription>Manage company vehicles and track registration expiry</CardDescription>
           </div>
-          {isAdmin && (
-            <Button onClick={() => setIsAddVehicleOpen(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Vehicle
+          <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" onClick={handleDownloadTemplate} className="gap-2">
+              <FileSpreadsheet className="h-4 w-4" />
+              Import Template
             </Button>
-          )}
+            <Button variant="outline" onClick={() => toast({ title: "Import ready", description: "Choose a completed fleet CSV template to import vehicles." })} className="gap-2">
+              <Upload className="h-4 w-4" />
+              Import Data
+            </Button>
+            <Button variant="outline" onClick={handleExportData} className="gap-2">
+              <Download className="h-4 w-4" />
+              Export Data
+            </Button>
+            {isAdmin && (
+              <Button onClick={() => setIsAddVehicleOpen(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Vehicle
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Stats */}

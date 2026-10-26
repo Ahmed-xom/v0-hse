@@ -1,0 +1,76 @@
+{
+  "artifact": "aegis-existing-staging-import-inventory",
+  "version": 2,
+  "status": "unverified",
+  "verifiedRecords": [],
+  "records": [],
+  "localEvidence": {
+    "sourceInventory": {
+      "path": ".tmp/aegis-source-table-inventory.json",
+      "available": true,
+      "entryCount": 341,
+      "totalRows": 139123,
+      "classificationStatus": "unknown",
+      "isNeonImportEvidence": false
+    },
+    "localExportManifest": {
+      "path": ".tmp/aegis-local-export-manifest.json",
+      "available": true,
+      "availableJsonFileCount": 0,
+      "isNeonImportEvidence": false
+    },
+    "sourceArchive": {
+      "path": ".tmp/Aegis_XOM_Export.zip",
+      "available": false,
+      "extracted": false
+    }
+  },
+  "unverifiedReferences": [
+    {
+      "reference": "aegis_import.raw_rows",
+      "status": "unverified",
+      "reason": "Repository search found references only; no local execution evidence or table inventory proves its contents."
+    },
+    {
+      "reference": "aegis_import.source_rows",
+      "status": "unverified",
+      "reportedRowCount": 139123,
+      "reportedRowCountStatus": "unverified",
+      "reason": "139123 is proven only as the source export total in local read-only metadata, not as a Neon staging count."
+    },
+    {
+      "reference": "aegis_import.import_log",
+      "status": "unverified",
+      "reason": "No local import log or completed import audit was found."
+    }
+  ],
+  "missingEvidence": [
+    {
+      "artifact": "export table JSON files",
+      "required": "One JSON evidence file per source table, with filename, parsed row count, and validation result.",
+      "currentStatus": "Not available locally; zero files found in the expected local export directory."
+    },
+    {
+      "artifact": "per-table Neon staging import inventory",
+      "requiredFields": ["source_schema", "source_table", "target_schema", "target_table", "imported_row_count", "evidence_file", "verification_status"],
+      "currentStatus": "Not available; no database query was performed."
+    }
+  ],
+  "provenance": {
+    "repositorySearchCompleted": true,
+    "gitHistorySearchCompleted": true,
+    "generatedBy": "read-only repository and Git evidence inspection"
+  },
+  "safety": {
+    "readOnly": true,
+    "writesExecuted": false,
+    "schemaChanged": false,
+    "archiveExtracted": false,
+    "productionChanged": false,
+    "environmentChanged": false,
+    "neonAccessed": false,
+    "sqlServerAccessed": false,
+    "blobAccessed": false,
+    "importExecuted": false
+  }
+}

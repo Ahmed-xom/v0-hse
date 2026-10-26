@@ -1,0 +1,5479 @@
+{
+  "artifact": "historical-git-export",
+  "git_commit": "d0958240c73b1a4fed16ca186b58108c4518ec1a",
+  "git_path": ".tmp/Aegis_XOM_Export.zip",
+  "git_blob_oid": "a555eea85af4c6f04c168abe8fa35dbfe6c24853",
+  "git_blob_size": 4918503,
+  "zip_entry_count": 350,
+  "source_inventory_path": ".tmp/aegis-source-table-inventory.json",
+  "manifest": {
+    "format": "Aegis_XOM_ReadOnly_Export_v1",
+    "database": "Aegis_XOM",
+    "exported_at": "2026-10-07T06:56:38.6349217Z",
+    "tables": 341,
+    "populated_tables": 269,
+    "empty_tables": 72,
+    "total_rows": 139123
+  },
+  "inventory_count": 341,
+  "inventory": [
+    {
+      "source_schema": "dbo",
+      "source_table": "ActionItemParent",
+      "table": "dbo.ActionItemParent",
+      "zip_entry": "table_data\\dbo__ActionItemParent.json",
+      "declared_row_count": 12,
+      "row_counts_json_row_count": 12,
+      "parsed_row_count": 12,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "94c828a477c0a1f7d31f659122b909859d5881b82bd495908321959388f8f2bb"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "ActionItemPriority",
+      "table": "dbo.ActionItemPriority",
+      "zip_entry": "table_data\\dbo__ActionItemPriority.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9fd7124a9d14a9fc3bfccc3d2416b8d1f12ff27d463e69e75ceb54c2c90f9b78"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "ActionItems",
+      "table": "dbo.ActionItems",
+      "zip_entry": "table_data\\dbo__ActionItems.json",
+      "declared_row_count": 669,
+      "row_counts_json_row_count": 669,
+      "parsed_row_count": 669,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "c83a422fbb1a49509b04a04e319ce25d570f699b89dce2d7efdee0fdbc60015c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "ActionItems_AuditTrail",
+      "table": "dbo.ActionItems_AuditTrail",
+      "zip_entry": "table_data\\dbo__ActionItems_AuditTrail.json",
+      "declared_row_count": 1109,
+      "row_counts_json_row_count": 1109,
+      "parsed_row_count": 1109,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "eb6ee271b32833458eeb26ba4f6932047dd9ab1f2dc466a5468069dccbf42501"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "ActionItemType",
+      "table": "dbo.ActionItemType",
+      "zip_entry": "table_data\\dbo__ActionItemType.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "cc457fba851e8d337956b2e457b90a6bb2bb27a2291a23673f9ff759f5b99a6c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AegisTenant_dbo_tblEmailRouterStatus",
+      "table": "dbo.AegisTenant_dbo_tblEmailRouterStatus",
+      "zip_entry": "table_data\\dbo__AegisTenant_dbo_tblEmailRouterStatus.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AegisTenant_dbo_tblTenant",
+      "table": "dbo.AegisTenant_dbo_tblTenant",
+      "zip_entry": "table_data\\dbo__AegisTenant_dbo_tblTenant.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditAssignment",
+      "table": "dbo.AuditAssignment",
+      "zip_entry": "table_data\\dbo__AuditAssignment.json",
+      "declared_row_count": 491,
+      "row_counts_json_row_count": 491,
+      "parsed_row_count": 491,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "0bf491e8a899fb91ced106e3811b4153e4c1489f6e2300cbe1aa4b4778cc419b"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditCategory",
+      "table": "dbo.AuditCategory",
+      "zip_entry": "table_data\\dbo__AuditCategory.json",
+      "declared_row_count": 11,
+      "row_counts_json_row_count": 11,
+      "parsed_row_count": 11,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "d907b985d6dbcdae1074464ef1d25933074b57f630842b0cc911ce46ea7f4a77"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditChecklist",
+      "table": "dbo.AuditChecklist",
+      "zip_entry": "table_data\\dbo__AuditChecklist.json",
+      "declared_row_count": 97,
+      "row_counts_json_row_count": 97,
+      "parsed_row_count": 97,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "89b5197ad0ae2e1261977b5df78f181ec7f1b1567988765bc2f9bbfc248300ea"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditCheckListImport",
+      "table": "dbo.AuditCheckListImport",
+      "zip_entry": "table_data\\dbo__AuditCheckListImport.json",
+      "declared_row_count": 3429,
+      "row_counts_json_row_count": 3429,
+      "parsed_row_count": 3429,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "0646f9994bda6c29173e35c90ac8eb449369fca480f9cf2dcfc914b01867d23d"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditDashboardSummary",
+      "table": "dbo.AuditDashboardSummary",
+      "zip_entry": "table_data\\dbo__AuditDashboardSummary.json",
+      "declared_row_count": 97,
+      "row_counts_json_row_count": 97,
+      "parsed_row_count": 97,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "296c50c71fa2085bda08969608c0898de9e1a136cd966204bd2cb97e98ba1844"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditHasCategories",
+      "table": "dbo.AuditHasCategories",
+      "zip_entry": "table_data\\dbo__AuditHasCategories.json",
+      "declared_row_count": 238,
+      "row_counts_json_row_count": 238,
+      "parsed_row_count": 238,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "da0036d11e48e52731c5ebe61c6242b2e968d791d7a3a9506d9e36ce84adb75e"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditInspectionCat",
+      "table": "dbo.AuditInspectionCat",
+      "zip_entry": "table_data\\dbo__AuditInspectionCat.json",
+      "declared_row_count": 185,
+      "row_counts_json_row_count": 185,
+      "parsed_row_count": 185,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "a6a4aca65d23c0e4969812acd6610aba6acb8add32b0edb90e3d5ee06a48dcfe"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditInspectionDetails",
+      "table": "dbo.AuditInspectionDetails",
+      "zip_entry": "table_data\\dbo__AuditInspectionDetails.json",
+      "declared_row_count": 4414,
+      "row_counts_json_row_count": 4414,
+      "parsed_row_count": 4414,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "6404ec06df277b95225cfdfb0dc44a9e656c58d5a5f29bdc50d02283c3433515"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditInspectionSec",
+      "table": "dbo.AuditInspectionSec",
+      "zip_entry": "table_data\\dbo__AuditInspectionSec.json",
+      "declared_row_count": 983,
+      "row_counts_json_row_count": 983,
+      "parsed_row_count": 983,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "97fa3dba70487088d0b8c513271209ec2365bc04ea8a1143128ae27a5bb59d50"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditInspectionsHeader",
+      "table": "dbo.AuditInspectionsHeader",
+      "zip_entry": "table_data\\dbo__AuditInspectionsHeader.json",
+      "declared_row_count": 97,
+      "row_counts_json_row_count": 97,
+      "parsed_row_count": 97,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "7fb99fc5ad667131533d067e6cbe262063afa78e37225c147664700f9edbc203"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditOptionDetail",
+      "table": "dbo.AuditOptionDetail",
+      "zip_entry": "table_data\\dbo__AuditOptionDetail.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "e5379cd9ab993f9930a9c3b0330d62679dc66cad35281333970a59c8c4bbc0f6"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditOptionMain",
+      "table": "dbo.AuditOptionMain",
+      "zip_entry": "table_data\\dbo__AuditOptionMain.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "4bd0e47ffc244ecff63d5f6ff6ddf2c63322c19d42d0ac51401943ca3ddf9d6b"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditQuestions",
+      "table": "dbo.AuditQuestions",
+      "zip_entry": "table_data\\dbo__AuditQuestions.json",
+      "declared_row_count": 3408,
+      "row_counts_json_row_count": 3408,
+      "parsed_row_count": 3408,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "799d99c641ab04c5b47f0764365079b5b730db92fdc2a47b9a116c4855392a22"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "Audits",
+      "table": "dbo.Audits",
+      "zip_entry": "table_data\\dbo__Audits.json",
+      "declared_row_count": 104,
+      "row_counts_json_row_count": 104,
+      "parsed_row_count": 104,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4091ca2be28da9df1815665540cd788c43828fd484bcb7cf2f890b6cbe6cfe01"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditSections",
+      "table": "dbo.AuditSections",
+      "zip_entry": "table_data\\dbo__AuditSections.json",
+      "declared_row_count": 878,
+      "row_counts_json_row_count": 878,
+      "parsed_row_count": 878,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "47598f79c5654d53fbce26b9aa595e2ebd0b2a119f756536e1bc16a7f697257a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "AuditSubCategory",
+      "table": "dbo.AuditSubCategory",
+      "zip_entry": "table_data\\dbo__AuditSubCategory.json",
+      "declared_row_count": 71,
+      "row_counts_json_row_count": 71,
+      "parsed_row_count": 71,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f30195e03885ba173c6e862a041acea647468b478a2927b49828a85848a16c1a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "ImmediateCauseCategory",
+      "table": "dbo.ImmediateCauseCategory",
+      "zip_entry": "table_data\\dbo__ImmediateCauseCategory.json",
+      "declared_row_count": 21,
+      "row_counts_json_row_count": 21,
+      "parsed_row_count": 21,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "14aa4c961cd4f2bd1c15a7615b0b830c857078096455ee590d7f0c2717404aa4"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionAssignment",
+      "table": "dbo.InspectionAssignment",
+      "zip_entry": "table_data\\dbo__InspectionAssignment.json",
+      "declared_row_count": 78,
+      "row_counts_json_row_count": 78,
+      "parsed_row_count": 78,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "5cb09169037a9380675e535aba439b37c92f55946d5f9e1845ddd2aeb0d7a577"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionCategory",
+      "table": "dbo.InspectionCategory",
+      "zip_entry": "table_data\\dbo__InspectionCategory.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "a643f908b7b1cba6f0e12a9378a39ac11ea6cbe9093bfb560a171e6ff73336a8"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionChecklist",
+      "table": "dbo.InspectionChecklist",
+      "zip_entry": "table_data\\dbo__InspectionChecklist.json",
+      "declared_row_count": 21,
+      "row_counts_json_row_count": 21,
+      "parsed_row_count": 21,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f9bc727a82d3c9af270bbcd43309d333219630e6f7872f7ccc6bbcc6da14fec8"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionCheckListImport",
+      "table": "dbo.InspectionCheckListImport",
+      "zip_entry": "table_data\\dbo__InspectionCheckListImport.json",
+      "declared_row_count": 2069,
+      "row_counts_json_row_count": 2069,
+      "parsed_row_count": 2069,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "70588df74936ee2485d219217b0318e5ff9f90010bb50317793149204a56cf34"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionDashboardSummary",
+      "table": "dbo.InspectionDashboardSummary",
+      "zip_entry": "table_data\\dbo__InspectionDashboardSummary.json",
+      "declared_row_count": 29,
+      "row_counts_json_row_count": 29,
+      "parsed_row_count": 29,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "af7d65e03d4fec11277accd81b8a7f0c252cda2ff33b6b5e1aa5e2c2b0cfbaa0"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionHasCategories",
+      "table": "dbo.InspectionHasCategories",
+      "zip_entry": "table_data\\dbo__InspectionHasCategories.json",
+      "declared_row_count": 49,
+      "row_counts_json_row_count": 49,
+      "parsed_row_count": 49,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9c761b93a405f12feb3e9956d1159c914731c5a76ef7d3a4afb35e68621830ef"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionInspectionCat",
+      "table": "dbo.InspectionInspectionCat",
+      "zip_entry": "table_data\\dbo__InspectionInspectionCat.json",
+      "declared_row_count": 62,
+      "row_counts_json_row_count": 62,
+      "parsed_row_count": 62,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "df97c10495eb89dc6474276cf2c387363c409478229e7cc5a1c61050f8dd9dea"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionInspectionDetails",
+      "table": "dbo.InspectionInspectionDetails",
+      "zip_entry": "table_data\\dbo__InspectionInspectionDetails.json",
+      "declared_row_count": 1496,
+      "row_counts_json_row_count": 1496,
+      "parsed_row_count": 1496,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "17ff24379352b6b8cea3486e9db3ed68b285ba94a47e8f8c7485296730fb6f12"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionOptionDetail",
+      "table": "dbo.InspectionOptionDetail",
+      "zip_entry": "table_data\\dbo__InspectionOptionDetail.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "e5379cd9ab993f9930a9c3b0330d62679dc66cad35281333970a59c8c4bbc0f6"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionOptionMain",
+      "table": "dbo.InspectionOptionMain",
+      "zip_entry": "table_data\\dbo__InspectionOptionMain.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "4bd0e47ffc244ecff63d5f6ff6ddf2c63322c19d42d0ac51401943ca3ddf9d6b"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionQuestions",
+      "table": "dbo.InspectionQuestions",
+      "zip_entry": "table_data\\dbo__InspectionQuestions.json",
+      "declared_row_count": 950,
+      "row_counts_json_row_count": 950,
+      "parsed_row_count": 950,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "88f53d05dc798931ab2e7fb1b7159c5fea47e50b331c7e1f1f155ffa6a0241be"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "Inspections",
+      "table": "dbo.Inspections",
+      "zip_entry": "table_data\\dbo__Inspections.json",
+      "declared_row_count": 29,
+      "row_counts_json_row_count": 29,
+      "parsed_row_count": 29,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "af59b060fb5ba6b2c2056a5e30e634c0b7ab009ae583284bd2a071261308c628"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "Inspectionsec",
+      "table": "dbo.Inspectionsec",
+      "zip_entry": "table_data\\dbo__Inspectionsec.json",
+      "declared_row_count": 218,
+      "row_counts_json_row_count": 218,
+      "parsed_row_count": 218,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "10ff3f17e10bdd05d3238e1c0ec327c4df811dcfee04513ad56c591cc3c58bf3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionSections",
+      "table": "dbo.InspectionSections",
+      "zip_entry": "table_data\\dbo__InspectionSections.json",
+      "declared_row_count": 98,
+      "row_counts_json_row_count": 98,
+      "parsed_row_count": 98,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "d85dce0136c411f2870ae59b3923c3d45f9d461f8ae144848aa00d07779c118a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionsHeader",
+      "table": "dbo.InspectionsHeader",
+      "zip_entry": "table_data\\dbo__InspectionsHeader.json",
+      "declared_row_count": 33,
+      "row_counts_json_row_count": 33,
+      "parsed_row_count": 33,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "565a0d12560b79e919bf10c6526b67eb11e2e53614c5a2d83854ad45ced71ae6"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "InspectionSubCategory",
+      "table": "dbo.InspectionSubCategory",
+      "zip_entry": "table_data\\dbo__InspectionSubCategory.json",
+      "declared_row_count": 30,
+      "row_counts_json_row_count": 30,
+      "parsed_row_count": 30,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "94111adbb3b411ee67f47ca8da155340cbbfac52e361faa68fdb90f10b59d335"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "MFCategory",
+      "table": "dbo.MFCategory",
+      "zip_entry": "table_data\\dbo__MFCategory.json",
+      "declared_row_count": 43,
+      "row_counts_json_row_count": 43,
+      "parsed_row_count": 43,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9cebf0df7430908992990b44fcf09e02510b633f80ac59c6802639b4c584cba3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "SQImmediateCause",
+      "table": "dbo.SQImmediateCause",
+      "zip_entry": "table_data\\dbo__SQImmediateCause.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "SQInvestigation",
+      "table": "dbo.SQInvestigation",
+      "zip_entry": "table_data\\dbo__SQInvestigation.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "SQManagementFailure",
+      "table": "dbo.SQManagementFailure",
+      "zip_entry": "table_data\\dbo__SQManagementFailure.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "SQNotification",
+      "table": "dbo.SQNotification",
+      "zip_entry": "table_data\\dbo__SQNotification.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "SQRootCause",
+      "table": "dbo.SQRootCause",
+      "zip_entry": "table_data\\dbo__SQRootCause.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "SQRootCauseCategory",
+      "table": "dbo.SQRootCauseCategory",
+      "zip_entry": "table_data\\dbo__SQRootCauseCategory.json",
+      "declared_row_count": 146,
+      "row_counts_json_row_count": 146,
+      "parsed_row_count": 146,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9b023e85b80abb03c870228b78eeb5942f038ecca9b6a202cdaee3292fe70ded"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblActionList",
+      "table": "dbo.tblActionList",
+      "zip_entry": "table_data\\dbo__tblActionList.json",
+      "declared_row_count": 430,
+      "row_counts_json_row_count": 430,
+      "parsed_row_count": 430,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "596d125569f084878f324bc05fb9935b25431ac5320a92a5bf72695506fab6e9"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblActionListGroup",
+      "table": "dbo.tblActionListGroup",
+      "zip_entry": "table_data\\dbo__tblActionListGroup.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "3cf4c2925f7f4cf807d0441beeaf6260d4c27d9496b3f545752343d6a6bfd8ec"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblActionListQuickMenu",
+      "table": "dbo.tblActionListQuickMenu",
+      "zip_entry": "table_data\\dbo__tblActionListQuickMenu.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblActivityType",
+      "table": "dbo.tblActivityType",
+      "zip_entry": "table_data\\dbo__tblActivityType.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "c995e8e62cfe36f8ecbd95df7afdbef5fa2be819834ec07d17ea1b2f70ffca90"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAegisModule",
+      "table": "dbo.tblAegisModule",
+      "zip_entry": "table_data\\dbo__tblAegisModule.json",
+      "declared_row_count": 13,
+      "row_counts_json_row_count": 13,
+      "parsed_row_count": 13,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4b96784876ab556c192871d995cf238aa5bfe7a60a67550fbace8c75813780a4"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAegisReviewerApproverDetails",
+      "table": "dbo.tblAegisReviewerApproverDetails",
+      "zip_entry": "table_data\\dbo__tblAegisReviewerApproverDetails.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "28b65f51f5a474a519002580137ce5203f40cf7989b66b975356c9c3e0051da3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAegisReviewerApproverHeader",
+      "table": "dbo.tblAegisReviewerApproverHeader",
+      "zip_entry": "table_data\\dbo__tblAegisReviewerApproverHeader.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "48c1e6e96338319e748566bb6c02f88722ac8661f9055058fec04b40e3fd3a6f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAegisReviewerApproverSub",
+      "table": "dbo.tblAegisReviewerApproverSub",
+      "zip_entry": "table_data\\dbo__tblAegisReviewerApproverSub.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "3057e31f3138f84c06b63b090123ce97ad050e64c9d5940d444c7583a280642d"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAegisStageComments",
+      "table": "dbo.tblAegisStageComments",
+      "zip_entry": "table_data\\dbo__tblAegisStageComments.json",
+      "declared_row_count": 280,
+      "row_counts_json_row_count": 280,
+      "parsed_row_count": 280,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "1c8f4cded62fa539297f3fb9aa0dc0cbf0791d663b52e7f09ce3dd78b69c2ef0"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAegisStatus",
+      "table": "dbo.tblAegisStatus",
+      "zip_entry": "table_data\\dbo__tblAegisStatus.json",
+      "declared_row_count": 30,
+      "row_counts_json_row_count": 30,
+      "parsed_row_count": 30,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "c240e90f106cfeb04f4be4d5f098017cb98d6c7bfa7d74070fa1ff12e39fedaa"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAIPossibleRootCause",
+      "table": "dbo.tblAIPossibleRootCause",
+      "zip_entry": "table_data\\dbo__tblAIPossibleRootCause.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "fee50f7844c1f3fee1c3f5d9bce3d88c5bc862435126c95b8a01f1292d87fb34"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAsset",
+      "table": "dbo.tblAsset",
+      "zip_entry": "table_data\\dbo__tblAsset.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "7bd2a8e26194375611604e17994e7d306ef3710f36336cc9b2bfe58078b4f7e9"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAssetCategory",
+      "table": "dbo.tblAssetCategory",
+      "zip_entry": "table_data\\dbo__tblAssetCategory.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "8300bbbb8fd9c992ec2881103553982f9ca40d794595979a92b6b5f5835d9751"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAssetLoss",
+      "table": "dbo.tblAssetLoss",
+      "zip_entry": "table_data\\dbo__tblAssetLoss.json",
+      "declared_row_count": 14,
+      "row_counts_json_row_count": 14,
+      "parsed_row_count": 14,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "994b9a6016cceadd12dcbe871b1fce5f3e329728c8a0e17b99bf14466661070e"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAttachments",
+      "table": "dbo.tblAttachments",
+      "zip_entry": "table_data\\dbo__tblAttachments.json",
+      "declared_row_count": 1791,
+      "row_counts_json_row_count": 1791,
+      "parsed_row_count": 1791,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "539f4eeadf76be3a694277f51bc96dddb635e2a66b0f5336405d2774661ceca1"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblAutomotiveLoss",
+      "table": "dbo.tblAutomotiveLoss",
+      "zip_entry": "table_data\\dbo__tblAutomotiveLoss.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9f615987aa46cd037c0216abc8f4ebd919aef1a4ea533609c04e4f4090e1807a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblBI_DashboardDataMaster",
+      "table": "dbo.tblBI_DashboardDataMaster",
+      "zip_entry": "table_data\\dbo__tblBI_DashboardDataMaster.json",
+      "declared_row_count": 15,
+      "row_counts_json_row_count": 15,
+      "parsed_row_count": 15,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "6e94ee998cb706775bddff651f00334fa9a9f5f9ca65d5a1b41fa0d43092af14"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblBI_DashboardDetails",
+      "table": "dbo.tblBI_DashboardDetails",
+      "zip_entry": "table_data\\dbo__tblBI_DashboardDetails.json",
+      "declared_row_count": 14,
+      "row_counts_json_row_count": 14,
+      "parsed_row_count": 14,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "25ba20ab1626cddbed2b91634aaf97c4b1d531028e70250eba217bfdd2518280"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblBI_DashboardMaster",
+      "table": "dbo.tblBI_DashboardMaster",
+      "zip_entry": "table_data\\dbo__tblBI_DashboardMaster.json",
+      "declared_row_count": 19,
+      "row_counts_json_row_count": 19,
+      "parsed_row_count": 19,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "96d21d7d344828f28edd014aad766e723ddcb47e509b8b6484e40d395696189a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblBIStrategicKPI",
+      "table": "dbo.tblBIStrategicKPI",
+      "zip_entry": "table_data\\dbo__tblBIStrategicKPI.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblBreach",
+      "table": "dbo.tblBreach",
+      "zip_entry": "table_data\\dbo__tblBreach.json",
+      "declared_row_count": 11,
+      "row_counts_json_row_count": 11,
+      "parsed_row_count": 11,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "bab44673d3f2bd049c5acbcf34c7a9c12e3d62ad9c5682f64641fd7d29ec0e07"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblBulkDeleteMaster",
+      "table": "dbo.tblBulkDeleteMaster",
+      "zip_entry": "table_data\\dbo__tblBulkDeleteMaster.json",
+      "declared_row_count": 115,
+      "row_counts_json_row_count": 115,
+      "parsed_row_count": 115,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "7eaa8ee7c6e00039a69777de45b99c7ea522fda864af05fbf140e87e082ecede"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblBulkImportDetail",
+      "table": "dbo.tblBulkImportDetail",
+      "zip_entry": "table_data\\dbo__tblBulkImportDetail.json",
+      "declared_row_count": 450,
+      "row_counts_json_row_count": 450,
+      "parsed_row_count": 450,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "0fc1282427b568953e01a563bbcfec3fedd01dfb4621d1b964470f06570884b5"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblBulkImportMaster",
+      "table": "dbo.tblBulkImportMaster",
+      "zip_entry": "table_data\\dbo__tblBulkImportMaster.json",
+      "declared_row_count": 94,
+      "row_counts_json_row_count": 94,
+      "parsed_row_count": 94,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "6da02159e81b81ed1db46f5cc22e23e1058b1844c03da710f1e2b5d95a86789b"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblBusinessUnit",
+      "table": "dbo.tblBusinessUnit",
+      "zip_entry": "table_data\\dbo__tblBusinessUnit.json",
+      "declared_row_count": 7,
+      "row_counts_json_row_count": 7,
+      "parsed_row_count": 7,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "cae7b5c1fdfdeff955110822a9a999a4938d1c6a18e5650730459c601b39b6b8"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblBusinessUnit_History",
+      "table": "dbo.tblBusinessUnit_History",
+      "zip_entry": "table_data\\dbo__tblBusinessUnit_History.json",
+      "declared_row_count": 54,
+      "row_counts_json_row_count": 54,
+      "parsed_row_count": 54,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "a712e4e5325d08c54e1c07d846c92e9eaa009dcc0b1f4af781e0a3e810c8634a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCertiBody",
+      "table": "dbo.tblCertiBody",
+      "zip_entry": "table_data\\dbo__tblCertiBody.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "99acfa14213839b83e332d2b68c3ce0e67a8ea5d6af6b6af3ad4700cad36ba0d"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCertiBodyHasCertificates",
+      "table": "dbo.tblCertiBodyHasCertificates",
+      "zip_entry": "table_data\\dbo__tblCertiBodyHasCertificates.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCertificates",
+      "table": "dbo.tblCertificates",
+      "zip_entry": "table_data\\dbo__tblCertificates.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "86d7e212aefee34886258905dac195031e45de5626d2c4ab96e21c773d58baf8"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCertificationCategory",
+      "table": "dbo.tblCertificationCategory",
+      "zip_entry": "table_data\\dbo__tblCertificationCategory.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "62339ddb33129890bacdc3c06b73b18e2b9bac1f48896258cc9f561805b3a549"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCertificationDetail",
+      "table": "dbo.tblCertificationDetail",
+      "zip_entry": "table_data\\dbo__tblCertificationDetail.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCity",
+      "table": "dbo.tblCity",
+      "zip_entry": "table_data\\dbo__tblCity.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblClient",
+      "table": "dbo.tblClient",
+      "zip_entry": "table_data\\dbo__tblClient.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "ff5ede38c292b157324a7cf53aa360e929c398a1fdcf27f1a2c26ebbd2c6083d"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCompany",
+      "table": "dbo.tblCompany",
+      "zip_entry": "table_data\\dbo__tblCompany.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "7378f526dd8755b41b0ccc7ca980c7572198b86cbe9ef5c4ee7606dcdae9cc3b"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblContractors",
+      "table": "dbo.tblContractors",
+      "zip_entry": "table_data\\dbo__tblContractors.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "5071f5e2a1d4aa03a0d77fa02dc89d7210c43cddde206505e0cde518b2dbcc60"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCountry",
+      "table": "dbo.tblCountry",
+      "zip_entry": "table_data\\dbo__tblCountry.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCourseCategory",
+      "table": "dbo.tblCourseCategory",
+      "zip_entry": "table_data\\dbo__tblCourseCategory.json",
+      "declared_row_count": 6,
+      "row_counts_json_row_count": 6,
+      "parsed_row_count": 6,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "60ebf736c8d5301e9a01fd2e64f82c9cb2fb1db0e535d80c0f64717e74a09f97"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCourses",
+      "table": "dbo.tblCourses",
+      "zip_entry": "table_data\\dbo__tblCourses.json",
+      "declared_row_count": 111,
+      "row_counts_json_row_count": 111,
+      "parsed_row_count": 111,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "b51f111d345c27cfe19e160c6bbc4da2fbbbdabd977f9cfad5e45fb40eaf2dfe"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCrew",
+      "table": "dbo.tblCrew",
+      "zip_entry": "table_data\\dbo__tblCrew.json",
+      "declared_row_count": 7,
+      "row_counts_json_row_count": 7,
+      "parsed_row_count": 7,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "050cf16791c5220c1eeac6cd882348eddb43c94c84f53f268dc199e040f2fd32"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCurrency",
+      "table": "dbo.tblCurrency",
+      "zip_entry": "table_data\\dbo__tblCurrency.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "8b9b86acd176fd7d278e671c752d8ec82f54fe938bb3ad00173f1bb2d4ba996b"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblCustomLog",
+      "table": "dbo.tblCustomLog",
+      "zip_entry": "table_data\\dbo__tblCustomLog.json",
+      "declared_row_count": 27259,
+      "row_counts_json_row_count": 27259,
+      "parsed_row_count": 27259,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f9e88f0f461f8db6c300f173430db2345a71fc64f219a8dc60b8c3b3c028a199"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDailySheetDetail",
+      "table": "dbo.tblDailySheetDetail",
+      "zip_entry": "table_data\\dbo__tblDailySheetDetail.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDailySheetEventAR",
+      "table": "dbo.tblDailySheetEventAR",
+      "zip_entry": "table_data\\dbo__tblDailySheetEventAR.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDailySheetMaster",
+      "table": "dbo.tblDailySheetMaster",
+      "zip_entry": "table_data\\dbo__tblDailySheetMaster.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDamage",
+      "table": "dbo.tblDamage",
+      "zip_entry": "table_data\\dbo__tblDamage.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "76f5b7e0fbff91b1b31ae2bcae7c615de861a5c501c5e80ed9fc95a7265ed3dd"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDashboardLaggingIndicatorBULTI",
+      "table": "dbo.tblDashboardLaggingIndicatorBULTI",
+      "zip_entry": "table_data\\dbo__tblDashboardLaggingIndicatorBULTI.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "a27fc52dc25d29ec64e50af795b41efe2d4e830dbc2d584eeba764ad988f449a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDashboardLaggingIndicatorCompanyLTI",
+      "table": "dbo.tblDashboardLaggingIndicatorCompanyLTI",
+      "zip_entry": "table_data\\dbo__tblDashboardLaggingIndicatorCompanyLTI.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "837047640126434f92980651ebb6bc3a61daabad792e9ff912a2e72dd202f79c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDashboardLaggingIndicatorYears",
+      "table": "dbo.tblDashboardLaggingIndicatorYears",
+      "zip_entry": "table_data\\dbo__tblDashboardLaggingIndicatorYears.json",
+      "declared_row_count": 84,
+      "row_counts_json_row_count": 84,
+      "parsed_row_count": 84,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "0ef98ae56a86372ecfcef68bfb6b98889b81975365c2e437f2994e55b2edb7b9"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDashboardRAG",
+      "table": "dbo.tblDashboardRAG",
+      "zip_entry": "table_data\\dbo__tblDashboardRAG.json",
+      "declared_row_count": 54,
+      "row_counts_json_row_count": 54,
+      "parsed_row_count": 54,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "93e1ddf44f91ce74cb5a3f48f9e88615700393c35b42b12845070a4e61d1af72"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDashboardSafetyPyramid",
+      "table": "dbo.tblDashboardSafetyPyramid",
+      "zip_entry": "table_data\\dbo__tblDashboardSafetyPyramid.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "b2256151e5caea58c9674eca732aeeb886239af3237c42b9c8a43632f1dbb70b"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDashboardTargets",
+      "table": "dbo.tblDashboardTargets",
+      "zip_entry": "table_data\\dbo__tblDashboardTargets.json",
+      "declared_row_count": 6,
+      "row_counts_json_row_count": 6,
+      "parsed_row_count": 6,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4a734510f7248582794234d2ae4d1e55017b84f61e1dc7f37437e38b28d455f9"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDashboardTrainingComplianceChart",
+      "table": "dbo.tblDashboardTrainingComplianceChart",
+      "zip_entry": "table_data\\dbo__tblDashboardTrainingComplianceChart.json",
+      "declared_row_count": 12,
+      "row_counts_json_row_count": 12,
+      "parsed_row_count": 12,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "677b135605e87a661a85c554ffe027036a542429af81ff491c1b5f5854ec16f2"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDepartment",
+      "table": "dbo.tblDepartment",
+      "zip_entry": "table_data\\dbo__tblDepartment.json",
+      "declared_row_count": 20,
+      "row_counts_json_row_count": 20,
+      "parsed_row_count": 20,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "6460a22b2e429db0081d984a4451e85dc856eea9a03e92686e28e88e2c7911eb"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDesignation",
+      "table": "dbo.tblDesignation",
+      "zip_entry": "table_data\\dbo__tblDesignation.json",
+      "declared_row_count": 100,
+      "row_counts_json_row_count": 100,
+      "parsed_row_count": 100,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "58b10294c67fc00569eb9fa5c2438c9a65c4ff16dcd19abc85fda3bc43566aa7"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDevExpressDetails",
+      "table": "dbo.tblDevExpressDetails",
+      "zip_entry": "table_data\\dbo__tblDevExpressDetails.json",
+      "declared_row_count": 28,
+      "row_counts_json_row_count": 28,
+      "parsed_row_count": 28,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "ce8c5e783475e357662bb695c50c2ba08a6171ad88386e786aa4ea5b09b70270"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblDevExpressMaster",
+      "table": "dbo.tblDevExpressMaster",
+      "zip_entry": "table_data\\dbo__tblDevExpressMaster.json",
+      "declared_row_count": 28,
+      "row_counts_json_row_count": 28,
+      "parsed_row_count": 28,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "3527a8ac65ff3716704c86391efe38f0867ddd0a6d637b4faf206219b1f5b21a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEmailRouterBusinessDate",
+      "table": "dbo.tblEmailRouterBusinessDate",
+      "zip_entry": "table_data\\dbo__tblEmailRouterBusinessDate.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "22f5e1992aee0cdb665ea5ab8f23b7c6cfcc2a92324afa256051c35d72526fc3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEmailRouterFieldObjects",
+      "table": "dbo.tblEmailRouterFieldObjects",
+      "zip_entry": "table_data\\dbo__tblEmailRouterFieldObjects.json",
+      "declared_row_count": 906,
+      "row_counts_json_row_count": 906,
+      "parsed_row_count": 906,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "bc733bc54b7b3e0fa23c718e961cceb7a697ef942aefe8e1eece79f06d06591b"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEmailRouterGroup",
+      "table": "dbo.tblEmailRouterGroup",
+      "zip_entry": "table_data\\dbo__tblEmailRouterGroup.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEmailRouterMaster",
+      "table": "dbo.tblEmailRouterMaster",
+      "zip_entry": "table_data\\dbo__tblEmailRouterMaster.json",
+      "declared_row_count": 58,
+      "row_counts_json_row_count": 58,
+      "parsed_row_count": 58,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "13e2d096b1871edeac28dffe52cdae8d46bdaba19459b8ff40654eeaaa7f983a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEmailRouterObjects",
+      "table": "dbo.tblEmailRouterObjects",
+      "zip_entry": "table_data\\dbo__tblEmailRouterObjects.json",
+      "declared_row_count": 35,
+      "row_counts_json_row_count": 35,
+      "parsed_row_count": 35,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f01649c114781212eede862bb1b5a323e01d78e12eb2265b53861d56c3e9d367"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEmailRouterRule",
+      "table": "dbo.tblEmailRouterRule",
+      "zip_entry": "table_data\\dbo__tblEmailRouterRule.json",
+      "declared_row_count": 41,
+      "row_counts_json_row_count": 41,
+      "parsed_row_count": 41,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "df2dfe537fd3c4029bc98411f9152f0ba2ac3d56606b99fb5dbe0f6e09e78be3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEmailRouterSchedule",
+      "table": "dbo.tblEmailRouterSchedule",
+      "zip_entry": "table_data\\dbo__tblEmailRouterSchedule.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "7bf8beec1dd2475dbc36abceee46e327dadf3f132b5031fa0156dd3a6b6bab22"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEmailRouterStatus",
+      "table": "dbo.tblEmailRouterStatus",
+      "zip_entry": "table_data\\dbo__tblEmailRouterStatus.json",
+      "declared_row_count": 25827,
+      "row_counts_json_row_count": 25827,
+      "parsed_row_count": 25827,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "418a3a3464d256fe33329e47d93159de3474e665f35637b4c78d7c15c9a4e711"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEmployee",
+      "table": "dbo.tblEmployee",
+      "zip_entry": "table_data\\dbo__tblEmployee.json",
+      "declared_row_count": 378,
+      "row_counts_json_row_count": 378,
+      "parsed_row_count": 378,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "af13d7253d8cbecfd76765c053507818028a9b9ea8f62ec6d8f83849b22da15a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEnvironmentalLoss",
+      "table": "dbo.tblEnvironmentalLoss",
+      "zip_entry": "table_data\\dbo__tblEnvironmentalLoss.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "d90b8a98e7c6d02fc86047bb4fc35065b898a22845740a66bf8cae10f9573a93"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEqpCompliance",
+      "table": "dbo.tblEqpCompliance",
+      "zip_entry": "table_data\\dbo__tblEqpCompliance.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEqpComplianceMatrix",
+      "table": "dbo.tblEqpComplianceMatrix",
+      "zip_entry": "table_data\\dbo__tblEqpComplianceMatrix.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEqpCriteria",
+      "table": "dbo.tblEqpCriteria",
+      "zip_entry": "table_data\\dbo__tblEqpCriteria.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "54e005f32a4679d81352c43f0fb174b8b87507508bd0a00f8e4f2ee585b54601"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEqpSort",
+      "table": "dbo.tblEqpSort",
+      "zip_entry": "table_data\\dbo__tblEqpSort.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEquipment",
+      "table": "dbo.tblEquipment",
+      "zip_entry": "table_data\\dbo__tblEquipment.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "c06d3353bb1d652d354075fba54433b7062682d5f62280c72e43ada3d4717633"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEquipmentDBMailSent",
+      "table": "dbo.tblEquipmentDBMailSent",
+      "zip_entry": "table_data\\dbo__tblEquipmentDBMailSent.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEquipmentSort",
+      "table": "dbo.tblEquipmentSort",
+      "zip_entry": "table_data\\dbo__tblEquipmentSort.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "03a8101e6826e4a3f975f57278ebb4fefb0350eb5d61090a50fef03d4b71e35e"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEquipmentType",
+      "table": "dbo.tblEquipmentType",
+      "zip_entry": "table_data\\dbo__tblEquipmentType.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "dc4103af9de5497e9b8f52ce716097986cf98ba3c9af84d5ed8406bb7d687d7c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEquipmentTypeConfigDetail",
+      "table": "dbo.tblEquipmentTypeConfigDetail",
+      "zip_entry": "table_data\\dbo__tblEquipmentTypeConfigDetail.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblEquipmentTypeConfigMaster",
+      "table": "dbo.tblEquipmentTypeConfigMaster",
+      "zip_entry": "table_data\\dbo__tblEquipmentTypeConfigMaster.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblExcelTemplate",
+      "table": "dbo.tblExcelTemplate",
+      "zip_entry": "table_data\\dbo__tblExcelTemplate.json",
+      "declared_row_count": 10,
+      "row_counts_json_row_count": 10,
+      "parsed_row_count": 10,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "052876ed8cca88377e91b4737418eb1495194c11d2fdcb459be032afae4811d4"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblExtensionData",
+      "table": "dbo.tblExtensionData",
+      "zip_entry": "table_data\\dbo__tblExtensionData.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblExtensionDetail",
+      "table": "dbo.tblExtensionDetail",
+      "zip_entry": "table_data\\dbo__tblExtensionDetail.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblExtensionMaster",
+      "table": "dbo.tblExtensionMaster",
+      "zip_entry": "table_data\\dbo__tblExtensionMaster.json",
+      "declared_row_count": 15,
+      "row_counts_json_row_count": 15,
+      "parsed_row_count": 15,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "e1ba5cfb40ccc06d34de613639b93c47195f9bc50eb595bd8f01ba1a6b44d4d3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblfncTrainingCourseGet",
+      "table": "dbo.tblfncTrainingCourseGet",
+      "zip_entry": "table_data\\dbo__tblfncTrainingCourseGet.json",
+      "declared_row_count": 2401,
+      "row_counts_json_row_count": 2401,
+      "parsed_row_count": 2401,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "09c0640bbccc2c793d12508b5f36ae27824cfafa7af40b2572bea26612bd094a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblForum",
+      "table": "dbo.tblForum",
+      "zip_entry": "table_data\\dbo__tblForum.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblFrequencyofactivity",
+      "table": "dbo.tblFrequencyofactivity",
+      "zip_entry": "table_data\\dbo__tblFrequencyofactivity.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "719cd677e2168892bc961bf44f329f663c5f72e20bee67d6e39eeac44a85248d"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblFrequencyReportData",
+      "table": "dbo.tblFrequencyReportData",
+      "zip_entry": "table_data\\dbo__tblFrequencyReportData.json",
+      "declared_row_count": 508,
+      "row_counts_json_row_count": 508,
+      "parsed_row_count": 508,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "351e4a405d8591c9870aef0fc95aee4ffc3e4fad0e8e32c8497d5d0a867ae272"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblFrequencyReportSetting",
+      "table": "dbo.tblFrequencyReportSetting",
+      "zip_entry": "table_data\\dbo__tblFrequencyReportSetting.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f08a00e5ac0228e114ad3c136287f8a63e1a6ee56a3a110074644b0cc0c0ef0d"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblFTWDetail",
+      "table": "dbo.tblFTWDetail",
+      "zip_entry": "table_data\\dbo__tblFTWDetail.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblGenrateEmailRouterQueue",
+      "table": "dbo.tblGenrateEmailRouterQueue",
+      "zip_entry": "table_data\\dbo__tblGenrateEmailRouterQueue.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblHazardCategory",
+      "table": "dbo.tblHazardCategory",
+      "zip_entry": "table_data\\dbo__tblHazardCategory.json",
+      "declared_row_count": 42,
+      "row_counts_json_row_count": 42,
+      "parsed_row_count": 42,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "ecca032d68ebd7eed65cfe57d2f6cd16a3b98a58751e6bd6718fa8f7d250af4a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblHEMP",
+      "table": "dbo.tblHEMP",
+      "zip_entry": "table_data\\dbo__tblHEMP.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblHEMP_Has_HazardRiskControl",
+      "table": "dbo.tblHEMP_Has_HazardRiskControl",
+      "zip_entry": "table_data\\dbo__tblHEMP_Has_HazardRiskControl.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblHEMPStatus",
+      "table": "dbo.tblHEMPStatus",
+      "zip_entry": "table_data\\dbo__tblHEMPStatus.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4f81fd9496f9f5108a6fe8686f4041fc07837e854b6d70a47c018479761a5e0e"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblHSEINC",
+      "table": "dbo.tblHSEINC",
+      "zip_entry": "table_data\\dbo__tblHSEINC.json",
+      "declared_row_count": 23,
+      "row_counts_json_row_count": 23,
+      "parsed_row_count": 23,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "b19814183f1123da3529f3ab686f1c8c8a87bbe95acd41e8ee1b4a5737420422"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblHSESafetyAlert",
+      "table": "dbo.tblHSESafetyAlert",
+      "zip_entry": "table_data\\dbo__tblHSESafetyAlert.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "472ed4a6ec064fa9d769762e852d0cb00e79ee9c65af176e1a14a70e5718026c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblImmediateCauseSA",
+      "table": "dbo.tblImmediateCauseSA",
+      "zip_entry": "table_data\\dbo__tblImmediateCauseSA.json",
+      "declared_row_count": 14,
+      "row_counts_json_row_count": 14,
+      "parsed_row_count": 14,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "d1561e2b75d684ee0a386ccc733c207ea2ca5b395f1dfa82bc41987749d8a6a7"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblImmediateCauseSC",
+      "table": "dbo.tblImmediateCauseSC",
+      "zip_entry": "table_data\\dbo__tblImmediateCauseSC.json",
+      "declared_row_count": 7,
+      "row_counts_json_row_count": 7,
+      "parsed_row_count": 7,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "6cf35073c7cee1411ef80f071b88e95dd4e64539fcb4f230c90d3b053167b25f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblImpact",
+      "table": "dbo.tblImpact",
+      "zip_entry": "table_data\\dbo__tblImpact.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "6977224b8d94a3c672f6138a1b0734e5ccd224459204be82ad6a1d64d32c8821"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblImportFileHistory",
+      "table": "dbo.tblImportFileHistory",
+      "zip_entry": "table_data\\dbo__tblImportFileHistory.json",
+      "declared_row_count": 52,
+      "row_counts_json_row_count": 52,
+      "parsed_row_count": 52,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "6154a3d5595df3f42a1cd437c564ce1774c937d750b8e38cb66e695b06d94e37"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblIncidentType",
+      "table": "dbo.tblIncidentType",
+      "zip_entry": "table_data\\dbo__tblIncidentType.json",
+      "declared_row_count": 25,
+      "row_counts_json_row_count": 25,
+      "parsed_row_count": 25,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "c83925219a6bb64d6a2985c621da3a5ecbf9b249ec0d9b708111a3c1828611dd"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblInjuryType",
+      "table": "dbo.tblInjuryType",
+      "zip_entry": "table_data\\dbo__tblInjuryType.json",
+      "declared_row_count": 35,
+      "row_counts_json_row_count": 35,
+      "parsed_row_count": 35,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "c2a18f685515ddd6dda53e3905ed2d78589868f993888d738f6de38aa6ab6e84"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblInsightsSettings",
+      "table": "dbo.tblInsightsSettings",
+      "zip_entry": "table_data\\dbo__tblInsightsSettings.json",
+      "declared_row_count": 6,
+      "row_counts_json_row_count": 6,
+      "parsed_row_count": 6,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "e8dbe7b1e3fb821d2bfd1606bfdec9467f844a67e8a02b438b7062b1bf4887fb"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblInstitute",
+      "table": "dbo.tblInstitute",
+      "zip_entry": "table_data\\dbo__tblInstitute.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "33076fa4dc3517563554b1c1dfe655416a0545ac84981e39af24e334269642b8"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblInstituteHasCourses",
+      "table": "dbo.tblInstituteHasCourses",
+      "zip_entry": "table_data\\dbo__tblInstituteHasCourses.json",
+      "declared_row_count": 95,
+      "row_counts_json_row_count": 95,
+      "parsed_row_count": 95,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "932650e493df251b96f475f4d56716e1d832609d8fccf8b988e25da6f12357ec"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblInvestigation",
+      "table": "dbo.tblInvestigation",
+      "zip_entry": "table_data\\dbo__tblInvestigation.json",
+      "declared_row_count": 8,
+      "row_counts_json_row_count": 8,
+      "parsed_row_count": 8,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "1ab81f29120c9d66609d1d39f15358fcb2f365074fd9ec704416df7bad3540b3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblInvestigation_Has_Papers",
+      "table": "dbo.tblInvestigation_Has_Papers",
+      "zip_entry": "table_data\\dbo__tblInvestigation_Has_Papers.json",
+      "declared_row_count": 8,
+      "row_counts_json_row_count": 8,
+      "parsed_row_count": 8,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "df30cce9b43c6eb46fb3b69478b29a2d05e5e4d794e8e8dee0ba23d54a03e21d"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblInvestigation_Has_Parts",
+      "table": "dbo.tblInvestigation_Has_Parts",
+      "zip_entry": "table_data\\dbo__tblInvestigation_Has_Parts.json",
+      "declared_row_count": 6,
+      "row_counts_json_row_count": 6,
+      "parsed_row_count": 6,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "05b91cc9c8fc24ac3501341d0285be04b4249d4f851137ee47a9ab9f0cd9671e"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblInvestigation_has_PeopleAndPositions",
+      "table": "dbo.tblInvestigation_has_PeopleAndPositions",
+      "zip_entry": "table_data\\dbo__tblInvestigation_has_PeopleAndPositions.json",
+      "declared_row_count": 9,
+      "row_counts_json_row_count": 9,
+      "parsed_row_count": 9,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f2523faaa6aa24aee67f02397c335b5151aa1fe4a535537e40d8ab21852dbbf2"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblInvestigation_Has_Processes",
+      "table": "dbo.tblInvestigation_Has_Processes",
+      "zip_entry": "table_data\\dbo__tblInvestigation_Has_Processes.json",
+      "declared_row_count": 8,
+      "row_counts_json_row_count": 8,
+      "parsed_row_count": 8,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "15d9f0977826c9f1ca2457f3cac3ff8eb33778966045faf0bf44bc74b9dca91d"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblJM",
+      "table": "dbo.tblJM",
+      "zip_entry": "table_data\\dbo__tblJM.json",
+      "declared_row_count": 92,
+      "row_counts_json_row_count": 92,
+      "parsed_row_count": 92,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "12ce165f6af88dc8ccca4af252510fc85e203a49533ed7dd20d8aae8649c5092"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblJM_Has_InspectionChecklist",
+      "table": "dbo.tblJM_Has_InspectionChecklist",
+      "zip_entry": "table_data\\dbo__tblJM_Has_InspectionChecklist.json",
+      "declared_row_count": 2208,
+      "row_counts_json_row_count": 2208,
+      "parsed_row_count": 2208,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "8c1399f788c129f397e54b178788374681dcf62f55509a7cf322f4310576d489"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblJM_Has_Passengers",
+      "table": "dbo.tblJM_Has_Passengers",
+      "zip_entry": "table_data\\dbo__tblJM_Has_Passengers.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "2168e7808c097a6a133673a292cb3c0a19f7b38113f8ebb973111828085ae207"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblJM_Has_RoadCondition",
+      "table": "dbo.tblJM_Has_RoadCondition",
+      "zip_entry": "table_data\\dbo__tblJM_Has_RoadCondition.json",
+      "declared_row_count": 1380,
+      "row_counts_json_row_count": 1380,
+      "parsed_row_count": 1380,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "470c43bf987fd3a473e379be00f51f0c773018e56fdfddbbcfd25c0de7bf1662"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblJM_Has_RouteBreakdown",
+      "table": "dbo.tblJM_Has_RouteBreakdown",
+      "zip_entry": "table_data\\dbo__tblJM_Has_RouteBreakdown.json",
+      "declared_row_count": 330,
+      "row_counts_json_row_count": 330,
+      "parsed_row_count": 330,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "a282ba963cb913acf83aa59a845f6a280644ede2bfb777cc97384168eda223c0"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblJM_Has_WeatherCondition",
+      "table": "dbo.tblJM_Has_WeatherCondition",
+      "zip_entry": "table_data\\dbo__tblJM_Has_WeatherCondition.json",
+      "declared_row_count": 920,
+      "row_counts_json_row_count": 920,
+      "parsed_row_count": 920,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "8cc957a6917724924f1c43c18486a5842daa1a9618c3e4428ddc6b4b15421e10"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblJMDriver",
+      "table": "dbo.tblJMDriver",
+      "zip_entry": "table_data\\dbo__tblJMDriver.json",
+      "declared_row_count": 87,
+      "row_counts_json_row_count": 87,
+      "parsed_row_count": 87,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "59eefee1f020e2a1032a148499c8ba7031c2215c60a1f85ac9d1630d151dfac9"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblJMInspectionChecklist",
+      "table": "dbo.tblJMInspectionChecklist",
+      "zip_entry": "table_data\\dbo__tblJMInspectionChecklist.json",
+      "declared_row_count": 24,
+      "row_counts_json_row_count": 24,
+      "parsed_row_count": 24,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9234f089eaa44224bfaa10721426db5cc82a94193dfd3ef2bc3026a8116de82c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblJMVehicleDetail",
+      "table": "dbo.tblJMVehicleDetail",
+      "zip_entry": "table_data\\dbo__tblJMVehicleDetail.json",
+      "declared_row_count": 54,
+      "row_counts_json_row_count": 54,
+      "parsed_row_count": 54,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "d57eb7192b7eb9f2ed6cd777c1a706efa2045b7060cd47a4d0a67ea5a9d5c8a7"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblJobFactor",
+      "table": "dbo.tblJobFactor",
+      "zip_entry": "table_data\\dbo__tblJobFactor.json",
+      "declared_row_count": 9,
+      "row_counts_json_row_count": 9,
+      "parsed_row_count": 9,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f6baa355bf79e646ef3167bb191917da4a370637a821db948fa548728e2da4f0"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblJobPosition",
+      "table": "dbo.tblJobPosition",
+      "zip_entry": "table_data\\dbo__tblJobPosition.json",
+      "declared_row_count": 121,
+      "row_counts_json_row_count": 121,
+      "parsed_row_count": 121,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4725cdbe0dfb4abca3762f7f1c48ed67e8695ff59a42b723ac27a14a794c05c3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblKBInsightConfigMain",
+      "table": "dbo.tblKBInsightConfigMain",
+      "zip_entry": "table_data\\dbo__tblKBInsightConfigMain.json",
+      "declared_row_count": 29,
+      "row_counts_json_row_count": 29,
+      "parsed_row_count": 29,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4b1b68c6a19c299ea27126bd6ab6b188f9c1441551e100228346267931bcf2d6"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblKBInsightDashboardSetting",
+      "table": "dbo.tblKBInsightDashboardSetting",
+      "zip_entry": "table_data\\dbo__tblKBInsightDashboardSetting.json",
+      "declared_row_count": 28,
+      "row_counts_json_row_count": 28,
+      "parsed_row_count": 28,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "05262dc94de9a43788b8e0407b482911d37ffd125a70f8c209ab5d208da908f1"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblKBInsightDashboardSettingWeightage",
+      "table": "dbo.tblKBInsightDashboardSettingWeightage",
+      "zip_entry": "table_data\\dbo__tblKBInsightDashboardSettingWeightage.json",
+      "declared_row_count": 6,
+      "row_counts_json_row_count": 6,
+      "parsed_row_count": 6,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "b741d231bd882b6950ad3527ec69f9d7ad4397ad3e06a487d50a308c5426aa87"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblKBInsightsDataDetail",
+      "table": "dbo.tblKBInsightsDataDetail",
+      "zip_entry": "table_data\\dbo__tblKBInsightsDataDetail.json",
+      "declared_row_count": 1672,
+      "row_counts_json_row_count": 1672,
+      "parsed_row_count": 1672,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "dee2b1df380cb80f98f5bd8a77ec3359bd9ace3d6e28f65ee8587ae8d995255f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblKBInsightsDataHeader",
+      "table": "dbo.tblKBInsightsDataHeader",
+      "zip_entry": "table_data\\dbo__tblKBInsightsDataHeader.json",
+      "declared_row_count": 474,
+      "row_counts_json_row_count": 474,
+      "parsed_row_count": 474,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "5f9681962648c3d46e955d096a5fd03cf4cf3345c6844f4b5f11efda317dd12f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblKBTicker",
+      "table": "dbo.tblKBTicker",
+      "zip_entry": "table_data\\dbo__tblKBTicker.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "09851f99aceb68289142bfb30060f076cd24fe613bd4d5eb8b89b0d8bedadd67"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblKPIGroupMaster",
+      "table": "dbo.tblKPIGroupMaster",
+      "zip_entry": "table_data\\dbo__tblKPIGroupMaster.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "58b7db5f0ca951db3dfeb9a4e470aad51ca9e1a80c46d10549fc922083d0a4f8"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblLibrary",
+      "table": "dbo.tblLibrary",
+      "zip_entry": "table_data\\dbo__tblLibrary.json",
+      "declared_row_count": 657,
+      "row_counts_json_row_count": 657,
+      "parsed_row_count": 657,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "843bbebffe07601e19ef2a1dd3e4997992dfb6eef7d46d483e56649f2a144d96"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblLibraryAccess",
+      "table": "dbo.tblLibraryAccess",
+      "zip_entry": "table_data\\dbo__tblLibraryAccess.json",
+      "declared_row_count": 32,
+      "row_counts_json_row_count": 32,
+      "parsed_row_count": 32,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "723ac68ba98d456e8fef78f34e86817697aca5ae028fa69426ec4541709666b3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblLibraryHierarchy",
+      "table": "dbo.tblLibraryHierarchy",
+      "zip_entry": "table_data\\dbo__tblLibraryHierarchy.json",
+      "declared_row_count": 1903,
+      "row_counts_json_row_count": 1903,
+      "parsed_row_count": 1903,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "52418617e7cc5ec9e51776358cd484c9f48f688d3bcaa43d82b5635fc8689226"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblLocation",
+      "table": "dbo.tblLocation",
+      "zip_entry": "table_data\\dbo__tblLocation.json",
+      "declared_row_count": 6,
+      "row_counts_json_row_count": 6,
+      "parsed_row_count": 6,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "71e48c331531c8c92acbb8430aaa588781720644fb89f8a0b66c836c877afa59"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblLogin",
+      "table": "dbo.tblLogin",
+      "zip_entry": "table_data\\dbo__tblLogin.json",
+      "declared_row_count": 266,
+      "row_counts_json_row_count": 266,
+      "parsed_row_count": 266,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "86ca7c6335fd662adddfc6cefd87068ca85655d12b39e401a20635e76ca25c18"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblLoginAccess",
+      "table": "dbo.tblLoginAccess",
+      "zip_entry": "table_data\\dbo__tblLoginAccess.json",
+      "declared_row_count": 114,
+      "row_counts_json_row_count": 114,
+      "parsed_row_count": 114,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "28f3378a63eb1a2d08b2010ff2e6bd668d865f1c975f04f4711fd69580d3a0da"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblManagementFactor",
+      "table": "dbo.tblManagementFactor",
+      "zip_entry": "table_data\\dbo__tblManagementFactor.json",
+      "declared_row_count": 9,
+      "row_counts_json_row_count": 9,
+      "parsed_row_count": 9,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "45189c40362f6b574e4de8a1465b2962b1b810f931d8690b4df94c1cdfff0e2d"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMaterialReleased",
+      "table": "dbo.tblMaterialReleased",
+      "zip_entry": "table_data\\dbo__tblMaterialReleased.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "186e4c2ced638302ed1301c078962bf58b689096336378bbcd02d3ee16d15e8e"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMeeting_Has_Incidents",
+      "table": "dbo.tblMeeting_Has_Incidents",
+      "zip_entry": "table_data\\dbo__tblMeeting_Has_Incidents.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "abdae5b575b52a1b96ac7e433242e5003a72da434c5bffeb67cd270315b1e3fc"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMeeting_Has_Notes",
+      "table": "dbo.tblMeeting_Has_Notes",
+      "zip_entry": "table_data\\dbo__tblMeeting_Has_Notes.json",
+      "declared_row_count": 6,
+      "row_counts_json_row_count": 6,
+      "parsed_row_count": 6,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "172112739408159f688f6af4027b331488f2440e911d9814781806f95e6a524f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMeeting_Has_Participants",
+      "table": "dbo.tblMeeting_Has_Participants",
+      "zip_entry": "table_data\\dbo__tblMeeting_Has_Participants.json",
+      "declared_row_count": 507,
+      "row_counts_json_row_count": 507,
+      "parsed_row_count": 507,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "e068ccd7448668b07cee86f1103306837718b3f348a08abdb5fe5cde27563368"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMeeting_Has_ParticipantsExternal",
+      "table": "dbo.tblMeeting_Has_ParticipantsExternal",
+      "zip_entry": "table_data\\dbo__tblMeeting_Has_ParticipantsExternal.json",
+      "declared_row_count": 10,
+      "row_counts_json_row_count": 10,
+      "parsed_row_count": 10,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "2d91fac5fe7285fb463a04b041151c217e76c70691c27cb4adcf7c709954e471"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMeetings",
+      "table": "dbo.tblMeetings",
+      "zip_entry": "table_data\\dbo__tblMeetings.json",
+      "declared_row_count": 123,
+      "row_counts_json_row_count": 123,
+      "parsed_row_count": 123,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9837738e664a9e1a892dfab5b165245ccb87e10cf3221d79a03a0aac871b3a3f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMeetingType",
+      "table": "dbo.tblMeetingType",
+      "zip_entry": "table_data\\dbo__tblMeetingType.json",
+      "declared_row_count": 54,
+      "row_counts_json_row_count": 54,
+      "parsed_row_count": 54,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "52af31b8a27c627be70f6692f2b9d526eb85c9e658f4fc510a5738137e271154"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMeetingVenues",
+      "table": "dbo.tblMeetingVenues",
+      "zip_entry": "table_data\\dbo__tblMeetingVenues.json",
+      "declared_row_count": 7,
+      "row_counts_json_row_count": 7,
+      "parsed_row_count": 7,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "605861392b991ee8f3ccfc1bb55750689dbe457c60952abceea3d15340489201"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOC",
+      "table": "dbo.tblMOC",
+      "zip_entry": "table_data\\dbo__tblMOC.json",
+      "declared_row_count": 55,
+      "row_counts_json_row_count": 55,
+      "parsed_row_count": 55,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "005cdbd4f14b43cacd33a51820708202e4901c6d3b14817860131e1005b54cae"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOCApprover",
+      "table": "dbo.tblMOCApprover",
+      "zip_entry": "table_data\\dbo__tblMOCApprover.json",
+      "declared_row_count": 100,
+      "row_counts_json_row_count": 100,
+      "parsed_row_count": 100,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "813626ac94eb418687546dbec765a08ef351c11626a248cb49a813324b067a76"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOCApproverHistory",
+      "table": "dbo.tblMOCApproverHistory",
+      "zip_entry": "table_data\\dbo__tblMOCApproverHistory.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOCAreaAffected",
+      "table": "dbo.tblMOCAreaAffected",
+      "zip_entry": "table_data\\dbo__tblMOCAreaAffected.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "ae951a0810e2c2421d29461f2d1b0fd414a129d8947de7fec35290b02d778ff0"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOCCategory",
+      "table": "dbo.tblMOCCategory",
+      "zip_entry": "table_data\\dbo__tblMOCCategory.json",
+      "declared_row_count": 11,
+      "row_counts_json_row_count": 11,
+      "parsed_row_count": 11,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "a395a2fb40fd73f5aa1fc6b63f5a0e2ce2cec055720ae4a203b6a8f5ac6db214"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOCMB",
+      "table": "dbo.tblMOCMB",
+      "zip_entry": "table_data\\dbo__tblMOCMB.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOCMBApprover",
+      "table": "dbo.tblMOCMBApprover",
+      "zip_entry": "table_data\\dbo__tblMOCMBApprover.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOCMBApproverHistory",
+      "table": "dbo.tblMOCMBApproverHistory",
+      "zip_entry": "table_data\\dbo__tblMOCMBApproverHistory.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOCMBStatges",
+      "table": "dbo.tblMOCMBStatges",
+      "zip_entry": "table_data\\dbo__tblMOCMBStatges.json",
+      "declared_row_count": 12,
+      "row_counts_json_row_count": 12,
+      "parsed_row_count": 12,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "904dd4403c8f36e319331d3660b9f3d0b4341cb73d2fa63413503bd5a94d9cd0"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOCMMBExpiryHistory",
+      "table": "dbo.tblMOCMMBExpiryHistory",
+      "zip_entry": "table_data\\dbo__tblMOCMMBExpiryHistory.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOCStatges",
+      "table": "dbo.tblMOCStatges",
+      "zip_entry": "table_data\\dbo__tblMOCStatges.json",
+      "declared_row_count": 10,
+      "row_counts_json_row_count": 10,
+      "parsed_row_count": 10,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "739ea4d64d2f8bffbcb0af31c1e35a93f95559d8ac235e43e7e9fd14bdf4ff82"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMOCSubType",
+      "table": "dbo.tblMOCSubType",
+      "zip_entry": "table_data\\dbo__tblMOCSubType.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMonthlySheet",
+      "table": "dbo.tblMonthlySheet",
+      "zip_entry": "table_data\\dbo__tblMonthlySheet.json",
+      "declared_row_count": 588,
+      "row_counts_json_row_count": 588,
+      "parsed_row_count": 588,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9a067fe2533df840b1e78bdb4137c8ed25b28c567702735cd2cf0e6c81780fc9"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMonthlySheetDateDetail",
+      "table": "dbo.tblMonthlySheetDateDetail",
+      "zip_entry": "table_data\\dbo__tblMonthlySheetDateDetail.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMonthlySheetDateMaster",
+      "table": "dbo.tblMonthlySheetDateMaster",
+      "zip_entry": "table_data\\dbo__tblMonthlySheetDateMaster.json",
+      "declared_row_count": 38,
+      "row_counts_json_row_count": 38,
+      "parsed_row_count": 38,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "7f2a24d6c395b352a68c09282c8e52eb665a9db10f1a31364065c2af0b04c535"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblMonthlySheetImports",
+      "table": "dbo.tblMonthlySheetImports",
+      "zip_entry": "table_data\\dbo__tblMonthlySheetImports.json",
+      "declared_row_count": 43,
+      "row_counts_json_row_count": 43,
+      "parsed_row_count": 43,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f0f0e464910fee85abdb637d861261fc0b88f39a0f0d06fe801df7385d65226f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblNCAffectedSystem",
+      "table": "dbo.tblNCAffectedSystem",
+      "zip_entry": "table_data\\dbo__tblNCAffectedSystem.json",
+      "declared_row_count": 11,
+      "row_counts_json_row_count": 11,
+      "parsed_row_count": 11,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "038c8e6ff60a2edad298af4cf529d7c3b31876e3ca031c6f5924b0d8ee8c9ba9"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblNCPossibleCause",
+      "table": "dbo.tblNCPossibleCause",
+      "zip_entry": "table_data\\dbo__tblNCPossibleCause.json",
+      "declared_row_count": 34,
+      "row_counts_json_row_count": 34,
+      "parsed_row_count": 34,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "e2b4860e15cc9411b2d4155189c2d00f419390b3a1dbeb2175ba3713d0319972"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblNCType",
+      "table": "dbo.tblNCType",
+      "zip_entry": "table_data\\dbo__tblNCType.json",
+      "declared_row_count": 7,
+      "row_counts_json_row_count": 7,
+      "parsed_row_count": 7,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "c04f29befb438e1e700297689dfe65b42f52fa6c6ce6c259113f5565582bb3eb"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblNonConformance",
+      "table": "dbo.tblNonConformance",
+      "zip_entry": "table_data\\dbo__tblNonConformance.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblNonConformance_Has_AuditingParty",
+      "table": "dbo.tblNonConformance_Has_AuditingParty",
+      "zip_entry": "table_data\\dbo__tblNonConformance_Has_AuditingParty.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblNotification",
+      "table": "dbo.tblNotification",
+      "zip_entry": "table_data\\dbo__tblNotification.json",
+      "declared_row_count": 4482,
+      "row_counts_json_row_count": 4482,
+      "parsed_row_count": 4482,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f5c69c59af182c9faf241de7b3225eb4a68b358707659e2c729f49439a1a58e3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblNotificationType",
+      "table": "dbo.tblNotificationType",
+      "zip_entry": "table_data\\dbo__tblNotificationType.json",
+      "declared_row_count": 130,
+      "row_counts_json_row_count": 130,
+      "parsed_row_count": 130,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "c0ef321ef38dcbba76b4c54690b94ca3394b24a313482e486e230fe4cf47d5ba"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblNumberofPeople",
+      "table": "dbo.tblNumberofPeople",
+      "zip_entry": "table_data\\dbo__tblNumberofPeople.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "bc48c9430f4ef576964d659f3cd654e65da28e91e10593090aeb884fb2e57189"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblObservationCategory",
+      "table": "dbo.tblObservationCategory",
+      "zip_entry": "table_data\\dbo__tblObservationCategory.json",
+      "declared_row_count": 105,
+      "row_counts_json_row_count": 105,
+      "parsed_row_count": 105,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "3a31038241ac6aff4b029e2da8392fb5edaae3572e0e3afe8dad4bf6964c5835"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblObservationType",
+      "table": "dbo.tblObservationType",
+      "zip_entry": "table_data\\dbo__tblObservationType.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "594d757f13e64f336ec05fc3db5d0bda654505fe98538ab64935d512fc5c4b3c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblOCMasters",
+      "table": "dbo.tblOCMasters",
+      "zip_entry": "table_data\\dbo__tblOCMasters.json",
+      "declared_row_count": 258,
+      "row_counts_json_row_count": 258,
+      "parsed_row_count": 258,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9b6e789b0e62ce9a4b973f3697fa7c6712e45b266a6c37170870f5e72913f42c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblOCWSAccess",
+      "table": "dbo.tblOCWSAccess",
+      "zip_entry": "table_data\\dbo__tblOCWSAccess.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblOutcome",
+      "table": "dbo.tblOutcome",
+      "zip_entry": "table_data\\dbo__tblOutcome.json",
+      "declared_row_count": 30,
+      "row_counts_json_row_count": 30,
+      "parsed_row_count": 30,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4dbef57963a9d243c6d33d0dd8a2055fd55ef829ed087c51802c40bd0a073cf5"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblParameterDetail",
+      "table": "dbo.tblParameterDetail",
+      "zip_entry": "table_data\\dbo__tblParameterDetail.json",
+      "declared_row_count": 143,
+      "row_counts_json_row_count": 143,
+      "parsed_row_count": 143,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "048253f6cc933316f9645bb56bc8596c3dba33edc251e9816a453e16432a503b"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblParameterDetails",
+      "table": "dbo.tblParameterDetails",
+      "zip_entry": "table_data\\dbo__tblParameterDetails.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblParameterGroup",
+      "table": "dbo.tblParameterGroup",
+      "zip_entry": "table_data\\dbo__tblParameterGroup.json",
+      "declared_row_count": 30,
+      "row_counts_json_row_count": 30,
+      "parsed_row_count": 30,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "1bd49b0458a022d5bab222868123f7327235eac1e41d0f7027365bc523b7cbd7"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblParameterHeader",
+      "table": "dbo.tblParameterHeader",
+      "zip_entry": "table_data\\dbo__tblParameterHeader.json",
+      "declared_row_count": 142,
+      "row_counts_json_row_count": 142,
+      "parsed_row_count": 142,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "2adf09d402de9d11806ca97bcea0ef56a16107918a7d785223ae6f5ee313bfdb"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblParameterMaster",
+      "table": "dbo.tblParameterMaster",
+      "zip_entry": "table_data\\dbo__tblParameterMaster.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "7b0ce296c811225242a1465a25ad304ea192803c8b4c6f96afdc88d45efac480"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPasswordSetting",
+      "table": "dbo.tblPasswordSetting",
+      "zip_entry": "table_data\\dbo__tblPasswordSetting.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "9cee73c6b7ed8d63a150852fbdfb07d05a43134736f1324d77c72474439e3a98"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPersonalFactor",
+      "table": "dbo.tblPersonalFactor",
+      "zip_entry": "table_data\\dbo__tblPersonalFactor.json",
+      "declared_row_count": 7,
+      "row_counts_json_row_count": 7,
+      "parsed_row_count": 7,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "25cc1d94c902b095646b37636ff6cf945f1d7bb955170026169e8db46105dbe4"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPersonalLoss",
+      "table": "dbo.tblPersonalLoss",
+      "zip_entry": "table_data\\dbo__tblPersonalLoss.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "97f205186a594132f16ea9a2b9939060145c8c0cb3ab25a0ea83286fb4a516df"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPosition",
+      "table": "dbo.tblPosition",
+      "zip_entry": "table_data\\dbo__tblPosition.json",
+      "declared_row_count": 27,
+      "row_counts_json_row_count": 27,
+      "parsed_row_count": 27,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "ea91f91a679de8ebc801cb9ffcdcddd0d0bb2a2cf5c498e78c8aad18f420b8d7"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPotentialSeverity",
+      "table": "dbo.tblPotentialSeverity",
+      "zip_entry": "table_data\\dbo__tblPotentialSeverity.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "6ff70da0d513ba7edeca0163f547baf8ce104a593f2dbe71711316fd36a06fee"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblProbability",
+      "table": "dbo.tblProbability",
+      "zip_entry": "table_data\\dbo__tblProbability.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "73f47432cf06aed3991c34e0f81e016261dbf6451ee0ecd277861fdcde97dc83"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTW",
+      "table": "dbo.tblPTW",
+      "zip_entry": "table_data\\dbo__tblPTW.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTW_Has_Document",
+      "table": "dbo.tblPTW_Has_Document",
+      "zip_entry": "table_data\\dbo__tblPTW_Has_Document.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTW_Has_Precaution",
+      "table": "dbo.tblPTW_Has_Precaution",
+      "zip_entry": "table_data\\dbo__tblPTW_Has_Precaution.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTWApprover",
+      "table": "dbo.tblPTWApprover",
+      "zip_entry": "table_data\\dbo__tblPTWApprover.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTWApproverHistory",
+      "table": "dbo.tblPTWApproverHistory",
+      "zip_entry": "table_data\\dbo__tblPTWApproverHistory.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTWDocument",
+      "table": "dbo.tblPTWDocument",
+      "zip_entry": "table_data\\dbo__tblPTWDocument.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "b501e28f4c1f93bc8fb7d9ace596f1393c2944de338d7fc8f8942a8fe4f7cc9c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTWPrecautionSubType",
+      "table": "dbo.tblPTWPrecautionSubType",
+      "zip_entry": "table_data\\dbo__tblPTWPrecautionSubType.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "a6741126839b6d462da897b24666125675018452356fa03704934d4a61717d20"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTWPrecautionType",
+      "table": "dbo.tblPTWPrecautionType",
+      "zip_entry": "table_data\\dbo__tblPTWPrecautionType.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "64e54c220604438e3199837a92f29bf4eea2592576571584ef4ed3100648ae2e"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTWScopeofWork",
+      "table": "dbo.tblPTWScopeofWork",
+      "zip_entry": "table_data\\dbo__tblPTWScopeofWork.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f0c98bf7723df11c307ff41484dbb785fd3ef16f73aff168c2e2ec9440eefe65"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTWStatus",
+      "table": "dbo.tblPTWStatus",
+      "zip_entry": "table_data\\dbo__tblPTWStatus.json",
+      "declared_row_count": 8,
+      "row_counts_json_row_count": 8,
+      "parsed_row_count": 8,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "1ae095a4a6a7aad6252163965fb40d263c7c8a2b3a824cbef156e4c2986401fd"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTWType",
+      "table": "dbo.tblPTWType",
+      "zip_entry": "table_data\\dbo__tblPTWType.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "6144655a02ddaa99d944d5a5b6ff5b64a764ffee61f6ad71e0ac9dd716be5bbe"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblPTWWorkArea",
+      "table": "dbo.tblPTWWorkArea",
+      "zip_entry": "table_data\\dbo__tblPTWWorkArea.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "4931dab815d6da7993dd30dc6eb6c5c7f8ba938a7d4eed6eac4bbf3cef62cce0"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRelationDetail",
+      "table": "dbo.tblRelationDetail",
+      "zip_entry": "table_data\\dbo__tblRelationDetail.json",
+      "declared_row_count": 509,
+      "row_counts_json_row_count": 509,
+      "parsed_row_count": 509,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "02cd5b90887be11f528c7145cc39eff39bca54050d9de421c0363f7998268921"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRelationMaster",
+      "table": "dbo.tblRelationMaster",
+      "zip_entry": "table_data\\dbo__tblRelationMaster.json",
+      "declared_row_count": 108,
+      "row_counts_json_row_count": 108,
+      "parsed_row_count": 108,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "d72e9888a3f2e158f6bc022ce3361c160bc90bccc257a7bf3f10476876f8cf9f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineFields",
+      "table": "dbo.tblReportEngineFields",
+      "zip_entry": "table_data\\dbo__tblReportEngineFields.json",
+      "declared_row_count": 1062,
+      "row_counts_json_row_count": 1062,
+      "parsed_row_count": 1062,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "5631c466f5460b756dc7a33e6e66c4dc81de38d85050ac11856360275a5e9849"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineMaster",
+      "table": "dbo.tblReportEngineMaster",
+      "zip_entry": "table_data\\dbo__tblReportEngineMaster.json",
+      "declared_row_count": 66,
+      "row_counts_json_row_count": 66,
+      "parsed_row_count": 66,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "0e72c8effe2a629e34a61ecbf2571f2f51116680a5db778366cc4b6938bfc1f9"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineRelation",
+      "table": "dbo.tblReportEngineRelation",
+      "zip_entry": "table_data\\dbo__tblReportEngineRelation.json",
+      "declared_row_count": 142,
+      "row_counts_json_row_count": 142,
+      "parsed_row_count": 142,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9ab40aa610c08a16eab25d5c7db926b11e57f09f4c1b6498b055b8d2bf192581"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineRelationExclude",
+      "table": "dbo.tblReportEngineRelationExclude",
+      "zip_entry": "table_data\\dbo__tblReportEngineRelationExclude.json",
+      "declared_row_count": 13,
+      "row_counts_json_row_count": 13,
+      "parsed_row_count": 13,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "2b1d56bc316b2b4224937b2ac69fc80bd03173562b71495a4933507f9a3f0448"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineSortMapping",
+      "table": "dbo.tblReportEngineSortMapping",
+      "zip_entry": "table_data\\dbo__tblReportEngineSortMapping.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f090711821e1e2369ce4a759109770f4f7d53d7b9e82d4fc00bd5b003e223ca2"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineUserDisplayFields",
+      "table": "dbo.tblReportEngineUserDisplayFields",
+      "zip_entry": "table_data\\dbo__tblReportEngineUserDisplayFields.json",
+      "declared_row_count": 28,
+      "row_counts_json_row_count": 28,
+      "parsed_row_count": 28,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "6fcdcabd5a9ed5bfa6eab11314178b067f390bb6a569852d4daba672ce66f409"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineUserDisplayFieldsSort",
+      "table": "dbo.tblReportEngineUserDisplayFieldsSort",
+      "zip_entry": "table_data\\dbo__tblReportEngineUserDisplayFieldsSort.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "a600a5bf30f6d5a206fad09e418711c34ec14c4ab74f104edc1e85bdd43d5608"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineUserFilters",
+      "table": "dbo.tblReportEngineUserFilters",
+      "zip_entry": "table_data\\dbo__tblReportEngineUserFilters.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "2dc4453ddc4f8ba5c51af237d8a2472288c3f51cb292ef9fa903858cdbf9a946"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineUserMaster",
+      "table": "dbo.tblReportEngineUserMaster",
+      "zip_entry": "table_data\\dbo__tblReportEngineUserMaster.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "997e5eed4541d3bf51984550d008049d8b5f5ae38f966d1eefcd98592725cc76"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineUserRelations",
+      "table": "dbo.tblReportEngineUserRelations",
+      "zip_entry": "table_data\\dbo__tblReportEngineUserRelations.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "6f3fb441cbc898ef1fb9b1188ba0c88a2a0e4a4ee53b849186d2038a7ed964ef"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineUserReportGroup",
+      "table": "dbo.tblReportEngineUserReportGroup",
+      "zip_entry": "table_data\\dbo__tblReportEngineUserReportGroup.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEngineWorkArea",
+      "table": "dbo.tblReportEngineWorkArea",
+      "zip_entry": "table_data\\dbo__tblReportEngineWorkArea.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "4cbcf30563c0b5ad30da7357fef7c6a8b5eb5223a5b6fee45fdc1c59f6b9174d"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEventDetail",
+      "table": "dbo.tblReportEventDetail",
+      "zip_entry": "table_data\\dbo__tblReportEventDetail.json",
+      "declared_row_count": 55,
+      "row_counts_json_row_count": 55,
+      "parsed_row_count": 55,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "edbddc113258a763a58b4e90ba1dbbf79a4b4eabf37ae04908e92475072a7f42"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEventDetailKPI",
+      "table": "dbo.tblReportEventDetailKPI",
+      "zip_entry": "table_data\\dbo__tblReportEventDetailKPI.json",
+      "declared_row_count": 158,
+      "row_counts_json_row_count": 158,
+      "parsed_row_count": 158,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "42b0d2633bb6d5311d9095907fe2c4d7ae29d95e1e8b73f81591e23cf77faef4"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblReportEventHeader",
+      "table": "dbo.tblReportEventHeader",
+      "zip_entry": "table_data\\dbo__tblReportEventHeader.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "0e7c534f4e370fc3d1d875cbf0e67b180f50520722802797eb52f6ae93b2c523"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblResetPassword",
+      "table": "dbo.tblResetPassword",
+      "zip_entry": "table_data\\dbo__tblResetPassword.json",
+      "declared_row_count": 267,
+      "row_counts_json_row_count": 267,
+      "parsed_row_count": 267,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "3186e44ee8ab40002740977c92eca72eb9394860d21d528a55371b0ed9eaaea5"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIA",
+      "table": "dbo.tblRIA",
+      "zip_entry": "table_data\\dbo__tblRIA.json",
+      "declared_row_count": 39,
+      "row_counts_json_row_count": 39,
+      "parsed_row_count": 39,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "e8ee87dace1486a6d5a895ff5e503b49f16c1053531223eaa0a06ca302867366"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIA_Has_AdditionalPreventative",
+      "table": "dbo.tblRIA_Has_AdditionalPreventative",
+      "zip_entry": "table_data\\dbo__tblRIA_Has_AdditionalPreventative.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIA_Has_ExistingPreventative",
+      "table": "dbo.tblRIA_Has_ExistingPreventative",
+      "zip_entry": "table_data\\dbo__tblRIA_Has_ExistingPreventative.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIA_has_Hazard",
+      "table": "dbo.tblRIA_has_Hazard",
+      "zip_entry": "table_data\\dbo__tblRIA_has_Hazard.json",
+      "declared_row_count": 232,
+      "row_counts_json_row_count": 232,
+      "parsed_row_count": 232,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "94bbc3f43ed0a0aa5991782cd78873eb0cb4ff7eee04457009ff385ee9c5b8bf"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIAActivity",
+      "table": "dbo.tblRIAActivity",
+      "zip_entry": "table_data\\dbo__tblRIAActivity.json",
+      "declared_row_count": 44,
+      "row_counts_json_row_count": 44,
+      "parsed_row_count": 44,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "a4543bbae0e21421bc8ff29293bd179ab949069d464d17229ef4a7e7ae26fd6f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIAApprover",
+      "table": "dbo.tblRIAApprover",
+      "zip_entry": "table_data\\dbo__tblRIAApprover.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIAApproverHistory",
+      "table": "dbo.tblRIAApproverHistory",
+      "zip_entry": "table_data\\dbo__tblRIAApproverHistory.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIAHazard",
+      "table": "dbo.tblRIAHazard",
+      "zip_entry": "table_data\\dbo__tblRIAHazard.json",
+      "declared_row_count": 148,
+      "row_counts_json_row_count": 148,
+      "parsed_row_count": 148,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "283de0b4f06d127b4a44bc49ffa1b2ab4969177875d2f9c86eac8e615ce8a6b3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIAHazardCategory",
+      "table": "dbo.tblRIAHazardCategory",
+      "zip_entry": "table_data\\dbo__tblRIAHazardCategory.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "312c34ae18e9bbdd846932b3f270c8ec682e9067d0971f81f4a4817d548e415c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIAHazardsImpacts",
+      "table": "dbo.tblRIAHazardsImpacts",
+      "zip_entry": "table_data\\dbo__tblRIAHazardsImpacts.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIAPPMeasures",
+      "table": "dbo.tblRIAPPMeasures",
+      "zip_entry": "table_data\\dbo__tblRIAPPMeasures.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIARiskMatrix",
+      "table": "dbo.tblRIARiskMatrix",
+      "zip_entry": "table_data\\dbo__tblRIARiskMatrix.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIARiskMatrixX",
+      "table": "dbo.tblRIARiskMatrixX",
+      "zip_entry": "table_data\\dbo__tblRIARiskMatrixX.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIARiskMatrixY",
+      "table": "dbo.tblRIARiskMatrixY",
+      "zip_entry": "table_data\\dbo__tblRIARiskMatrixY.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIARiskType",
+      "table": "dbo.tblRIARiskType",
+      "zip_entry": "table_data\\dbo__tblRIARiskType.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRIAStatus",
+      "table": "dbo.tblRIAStatus",
+      "zip_entry": "table_data\\dbo__tblRIAStatus.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRiskMatrix",
+      "table": "dbo.tblRiskMatrix",
+      "zip_entry": "table_data\\dbo__tblRiskMatrix.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "abe7dc9ff187e49b4ac169bf7110192b65c2bb54aa17b5d95624c4da4bf8bc98"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRiskMatrixX",
+      "table": "dbo.tblRiskMatrixX",
+      "zip_entry": "table_data\\dbo__tblRiskMatrixX.json",
+      "declared_row_count": 36,
+      "row_counts_json_row_count": 36,
+      "parsed_row_count": 36,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "b860934dd6417bd86d4b300fd65b61fbe084c8e1a7ae66608c9820b2315d1f60"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRiskMatrixx_tmp",
+      "table": "dbo.tblRiskMatrixx_tmp",
+      "zip_entry": "table_data\\dbo__tblRiskMatrixx_tmp.json",
+      "declared_row_count": 10,
+      "row_counts_json_row_count": 10,
+      "parsed_row_count": 10,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "fdb546bf39662ddb64b5d5de09c4bbf93a918ff46b99695022f32c52afcc4807"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRiskMatrixY",
+      "table": "dbo.tblRiskMatrixY",
+      "zip_entry": "table_data\\dbo__tblRiskMatrixY.json",
+      "declared_row_count": 23,
+      "row_counts_json_row_count": 23,
+      "parsed_row_count": 23,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "b1b422a5f584254dd9a8574a04c7d75a786e55c7e2894cf75c216acb562dff54"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRiskMatrixY_tmp",
+      "table": "dbo.tblRiskMatrixY_tmp",
+      "zip_entry": "table_data\\dbo__tblRiskMatrixY_tmp.json",
+      "declared_row_count": 12,
+      "row_counts_json_row_count": 12,
+      "parsed_row_count": 12,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "906d85142bc571a2ddaefd4c9d233faff8bc665a566c7bb3e6977293f8c0d90a"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRMPotentialSeverity",
+      "table": "dbo.tblRMPotentialSeverity",
+      "zip_entry": "table_data\\dbo__tblRMPotentialSeverity.json",
+      "declared_row_count": 20,
+      "row_counts_json_row_count": 20,
+      "parsed_row_count": 20,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "7aeb8b1bcc1eeb15289455500e64bfe423bc1ebbc38c1a8958e73d8ddd7b6357"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRMRiskType",
+      "table": "dbo.tblRMRiskType",
+      "zip_entry": "table_data\\dbo__tblRMRiskType.json",
+      "declared_row_count": 14,
+      "row_counts_json_row_count": 14,
+      "parsed_row_count": 14,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "87709068ac0c57ab2902c05a9691d1c7bc2d274dbfe27a01b3c5694b452d7907"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRMRiskType_tmp",
+      "table": "dbo.tblRMRiskType_tmp",
+      "zip_entry": "table_data\\dbo__tblRMRiskType_tmp.json",
+      "declared_row_count": 8,
+      "row_counts_json_row_count": 8,
+      "parsed_row_count": 8,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "86c2d89706858c5f20fead1aaf87f66c828472f76ce80b27d662c1f3c7a744b8"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRMRiskTypeAS",
+      "table": "dbo.tblRMRiskTypeAS",
+      "zip_entry": "table_data\\dbo__tblRMRiskTypeAS.json",
+      "declared_row_count": 83,
+      "row_counts_json_row_count": 83,
+      "parsed_row_count": 83,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "b9d096e53c64e68735f5da33ff98e85830a0f8f3af0028c3318683beff53495b"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblRoadCondition",
+      "table": "dbo.tblRoadCondition",
+      "zip_entry": "table_data\\dbo__tblRoadCondition.json",
+      "declared_row_count": 15,
+      "row_counts_json_row_count": 15,
+      "parsed_row_count": 15,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "969d84aa69bcdff59b30ce0e9cf3fa89aa40df050bc3b8dce656004000efceca"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSafeObservation",
+      "table": "dbo.tblSafeObservation",
+      "zip_entry": "table_data\\dbo__tblSafeObservation.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSafeTrack",
+      "table": "dbo.tblSafeTrack",
+      "zip_entry": "table_data\\dbo__tblSafeTrack.json",
+      "declared_row_count": 1858,
+      "row_counts_json_row_count": 1858,
+      "parsed_row_count": 1858,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "3a6ec07019445ffb1d02ff79cc5c4aa7e0a1ef99f92fb4a96e89462658527a58"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSafeTrack_Has_SafeObservation",
+      "table": "dbo.tblSafeTrack_Has_SafeObservation",
+      "zip_entry": "table_data\\dbo__tblSafeTrack_Has_SafeObservation.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSafeTrack_Has_Types",
+      "table": "dbo.tblSafeTrack_Has_Types",
+      "zip_entry": "table_data\\dbo__tblSafeTrack_Has_Types.json",
+      "declared_row_count": 1963,
+      "row_counts_json_row_count": 1963,
+      "parsed_row_count": 1963,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "670d1c7b42f968466e2433076feba107f40aa8b25f7a7d89e3b12fd1cf14078c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSafeTrack_Has_UnSafeObservation",
+      "table": "dbo.tblSafeTrack_Has_UnSafeObservation",
+      "zip_entry": "table_data\\dbo__tblSafeTrack_Has_UnSafeObservation.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSafeTrackLocation",
+      "table": "dbo.tblSafeTrackLocation",
+      "zip_entry": "table_data\\dbo__tblSafeTrackLocation.json",
+      "declared_row_count": 7,
+      "row_counts_json_row_count": 7,
+      "parsed_row_count": 7,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "a9cf8552058c419e4b818a06538d288d1ad15b1b233feba2e019df518032c8b3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSafeTrackO",
+      "table": "dbo.tblSafeTrackO",
+      "zip_entry": "table_data\\dbo__tblSafeTrackO.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSafeTrackStatus",
+      "table": "dbo.tblSafeTrackStatus",
+      "zip_entry": "table_data\\dbo__tblSafeTrackStatus.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4734aca2e3be13c60a61798159ffdcceba8b585970bfe14e7ec209c0ec4c826f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblScheduleMail",
+      "table": "dbo.tblScheduleMail",
+      "zip_entry": "table_data\\dbo__tblScheduleMail.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9cc3ee525bd45ee4859172c633bd5a02cdb0981af1e2ba26aa684e7226f41d16"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblScheduleMail_AI",
+      "table": "dbo.tblScheduleMail_AI",
+      "zip_entry": "table_data\\dbo__tblScheduleMail_AI.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblScheduleMail_KPI",
+      "table": "dbo.tblScheduleMail_KPI",
+      "zip_entry": "table_data\\dbo__tblScheduleMail_KPI.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "3f0b41eaa71db3c2731fcf6c6634dccb3b830d37b7f2a074b47732a1879f1b0e"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblScheduleMail_Training",
+      "table": "dbo.tblScheduleMail_Training",
+      "zip_entry": "table_data\\dbo__tblScheduleMail_Training.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4501014377f50ad02de620965fba6a392f470d3d46feb6d27ab52c33e9c7d252"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSearchEngineFieldMapping",
+      "table": "dbo.tblSearchEngineFieldMapping",
+      "zip_entry": "table_data\\dbo__tblSearchEngineFieldMapping.json",
+      "declared_row_count": 326,
+      "row_counts_json_row_count": 326,
+      "parsed_row_count": 326,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "453a37269f91b849563e14f0c8d15fe6989a2fabb0054a32094c26462193df06"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSearchEngineFields",
+      "table": "dbo.tblSearchEngineFields",
+      "zip_entry": "table_data\\dbo__tblSearchEngineFields.json",
+      "declared_row_count": 2086,
+      "row_counts_json_row_count": 2086,
+      "parsed_row_count": 2086,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "983a7b635150f39ef6149e7646a757b8999d5957f3f20ccb818aea1303bd69bf"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSearchEngineFieldsSort",
+      "table": "dbo.tblSearchEngineFieldsSort",
+      "zip_entry": "table_data\\dbo__tblSearchEngineFieldsSort.json",
+      "declared_row_count": 105,
+      "row_counts_json_row_count": 105,
+      "parsed_row_count": 105,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "5a88d5464d4604984d8770eb38638e95862f10f5b0e17b5dec849104d5663e90"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSearchEngineFilters",
+      "table": "dbo.tblSearchEngineFilters",
+      "zip_entry": "table_data\\dbo__tblSearchEngineFilters.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSearchEngineMaster",
+      "table": "dbo.tblSearchEngineMaster",
+      "zip_entry": "table_data\\dbo__tblSearchEngineMaster.json",
+      "declared_row_count": 183,
+      "row_counts_json_row_count": 183,
+      "parsed_row_count": 183,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "90dd836dbb16b4acbd44f9054b6af475d5a497fa016e09f1f4c9469c184e2c15"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSettings",
+      "table": "dbo.tblSettings",
+      "zip_entry": "table_data\\dbo__tblSettings.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "c2e287ca7a7f08023a210c26d5c1fcf7bce1ffb8b16d47cb90ff92618bd93338"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSeverity",
+      "table": "dbo.tblSeverity",
+      "zip_entry": "table_data\\dbo__tblSeverity.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "688eb05901c56ebd3e663c25e5c30a9a508b85c79472575c167ef45c93650028"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblShareDetail",
+      "table": "dbo.tblShareDetail",
+      "zip_entry": "table_data\\dbo__tblShareDetail.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "0e5b02b2b2f2fa08e44590d301119d69c8aafc5bf71cc34800eeb990eda197bb"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblShareMaster",
+      "table": "dbo.tblShareMaster",
+      "zip_entry": "table_data\\dbo__tblShareMaster.json",
+      "declared_row_count": 8,
+      "row_counts_json_row_count": 8,
+      "parsed_row_count": 8,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "1b3df8e23abc5b1cbae0aeb31ea42eacced8299619bd781f2ba7ea3c61096150"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSite",
+      "table": "dbo.tblSite",
+      "zip_entry": "table_data\\dbo__tblSite.json",
+      "declared_row_count": 10,
+      "row_counts_json_row_count": 10,
+      "parsed_row_count": 10,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f15df74efbafd6247943ebc610b206973a423512d285cf5a1432c0e88f912da6"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSQCategory",
+      "table": "dbo.tblSQCategory",
+      "zip_entry": "table_data\\dbo__tblSQCategory.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSQFailureSubType",
+      "table": "dbo.tblSQFailureSubType",
+      "zip_entry": "table_data\\dbo__tblSQFailureSubType.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "490f92f9f58d04fe78f3d81090e4c480cc4f9516ca75118b88e056138b6e0c96"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSQFailureType",
+      "table": "dbo.tblSQFailureType",
+      "zip_entry": "table_data\\dbo__tblSQFailureType.json",
+      "declared_row_count": 5,
+      "row_counts_json_row_count": 5,
+      "parsed_row_count": 5,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4cc1e8f93fc7237ffc0ead3091add3941352922dba7d95f53eddad15f5dc124f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSQINCFailure",
+      "table": "dbo.tblSQINCFailure",
+      "zip_entry": "table_data\\dbo__tblSQINCFailure.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblState",
+      "table": "dbo.tblState",
+      "zip_entry": "table_data\\dbo__tblState.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblStatus",
+      "table": "dbo.tblStatus",
+      "zip_entry": "table_data\\dbo__tblStatus.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "e51e92b20accd5c039b43b5f358c6556e59228541d3e95dd2514231064831062"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSubstandardActs",
+      "table": "dbo.tblSubstandardActs",
+      "zip_entry": "table_data\\dbo__tblSubstandardActs.json",
+      "declared_row_count": 38,
+      "row_counts_json_row_count": 38,
+      "parsed_row_count": 38,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4ce582d570214f81131e5e7bf95ea0a80f0a7f71b4898458c9b263d318b839d1"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSubstandardCondition",
+      "table": "dbo.tblSubstandardCondition",
+      "zip_entry": "table_data\\dbo__tblSubstandardCondition.json",
+      "declared_row_count": 39,
+      "row_counts_json_row_count": 39,
+      "parsed_row_count": 39,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "bdfece036c866d48b91558dfc0de21f0823f95f18b43ac21dd722b1c2cbb75a0"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblSubType",
+      "table": "dbo.tblSubType",
+      "zip_entry": "table_data\\dbo__tblSubType.json",
+      "declared_row_count": 228,
+      "row_counts_json_row_count": 228,
+      "parsed_row_count": 228,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "19d8b57032123594228e7003f351168228f1307bcaf3cb3fb339b53461f3f6a8"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTaskManager",
+      "table": "dbo.tblTaskManager",
+      "zip_entry": "table_data\\dbo__tblTaskManager.json",
+      "declared_row_count": 34,
+      "row_counts_json_row_count": 34,
+      "parsed_row_count": 34,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "ffc356f5ff1031ba4d9ec48d08100b31989a8086888c09c4a2f9504c04d086de"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTaskSource",
+      "table": "dbo.tblTaskSource",
+      "zip_entry": "table_data\\dbo__tblTaskSource.json",
+      "declared_row_count": 2,
+      "row_counts_json_row_count": 2,
+      "parsed_row_count": 2,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "312da6d4c4c4e6e5f92720b048dfe5b13a317f4130be852a9b459a4dfb3da4e7"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTeamLead",
+      "table": "dbo.tblTeamLead",
+      "zip_entry": "table_data\\dbo__tblTeamLead.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "9bcd66fde45496cb5e3b44c3001fdbc367f182d65de8535500be409ce3047537"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTempTraning_Course_Compliance_dashboard",
+      "table": "dbo.tblTempTraning_Course_Compliance_dashboard",
+      "zip_entry": "table_data\\dbo__tblTempTraning_Course_Compliance_dashboard.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTimeLossType",
+      "table": "dbo.tblTimeLossType",
+      "zip_entry": "table_data\\dbo__tblTimeLossType.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTraCompliance",
+      "table": "dbo.tblTraCompliance",
+      "zip_entry": "table_data\\dbo__tblTraCompliance.json",
+      "declared_row_count": 23,
+      "row_counts_json_row_count": 23,
+      "parsed_row_count": 23,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "160188424319357d5d7a3181c7b0e311e485f18d9c054503a63451782ff0f4c0"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTraComplianceMatrix",
+      "table": "dbo.tblTraComplianceMatrix",
+      "zip_entry": "table_data\\dbo__tblTraComplianceMatrix.json",
+      "declared_row_count": 1237,
+      "row_counts_json_row_count": 1237,
+      "parsed_row_count": 1237,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "6f297516e29c2df85954933fa43e53877d71e32d9fa7eab9d9cf98c6a6887ba3"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTraCriteria",
+      "table": "dbo.tblTraCriteria",
+      "zip_entry": "table_data\\dbo__tblTraCriteria.json",
+      "declared_row_count": 4,
+      "row_counts_json_row_count": 4,
+      "parsed_row_count": 4,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "54e005f32a4679d81352c43f0fb174b8b87507508bd0a00f8e4f2ee585b54601"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTrainingDashboardbreakup",
+      "table": "dbo.tblTrainingDashboardbreakup",
+      "zip_entry": "table_data\\dbo__tblTrainingDashboardbreakup.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "32d1e8de3d210869c3747b364aefba5a2e53543309e15431cd86bfddf853f62f"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTrainingDBMailSent",
+      "table": "dbo.tblTrainingDBMailSent",
+      "zip_entry": "table_data\\dbo__tblTrainingDBMailSent.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTrainingDetail",
+      "table": "dbo.tblTrainingDetail",
+      "zip_entry": "table_data\\dbo__tblTrainingDetail.json",
+      "declared_row_count": 3120,
+      "row_counts_json_row_count": 3120,
+      "parsed_row_count": 3120,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4b7674ba313368142eebba0b53d32d2ec1d2dd6a1e56150d184c6662b33b4a47"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblTrainingSetting",
+      "table": "dbo.tblTrainingSetting",
+      "zip_entry": "table_data\\dbo__tblTrainingSetting.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "72c2dd18a04bee5fd2b80c65adca37101fdabcc24f47f7fac6d9267370a536a6"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblType",
+      "table": "dbo.tblType",
+      "zip_entry": "table_data\\dbo__tblType.json",
+      "declared_row_count": 26,
+      "row_counts_json_row_count": 26,
+      "parsed_row_count": 26,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4cdb75b0876a2dc060506cd6377bb351f22e8bcef44415134cef68ce7f3b0329"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblUnSafeObservation",
+      "table": "dbo.tblUnSafeObservation",
+      "zip_entry": "table_data\\dbo__tblUnSafeObservation.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblUnSafeSpecific",
+      "table": "dbo.tblUnSafeSpecific",
+      "zip_entry": "table_data\\dbo__tblUnSafeSpecific.json",
+      "declared_row_count": null,
+      "row_counts_json_row_count": 1,
+      "parsed_row_count": null,
+      "json_type": "dict",
+      "sha256_match": true,
+      "validation_status": [
+        "ambiguous_json_shape",
+        "manifest_row_counts_mismatch"
+      ],
+      "sha256": "45cbc6513111f1a022dbe77165518f9a9d1c1ff69524a4732567d3ab1b1af1dd"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblUnSafeSubCategory",
+      "table": "dbo.tblUnSafeSubCategory",
+      "zip_entry": "table_data\\dbo__tblUnSafeSubCategory.json",
+      "declared_row_count": 186,
+      "row_counts_json_row_count": 186,
+      "parsed_row_count": 186,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "f7128831f89d142c2d54403c54043aca451c58922377e683a992128597db20ae"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblUserLog",
+      "table": "dbo.tblUserLog",
+      "zip_entry": "table_data\\dbo__tblUserLog.json",
+      "declared_row_count": 2810,
+      "row_counts_json_row_count": 2810,
+      "parsed_row_count": 2810,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "7168dffafecd9f89db692fb1949d6faa4c61e9bac1498792df98571fec560d8c"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblUserLogExt",
+      "table": "dbo.tblUserLogExt",
+      "zip_entry": "table_data\\dbo__tblUserLogExt.json",
+      "declared_row_count": 0,
+      "row_counts_json_row_count": 0,
+      "parsed_row_count": null,
+      "json_type": null,
+      "sha256_match": true,
+      "validation_status": [
+        "invalid_json"
+      ],
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblUserPasswordHistory",
+      "table": "dbo.tblUserPasswordHistory",
+      "zip_entry": "table_data\\dbo__tblUserPasswordHistory.json",
+      "declared_row_count": 416,
+      "row_counts_json_row_count": 416,
+      "parsed_row_count": 416,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "e3669e3fea4892ef0c182cc427898ca2ad1bb7ba67b0397ec52e743d7e6e90fe"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblUserRights",
+      "table": "dbo.tblUserRights",
+      "zip_entry": "table_data\\dbo__tblUserRights.json",
+      "declared_row_count": 3097,
+      "row_counts_json_row_count": 3097,
+      "parsed_row_count": 3097,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "33beb7d3dba7ee8836648972d5c0a737e23b8e53eba2e71e3a69f5b02cd0d729"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblUserRights_History",
+      "table": "dbo.tblUserRights_History",
+      "zip_entry": "table_data\\dbo__tblUserRights_History.json",
+      "declared_row_count": 17232,
+      "row_counts_json_row_count": 17232,
+      "parsed_row_count": 17232,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "ed3f653ca592518406c500327a963812267b4ccb256a017e7750916351481737"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblUserRole",
+      "table": "dbo.tblUserRole",
+      "zip_entry": "table_data\\dbo__tblUserRole.json",
+      "declared_row_count": 11,
+      "row_counts_json_row_count": 11,
+      "parsed_row_count": 11,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4972d7eff516a22e92aa37ff2f63c955988021ba382d19e183ab189f68d2ae28"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblUserRole_History",
+      "table": "dbo.tblUserRole_History",
+      "zip_entry": "table_data\\dbo__tblUserRole_History.json",
+      "declared_row_count": 70,
+      "row_counts_json_row_count": 70,
+      "parsed_row_count": 70,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "c60bd2f0a0bf2cb27976bf5918c0a1d1f56d31a2447065ef4f525d1fe249eb87"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblVehicle",
+      "table": "dbo.tblVehicle",
+      "zip_entry": "table_data\\dbo__tblVehicle.json",
+      "declared_row_count": 28,
+      "row_counts_json_row_count": 28,
+      "parsed_row_count": 28,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "4dca052d7ea9003a6701d96f6d41da4f9e8be35d0e13ac150a1ea536df9ec80e"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblWeatherCondition",
+      "table": "dbo.tblWeatherCondition",
+      "zip_entry": "table_data\\dbo__tblWeatherCondition.json",
+      "declared_row_count": 10,
+      "row_counts_json_row_count": 10,
+      "parsed_row_count": 10,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "91e057753e38cc173c4519ee18fbbd1ea6ec1e206929a388c49a7307ee9dcada"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tblWorkArea",
+      "table": "dbo.tblWorkArea",
+      "zip_entry": "table_data\\dbo__tblWorkArea.json",
+      "declared_row_count": 16,
+      "row_counts_json_row_count": 16,
+      "parsed_row_count": 16,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "ebe83a56b38fa6d3a29d7cec5db8158e1fe81d205a626cb655ab1cc630050ec7"
+    },
+    {
+      "source_schema": "dbo",
+      "source_table": "tmpdata",
+      "table": "dbo.tmpdata",
+      "zip_entry": "table_data\\dbo__tmpdata.json",
+      "declared_row_count": 3,
+      "row_counts_json_row_count": 3,
+      "parsed_row_count": 3,
+      "json_type": "list",
+      "sha256_match": true,
+      "validation_status": [
+        "valid"
+      ],
+      "sha256": "080ccf27ef3449c5c15e2e78e7bf40cfa88a33c2e43caed66d9bae0c1e14a3d9"
+    }
+  ],
+  "reconciliation": {
+    "source_table_count": 341,
+    "archive_table_json_count": 341,
+    "manifest_data_file_count": 341,
+    "source_tables_missing_from_archive": [],
+    "extra_archive_tables": [],
+    "duplicate_source_mappings": [],
+    "parsed_row_count_mismatches": [],
+    "invalid_json": [
+      {
+        "file": "table_data\\dbo__AegisTenant_dbo_tblEmailRouterStatus.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__AegisTenant_dbo_tblTenant.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__SQImmediateCause.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__SQInvestigation.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__SQManagementFailure.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__SQNotification.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__SQRootCause.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblActionListQuickMenu.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblBIStrategicKPI.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblCertiBodyHasCertificates.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblCertificationDetail.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblCity.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblCountry.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblDailySheetDetail.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblDailySheetEventAR.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblDailySheetMaster.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblEmailRouterGroup.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblEqpCompliance.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblEqpComplianceMatrix.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblEqpSort.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblEquipmentDBMailSent.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblEquipmentTypeConfigDetail.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblEquipmentTypeConfigMaster.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblExtensionData.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblExtensionDetail.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblForum.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblFTWDetail.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblGenrateEmailRouterQueue.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblHEMP.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblHEMP_Has_HazardRiskControl.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblMOCApproverHistory.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblMOCMB.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblMOCMBApprover.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblMOCMBApproverHistory.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblMOCMMBExpiryHistory.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblMOCSubType.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblMonthlySheetDateDetail.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblNonConformance.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblNonConformance_Has_AuditingParty.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblOCWSAccess.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblParameterDetails.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblPTW.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblPTW_Has_Document.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblPTW_Has_Precaution.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblPTWApprover.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblPTWApproverHistory.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblReportEngineUserReportGroup.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblRIA_Has_AdditionalPreventative.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblRIA_Has_ExistingPreventative.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblRIAApprover.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblRIAApproverHistory.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblRIAHazardsImpacts.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblRIAPPMeasures.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblRIARiskMatrix.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblRIARiskMatrixX.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblRIARiskMatrixY.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblRIARiskType.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblRIAStatus.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblSafeObservation.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblSafeTrack_Has_SafeObservation.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblSafeTrack_Has_UnSafeObservation.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblSafeTrackO.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblScheduleMail_AI.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblSearchEngineFilters.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblSQCategory.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblSQINCFailure.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblState.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblTempTraning_Course_Compliance_dashboard.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblTimeLossType.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblTrainingDBMailSent.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblUnSafeObservation.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      },
+      {
+        "file": "table_data\\dbo__tblUserLogExt.json",
+        "error": "Expecting value: line 1 column 1 (char 0)"
+      }
+    ]
+  },
+  "totals": {
+    "parsed_row_count_sum": 139093,
+    "declared_row_count_sum": 139093,
+    "documented_source_total": 139123,
+    "parsed_sum_matches_documented": false,
+    "declared_sum_matches_documented": false
+  },
+  "validation": {
+    "zip_integrity": true,
+    "all_json_valid": false,
+    "all_records_status_valid": false,
+    "empty_files_declared_zero_rows": 72,
+    "json_parseable_files": 269
+  }
+}

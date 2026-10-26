@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import { authClient } from "@/lib/auth-client"
 import { getUserJourneyAccess, getUserJourneyApprover } from "@/app/actions/manage-users"
 import { verifyUserPassword } from "@/app/actions/verify-password"
 import { getUserByEmail } from "@/app/actions/get-user-by-email"
@@ -78,6 +79,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const passwordValid = await verifyUserPassword(email, password, correlationId)
     if (!passwordValid) {
       return { success: false, error: "Invalid password. Please try again." }
+    }
+
+    // The server-protected APIs use Better Auth sessions, so establish the same
+    // session before exposing the client-side user state.
+    const authResult = await authClient.signIn.email({ email: foundUser.email, password })
+    if (authResult.error) {
+      return { success: false, error: "Unable to establish a secure session. Please try again." }
     }
 
     // These independent lookups run together so login is not delayed by serial requests.

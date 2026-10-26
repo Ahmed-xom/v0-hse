@@ -1,0 +1,46 @@
+{
+  "reportVersion": 1,
+  "generatedAt": "2026-10-19T00:00:00.000Z",
+  "mode": "read-only",
+  "status": "BLOCKED_MISSING_STAGING_INVENTORY",
+  "sourceInventory": {
+    "availableArtifact": ".tmp/aegis-source-table-inventory.json",
+    "completeTableInventoryAvailable": true,
+    "entryCount": 341,
+    "classificationStatus": "unknown_for_all_entries",
+    "provenance": "Recovered from historical Git archive metadata without extraction"
+  },
+  "existingImportedInventory": {
+    "completeTableInventoryAvailable": false,
+    "missingArtifact": "Machine-readable inventory of previously imported/staged Neon tables with schema_name, table_name, imported_row_count, and source mapping where applicable"
+  },
+  "comparison": {
+    "confirmedMissingTables": [],
+    "unverifiedTables": "all 341 source tables",
+    "countMismatches": [],
+    "canDetermineConfirmedMissingTables": false,
+    "reason": "Source inventory recovered, but no per-table Neon staging inventory exists in repository history."
+  },
+  "availableEvidence": {
+    "sourceTables": 341,
+    "populatedTables": 269,
+    "emptyTables": 72,
+    "sourceColumns": 3665,
+    "sourcePrimaryKeyRows": 253,
+    "sourceForeignKeyRows": 535,
+    "neonLiveBaseTables": 120,
+    "neonLivePublicTables": 110,
+    "neonConstraintRows": 129,
+    "exactPublicNameMatches": 0
+  },
+  "safety": {
+    "sqlServerAccessed": false,
+    "neonAccessed": false,
+    "neonWritten": false,
+    "blobAccessed": false,
+    "blobModified": false,
+    "archiveExtracted": false,
+    "productionModified": false
+  },
+  "nextAction": "Provide or attach the per-table Neon staging inventory; then compare by source mapping or exact target identity without database access."
+}

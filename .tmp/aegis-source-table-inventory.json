@@ -1,0 +1,5807 @@
+{
+  "artifact": "aegis-source-table-inventory",
+  "version": 1,
+  "status": "recovered_with_unknown_classification",
+  "source_database": "Aegis_XOM",
+  "source_exported_at": "2026-10-07T06:56:38.6349217Z",
+  "entry_count": 341,
+  "entries": [
+    {
+      "schema_name": "dbo",
+      "table_name": "ActionItemParent",
+      "row_count": 12,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "ActionItemPriority",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "ActionItemType",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "ActionItems",
+      "row_count": 669,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "ActionItems_AuditTrail",
+      "row_count": 1109,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AegisTenant_dbo_tblEmailRouterStatus",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AegisTenant_dbo_tblTenant",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditAssignment",
+      "row_count": 491,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditCategory",
+      "row_count": 11,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditCheckListImport",
+      "row_count": 3429,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditChecklist",
+      "row_count": 97,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditDashboardSummary",
+      "row_count": 97,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditHasCategories",
+      "row_count": 238,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditInspectionCat",
+      "row_count": 185,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditInspectionDetails",
+      "row_count": 4414,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditInspectionSec",
+      "row_count": 983,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditInspectionsHeader",
+      "row_count": 97,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditOptionDetail",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditOptionMain",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditQuestions",
+      "row_count": 3408,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditSections",
+      "row_count": 878,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "AuditSubCategory",
+      "row_count": 71,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "Audits",
+      "row_count": 104,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "ImmediateCauseCategory",
+      "row_count": 21,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionAssignment",
+      "row_count": 78,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionCategory",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionCheckListImport",
+      "row_count": 2069,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionChecklist",
+      "row_count": 21,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionDashboardSummary",
+      "row_count": 29,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionHasCategories",
+      "row_count": 49,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionInspectionCat",
+      "row_count": 62,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionInspectionDetails",
+      "row_count": 1496,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionOptionDetail",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionOptionMain",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionQuestions",
+      "row_count": 950,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionSections",
+      "row_count": 98,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionSubCategory",
+      "row_count": 30,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "Inspections",
+      "row_count": 29,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "InspectionsHeader",
+      "row_count": 33,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "Inspectionsec",
+      "row_count": 218,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "MFCategory",
+      "row_count": 43,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "SQImmediateCause",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "SQInvestigation",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "SQManagementFailure",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "SQNotification",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "SQRootCause",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "SQRootCauseCategory",
+      "row_count": 146,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAIPossibleRootCause",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblActionList",
+      "row_count": 430,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblActionListGroup",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblActionListQuickMenu",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblActivityType",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAegisModule",
+      "row_count": 13,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAegisReviewerApproverDetails",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAegisReviewerApproverHeader",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAegisReviewerApproverSub",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAegisStageComments",
+      "row_count": 280,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAegisStatus",
+      "row_count": 30,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAsset",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAssetCategory",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAssetLoss",
+      "row_count": 14,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAttachments",
+      "row_count": 1791,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblAutomotiveLoss",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblBIStrategicKPI",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblBI_DashboardDataMaster",
+      "row_count": 15,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblBI_DashboardDetails",
+      "row_count": 14,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblBI_DashboardMaster",
+      "row_count": 19,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblBreach",
+      "row_count": 11,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblBulkDeleteMaster",
+      "row_count": 115,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblBulkImportDetail",
+      "row_count": 450,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblBulkImportMaster",
+      "row_count": 94,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblBusinessUnit",
+      "row_count": 7,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblBusinessUnit_History",
+      "row_count": 54,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCertiBody",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCertiBodyHasCertificates",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCertificates",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCertificationCategory",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCertificationDetail",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCity",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblClient",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCompany",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblContractors",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCountry",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCourseCategory",
+      "row_count": 6,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCourses",
+      "row_count": 111,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCrew",
+      "row_count": 7,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCurrency",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblCustomLog",
+      "row_count": 27259,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDailySheetDetail",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDailySheetEventAR",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDailySheetMaster",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDamage",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDashboardLaggingIndicatorBULTI",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDashboardLaggingIndicatorCompanyLTI",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDashboardLaggingIndicatorYears",
+      "row_count": 84,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDashboardRAG",
+      "row_count": 54,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDashboardSafetyPyramid",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDashboardTargets",
+      "row_count": 6,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDashboardTrainingComplianceChart",
+      "row_count": 12,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDepartment",
+      "row_count": 20,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDesignation",
+      "row_count": 100,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDevExpressDetails",
+      "row_count": 28,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblDevExpressMaster",
+      "row_count": 28,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEmailRouterBusinessDate",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEmailRouterFieldObjects",
+      "row_count": 906,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEmailRouterGroup",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEmailRouterMaster",
+      "row_count": 58,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEmailRouterObjects",
+      "row_count": 35,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEmailRouterRule",
+      "row_count": 41,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEmailRouterSchedule",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEmailRouterStatus",
+      "row_count": 25827,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEmployee",
+      "row_count": 378,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEnvironmentalLoss",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEqpCompliance",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEqpComplianceMatrix",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEqpCriteria",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEqpSort",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEquipment",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEquipmentDBMailSent",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEquipmentSort",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEquipmentType",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEquipmentTypeConfigDetail",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblEquipmentTypeConfigMaster",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblExcelTemplate",
+      "row_count": 10,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblExtensionData",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblExtensionDetail",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblExtensionMaster",
+      "row_count": 15,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblFTWDetail",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblForum",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblFrequencyReportData",
+      "row_count": 508,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblFrequencyReportSetting",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblFrequencyofactivity",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblGenrateEmailRouterQueue",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblHEMP",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblHEMPStatus",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblHEMP_Has_HazardRiskControl",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblHSEINC",
+      "row_count": 23,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblHSESafetyAlert",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblHazardCategory",
+      "row_count": 42,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblImmediateCauseSA",
+      "row_count": 14,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblImmediateCauseSC",
+      "row_count": 7,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblImpact",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblImportFileHistory",
+      "row_count": 52,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblIncidentType",
+      "row_count": 25,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblInjuryType",
+      "row_count": 35,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblInsightsSettings",
+      "row_count": 6,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblInstitute",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblInstituteHasCourses",
+      "row_count": 95,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblInvestigation",
+      "row_count": 8,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblInvestigation_Has_Papers",
+      "row_count": 8,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblInvestigation_Has_Parts",
+      "row_count": 6,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblInvestigation_Has_Processes",
+      "row_count": 8,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblInvestigation_has_PeopleAndPositions",
+      "row_count": 9,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblJM",
+      "row_count": 92,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblJMDriver",
+      "row_count": 87,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblJMInspectionChecklist",
+      "row_count": 24,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblJMVehicleDetail",
+      "row_count": 54,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblJM_Has_InspectionChecklist",
+      "row_count": 2208,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblJM_Has_Passengers",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblJM_Has_RoadCondition",
+      "row_count": 1380,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblJM_Has_RouteBreakdown",
+      "row_count": 330,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblJM_Has_WeatherCondition",
+      "row_count": 920,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblJobFactor",
+      "row_count": 9,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblJobPosition",
+      "row_count": 121,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblKBInsightConfigMain",
+      "row_count": 29,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblKBInsightDashboardSetting",
+      "row_count": 28,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblKBInsightDashboardSettingWeightage",
+      "row_count": 6,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblKBInsightsDataDetail",
+      "row_count": 1672,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblKBInsightsDataHeader",
+      "row_count": 474,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblKBTicker",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblKPIGroupMaster",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblLibrary",
+      "row_count": 657,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblLibraryAccess",
+      "row_count": 32,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblLibraryHierarchy",
+      "row_count": 1903,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblLocation",
+      "row_count": 6,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblLogin",
+      "row_count": 266,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblLoginAccess",
+      "row_count": 114,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOC",
+      "row_count": 55,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOCApprover",
+      "row_count": 100,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOCApproverHistory",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOCAreaAffected",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOCCategory",
+      "row_count": 11,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOCMB",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOCMBApprover",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOCMBApproverHistory",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOCMBStatges",
+      "row_count": 12,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOCMMBExpiryHistory",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOCStatges",
+      "row_count": 10,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMOCSubType",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblManagementFactor",
+      "row_count": 9,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMaterialReleased",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMeetingType",
+      "row_count": 54,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMeetingVenues",
+      "row_count": 7,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMeeting_Has_Incidents",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMeeting_Has_Notes",
+      "row_count": 6,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMeeting_Has_Participants",
+      "row_count": 507,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMeeting_Has_ParticipantsExternal",
+      "row_count": 10,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMeetings",
+      "row_count": 123,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMonthlySheet",
+      "row_count": 588,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMonthlySheetDateDetail",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMonthlySheetDateMaster",
+      "row_count": 38,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblMonthlySheetImports",
+      "row_count": 43,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblNCAffectedSystem",
+      "row_count": 11,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblNCPossibleCause",
+      "row_count": 34,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblNCType",
+      "row_count": 7,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblNonConformance",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblNonConformance_Has_AuditingParty",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblNotification",
+      "row_count": 4482,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblNotificationType",
+      "row_count": 130,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblNumberofPeople",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblOCMasters",
+      "row_count": 258,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblOCWSAccess",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblObservationCategory",
+      "row_count": 105,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblObservationType",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblOutcome",
+      "row_count": 30,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTW",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTWApprover",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTWApproverHistory",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTWDocument",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTWPrecautionSubType",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTWPrecautionType",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTWScopeofWork",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTWStatus",
+      "row_count": 8,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTWType",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTWWorkArea",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTW_Has_Document",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPTW_Has_Precaution",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblParameterDetail",
+      "row_count": 143,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblParameterDetails",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblParameterGroup",
+      "row_count": 30,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblParameterHeader",
+      "row_count": 142,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblParameterMaster",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPasswordSetting",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPersonalFactor",
+      "row_count": 7,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPersonalLoss",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPosition",
+      "row_count": 27,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblPotentialSeverity",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblProbability",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIA",
+      "row_count": 39,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIAActivity",
+      "row_count": 44,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIAApprover",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIAApproverHistory",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIAHazard",
+      "row_count": 148,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIAHazardCategory",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIAHazardsImpacts",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIAPPMeasures",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIARiskMatrix",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIARiskMatrixX",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIARiskMatrixY",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIARiskType",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIAStatus",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIA_Has_AdditionalPreventative",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIA_Has_ExistingPreventative",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRIA_has_Hazard",
+      "row_count": 232,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRMPotentialSeverity",
+      "row_count": 20,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRMRiskType",
+      "row_count": 14,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRMRiskTypeAS",
+      "row_count": 83,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRMRiskType_tmp",
+      "row_count": 8,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRelationDetail",
+      "row_count": 509,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRelationMaster",
+      "row_count": 108,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineFields",
+      "row_count": 1062,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineMaster",
+      "row_count": 66,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineRelation",
+      "row_count": 142,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineRelationExclude",
+      "row_count": 13,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineSortMapping",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineUserDisplayFields",
+      "row_count": 28,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineUserDisplayFieldsSort",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineUserFilters",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineUserMaster",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineUserRelations",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineUserReportGroup",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEngineWorkArea",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEventDetail",
+      "row_count": 55,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEventDetailKPI",
+      "row_count": 158,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblReportEventHeader",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblResetPassword",
+      "row_count": 267,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRiskMatrix",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRiskMatrixX",
+      "row_count": 36,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRiskMatrixY",
+      "row_count": 23,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRiskMatrixY_tmp",
+      "row_count": 12,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRiskMatrixx_tmp",
+      "row_count": 10,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblRoadCondition",
+      "row_count": 15,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSQCategory",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSQFailureSubType",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSQFailureType",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSQINCFailure",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSafeObservation",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSafeTrack",
+      "row_count": 1858,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSafeTrackLocation",
+      "row_count": 7,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSafeTrackO",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSafeTrackStatus",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSafeTrack_Has_SafeObservation",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSafeTrack_Has_Types",
+      "row_count": 1963,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSafeTrack_Has_UnSafeObservation",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblScheduleMail",
+      "row_count": 5,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblScheduleMail_AI",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblScheduleMail_KPI",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblScheduleMail_Training",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSearchEngineFieldMapping",
+      "row_count": 326,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSearchEngineFields",
+      "row_count": 2086,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSearchEngineFieldsSort",
+      "row_count": 105,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSearchEngineFilters",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSearchEngineMaster",
+      "row_count": 183,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSettings",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSeverity",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblShareDetail",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblShareMaster",
+      "row_count": 8,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSite",
+      "row_count": 10,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblState",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblStatus",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSubType",
+      "row_count": 228,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSubstandardActs",
+      "row_count": 38,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblSubstandardCondition",
+      "row_count": 39,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTaskManager",
+      "row_count": 34,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTaskSource",
+      "row_count": 2,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTeamLead",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTempTraning_Course_Compliance_dashboard",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTimeLossType",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTraCompliance",
+      "row_count": 23,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTraComplianceMatrix",
+      "row_count": 1237,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTraCriteria",
+      "row_count": 4,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTrainingDBMailSent",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTrainingDashboardbreakup",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTrainingDetail",
+      "row_count": 3120,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblTrainingSetting",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblType",
+      "row_count": 26,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblUnSafeObservation",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblUnSafeSpecific",
+      "row_count": 1,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblUnSafeSubCategory",
+      "row_count": 186,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblUserLog",
+      "row_count": 2810,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblUserLogExt",
+      "row_count": 0,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblUserPasswordHistory",
+      "row_count": 416,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblUserRights",
+      "row_count": 3097,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblUserRights_History",
+      "row_count": 17232,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblUserRole",
+      "row_count": 11,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblUserRole_History",
+      "row_count": 70,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblVehicle",
+      "row_count": 28,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblWeatherCondition",
+      "row_count": 10,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblWorkArea",
+      "row_count": 16,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tblfncTrainingCourseGet",
+      "row_count": 2401,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    },
+    {
+      "schema_name": "dbo",
+      "table_name": "tmpdata",
+      "row_count": 3,
+      "classification": "unknown",
+      "provenance": {
+        "git_revision": "bb95a79^",
+        "archive_path": ".tmp/Aegis_XOM_Export.zip",
+        "archive_sha256": "5b1f61b8b8de63c02a2755317155ed69e1639b6babec78335f4859491c25e696",
+        "metadata_files": [
+          "manifest.json",
+          "tables.json",
+          "row_counts.json"
+        ],
+        "classification_source": "not present in recovered metadata"
+      }
+    }
+  ]
+}

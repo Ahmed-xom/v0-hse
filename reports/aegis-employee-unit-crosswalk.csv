@@ -1,0 +1,8 @@
+OldCompanyId,OldCompanyRowguid,OldBU_Id,OldBU_Name,NewCompanyId,NewBusinessUnitId,status,evidence_source,decision_needed
+8,25edc39b-70f6-4169-a403-b836d48050b4,1,XOM Oman,,,NAME_CANDIDATE,Aegis export + existing Neon evidence,Official OldBU_Id to NewBusinessUnitId crosswalk required
+8,25edc39b-70f6-4169-a403-b836d48050b4,2,XOM LLC HO,,,NAME_CANDIDATE,Aegis export + existing Neon evidence,Official OldBU_Id to NewBusinessUnitId crosswalk required
+8,25edc39b-70f6-4169-a403-b836d48050b4,3,XOM Drilling System,,,NAME_CANDIDATE,Aegis export + existing Neon evidence,Official OldBU_Id to NewBusinessUnitId crosswalk required
+8,25edc39b-70f6-4169-a403-b836d48050b4,4,Falcon Oilfield Services,,,NAME_CANDIDATE,Aegis export + existing Neon evidence,Official OldBU_Id to NewBusinessUnitId crosswalk required
+8,25edc39b-70f6-4169-a403-b836d48050b4,5,XOM Well Maintenance,,,NAME_CANDIDATE,Aegis export + existing Neon evidence,Official OldBU_Id to NewBusinessUnitId crosswalk required
+8,25edc39b-70f6-4169-a403-b836d48050b4,6,XOM LLC,,,UNRESOLVED,Aegis export,Official OldBU_Id to NewBusinessUnitId crosswalk required
+8,25edc39b-70f6-4169-a403-b836d48050b4,7,Not in Use,,,UNRESOLVED,Aegis export,Official OldBU_Id to NewBusinessUnitId crosswalk required

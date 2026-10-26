@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto"
 import { betterAuth } from "better-auth"
-import { pool } from "@/lib/db"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { db } from "@/lib/db"
+import { account, session, user, verification } from "@/lib/db/schema"
 
 const configuredSecret = process.env.BETTER_AUTH_SECRET
 const authSecret = configuredSecret && configuredSecret.length >= 32
@@ -10,9 +12,15 @@ const authSecret = configuredSecret && configuredSecret.length >= 32
     : undefined
 
 export const auth = betterAuth({
-  // Pass the pg Pool directly — Better Auth uses its built-in pg adapter.
-  // The Pool's search_path (set in lib/db/index.ts) routes queries to neon_auth schema.
-  database: pool,
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema: {
+      user,
+      session,
+      account,
+      verification,
+    },
+  }),
   emailAndPassword: {
     enabled: true,
   },
@@ -35,14 +43,28 @@ export const auth = betterAuth({
       ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`]
       : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+    "https://sb-21xwitowwlwq.vercel.run",
+    "https://hse-dashboard-44gy9uuf-1.v0.build",
     process.env.V0_RUNTIME_URL || "http://localhost:3000",
   ],
   secret: authSecret,
-  advanced: {
-    defaultCookieAttributes: {
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-    },
-  },
+  ...(process.env.NODE_ENV === "development"
+    ? {
+        advanced: {
+          defaultCookieAttributes: {
+            sameSite: "none" as const,
+            secure: true,
+            httpOnly: true,
+          },
+        },
+      }
+    : {
+        advanced: {
+          defaultCookieAttributes: {
+            sameSite: "lax" as const,
+            secure: true,
+            httpOnly: true,
+          },
+        },
+      }),
 })

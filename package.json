@@ -11,9 +11,11 @@
     "test:password-reset-compatibility": "node scripts/test-password-reset-compatibility.mjs",
     "test:password-reset-flow": "tsx scripts/test-password-reset-flow.mjs",
     "assess:legacy-migration": "tsx scripts/assess-legacy-migration.ts",
-    "inventory:legacy": "tsx scripts/inventory-legacy-archive.ts"
+    "inventory:legacy": "tsx scripts/inventory-legacy-archive.ts",
+    "test:aegis-staging-insert": "node scripts/test-aegis-staging-insert.mjs"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "1.7.2",
     "@better-auth/utils": "0.5.0",
     "@neondatabase/serverless": "^1.1.0",
     "@radix-ui/react-accordion": "^1.2.20",

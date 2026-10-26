@@ -1,0 +1,7 @@
+scope,source_key,status,reason,next_required_evidence
+Company,Cmp_Id=8;Rowguid=25edc39b-70f6-4169-a403-b836d48050b4,excluded,Target company is preserved but source-to-target identity is not independently proven,Official OldCompanyId/OldCompanyRowguid to NewCompanyId crosswalk
+BusinessUnit,BU_Id=1..6,excluded,Target rows already exist but OldBU_Id to target id is not explicitly documented,Official OldBU_Id to NewBusinessUnitId crosswalk
+BusinessUnit,BU_Id=7,excluded,Explicitly out of approved scope,Data-owner decision to include or exclude
+Employee,Emp_Id/Rowguid with non-empty payroll,excluded,No explicit OldEmp_Id/OldRowguid to NewEmployeeId and OldBU_Id to NewBusinessUnitId evidence,Official employee and business-unit crosswalk rows
+Employee,record with empty payroll_no,excluded,Payroll is empty and no replacement value is allowed,Data-owner decision or corrected source record
+Existing target employees,confirmed matches,preserved,Already present; no INSERT or replacement permitted,None
