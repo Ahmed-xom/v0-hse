@@ -2,13 +2,8 @@ import { NextResponse } from 'next/server'
 import { pool } from '@/lib/db'
 import orderManifest from '@/config/amnko-library-order.json'
 
-const normalizeOrderKey = (value: string | null | undefined) => value
-  ?.toLocaleLowerCase('en')
-  .replace(/\.(docx?|xlsx?|pptx?|pdf|jpg|jpeg|png|zip)$/i, '')
-  .replace(/[^\p{L}\p{N}]+/gu, ' ')
-  .trim()
-
 const basename = (pathname: string | null | undefined) => pathname?.split('/').pop() ?? ''
+const blobStem = (pathname: string | null | undefined) => basename(pathname).replace(/\.[^.]+$/, '')
 
 export async function GET() {
   const result = await pool.query(`
@@ -31,28 +26,21 @@ export async function GET() {
     WHERE l.blob_pathname LIKE 'amnko-library/%'
   `)
 
-  const orderByKey = new Map<string, number[]>()
+  const orderByPathname = new Map<string, number>()
+  const orderByStem = new Map<string, number>()
   for (const item of orderManifest.items) {
-    const orders = orderByKey.get(item.matchKey) ?? []
-    orders.push(item.order)
-    orderByKey.set(item.matchKey, orders)
+    if (item.blobPathname) {
+      orderByPathname.set(item.blobPathname, item.order)
+      orderByStem.set(blobStem(item.blobPathname), item.order)
+    }
   }
 
-  const usedOrders = new Set<number>()
   const orderedRows = result.rows
-    .map((row, sourceIndex) => {
-      const candidateKeys = [
-        normalizeOrderKey(row.title),
-        normalizeOrderKey(row.file_name),
-        normalizeOrderKey(basename(row.blob_pathname)),
-      ].filter((key): key is string => Boolean(key))
-      const referenceOrder = candidateKeys
-        .flatMap((key) => orderByKey.get(key) ?? [])
-        .find((order) => !usedOrders.has(order))
-
-      if (referenceOrder !== undefined) usedOrders.add(referenceOrder)
-      return { row, sourceIndex, referenceOrder }
-    })
+    .map((row, sourceIndex) => ({
+      row,
+      sourceIndex,
+      referenceOrder: orderByPathname.get(row.blob_pathname) ?? orderByStem.get(blobStem(row.blob_pathname)) ?? null,
+    }))
     .sort((a, b) => (a.referenceOrder ?? Number.MAX_SAFE_INTEGER) - (b.referenceOrder ?? Number.MAX_SAFE_INTEGER) || a.sourceIndex - b.sourceIndex)
 
   return NextResponse.json({
