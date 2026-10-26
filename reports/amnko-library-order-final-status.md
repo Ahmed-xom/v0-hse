@@ -351,6 +351,13 @@ The following 306 reference positions have no confirmed LibraryId + Rowguid + SH
 - Inline preview is now limited to PDF/image/text types. DOC/DOCX/XLS/XLSX/PPT/PPTX/ZIP/MP4 use `attachment` so unsupported browser formats download instead of showing a blank page.
 - MIME types now fall back from the stored `application/octet-stream` to the database filename extension, and the database `file_name` is used for Content-Disposition.
 - No Blob pathname, file content, extension, database record, or access policy was changed.
+
+## Current UI change
+
+- The library UI now uses each document's `pathname` to call `/api/amnko-attachments/file` and checks the actual response before opening or downloading.
+- Failed actions show a safe Arabic error containing the HTTP status and a bounded server reason; no tokens or secrets are displayed.
+- The reference manifest contains document order entries only; it does not provide a proven folder hierarchy. No folder relationships were invented.
+- Preview SSO still prevents testing the deployed UI from an unauthenticated browser session; an authorized Preview session is required for end-to-end click testing.
 - To resolve remaining cases: provide a complete original archive/export or import ledger containing each missing LibraryId with Rowguid or SHA256 and resulting document_id/blob_pathname. Extension variants require an authoritative current storage/export row proving object identity.
 
 ## Validation
