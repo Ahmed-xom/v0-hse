@@ -342,6 +342,15 @@ The following 306 reference positions have no confirmed LibraryId + Rowguid + SH
 - Historical `config/amnko-library-order.json`: commits `49b04634`, `0a22fce`, and `141b168`; no version adds a mapping beyond the current 273.
 - Historical `reports/amnko-library-extracted-trace.csv` at `412d238`: same 348-source trace and no complete archive mapping.
 - Current evidence: extracted trace, blob trace, content crosswalk, local export manifest, import plan, and link recovery reports.
+
+## Local file delivery verification
+
+- API returned 348 documents; 268 had confirmed reference order and 80 used the stable `document_id` fallback.
+- Two identical API requests returned the same pathname sequence.
+- The actual file route returned content bytes, not JSON/errors, for TXT, DOC, DOCX, XLSX, ZIP, and MP4 samples.
+- Inline preview is now limited to PDF/image/text types. DOC/DOCX/XLS/XLSX/PPT/PPTX/ZIP/MP4 use `attachment` so unsupported browser formats download instead of showing a blank page.
+- MIME types now fall back from the stored `application/octet-stream` to the database filename extension, and the database `file_name` is used for Content-Disposition.
+- No Blob pathname, file content, extension, database record, or access policy was changed.
 - To resolve remaining cases: provide a complete original archive/export or import ledger containing each missing LibraryId with Rowguid or SHA256 and resulting document_id/blob_pathname. Extension variants require an authoritative current storage/export row proving object identity.
 
 ## Validation
