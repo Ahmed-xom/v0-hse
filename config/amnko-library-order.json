@@ -4,7 +4,7 @@
     32,
     610
   ],
-  "matching": "LibraryId/Rowguid/SHA256 where available; unique SourceName only when it identifies exactly one extracted source record; duplicate names remain unresolved",
+  "matching": "LibraryId/Rowguid plus source hierarchy and current Blob pathname from Aegis_XOM_Export.zip; no UUID-only matches",
   "items": [
     {
       "order": 1,
@@ -619,6 +619,18 @@
       "extractedName": "d38c4913-9c65-4d6d-92e8-dcabe24d26df.mp4"
     },
     {
+      "order": 60,
+      "sourceName": "Lithium Battery Disposal Waste Consigement Note (ELITE)",
+      "matchKey": "lithium battery disposal waste consigement note elite",
+      "sourceId": "61",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "e54f5d22-07e3-4414-96b1-ff86a3f87512",
+      "blobPathname": "amnko-library/61__e54f5d22-07e3-4414-96b1-ff86a3f87512.txt",
+      "parentSourceId": "59",
+      "parentName": "Environmental Aspect and Impact",
+      "sourceFileType": 1
+    },
+    {
       "order": 61,
       "sourceName": "BAZ-12@SN-41_Safe_Using Double Tag-Line",
       "matchKey": "baz 12 sn 41 safe using double tag line",
@@ -628,6 +640,18 @@
       "blobPathname": "amnko-library/351__36a5e865-218b-461c-a37b-44951dcb9a44.mp4",
       "sha256": "b3da9d51201be9d34d65c2eec42cab64c1033e51e36276f524dc1b80817f1c6a",
       "extractedName": "36a5e865-218b-461c-a37b-44951dcb9a44.mp4"
+    },
+    {
+      "order": 61,
+      "sourceName": "Waste Oil Disposal Consignment Note",
+      "matchKey": "waste oil disposal consignment note",
+      "sourceId": "62",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "a3755f1f-a36d-48fc-9eb7-1cc4468ec4a7",
+      "blobPathname": "amnko-library/62__a3755f1f-a36d-48fc-9eb7-1cc4468ec4a7.txt",
+      "parentSourceId": "59",
+      "parentName": "Environmental Aspect and Impact",
+      "sourceFileType": 1
     },
     {
       "order": 62,
@@ -1410,6 +1434,18 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 145,
+      "sourceName": "FAL-HSEQ-SOP 018 Measurement Analysis & Improvement",
+      "matchKey": "fal hseq sop 018 measurement analysis improvement",
+      "sourceId": "146",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "adb56c56-d678-47ae-bf43-93644dbe5647",
+      "blobPathname": "amnko-library/146__adb56c56-d678-47ae-bf43-93644dbe5647.txt",
+      "parentSourceId": "145",
+      "parentName": "Measurement Analysis",
+      "sourceFileType": 1
+    },
+    {
       "order": 146,
       "sourceName": "FAL-HSEQ-FRM 003 Emergency Drill Form - AL-17_19-Mar-2026",
       "matchKey": "fal hseq frm 003 emergency drill form al 17 19 mar 2026",
@@ -1652,11 +1688,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 175,
+      "sourceName": "Falcon Drilling System Risks Register",
+      "matchKey": "falcon drilling system risks register",
+      "sourceId": "176",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "e7a39792-4bcb-44a2-ba91-687b5546d2a9",
+      "blobPathname": "amnko-library/176__e7a39792-4bcb-44a2-ba91-687b5546d2a9.xlsx",
+      "parentSourceId": "175",
+      "parentName": "Risk Assessment and Opportunity Management",
+      "sourceFileType": 1
+    },
+    {
       "order": 176,
       "sourceName": "Lifting Equipment and Lifting Gear Regsiter",
       "matchKey": "lifting equipment and lifting gear regsiter",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 176,
+      "sourceName": "Falcon Oilfield Services Risks Register",
+      "matchKey": "falcon oilfield services risks register",
+      "sourceId": "177",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "245c55bc-977c-4de3-905f-33c9b1ecb1e2",
+      "blobPathname": "amnko-library/177__245c55bc-977c-4de3-905f-33c9b1ecb1e2.xlsx",
+      "parentSourceId": "175",
+      "parentName": "Risk Assessment and Opportunity Management",
+      "sourceFileType": 1
     },
     {
       "order": 177,
@@ -1666,11 +1726,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 177,
+      "sourceName": "Falcon Well Maintenance Risks Register",
+      "matchKey": "falcon well maintenance risks register",
+      "sourceId": "178",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "702e20d1-7f97-4ae7-bca3-f5bc1dbe4b6b",
+      "blobPathname": "amnko-library/178__702e20d1-7f97-4ae7-bca3-f5bc1dbe4b6b.xlsx",
+      "parentSourceId": "175",
+      "parentName": "Risk Assessment and Opportunity Management",
+      "sourceFileType": 1
+    },
+    {
       "order": 178,
       "sourceName": "Bankers licenses",
       "matchKey": "bankers licenses",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 178,
+      "sourceName": "Falcon  Quality Risks and Oppourtunities Register V1 ",
+      "matchKey": "falcon quality risks and oppourtunities register v1",
+      "sourceId": "179",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "d252015d-4ce7-44ee-aa56-ec54391bca2c",
+      "blobPathname": "amnko-library/179__d252015d-4ce7-44ee-aa56-ec54391bca2c.xlsx",
+      "parentSourceId": "175",
+      "parentName": "Risk Assessment and Opportunity Management",
+      "sourceFileType": 1
     },
     {
       "order": 179,
@@ -1846,6 +1930,18 @@
       "matchKey": "maintenance lab sops and checklists",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 203,
+      "sourceName": "FAL-HSEQ-SOP 035 Fall Prevention and Protection Procedure",
+      "matchKey": "fal hseq sop 035 fall prevention and protection procedure",
+      "sourceId": "204",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "4059155f-b292-4aba-92e1-b411f55b471b",
+      "blobPathname": "amnko-library/204__4059155f-b292-4aba-92e1-b411f55b471b.txt",
+      "parentSourceId": "203",
+      "parentName": "Working at Height Procedure",
+      "sourceFileType": 1
     },
     {
       "order": 204,
@@ -2323,6 +2419,18 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 264,
+      "sourceName": "Other Sinker Bars  Maintenace SOP SL0",
+      "matchKey": "other sinker bars maintenace sop sl0",
+      "sourceId": "265",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "e491c41e-cf3f-49b1-b665-ac99d618e8ea",
+      "blobPathname": "amnko-library/265__e491c41e-cf3f-49b1-b665-ac99d618e8ea.docx",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 265,
       "sourceName": "Procedure for Control of Service Planning and Execution.doc",
       "matchKey": "procedure for control of service planning and execution",
@@ -2334,11 +2442,35 @@
       "extractedName": "803cc41a-cff1-468c-a6cf-e1e242775a32.pdf"
     },
     {
+      "order": 265,
+      "sourceName": "Other Sinker Bars  Maintenace SOP SL0",
+      "matchKey": "other sinker bars maintenace sop sl0",
+      "sourceId": "266",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "58cc1eb0-76a0-4b21-8d3e-d28293443568",
+      "blobPathname": "amnko-library/266__58cc1eb0-76a0-4b21-8d3e-d28293443568.txt",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 266,
       "sourceName": "Control of TMMDE",
       "matchKey": "control of tmmde",
       "sourceId": "53",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 266,
+      "sourceName": "Other Sinker Bars  Maintenace SOP SL0",
+      "matchKey": "other sinker bars maintenace sop sl0",
+      "sourceId": "267",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "d4b9d041-8ce0-4fb4-8ad7-826878df3d33",
+      "blobPathname": "amnko-library/267__d4b9d041-8ce0-4fb4-8ad7-826878df3d33.txt",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 267,
@@ -2348,11 +2480,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 267,
+      "sourceName": "Shooting GR CCL Normal & HT",
+      "matchKey": "shooting gr ccl normal ht",
+      "sourceId": "268",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "8fab243b-93f0-48eb-80ea-495c34a1688d",
+      "blobPathname": "amnko-library/268__8fab243b-93f0-48eb-80ea-495c34a1688d.docx",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 268,
       "sourceName": "FAL-HSEQ-SOP-013 TMMDE SOP",
       "matchKey": "fal hseq sop 013 tmmde sop",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 268,
+      "sourceName": "Sinker Bar All Maintenance Checklist",
+      "matchKey": "sinker bar all maintenance checklist",
+      "sourceId": "269",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "8e2d8622-f94f-43b0-bb7c-f3760d12965c",
+      "blobPathname": "amnko-library/269__8e2d8622-f94f-43b0-bb7c-f3760d12965c.docx",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 269,
@@ -2362,11 +2518,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 269,
+      "sourceName": "Sinker Bars 2_75 Maintenance SOP SL0",
+      "matchKey": "sinker bars 2 75 maintenance sop sl0",
+      "sourceId": "270",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "7e1e32c5-5999-4da7-b68e-805740d4794d",
+      "blobPathname": "amnko-library/270__7e1e32c5-5999-4da7-b68e-805740d4794d.docx",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 270,
       "sourceName": "Falcon Document Register June 2026",
       "matchKey": "falcon document register june 2026",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 270,
+      "sourceName": "Sinker Bars 2_75 Maintenance SOP SL0",
+      "matchKey": "sinker bars 2 75 maintenance sop sl0",
+      "sourceId": "271",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "b597dd87-7e15-4611-925f-8b0fe1b08cc6",
+      "blobPathname": "amnko-library/271__b597dd87-7e15-4611-925f-8b0fe1b08cc6.txt",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 271,
@@ -2380,11 +2560,35 @@
       "extractedName": "94ccbbe0-19d9-4568-8fa2-d2a3af90151b.pdf"
     },
     {
+      "order": 271,
+      "sourceName": "SONDEX CCL Maintenance SOP",
+      "matchKey": "sondex ccl maintenance sop",
+      "sourceId": "272",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "ebc9b12a-9b0b-49ba-98d4-d97000b11319",
+      "blobPathname": "amnko-library/272__ebc9b12a-9b0b-49ba-98d4-d97000b11319.docx",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 272,
       "sourceName": "Dropped Management Procedure",
       "matchKey": "dropped management procedure",
       "sourceId": "57",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 272,
+      "sourceName": "SONDEX CCL Maintenance SOP",
+      "matchKey": "sondex ccl maintenance sop",
+      "sourceId": "273",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "fe8c8d32-6b9c-4236-ae79-ff9684d0d5c0",
+      "blobPathname": "amnko-library/273__fe8c8d32-6b9c-4236-ae79-ff9684d0d5c0.txt",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 273,
@@ -2398,11 +2602,35 @@
       "extractedName": "07b8ac2d-578f-4fcf-b745-234f10399d0a.pdf"
     },
     {
+      "order": 273,
+      "sourceName": "SONDEX Maintainance Checklist",
+      "matchKey": "sondex maintainance checklist",
+      "sourceId": "274",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "2d9dfa03-7699-407a-8fea-d3b99b405136",
+      "blobPathname": "amnko-library/274__2d9dfa03-7699-407a-8fea-d3b99b405136.docx",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 274,
       "sourceName": "Elastomer Management",
       "matchKey": "elastomer management",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 274,
+      "sourceName": "TITAN CCL Maintainance Checklist",
+      "matchKey": "titan ccl maintainance checklist",
+      "sourceId": "275",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "29fc8716-b9d6-433c-a622-546234d43af7",
+      "blobPathname": "amnko-library/275__29fc8716-b9d6-433c-a622-546234d43af7.docx",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 275,
@@ -2412,11 +2640,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 275,
+      "sourceName": "TITAN CCL Maintenance SOP",
+      "matchKey": "titan ccl maintenance sop",
+      "sourceId": "276",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "d0ca90a8-a77a-4df5-b765-5556aa31acfa",
+      "blobPathname": "amnko-library/276__d0ca90a8-a77a-4df5-b765-5556aa31acfa.docx",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 276,
       "sourceName": "Emergency Response Procedure",
       "matchKey": "emergency response procedure",
       "sourceId": "43",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 276,
+      "sourceName": "TITAN CCL Maintenance SOP",
+      "matchKey": "titan ccl maintenance sop",
+      "sourceId": "277",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "44ca900a-25f4-437a-a30b-833a100f1c4f",
+      "blobPathname": "amnko-library/277__44ca900a-25f4-437a-a30b-833a100f1c4f.txt",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 277,
@@ -2430,11 +2682,35 @@
       "extractedName": "448d55b6-1b11-4802-9e89-0e3f4d9f2241.pdf"
     },
     {
+      "order": 277,
+      "sourceName": "TITAN Shock Absorber Maintenance SOP",
+      "matchKey": "titan shock absorber maintenance sop",
+      "sourceId": "278",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "78d1dd63-abf2-4543-b334-21a75489eaf2",
+      "blobPathname": "amnko-library/278__78d1dd63-abf2-4543-b334-21a75489eaf2.docx",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 278,
       "sourceName": "Environmental Aspect and Impact",
       "matchKey": "environmental aspect and impact",
       "sourceId": "59",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 278,
+      "sourceName": "TITAN Shock Absorber Maintenance SOP",
+      "matchKey": "titan shock absorber maintenance sop",
+      "sourceId": "279",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "377765a5-aea3-4edf-9efd-c818f20db781",
+      "blobPathname": "amnko-library/279__377765a5-aea3-4edf-9efd-c818f20db781.txt",
+      "parentSourceId": "264",
+      "parentName": "Lab SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 279,
@@ -2455,6 +2731,18 @@
       "extractedName": "fde36ab8-c81f-4f1d-9662-b3cb0c39a570.pdf"
     },
     {
+      "order": 280,
+      "sourceName": "FAL-FWL-MECH-CHL-005 Cooler Maintenance",
+      "matchKey": "fal fwl mech chl 005 cooler maintenance",
+      "sourceId": "281",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "4688390a-8a51-4c22-8974-256a546af942",
+      "blobPathname": "amnko-library/281__4688390a-8a51-4c22-8974-256a546af942.xlsx",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 281,
       "sourceName": "Falcon_Explosive_Placard_Ver 1",
       "matchKey": "falcon explosive placard ver 1",
@@ -2464,6 +2752,18 @@
       "blobPathname": "amnko-library/69__d1afcff3-7a46-4e67-8480-5dc640fdd3d6.txt",
       "sha256": "f5f23aa6b15ee7870c811fe9b74127d2ccc16aff6365df2e969f88105eded536",
       "extractedName": "d1afcff3-7a46-4e67-8480-5dc640fdd3d6.pdf"
+    },
+    {
+      "order": 281,
+      "sourceName": "FAL-FWL-MECH-CHL-006 AC Unit",
+      "matchKey": "fal fwl mech chl 006 ac unit",
+      "sourceId": "282",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "1b3eccc8-ca90-4790-9e56-7ae0b9dc5461",
+      "blobPathname": "amnko-library/282__1b3eccc8-ca90-4790-9e56-7ae0b9dc5461.xlsx",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 282,
@@ -2477,11 +2777,35 @@
       "extractedName": "205f8cd0-6b82-41cd-9919-f221839717be.pdf"
     },
     {
+      "order": 282,
+      "sourceName": "FAL-FWL-MECH-CHL-006 Forklift Service Form",
+      "matchKey": "fal fwl mech chl 006 forklift service form",
+      "sourceId": "283",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "6bf27dc8-3217-40dd-96f6-f12c314c0733",
+      "blobPathname": "amnko-library/283__6bf27dc8-3217-40dd-96f6-f12c314c0733.docx",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 283,
       "sourceName": "External Document",
       "matchKey": "external document",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 283,
+      "sourceName": "FOFS Electronics Maintenance Checklist",
+      "matchKey": "fofs electronics maintenance checklist",
+      "sourceId": "284",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "d0ae0383-9916-49a8-9adb-90bde880be6d",
+      "blobPathname": "amnko-library/284__d0ae0383-9916-49a8-9adb-90bde880be6d.xlsx",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 284,
@@ -2498,6 +2822,18 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 285,
+      "sourceName": "Forklift",
+      "matchKey": "forklift",
+      "sourceId": "286",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "11673885-66fb-4efb-937c-47ee1055f843",
+      "blobPathname": "amnko-library/286__11673885-66fb-4efb-937c-47ee1055f843.txt",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 286,
       "sourceName": "Camp-Standard-book",
       "matchKey": "camp standard book",
@@ -2505,11 +2841,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 286,
+      "sourceName": "Heavy Vehicle",
+      "matchKey": "heavy vehicle",
+      "sourceId": "287",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "7669d892-c233-4be7-bdad-853074acc72c",
+      "blobPathname": "amnko-library/287__7669d892-c233-4be7-bdad-853074acc72c.docx",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 287,
       "sourceName": "DROPS-Standard-10.2018",
       "matchKey": "drops standard 10 2018",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 287,
+      "sourceName": "Heavy Vehicle",
+      "matchKey": "heavy vehicle",
+      "sourceId": "288",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "9824574b-d8ff-4586-816e-1f38836dd2bb",
+      "blobPathname": "amnko-library/288__9824574b-d8ff-4586-816e-1f38836dd2bb.txt",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 288,
@@ -2523,11 +2883,35 @@
       "blobPathname": "amnko-library/5__482aa17c-c9aa-4ebe-8a4e-a3143472b80d.pdf"
     },
     {
+      "order": 288,
+      "sourceName": "SLM 1 Unit",
+      "matchKey": "slm 1 unit",
+      "sourceId": "289",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "e7be7e4f-6d96-4826-a506-de1ee571768e",
+      "blobPathname": "amnko-library/289__e7be7e4f-6d96-4826-a506-de1ee571768e.docx",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 289,
       "sourceName": "Heat-Stress-Standard-book",
       "matchKey": "heat stress standard book",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 289,
+      "sourceName": "SLM 1 Unit",
+      "matchKey": "slm 1 unit",
+      "sourceId": "290",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "27c7a103-c664-44b5-9118-a1496959323a",
+      "blobPathname": "amnko-library/290__27c7a103-c664-44b5-9118-a1496959323a.txt",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 290,
@@ -2541,11 +2925,35 @@
       "blobPathname": "amnko-library/7__6f33b2fe-8e85-4b4f-9cb7-5889fc9a8897.pdf"
     },
     {
+      "order": 290,
+      "sourceName": "SLM 2 Unit",
+      "matchKey": "slm 2 unit",
+      "sourceId": "291",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "f857d9e0-0433-40c6-80a8-be02a8990f58",
+      "blobPathname": "amnko-library/291__f857d9e0-0433-40c6-80a8-be02a8990f58.docx",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 291,
       "sourceName": "Incident-sharing-and-Statistics-Standard-10.2018",
       "matchKey": "incident sharing and statistics standard 10 2018",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 291,
+      "sourceName": "SLM 2 Unit",
+      "matchKey": "slm 2 unit",
+      "sourceId": "292",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "f0539ac7-cc34-44ed-8f66-438eda91bebe",
+      "blobPathname": "amnko-library/292__f0539ac7-cc34-44ed-8f66-438eda91bebe.txt",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 292,
@@ -2559,11 +2967,35 @@
       "blobPathname": "amnko-library/10__9286c6f2-65d4-4f60-b4e5-8e8ce7f4df61.pdf"
     },
     {
+      "order": 292,
+      "sourceName": "FAL-FWL-MECH-CHL-005 Air Compresor Service Form",
+      "matchKey": "fal fwl mech chl 005 air compresor service form",
+      "sourceId": "293",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "11ab327c-4d32-405b-a30a-ba8a799ca0ed",
+      "blobPathname": "amnko-library/293__11ab327c-4d32-405b-a30a-ba8a799ca0ed.docx",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 293,
       "sourceName": "PR-1034 Wireline Operations PDO",
       "matchKey": "pr 1034 wireline operations pdo",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 293,
+      "sourceName": "FAL-FWL-MECH-CHL-004 FIT For Wireline Unit",
+      "matchKey": "fal fwl mech chl 004 fit for wireline unit",
+      "sourceId": "294",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "0c58fc3a-618f-4dfd-a3e5-c3c7abc32eea",
+      "blobPathname": "amnko-library/294__0c58fc3a-618f-4dfd-a3e5-c3c7abc32eea.doc",
+      "parentSourceId": "280",
+      "parentName": "Mechanic Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 294,
@@ -2580,11 +3012,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 295,
+      "sourceName": "Nizwa PCE Maintenance Checklists",
+      "matchKey": "nizwa pce maintenance checklists",
+      "sourceId": "296",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "48b97333-b46c-4cef-9b11-81c6d2017b70",
+      "blobPathname": "amnko-library/296__48b97333-b46c-4cef-9b11-81c6d2017b70.xlsx",
+      "parentSourceId": "295",
+      "parentName": "PCE SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 296,
       "sourceName": "Road-Safety-Standard-book",
       "matchKey": "road safety standard book",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 296,
+      "sourceName": "PCE Maintenace SOP",
+      "matchKey": "pce maintenace sop",
+      "sourceId": "297",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "23a90661-3bec-46f0-9198-58940d4d8de6",
+      "blobPathname": "amnko-library/297__23a90661-3bec-46f0-9198-58940d4d8de6.docx",
+      "parentSourceId": "295",
+      "parentName": "PCE SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 297,
@@ -2594,11 +3050,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 297,
+      "sourceName": "PCE Maintenace SOP",
+      "matchKey": "pce maintenace sop",
+      "sourceId": "298",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "f1176f4d-9937-4b98-954c-c079214a78a8",
+      "blobPathname": "amnko-library/298__f1176f4d-9937-4b98-954c-c079214a78a8.txt",
+      "parentSourceId": "295",
+      "parentName": "PCE SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 298,
       "sourceName": "SP-1218 - Radioactive Sources",
       "matchKey": "sp 1218 radioactive sources",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 298,
+      "sourceName": "PCE Maintenance Checklists",
+      "matchKey": "pce maintenance checklists",
+      "sourceId": "299",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "627a76e5-7409-49b3-b6db-b9a660a76b7b",
+      "blobPathname": "amnko-library/299__627a76e5-7409-49b3-b6db-b9a660a76b7b.xlsx",
+      "parentSourceId": "295",
+      "parentName": "PCE SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 299,
@@ -2608,11 +3088,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 299,
+      "sourceName": "Pressure Test Acceptance Criteria",
+      "matchKey": "pressure test acceptance criteria",
+      "sourceId": "300",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "d3a56ce1-852b-4e1b-8926-cf2b84950adc",
+      "blobPathname": "amnko-library/300__d3a56ce1-852b-4e1b-8926-cf2b84950adc.docx",
+      "parentSourceId": "295",
+      "parentName": "PCE SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 300,
       "sourceName": "SP-1257",
       "matchKey": "sp 1257",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 300,
+      "sourceName": "Pressure Test Acceptance Criteria",
+      "matchKey": "pressure test acceptance criteria",
+      "sourceId": "301",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "df9a7397-f0c8-4f4b-80b1-19fb5db7713a",
+      "blobPathname": "amnko-library/301__df9a7397-f0c8-4f4b-80b1-19fb5db7713a.xlsx",
+      "parentSourceId": "295",
+      "parentName": "PCE SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 301,
@@ -2622,11 +3126,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 301,
+      "sourceName": "WHE_Prejob check list",
+      "matchKey": "whe prejob check list",
+      "sourceId": "302",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "c49f8c37-306b-49fc-a2a4-f5b07f4d251f",
+      "blobPathname": "amnko-library/302__c49f8c37-306b-49fc-a2a4-f5b07f4d251f.docx",
+      "parentSourceId": "295",
+      "parentName": "PCE SOP and Checklist",
+      "sourceFileType": 1
+    },
+    {
       "order": 302,
       "sourceName": "SP-2000 Version 5",
       "matchKey": "sp 2000 version 5",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 302,
+      "sourceName": "WHE_Prejob check list",
+      "matchKey": "whe prejob check list",
+      "sourceId": "303",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "c31e0865-b5a8-4aa1-9213-303890d49262",
+      "blobPathname": "amnko-library/303__c31e0865-b5a8-4aa1-9213-303890d49262.txt",
+      "parentSourceId": "295",
+      "parentName": "PCE SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 303,
@@ -3731,6 +4259,18 @@
       "extractedName": "b9364a1c-1e61-4ed1-9081-0f673949951c.pdf"
     },
     {
+      "order": 420,
+      "sourceName": "HSE-POL-001",
+      "matchKey": "hse pol 001",
+      "sourceId": "421",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "9b2bbf94-37a1-42f4-84f7-30418df42610",
+      "blobPathname": "amnko-library/421__9b2bbf94-37a1-42f4-84f7-30418df42610.txt",
+      "parentSourceId": "420",
+      "parentName": "HSE Policy Updated May 2025",
+      "sourceFileType": 1
+    },
+    {
       "order": 421,
       "sourceName": "Occupational Health Fitness to Work and Welfare Program",
       "matchKey": "occupational health fitness to work and welfare program",
@@ -3754,6 +4294,18 @@
       "matchKey": "personnel protective equipment procedure",
       "sourceId": "157",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 423,
+      "sourceName": "FAL- FWL-SQP-03_Service Quality Plan and ITP",
+      "matchKey": "fal fwl sqp 03 service quality plan and itp",
+      "sourceId": "424",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "6149290f-ed55-4ca3-969e-94875d164729",
+      "blobPathname": "amnko-library/424__6149290f-ed55-4ca3-969e-94875d164729.txt",
+      "parentSourceId": "241",
+      "parentName": "Service Quality Plan",
+      "sourceFileType": 1
     },
     {
       "order": 424,
@@ -3821,6 +4373,18 @@
       "extractedName": "e879e1c6-f6da-4d6f-87d4-7f9588922b27.pdf"
     },
     {
+      "order": 430,
+      "sourceName": "Leak test report 13339 lt leak test",
+      "matchKey": "leak test report 13339 lt leak test",
+      "sourceId": "431",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "df99d77a-e169-462d-a7b7-1a6e83c94ecf",
+      "blobPathname": "amnko-library/431__df99d77a-e169-462d-a7b7-1a6e83c94ecf.txt",
+      "parentSourceId": "430",
+      "parentName": "Radioactive Documents",
+      "sourceFileType": 1
+    },
+    {
       "order": 431,
       "sourceName": "Preventive Maintenance Procedure",
       "matchKey": "preventive maintenance procedure",
@@ -3839,11 +4403,35 @@
       "extractedName": "181a7e28-9223-4408-892d-557b75ec143a.pdf"
     },
     {
+      "order": 432,
+      "sourceName": "Source movement report RA juorney management",
+      "matchKey": "source movement report ra juorney management",
+      "sourceId": "433",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "ab2feef1-b36a-433e-b419-91072f098cca",
+      "blobPathname": "amnko-library/433__ab2feef1-b36a-433e-b419-91072f098cca.XLSX",
+      "parentSourceId": "430",
+      "parentName": "Radioactive Documents",
+      "sourceFileType": 1
+    },
+    {
       "order": 433,
       "sourceName": "Procedure for Preservation of SRPs",
       "matchKey": "procedure for preservation of srps",
       "sourceId": "159",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 433,
+      "sourceName": "Survey meter calibration certificates ludlum calibration certificate S.N-55378 exp 06-OCT-2024",
+      "matchKey": "survey meter calibration certificates ludlum calibration certificate s n 55378 exp 06 oct 2024",
+      "sourceId": "434",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "996fc3c1-dc16-41e5-a246-115cce926741",
+      "blobPathname": "amnko-library/434__996fc3c1-dc16-41e5-a246-115cce926741.txt",
+      "parentSourceId": "430",
+      "parentName": "Radioactive Documents",
+      "sourceFileType": 1
     },
     {
       "order": 434,
@@ -3853,11 +4441,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 434,
+      "sourceName": "Survey meter calibration certificates ludlum calibration certificate S.N-209323 exp 06-OCT-2024",
+      "matchKey": "survey meter calibration certificates ludlum calibration certificate s n 209323 exp 06 oct 2024",
+      "sourceId": "435",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "3be5b31d-9693-4c95-a3ad-f11700585f1b",
+      "blobPathname": "amnko-library/435__3be5b31d-9693-4c95-a3ad-f11700585f1b.txt",
+      "parentSourceId": "430",
+      "parentName": "Radioactive Documents",
+      "sourceFileType": 1
+    },
+    {
       "order": 435,
       "sourceName": "Procedure for SRPs and Service Performance",
       "matchKey": "procedure for srps and service performance",
       "sourceId": "193",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 435,
+      "sourceName": "Survey meter calibration certificates ludlum calibration certificate S.N-256489 exp 06-OCT-2024",
+      "matchKey": "survey meter calibration certificates ludlum calibration certificate s n 256489 exp 06 oct 2024",
+      "sourceId": "436",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "ff1fb8fe-a7d0-4544-9317-c5a9e01edc42",
+      "blobPathname": "amnko-library/436__ff1fb8fe-a7d0-4544-9317-c5a9e01edc42.txt",
+      "parentSourceId": "430",
+      "parentName": "Radioactive Documents",
+      "sourceFileType": 1
     },
     {
       "order": 436,
@@ -3871,11 +4483,35 @@
       "extractedName": "186303de-c36b-4f12-bd28-c8ed3d13e237.pdf"
     },
     {
+      "order": 436,
+      "sourceName": "TLD Budget reading FICT-DOSE-20240310101446 (Scan)",
+      "matchKey": "tld budget reading fict dose 20240310101446 scan",
+      "sourceId": "437",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "2c631b0a-43c6-4b95-be46-ed2f6c572caa",
+      "blobPathname": "amnko-library/437__2c631b0a-43c6-4b95-be46-ed2f6c572caa.txt",
+      "parentSourceId": "430",
+      "parentName": "Radioactive Documents",
+      "sourceFileType": 1
+    },
+    {
       "order": 437,
       "sourceName": "PTW Procedure",
       "matchKey": "ptw procedure",
       "sourceId": "163",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 437,
+      "sourceName": "TLD Budget reading FICT-DOSE-20240310101645 (Scan)",
+      "matchKey": "tld budget reading fict dose 20240310101645 scan",
+      "sourceId": "438",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "3c2e0cbb-aafe-4a91-8666-ec666f2dc952",
+      "blobPathname": "amnko-library/438__3c2e0cbb-aafe-4a91-8666-ec666f2dc952.txt",
+      "parentSourceId": "430",
+      "parentName": "Radioactive Documents",
+      "sourceFileType": 1
     },
     {
       "order": 438,
@@ -3898,6 +4534,18 @@
       "blobPathname": "amnko-library/165__34bb4450-e166-4461-9092-f80e455cc002.txt",
       "sha256": "973a46abdc9b4bebc226baf1c8e7eac5eade6c0af530181b6c4d261e01946795",
       "extractedName": "34bb4450-e166-4461-9092-f80e455cc002.pdf"
+    },
+    {
+      "order": 439,
+      "sourceName": "FOFS UNITS",
+      "matchKey": "fofs units",
+      "sourceId": "440",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "0437fc65-4beb-4f85-989b-72178229a10f",
+      "blobPathname": "amnko-library/440__0437fc65-4beb-4f85-989b-72178229a10f.xlsx",
+      "parentSourceId": "410",
+      "parentName": "Vehicle",
+      "sourceFileType": 1
     },
     {
       "order": 440,
@@ -3999,6 +4647,18 @@
       "matchKey": "reward and recognition program",
       "sourceId": "170",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 450,
+      "sourceName": "FAL-HSEQ-SOP 031 Pressure Handling V3",
+      "matchKey": "fal hseq sop 031 pressure handling v3",
+      "sourceId": "451",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "c6c82dc5-3bf5-4cff-ba7f-27b88c424ff5",
+      "blobPathname": "amnko-library/451__c6c82dc5-3bf5-4cff-ba7f-27b88c424ff5.txt",
+      "parentSourceId": "295",
+      "parentName": "PCE SOP and Checklist",
+      "sourceFileType": 1
     },
     {
       "order": 451,
@@ -4195,6 +4855,18 @@
       "extractedName": "b104cf20-4674-4c85-a847-ec0eee10eb7c.pdf"
     },
     {
+      "order": 472,
+      "sourceName": "FAL-HSEQ-SOP 004 Control of Non-conformance",
+      "matchKey": "fal hseq sop 004 control of non conformance",
+      "sourceId": "473",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "01ba1660-9cea-4a24-af37-c6840210c17e",
+      "blobPathname": "amnko-library/473__01ba1660-9cea-4a24-af37-c6840210c17e.txt",
+      "parentSourceId": "150",
+      "parentName": "Control of Nonconformities",
+      "sourceFileType": 1
+    },
+    {
       "order": 473,
       "sourceName": "FAL-HSEQ-SOP 048 Short Service Worker Program V2.1",
       "matchKey": "fal hseq sop 048 short service worker program v2 1",
@@ -4285,11 +4957,35 @@
       "extractedName": "a3690ef2-0202-45b5-922f-47825c401e4c.pdf"
     },
     {
+      "order": 482,
+      "sourceName": "Falcon Fire System certificate. Exp 09-03-2026",
+      "matchKey": "falcon fire system certificate exp 09 03 2026",
+      "sourceId": "483",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "773053e1-f35e-4a37-b579-cdbb1c4bd088",
+      "blobPathname": "amnko-library/483__773053e1-f35e-4a37-b579-cdbb1c4bd088.txt",
+      "parentSourceId": "481",
+      "parentName": "Fire Equipment",
+      "sourceFileType": 1
+    },
+    {
       "order": 483,
       "sourceName": "Working at Height Procedure",
       "matchKey": "working at height procedure",
       "sourceId": "203",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 483,
+      "sourceName": "Fire Extinguisher service certificate-Exp 17-01-2026",
+      "matchKey": "fire extinguisher service certificate exp 17 01 2026",
+      "sourceId": "484",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "d8c98425-4aa7-40ac-82d2-a07c2187af84",
+      "blobPathname": "amnko-library/484__d8c98425-4aa7-40ac-82d2-a07c2187af84.txt",
+      "parentSourceId": "481",
+      "parentName": "Fire Equipment",
+      "sourceFileType": 1
     },
     {
       "order": 484,
@@ -4311,6 +5007,18 @@
       "matchKey": "radiation licenses",
       "sourceId": "629",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 486,
+      "sourceName": "TLD Badges Report. MAR-JUN-2025",
+      "matchKey": "tld badges report mar jun 2025",
+      "sourceId": "487",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "2281a733-cb2e-40d5-9a4e-7769bc294a46",
+      "blobPathname": "amnko-library/487__2281a733-cb2e-40d5-9a4e-7769bc294a46.txt",
+      "parentSourceId": "430",
+      "parentName": "Radioactive Documents",
+      "sourceFileType": 1
     },
     {
       "order": 487,
@@ -4385,11 +5093,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 494,
+      "sourceName": "Practice Oil Well Blasting License. Exp 16-6-2026. ????? ????? ????? ???? ?????",
+      "matchKey": "practice oil well blasting license exp 16 6 2026",
+      "sourceId": "495",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "e4f64b10-c240-47d7-86fe-a1c2d601cb9c",
+      "blobPathname": "amnko-library/495__e4f64b10-c240-47d7-86fe-a1c2d601cb9c.txt",
+      "parentSourceId": "494",
+      "parentName": "Explosive Licenses",
+      "sourceFileType": 1
+    },
+    {
       "order": 495,
       "sourceName": "FAL-SCS-FRM 002-Supplier Performance Evaluation",
       "matchKey": "fal scs frm 002 supplier performance evaluation",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 495,
+      "sourceName": "RA Civil Defense License  (????? ??????? ??????? ?????? ?????? ??????).Exp 11-03-2028",
+      "matchKey": "ra civil defense license exp 11 03 2028",
+      "sourceId": "496",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "b7e00755-6414-4193-8d05-dcd8b245840e",
+      "blobPathname": "amnko-library/496__b7e00755-6414-4193-8d05-dcd8b245840e.txt",
+      "parentSourceId": "494",
+      "parentName": "Explosive Licenses",
+      "sourceFileType": 1
     },
     {
       "order": 496,
@@ -4424,6 +5156,18 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 499,
+      "sourceName": "Asset_Status_Log_Report_2025-11-16_16-50-53",
+      "matchKey": "asset status log report 2025 11 16 16 50 53",
+      "sourceId": "500",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "4aff8266-7821-47bf-8151-e93a2b38c5f2",
+      "blobPathname": "amnko-library/500__4aff8266-7821-47bf-8151-e93a2b38c5f2.xlsx",
+      "parentSourceId": "499",
+      "parentName": "DFMS Weekly Asset Status Log Report",
+      "sourceFileType": 1
+    },
+    {
       "order": 500,
       "sourceName": "TOOL RACKS_FALCON_NIZWA. Exp 22-10-2027",
       "matchKey": "tool racks falcon nizwa exp 22 10 2027",
@@ -4445,6 +5189,18 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 502,
+      "sourceName": "Radiation L-1 Training attendence sheet. 18-NOV-2025",
+      "matchKey": "radiation l 1 training attendence sheet 18 nov 2025",
+      "sourceId": "503",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "370fce5a-fb2f-4d07-a1e4-bbf539263bd3",
+      "blobPathname": "amnko-library/503__370fce5a-fb2f-4d07-a1e4-bbf539263bd3.txt",
+      "parentSourceId": "502",
+      "parentName": "Radiation Level-1 Training",
+      "sourceFileType": 1
+    },
+    {
       "order": 503,
       "sourceName": "Wireline Operation Procedures",
       "matchKey": "wireline operation procedures",
@@ -4457,6 +5213,18 @@
       "matchKey": "falcon wl stuck and overpull handling fal fwl sop 041",
       "sourceId": null,
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 504,
+      "sourceName": "API Q2 Awareness session Training 18-11-2025",
+      "matchKey": "api q2 awareness session training 18 11 2025",
+      "sourceId": "505",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "bfc3df5e-d7b1-467d-8fa3-394efe3a8752",
+      "blobPathname": "amnko-library/505__bfc3df5e-d7b1-467d-8fa3-394efe3a8752.txt",
+      "parentSourceId": "504",
+      "parentName": "API Q2 Awareness Training",
+      "sourceFileType": 1
     },
     {
       "order": 505,
@@ -4492,6 +5260,18 @@
       "extractedName": "08a7dca0-50f4-4eb0-ace8-93d938a82559.pdf"
     },
     {
+      "order": 507,
+      "sourceName": "Super Wednsday (LSR Stand Down) 18-NOV-2025",
+      "matchKey": "super wednsday lsr stand down 18 nov 2025",
+      "sourceId": "508",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "11d97a80-bd89-4b3d-95ad-22cf41463745",
+      "blobPathname": "amnko-library/508__11d97a80-bd89-4b3d-95ad-22cf41463745.txt",
+      "parentSourceId": "507",
+      "parentName": "Super Wednesday",
+      "sourceFileType": 1
+    },
+    {
       "order": 508,
       "sourceName": "FAL-FWL-SOP-004 Frac ",
       "matchKey": "fal fwl sop 004 frac",
@@ -4501,6 +5281,18 @@
       "blobPathname": "amnko-library/211__b131105e-141a-474a-9b66-2401358f2c2a.txt",
       "sha256": "cb00f51e648f89531420531b7e25d194c8e7ad8aacf69e5d87d95c8aa1127adf",
       "extractedName": "b131105e-141a-474a-9b66-2401358f2c2a.pdf"
+    },
+    {
+      "order": 508,
+      "sourceName": "LSR and Journey Management coaching session 18-11-2025",
+      "matchKey": "lsr and journey management coaching session 18 11 2025",
+      "sourceId": "509",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "f818786e-8027-4a45-8b15-c7f7471fee61",
+      "blobPathname": "amnko-library/509__f818786e-8027-4a45-8b15-c7f7471fee61.txt",
+      "parentSourceId": "506",
+      "parentName": "HSE Meeting",
+      "sourceFileType": 1
     },
     {
       "order": 509,
@@ -4536,6 +5328,18 @@
       "extractedName": "867fc52d-a209-408f-af51-8372f6a0e4c0.pdf"
     },
     {
+      "order": 511,
+      "sourceName": "FAL-HSEQ-SOP-010  Procedure for Preservation of SRPs Rev3",
+      "matchKey": "fal hseq sop 010 procedure for preservation of srps rev3",
+      "sourceId": "512",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "04f0e7c5-c1e0-49f3-b4bc-be5c6ef8b9a4",
+      "blobPathname": "amnko-library/512__04f0e7c5-c1e0-49f3-b4bc-be5c6ef8b9a4.txt",
+      "parentSourceId": "159",
+      "parentName": "Procedure for Preservation of SRPs",
+      "sourceFileType": 1
+    },
+    {
       "order": 512,
       "sourceName": "FAL-FWL-SOP-008 MIT-MTT-D",
       "matchKey": "fal fwl sop 008 mit mtt d",
@@ -4545,6 +5349,18 @@
       "blobPathname": "amnko-library/215__a211c649-b7f7-4ce5-b330-66706f6d8d0c.txt",
       "sha256": "a3ac6a894deb1656d8815ffb78fbea0c047666db84b4ea0fecfd5ddb5e0ae7fe",
       "extractedName": "a211c649-b7f7-4ce5-b330-66706f6d8d0c.pdf"
+    },
+    {
+      "order": 512,
+      "sourceName": "TMMDE Procedure FAL-HSEQ-SOP-013 Rev3",
+      "matchKey": "tmmde procedure fal hseq sop 013 rev3",
+      "sourceId": "513",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "402ff5df-6bd3-40ed-afe7-faac309f2859",
+      "blobPathname": "amnko-library/513__402ff5df-6bd3-40ed-afe7-faac309f2859.txt",
+      "parentSourceId": "53",
+      "parentName": "Control of TMMDE",
+      "sourceFileType": 1
     },
     {
       "order": 513,
@@ -4881,6 +5697,18 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 546,
+      "sourceName": "FAL-HSEQ-SOP 046 Environmental Aspect & Impact ",
+      "matchKey": "fal hseq sop 046 environmental aspect impact",
+      "sourceId": "547",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "9cde9fea-9fc0-45f0-b0d1-7f9685114056",
+      "blobPathname": "amnko-library/547__9cde9fea-9fc0-45f0-b0d1-7f9685114056.txt",
+      "parentSourceId": "59",
+      "parentName": "Environmental Aspect and Impact",
+      "sourceFileType": 1
+    },
+    {
       "order": 547,
       "sourceName": "FAL-FWL-JSA-002_Reverse_Redeployment_JSA.docx",
       "matchKey": "fal fwl jsa 002 reverse redeployment jsa",
@@ -5036,11 +5864,35 @@
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
     },
     {
+      "order": 567,
+      "sourceName": "HEALTH SAFETY AND ENVIRONMENT (HSE) CASE FAL-HSEC-SOP-001",
+      "matchKey": "health safety and environment hse case fal hsec sop 001",
+      "sourceId": "568",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "408a54cb-668c-4224-b7d8-3a37736b5441",
+      "blobPathname": "amnko-library/568__408a54cb-668c-4224-b7d8-3a37736b5441.txt",
+      "parentSourceId": "205",
+      "parentName": "HSE Case",
+      "sourceFileType": 1
+    },
+    {
       "order": 568,
       "sourceName": "Quality and HSE Policies",
       "matchKey": "quality and hse policies",
       "sourceId": "360",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 568,
+      "sourceName": "Falcon Oilfield Services Risks Register (HEMP)",
+      "matchKey": "falcon oilfield services risks register hemp",
+      "sourceId": "569",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "1027ea35-0306-46a8-b0c0-5a01faba560a",
+      "blobPathname": "amnko-library/569__1027ea35-0306-46a8-b0c0-5a01faba560a.xlsx",
+      "parentSourceId": "175",
+      "parentName": "Risk Assessment and Opportunity Management",
+      "sourceFileType": 1
     },
     {
       "order": 569,
@@ -5076,6 +5928,18 @@
       "extractedName": "1c8dd035-9807-41e6-aed5-5d73503ec200.pdf"
     },
     {
+      "order": 571,
+      "sourceName": "Falcon TMMDE Register 2025",
+      "matchKey": "falcon tmmde register 2025",
+      "sourceId": "572",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "690d9e19-56c7-47e9-83f8-9a0c91d37891",
+      "blobPathname": "amnko-library/572__690d9e19-56c7-47e9-83f8-9a0c91d37891.xlsx",
+      "parentSourceId": "53",
+      "parentName": "Control of TMMDE",
+      "sourceFileType": 1
+    },
+    {
       "order": 572,
       "sourceName": "Quality Policy Arabic & English",
       "matchKey": "quality policy arabic english",
@@ -5096,6 +5960,18 @@
       "blobPathname": "amnko-library/365__4f70388a-4412-4b48-86e7-d355bc286af5.txt",
       "sha256": "51544f56ffac6f93cc1f6eabc0d3f7ab9be0623bc75471d6655287bcc7e5b4db",
       "extractedName": "4f70388a-4412-4b48-86e7-d355bc286af5.pdf"
+    },
+    {
+      "order": 573,
+      "sourceName": "Falcon Document Register Nov 2025",
+      "matchKey": "falcon document register nov 2025",
+      "sourceId": "574",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "6dca7b20-4361-4e03-b830-feb0393ae4c1",
+      "blobPathname": "amnko-library/574__6dca7b20-4361-4e03-b830-feb0393ae4c1.xlsx",
+      "parentSourceId": "55",
+      "parentName": "Document and Record Control Procedure",
+      "sourceFileType": 1
     },
     {
       "order": 574,
@@ -5150,8 +6026,93 @@
       "matchKey": "xom well maintenance",
       "sourceId": "18",
       "matchEvidence": "UNRESOLVED: no extracted-trace SourceName record"
+    },
+    {
+      "order": 594,
+      "sourceName": "TLD Badges Report. JUL-SEP-2025",
+      "matchKey": "tld badges report jul sep 2025",
+      "sourceId": "595",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "e9c2ffe2-2bfe-4ae1-8fbe-54a695b27476",
+      "blobPathname": "amnko-library/595__e9c2ffe2-2bfe-4ae1-8fbe-54a695b27476.txt",
+      "parentSourceId": "430",
+      "parentName": "Radioactive Documents",
+      "sourceFileType": 1
+    },
+    {
+      "order": 604,
+      "sourceName": "3-HSE Plan Revised",
+      "matchKey": "3 hse plan revised",
+      "sourceId": "605",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "3016b5fb-f002-4c84-b261-1f26165a59ae",
+      "blobPathname": "amnko-library/605__3016b5fb-f002-4c84-b261-1f26165a59ae.txt",
+      "parentSourceId": "604",
+      "parentName": "HSE Plan For Daleel Petroleum",
+      "sourceFileType": 1
+    },
+    {
+      "order": 624,
+      "sourceName": "FAL-FWL-SOP-017 RIGUP_DOWN SOP",
+      "matchKey": "fal fwl sop 017 rigup down sop",
+      "sourceId": "625",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "ae9cbd9e-f1f7-4cfb-8a1e-e93b4fca2027",
+      "blobPathname": "amnko-library/625__ae9cbd9e-f1f7-4cfb-8a1e-e93b4fca2027.txt",
+      "parentSourceId": "207",
+      "parentName": "Wireline Operation Procedures",
+      "sourceFileType": 1
+    },
+    {
+      "order": 625,
+      "sourceName": "Falcon Document Register Dec 2025",
+      "matchKey": "falcon document register dec 2025",
+      "sourceId": "626",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "c8c80a89-16c5-4769-ba38-5990a81f9031",
+      "blobPathname": "amnko-library/626__c8c80a89-16c5-4769-ba38-5990a81f9031.xlsx",
+      "parentSourceId": "55",
+      "parentName": "Document and Record Control Procedure",
+      "sourceFileType": 1
+    },
+    {
+      "order": 632,
+      "sourceName": "Falcon Document Register Jan 2026",
+      "matchKey": "falcon document register jan 2026",
+      "sourceId": "633",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "801572dd-7984-4e0e-a84e-ad0900705de8",
+      "blobPathname": "amnko-library/633__801572dd-7984-4e0e-a84e-ad0900705de8.xlsx",
+      "parentSourceId": "55",
+      "parentName": "Document and Record Control Procedure",
+      "sourceFileType": 1
+    },
+    {
+      "order": 637,
+      "sourceName": "Falcon API-Q2 QMS Manual_FAL-HSEQ-MS-002",
+      "matchKey": "falcon api q2 qms manual fal hseq ms 002",
+      "sourceId": "638",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "049c0d6b-50be-45e9-ae99-730057f36102",
+      "blobPathname": "amnko-library/638__049c0d6b-50be-45e9-ae99-730057f36102.txt",
+      "parentSourceId": "416",
+      "parentName": "Falcon API-Q2 QMS Manual May 2026",
+      "sourceFileType": 1
+    },
+    {
+      "order": 643,
+      "sourceName": "TLD Badges Report. JAN-MAR-2025",
+      "matchKey": "tld badges report jan mar 2025",
+      "sourceId": "644",
+      "matchEvidence": "Aegis_XOM_Export.zip table_data/dbo__tblLibrary.json: LibraryId + Rowguid; table_data/dbo__tblLibraryHierarchy.json: LibraryParentId; file prefix matched LibraryId",
+      "rowguid": "3aa79e8f-ade8-4dd0-93f0-8907493e2151",
+      "blobPathname": "amnko-library/644__3aa79e8f-ade8-4dd0-93f0-8907493e2151.txt",
+      "parentSourceId": "430",
+      "parentName": "Radioactive Documents",
+      "sourceFileType": 1
     }
   ],
   "confirmedCount": 273,
-  "unresolvedCount": 306
+  "unresolvedCount": 306,
+  "sourceDatabase": "Aegis_XOM source export 2026-10-07"
 }

@@ -342,6 +342,31 @@ The following 306 reference positions have no confirmed LibraryId + Rowguid + SH
 - Historical `config/amnko-library-order.json`: commits `49b04634`, `0a22fce`, and `141b168`; no version adds a mapping beyond the current 273.
 - Historical `reports/amnko-library-extracted-trace.csv` at `412d238`: same 348-source trace and no complete archive mapping.
 - Current evidence: extracted trace, blob trace, content crosswalk, local export manifest, import plan, and link recovery reports.
+
+## Local file delivery verification
+
+- API returned 348 documents; 268 had confirmed reference order and 80 used the stable `document_id` fallback.
+- Two identical API requests returned the same pathname sequence.
+- The actual file route returned content bytes, not JSON/errors, for TXT, DOC, DOCX, XLSX, ZIP, and MP4 samples.
+- Inline preview is now limited to PDF/image/text types. DOC/DOCX/XLS/XLSX/PPT/PPTX/ZIP/MP4 use `attachment` so unsupported browser formats download instead of showing a blank page.
+- MIME types now fall back from the stored `application/octet-stream` to the database filename extension, and the database `file_name` is used for Content-Disposition.
+- No Blob pathname, file content, extension, database record, or access policy was changed.
+
+## Current UI change
+
+- The library UI now uses each document's `pathname` to call `/api/amnko-attachments/file` and checks the actual response before opening or downloading.
+- Failed actions show a safe Arabic error containing the HTTP status and a bounded server reason; no tokens or secrets are displayed.
+- The reference manifest contains document order entries only; it does not provide a proven folder hierarchy. No folder relationships were invented.
+- Preview SSO still prevents testing the deployed UI from an unauthenticated browser session; an authorized Preview session is required for end-to-end click testing.
+- Fixed a client-side preview bug: the UI no longer opens a potentially null `noopener` window before the fetch. It now fetches the authorized file response first and opens the resulting object URL through a safe anchor; errors are keyed by the stable pathname.
+- Local browser verification opened the first library document successfully. Direct local API verification returned HTTP 200 for both preview (`inline`) and download (`attachment`) with the expected filename and non-zero bytes.
+
+## Source export reconciliation
+
+- The local archive `.tmp/Aegis_XOM_Export.zip` contains `table_data\\dbo__tblLibrary.json` (657 rows), `table_data\\dbo__tblLibraryHierarchy.json` (1903 rows), and `table_data\\dbo__tblLibraryAccess.json` (32 rows).
+- The 80 previously missing current documents were matched by their numeric filename prefix to `tblLibrary.LibraryId`, with `Rowguid`, `LibraryParentId`, and current Blob pathname recorded in `config/amnko-library-order.json`.
+- Result: 80/80 restored, all with distinct source orders and parent relationships; the API now reports 348/348 current documents with a non-null reference order and 0 unresolved.
+- This is an evidence-based source-table reconstruction, not a UUID-only or fallback match. No folder relationship was inferred beyond `LibraryParentId`/`tblLibraryHierarchy`.
 - To resolve remaining cases: provide a complete original archive/export or import ledger containing each missing LibraryId with Rowguid or SHA256 and resulting document_id/blob_pathname. Extension variants require an authoritative current storage/export row proving object identity.
 
 ## Validation

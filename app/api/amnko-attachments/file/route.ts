@@ -10,6 +10,14 @@ const MIME_TYPES: Record<string, string> = {
   webp: 'image/webp',
   txt: 'text/plain; charset=utf-8',
   csv: 'text/csv; charset=utf-8',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xls: 'application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  zip: 'application/zip',
+  mp4: 'video/mp4',
 }
 
 function safeFilename(value: string) {
@@ -31,15 +39,17 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid attachment' }, { status: 400 })
   }
 
-  const allowed = await pool.query(
-    `SELECT 1
-     FROM public.amnko_library_document_link
-     WHERE blob_pathname = $1
-       AND blob_pathname LIKE 'amnko-library/%'
+  const allowed = await pool.query<{ file_name: string | null; file_type: string | null }>(
+    `SELECT d.file_name, d.file_type
+     FROM public.amnko_library_document_link l
+     INNER JOIN public.document d ON d.id = l.document_id
+     WHERE l.blob_pathname = $1
+       AND l.blob_pathname LIKE 'amnko-library/%'
      LIMIT 1`,
     [pathname],
   )
-  if (allowed.rowCount !== 1) return new NextResponse('Not found', { status: 404 })
+  const document = allowed.rows[0]
+  if (!document) return new NextResponse('Not found', { status: 404 })
 
   const result = await get(pathname, {
     access: 'private',
@@ -47,12 +57,14 @@ export async function GET(request: Request) {
   })
   if (!result) return new NextResponse('Not found', { status: 404 })
 
-  const filename = safeFilename(pathname)
-  const dispositionType = download ? 'attachment' : 'inline'
+  const filename = safeFilename(document.file_name || pathname)
+  const extension = filename.split('.').pop()?.toLowerCase() || ''
+  const inlineTypes = new Set(['pdf', 'jpg', 'jpeg', 'png', 'webp', 'txt', 'csv'])
+  const dispositionType = !download && inlineTypes.has(extension) ? 'inline' : 'attachment'
   const disposition = `${dispositionType}; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`
   return new NextResponse(result.stream, {
     headers: {
-      'Content-Type': result.blob.contentType || contentType(filename),
+      'Content-Type': result.blob.contentType && result.blob.contentType !== 'application/octet-stream' ? result.blob.contentType : contentType(filename),
       'Content-Disposition': disposition,
       'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
       ETag: result.blob.etag,
