@@ -45,10 +45,14 @@ export async function GET() {
     .sort((a, b) => (a.reference?.order ?? Number.MAX_SAFE_INTEGER) - (b.reference?.order ?? Number.MAX_SAFE_INTEGER) || (a.reference?.sourceId ?? a.fallbackKey).localeCompare(b.reference?.sourceId ?? b.fallbackKey))
 
   const manifestBySourceId = new Map(orderManifest.items.map((item) => [String(item.sourceId), item]))
-  const folders = orderManifest.items
-    .filter((item) => !item.blobPathname)
-    .map((item) => ({ id: String(item.sourceId), name: item.sourceName, parentId: item.parentSourceId ? String(item.parentSourceId) : null, order: item.order }))
-    .sort((a, b) => a.order - b.order || a.id.localeCompare(b.id))
+  const folderMap = new Map<string, { id: string; name: string; parentId: string | null; order: number }>()
+  for (const { reference } of orderedRows) {
+    if (!reference?.parentSourceId || !reference.parentName) continue
+    if (!folderMap.has(reference.parentSourceId)) {
+      folderMap.set(reference.parentSourceId, { id: reference.parentSourceId, name: reference.parentName, parentId: null, order: reference.order })
+    }
+  }
+  const folders = [...folderMap.values()].sort((a, b) => a.order - b.order || a.id.localeCompare(b.id))
 
   return NextResponse.json({
     orderSource: 'config/amnko-library-order.json',
