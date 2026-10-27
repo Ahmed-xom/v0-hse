@@ -13,7 +13,8 @@
     "assess:legacy-migration": "tsx scripts/assess-legacy-migration.ts",
     "inventory:legacy": "tsx scripts/inventory-legacy-archive.ts",
     "test:aegis-staging-insert": "node scripts/test-aegis-staging-insert.mjs",
-    "test:amnko-library-files": "node scripts/test-amnko-library-files.mjs"
+    "test:amnko-library-files": "node scripts/test-amnko-library-files.mjs",
+    "test:amnko-library-order": "node scripts/test-amnko-library-order.mjs"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.2",

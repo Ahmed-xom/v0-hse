@@ -26,12 +26,13 @@ export async function GET() {
     WHERE l.blob_pathname LIKE 'amnko-library/%'
   `)
 
-  const orderByPathname = new Map<string, number>()
-  const orderByStem = new Map<string, number>()
+  const orderByPathname = new Map<string, { order: number; sourceId: string; parentSourceId: string | null; parentName: string | null }>()
+  const orderByStem = new Map<string, { order: number; sourceId: string; parentSourceId: string | null; parentName: string | null }>()
   for (const item of orderManifest.items) {
     if (item.blobPathname) {
-      orderByPathname.set(item.blobPathname, item.order)
-      orderByStem.set(blobStem(item.blobPathname), item.order)
+      const value = { order: item.order, sourceId: String(item.sourceId), parentSourceId: item.parentSourceId ? String(item.parentSourceId) : null, parentName: item.parentName ?? null }
+      orderByPathname.set(item.blobPathname, value)
+      orderByStem.set(blobStem(item.blobPathname), value)
     }
   }
 
@@ -39,14 +40,14 @@ export async function GET() {
     .map((row) => ({
       row,
       fallbackKey: String(row.document_id),
-      referenceOrder: orderByPathname.get(row.blob_pathname) ?? orderByStem.get(blobStem(row.blob_pathname)) ?? null,
+      reference: orderByPathname.get(row.blob_pathname) ?? orderByStem.get(blobStem(row.blob_pathname)) ?? null,
     }))
-    .sort((a, b) => (a.referenceOrder ?? Number.MAX_SAFE_INTEGER) - (b.referenceOrder ?? Number.MAX_SAFE_INTEGER) || a.fallbackKey.localeCompare(b.fallbackKey))
+    .sort((a, b) => (a.reference?.order ?? Number.MAX_SAFE_INTEGER) - (b.reference?.order ?? Number.MAX_SAFE_INTEGER) || (a.reference?.sourceId ?? a.fallbackKey).localeCompare(b.reference?.sourceId ?? b.fallbackKey))
 
   return NextResponse.json({
     orderSource: 'config/amnko-library-order.json',
     referenceItemCount: orderManifest.items.length,
-    documents: orderedRows.map(({ row, referenceOrder }) => ({
+    documents: orderedRows.map(({ row, reference }) => ({
       rowguid: row.rowguid,
       documentId: row.document_id,
       pathname: row.blob_pathname,
@@ -60,7 +61,10 @@ export async function GET() {
       verified: row.verification_status === 'VERIFIED',
       isPublic: row.is_public === true,
       accessLabel: row.is_public === true ? 'public' : 'protected',
-      referenceOrder: referenceOrder ?? null,
+      referenceOrder: reference?.order ?? null,
+      sourceId: reference?.sourceId ?? null,
+      parentSourceId: reference?.parentSourceId ?? null,
+      parentName: reference?.parentName ?? null,
     })),
   })
 }
