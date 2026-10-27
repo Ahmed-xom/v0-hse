@@ -28,8 +28,13 @@ type LibraryDocument = {
   parentName: string | null
 }
 
+type LibraryFolder = { id: string; name: string; parentId: string | null; order: number }
+
+type LibraryResponse = { documents?: LibraryDocument[]; folders?: LibraryFolder[] }
+
 export default function AmnkoLibraryPage() {
   const [documents, setDocuments] = useState<LibraryDocument[]>([])
+  const [folders, setFolders] = useState<LibraryFolder[]>([])
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -72,22 +77,15 @@ export default function AmnkoLibraryPage() {
     fetch('/api/amnko-library', { credentials: 'include' })
       .then(async (response) => {
         if (!response.ok) throw new Error('تعذر تحميل مكتبة AMNKO')
-        return response.json() as Promise<{ documents?: LibraryDocument[] }>
+        return response.json() as Promise<LibraryResponse>
       })
-      .then((data) => setDocuments(data.documents ?? []))
+      .then((data) => {
+        setDocuments(data.documents ?? [])
+        setFolders(data.folders ?? [])
+      })
       .catch((reason: Error) => setError(reason.message))
       .finally(() => setLoading(false))
   }, [])
-
-  const folders = useMemo(() => {
-    const folderMap = new Map<string, { id: string; name: string; parentId: string | null }>()
-    for (const document of documents) {
-      if (document.parentSourceId && document.parentName) {
-        folderMap.set(document.parentSourceId, { id: document.parentSourceId, name: document.parentName, parentId: null })
-      }
-    }
-    return [...folderMap.values()].sort((a, b) => a.name.localeCompare(b.name))
-  }, [documents])
 
   const filtered = useMemo(() => {
     const normalized = query.trim().toLowerCase()
@@ -99,7 +97,8 @@ export default function AmnkoLibraryPage() {
   }, [documents, query, currentFolder])
 
   const visibleFolders = folders.filter((folder) => !currentFolder ? !folder.parentId : folder.parentId === currentFolder)
-  const currentParent = currentFolder ? documents.find((document) => document.sourceId === currentFolder)?.parentSourceId ?? null : null
+  const currentParent = currentFolder ? folders.find((folder) => folder.id === currentFolder)?.parentId ?? null : null
+  const currentFolderName = currentFolder ? folders.find((folder) => folder.id === currentFolder)?.name : null
 
   return (
     <main className="min-h-screen bg-background px-6 py-8 text-foreground" dir="rtl">
@@ -134,7 +133,14 @@ export default function AmnkoLibraryPage() {
               {!currentFolder && folders.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد علاقات مجلد مثبتة في المصدر.</p> : null}
               {currentFolder && visibleFolders.length === 0 ? <p className="text-sm text-muted-foreground">لا توجد مجلدات فرعية مثبتة.</p> : null}
             </div>}
-            {loading ? <p className="py-10 text-center text-muted-foreground">جارٍ تحميل المكتبة...</p> : error ? <p role="alert" className="rounded-md border border-destructive/40 p-4 text-destructive">{error}</p> : filtered.length === 0 ? <p className="py-10 text-center text-muted-foreground">لا توجد مستندات مطابقة.</p> : <div className="overflow-x-auto"><table className="w-full text-right text-sm"><thead><tr className="border-b text-muted-foreground"><th className="px-3 py-3 font-medium">المستند</th><th className="px-3 py-3 font-medium">الفئة</th><th className="px-3 py-3 font-medium">الحجم</th><th className="px-3 py-3 font-medium">الحالة</th><th className="px-3 py-3 font-medium">الإجراء</th></tr></thead><tbody>{filtered.map((document) => <tr key={document.rowguid} className="border-b last:border-0"><td className="px-3 py-3"><div className="flex items-center gap-3"><FileText className="size-5 text-primary" aria-hidden="true" /><div className="min-w-0"><p className="truncate font-medium">{document.title}</p><p className="max-w-[34rem] truncate text-xs text-muted-foreground">{document.fileName ?? document.rowguid}</p></div></div></td><td className="px-3 py-3 text-muted-foreground">{document.category ?? 'AMNKO HSE'}</td><td className="px-3 py-3 text-muted-foreground">{document.fileSize ?? 'غير متوفر'}</td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Badge variant={document.verified ? 'secondary' : 'destructive'}>{document.verified ? 'Verified' : 'Unverified'}</Badge><Badge variant={document.isPublic ? 'outline' : 'secondary'}>{document.isPublic ? 'عام' : 'محمي'}</Badge></div></td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" onClick={() => void handleFileAction(document, false)}><ExternalLink data-icon="inline-start" />معاينة</Button><Button type="button" size="sm" variant="ghost" onClick={() => void handleFileAction(document, true)}>تنزيل</Button></div>{fileErrors[document.pathname] ? <p role="alert" className="mt-2 max-w-xs text-xs text-destructive">{fileErrors[document.pathname]}</p> : null}</td></tr>)}</tbody></table></div>}
+            {loading ? <p className="py-10 text-center text-muted-foreground">جارٍ تحميل المكتبة...</p> : error ? <p role="alert" className="rounded-md border border-destructive/40 p-4 text-destructive">{error}</p> : <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2 rounded-md border bg-muted/30 px-3 py-2 text-sm" aria-label="المجلد الحالي">
+                <button type="button" className="font-medium text-primary hover:underline" onClick={() => setCurrentFolder(null)}>المكتبة</button>
+                {currentFolderName ? <><span className="text-muted-foreground">/</span><span>{currentFolderName}</span></> : null}
+                <span className="mr-auto text-muted-foreground">{filtered.length} مستند</span>
+              </div>
+              {filtered.length === 0 ? <p className="py-10 text-center text-muted-foreground">لا توجد مستندات مطابقة.</p> : <div className="overflow-x-auto"><table className="w-full text-right text-sm"><thead><tr className="border-b text-muted-foreground"><th className="px-3 py-3 font-medium">اسم المستند</th><th className="px-3 py-3 font-medium">النوع</th><th className="px-3 py-3 font-medium">الحالة</th><th className="px-3 py-3 font-medium">تاريخ الإنشاء</th><th className="px-3 py-3 font-medium">الإجراء</th></tr></thead><tbody>{filtered.map((document) => <tr key={document.rowguid} className="border-b last:border-0"><td className="px-3 py-3"><div className="flex items-center gap-3"><FileText className="size-5 text-primary" aria-hidden="true" /><div className="min-w-0"><p className="font-medium">{document.title || 'اسم المستند غير متوفر'}</p><p className="max-w-[34rem] truncate text-xs text-muted-foreground">{document.fileType ?? document.fileName ?? 'نوع غير متوفر'}</p></div></div></td><td className="px-3 py-3 text-muted-foreground">{document.fileType ?? 'غير متوفر'}</td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Badge variant={document.verified ? 'secondary' : 'destructive'}>{document.verified ? 'موثق' : 'غير موثق'}</Badge><Badge variant={document.isPublic ? 'outline' : 'secondary'}>{document.isPublic ? 'عام' : 'محمي'}</Badge></div></td><td className="px-3 py-3 text-muted-foreground">{document.createdAt ? new Date(document.createdAt).toLocaleDateString('ar-SA') : 'غير متوفر'}</td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" onClick={() => void handleFileAction(document, false)}><ExternalLink data-icon="inline-start" />معاينة</Button><Button type="button" size="sm" variant="ghost" onClick={() => void handleFileAction(document, true)}>تنزيل</Button></div>{fileErrors[document.pathname] ? <p role="alert" className="mt-2 max-w-xs text-xs text-destructive">{fileErrors[document.pathname]}</p> : null}</td></tr>)}</tbody></table></div>}
+            </div>}
           </CardContent>
         </Card>
       </div>
