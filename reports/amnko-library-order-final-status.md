@@ -358,6 +358,8 @@ The following 306 reference positions have no confirmed LibraryId + Rowguid + SH
 - Failed actions show a safe Arabic error containing the HTTP status and a bounded server reason; no tokens or secrets are displayed.
 - The reference manifest contains document order entries only; it does not provide a proven folder hierarchy. No folder relationships were invented.
 - Preview SSO still prevents testing the deployed UI from an unauthenticated browser session; an authorized Preview session is required for end-to-end click testing.
+- Fixed a client-side preview bug: the UI no longer opens a potentially null `noopener` window before the fetch. It now fetches the authorized file response first and opens the resulting object URL through a safe anchor; errors are keyed by the stable pathname.
+- Local browser verification opened the first library document successfully. Direct local API verification returned HTTP 200 for both preview (`inline`) and download (`attachment`) with the expected filename and non-zero bytes.
 - To resolve remaining cases: provide a complete original archive/export or import ledger containing each missing LibraryId with Rowguid or SHA256 and resulting document_id/blob_pathname. Extension variants require an authoritative current storage/export row proving object identity.
 
 ## Validation

@@ -33,7 +33,7 @@ export default function AmnkoLibraryPage() {
 
   const handleFileAction = async (document: LibraryDocument, download: boolean) => {
     const url = `/api/amnko-attachments/file?pathname=${encodeURIComponent(document.pathname)}${download ? '&download=1' : ''}`
-    const previewWindow = !download ? window.open('', '_blank', 'noopener,noreferrer') : null
+    const errorKey = document.pathname
 
     try {
       const response = await fetch(url, { credentials: 'include' })
@@ -44,22 +44,21 @@ export default function AmnkoLibraryPage() {
 
       const blob = await response.blob()
       const objectUrl = URL.createObjectURL(blob)
+      const link = window.document.createElement('a')
+      link.href = objectUrl
+      link.rel = 'noopener noreferrer'
       if (download) {
-        const link = window.document.createElement('a')
-        link.href = objectUrl
         link.download = document.fileName ?? document.pathname.split('/').pop() ?? 'amnko-document'
-        link.click()
-        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
-      } else if (previewWindow) {
-        previewWindow.location.href = objectUrl
-        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000)
+      } else {
+        link.target = '_blank'
       }
-      setFileErrors((current) => ({ ...current, [document.rowguid]: '' }))
+      link.click()
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), download ? 1000 : 60_000)
+      setFileErrors((current) => ({ ...current, [errorKey]: '' }))
     } catch (reason) {
-      previewWindow?.close()
       setFileErrors((current) => ({
         ...current,
-        [document.rowguid]: `تعذر ${download ? 'تنزيل' : 'فتح'} الملف: ${reason instanceof Error ? reason.message : 'خطأ غير معروف'}`,
+        [errorKey]: `تعذر ${download ? 'تنزيل' : 'فتح'} الملف: ${reason instanceof Error ? reason.message : 'خطأ غير معروف'}`,
       }))
     }
   }
@@ -109,7 +108,7 @@ export default function AmnkoLibraryPage() {
             <div className="relative w-full sm:max-w-sm"><Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" /><Input className="pr-9" aria-label="بحث في المكتبة" placeholder="ابحث باسم الملف أو Rowguid" value={query} onChange={(event) => setQuery(event.target.value)} /></div>
           </CardHeader>
           <CardContent>
-            {loading ? <p className="py-10 text-center text-muted-foreground">جارٍ تحميل المكتبة...</p> : error ? <p role="alert" className="rounded-md border border-destructive/40 p-4 text-destructive">{error}</p> : filtered.length === 0 ? <p className="py-10 text-center text-muted-foreground">لا توجد مستندات مطابقة.</p> : <div className="overflow-x-auto"><table className="w-full text-right text-sm"><thead><tr className="border-b text-muted-foreground"><th className="px-3 py-3 font-medium">المستند</th><th className="px-3 py-3 font-medium">الفئة</th><th className="px-3 py-3 font-medium">الحجم</th><th className="px-3 py-3 font-medium">الحالة</th><th className="px-3 py-3 font-medium">الإجراء</th></tr></thead><tbody>{filtered.map((document) => <tr key={document.rowguid} className="border-b last:border-0"><td className="px-3 py-3"><div className="flex items-center gap-3"><FileText className="size-5 text-primary" aria-hidden="true" /><div className="min-w-0"><p className="truncate font-medium">{document.title}</p><p className="max-w-[34rem] truncate text-xs text-muted-foreground">{document.fileName ?? document.rowguid}</p></div></div></td><td className="px-3 py-3 text-muted-foreground">{document.category ?? 'AMNKO HSE'}</td><td className="px-3 py-3 text-muted-foreground">{document.fileSize ?? 'غير متوفر'}</td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Badge variant={document.verified ? 'secondary' : 'destructive'}>{document.verified ? 'Verified' : 'Unverified'}</Badge><Badge variant={document.isPublic ? 'outline' : 'secondary'}>{document.isPublic ? 'عام' : 'محمي'}</Badge></div></td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" onClick={() => void handleFileAction(document, false)}><ExternalLink data-icon="inline-start" />معاينة</Button><Button type="button" size="sm" variant="ghost" onClick={() => void handleFileAction(document, true)}>تنزيل</Button></div>{fileErrors[document.rowguid] ? <p role="alert" className="mt-2 max-w-xs text-xs text-destructive">{fileErrors[document.rowguid]}</p> : null}</td></tr>)}</tbody></table></div>}
+            {loading ? <p className="py-10 text-center text-muted-foreground">جارٍ تحميل المكتبة...</p> : error ? <p role="alert" className="rounded-md border border-destructive/40 p-4 text-destructive">{error}</p> : filtered.length === 0 ? <p className="py-10 text-center text-muted-foreground">لا توجد مستندات مطابقة.</p> : <div className="overflow-x-auto"><table className="w-full text-right text-sm"><thead><tr className="border-b text-muted-foreground"><th className="px-3 py-3 font-medium">المستند</th><th className="px-3 py-3 font-medium">الفئة</th><th className="px-3 py-3 font-medium">الحجم</th><th className="px-3 py-3 font-medium">الحالة</th><th className="px-3 py-3 font-medium">الإجراء</th></tr></thead><tbody>{filtered.map((document) => <tr key={document.rowguid} className="border-b last:border-0"><td className="px-3 py-3"><div className="flex items-center gap-3"><FileText className="size-5 text-primary" aria-hidden="true" /><div className="min-w-0"><p className="truncate font-medium">{document.title}</p><p className="max-w-[34rem] truncate text-xs text-muted-foreground">{document.fileName ?? document.rowguid}</p></div></div></td><td className="px-3 py-3 text-muted-foreground">{document.category ?? 'AMNKO HSE'}</td><td className="px-3 py-3 text-muted-foreground">{document.fileSize ?? 'غير متوفر'}</td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Badge variant={document.verified ? 'secondary' : 'destructive'}>{document.verified ? 'Verified' : 'Unverified'}</Badge><Badge variant={document.isPublic ? 'outline' : 'secondary'}>{document.isPublic ? 'عام' : 'محمي'}</Badge></div></td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" onClick={() => void handleFileAction(document, false)}><ExternalLink data-icon="inline-start" />معاينة</Button><Button type="button" size="sm" variant="ghost" onClick={() => void handleFileAction(document, true)}>تنزيل</Button></div>{fileErrors[document.pathname] ? <p role="alert" className="mt-2 max-w-xs text-xs text-destructive">{fileErrors[document.pathname]}</p> : null}</td></tr>)}</tbody></table></div>}
           </CardContent>
         </Card>
       </div>
