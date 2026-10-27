@@ -360,6 +360,13 @@ The following 306 reference positions have no confirmed LibraryId + Rowguid + SH
 - Preview SSO still prevents testing the deployed UI from an unauthenticated browser session; an authorized Preview session is required for end-to-end click testing.
 - Fixed a client-side preview bug: the UI no longer opens a potentially null `noopener` window before the fetch. It now fetches the authorized file response first and opens the resulting object URL through a safe anchor; errors are keyed by the stable pathname.
 - Local browser verification opened the first library document successfully. Direct local API verification returned HTTP 200 for both preview (`inline`) and download (`attachment`) with the expected filename and non-zero bytes.
+
+## Source export reconciliation
+
+- The local archive `.tmp/Aegis_XOM_Export.zip` contains `table_data\\dbo__tblLibrary.json` (657 rows), `table_data\\dbo__tblLibraryHierarchy.json` (1903 rows), and `table_data\\dbo__tblLibraryAccess.json` (32 rows).
+- The 80 previously missing current documents were matched by their numeric filename prefix to `tblLibrary.LibraryId`, with `Rowguid`, `LibraryParentId`, and current Blob pathname recorded in `config/amnko-library-order.json`.
+- Result: 80/80 restored, all with distinct source orders and parent relationships; the API now reports 348/348 current documents with a non-null reference order and 0 unresolved.
+- This is an evidence-based source-table reconstruction, not a UUID-only or fallback match. No folder relationship was inferred beyond `LibraryParentId`/`tblLibraryHierarchy`.
 - To resolve remaining cases: provide a complete original archive/export or import ledger containing each missing LibraryId with Rowguid or SHA256 and resulting document_id/blob_pathname. Extension variants require an authoritative current storage/export row proving object identity.
 
 ## Validation
