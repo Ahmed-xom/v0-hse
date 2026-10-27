@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 type LibraryDocument = {
   rowguid: string
@@ -40,6 +41,7 @@ export default function AmnkoLibraryPage() {
   const [error, setError] = useState('')
   const [fileErrors, setFileErrors] = useState<Record<string, string>>({})
   const [currentFolder, setCurrentFolder] = useState<string | null>(null)
+  const [selectedDocument, setSelectedDocument] = useState<LibraryDocument | null>(null)
 
   const handleFileAction = async (document: LibraryDocument, download: boolean) => {
     const url = `/api/amnko-attachments/file?pathname=${encodeURIComponent(document.pathname)}${download ? '&download=1' : ''}`
@@ -139,11 +141,25 @@ export default function AmnkoLibraryPage() {
                 {currentFolderName ? <><span className="text-muted-foreground">/</span><span>{currentFolderName}</span></> : null}
                 <span className="mr-auto text-muted-foreground">{filtered.length} مستند</span>
               </div>
-              {filtered.length === 0 ? <p className="py-10 text-center text-muted-foreground">لا توجد مستندات مطابقة.</p> : <div className="overflow-x-auto"><table className="w-full text-right text-sm"><thead><tr className="border-b text-muted-foreground"><th className="px-3 py-3 font-medium">اسم المستند</th><th className="px-3 py-3 font-medium">النوع</th><th className="px-3 py-3 font-medium">الحالة</th><th className="px-3 py-3 font-medium">تاريخ الإنشاء</th><th className="px-3 py-3 font-medium">الإجراء</th></tr></thead><tbody>{filtered.map((document) => <tr key={document.rowguid} className="border-b last:border-0"><td className="px-3 py-3"><div className="flex items-center gap-3"><FileText className="size-5 text-primary" aria-hidden="true" /><div className="min-w-0"><p className="font-medium">{document.title || 'اسم المستند غير متوفر'}</p><p className="max-w-[34rem] truncate text-xs text-muted-foreground">{document.fileType ?? document.fileName ?? 'نوع غير متوفر'}</p></div></div></td><td className="px-3 py-3 text-muted-foreground">{document.fileType ?? 'غير متوفر'}</td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Badge variant={document.verified ? 'secondary' : 'destructive'}>{document.verified ? 'موثق' : 'غير موثق'}</Badge><Badge variant={document.isPublic ? 'outline' : 'secondary'}>{document.isPublic ? 'عام' : 'محمي'}</Badge></div></td><td className="px-3 py-3 text-muted-foreground">{document.createdAt ? new Date(document.createdAt).toLocaleDateString('ar-SA') : 'غير متوفر'}</td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" onClick={() => void handleFileAction(document, false)}><ExternalLink data-icon="inline-start" />معاينة</Button><Button type="button" size="sm" variant="ghost" onClick={() => void handleFileAction(document, true)}>تنزيل</Button></div>{fileErrors[document.pathname] ? <p role="alert" className="mt-2 max-w-xs text-xs text-destructive">{fileErrors[document.pathname]}</p> : null}</td></tr>)}</tbody></table></div>}
+              {filtered.length === 0 ? <p className="py-10 text-center text-muted-foreground">لا توجد مستندات مطابقة.</p> : <div className="overflow-x-auto"><table className="w-full text-right text-sm"><thead><tr className="border-b text-muted-foreground"><th className="px-3 py-3 font-medium">اسم المستند</th><th className="px-3 py-3 font-medium">النوع</th><th className="px-3 py-3 font-medium">الحالة</th><th className="px-3 py-3 font-medium">تاريخ الإنشاء</th><th className="px-3 py-3 font-medium">الإجراء</th></tr></thead><tbody>{filtered.map((document) => <tr key={document.rowguid} className="border-b last:border-0"><td className="px-3 py-3"><div className="flex items-center gap-3"><FileText className="size-5 text-primary" aria-hidden="true" /><div className="min-w-0"><button type="button" className="text-right font-medium hover:text-primary hover:underline" onClick={() => setSelectedDocument(document)}>{document.title || 'اسم المستند غير متوفر'}</button><p className="max-w-[34rem] truncate text-xs text-muted-foreground">{document.fileType ?? document.fileName ?? 'نوع غير متوفر'}</p></div></div></td><td className="px-3 py-3 text-muted-foreground">{document.fileType ?? 'غير متوفر'}</td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Badge variant={document.verified ? 'secondary' : 'destructive'}>{document.verified ? 'موثق' : 'غير موثق'}</Badge><Badge variant={document.isPublic ? 'outline' : 'secondary'}>{document.isPublic ? 'عام' : 'محمي'}</Badge></div></td><td className="px-3 py-3 text-muted-foreground">{document.createdAt ? new Date(document.createdAt).toLocaleDateString('ar-SA') : 'غير متوفر'}</td><td className="px-3 py-3"><div className="flex flex-wrap gap-2"><Button type="button" size="sm" variant="outline" onClick={() => void handleFileAction(document, false)}><ExternalLink data-icon="inline-start" />معاينة</Button><Button type="button" size="sm" variant="ghost" onClick={() => void handleFileAction(document, true)}>تنزيل</Button></div>{fileErrors[document.pathname] ? <p role="alert" className="mt-2 max-w-xs text-xs text-destructive">{fileErrors[document.pathname]}</p> : null}</td></tr>)}</tbody></table></div>}
             </div>}
           </CardContent>
         </Card>
       </div>
+      <Dialog open={Boolean(selectedDocument)} onOpenChange={(open) => !open && setSelectedDocument(null)}>
+        <DialogContent dir="rtl">
+          <DialogHeader>
+            <DialogTitle>{selectedDocument?.title || 'اسم المستند غير متوفر'}</DialogTitle>
+            <DialogDescription>تفاصيل المستند من سجل AMNKO الأصلي</DialogDescription>
+          </DialogHeader>
+          {selectedDocument ? <dl className="grid gap-3 text-sm">
+            <div><dt className="font-medium text-muted-foreground">File</dt><dd className="break-words">{selectedDocument.fileName || selectedDocument.title || 'اسم الملف غير متوفر'}</dd></div>
+            <div><dt className="font-medium text-muted-foreground">النوع</dt><dd>{selectedDocument.fileType || 'غير متوفر'}</dd></div>
+            <div><dt className="font-medium text-muted-foreground">المجلد</dt><dd>{selectedDocument.parentName || 'المكتبة الرئيسية'}</dd></div>
+            <div><dt className="font-medium text-muted-foreground">الحالة</dt><dd>{selectedDocument.verified ? 'موثق' : 'غير موثق'}</dd></div>
+          </dl> : null}
+        </DialogContent>
+      </Dialog>
     </main>
   )
 }
