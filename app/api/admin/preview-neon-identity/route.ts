@@ -1,7 +1,6 @@
-import { auth } from "@/lib/auth"
 import { db } from "@/lib/db"
+import { requireAdmin } from "@/lib/admin-auth"
 import { sql } from "drizzle-orm"
-import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 
 const EXPECTED_BRANCH_ID = "br-cool-resonance-aprkwe4c"
@@ -11,8 +10,8 @@ export async function GET() {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
-  const session = await auth.api.getSession({ headers: await headers() })
-  if (!session?.user || session.user.role !== "ADMIN") {
+  const session = await requireAdmin()
+  if (!session) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 
