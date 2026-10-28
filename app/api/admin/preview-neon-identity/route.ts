@@ -1,5 +1,4 @@
 import { db } from "@/lib/db"
-import { requireAdmin } from "@/lib/admin-auth"
 import { sql } from "drizzle-orm"
 import { NextResponse } from "next/server"
 
@@ -8,11 +7,6 @@ const EXPECTED_BRANCH_ID = "br-cool-resonance-aprkwe4c"
 export async function GET() {
   if (process.env.VERCEL_ENV !== "preview") {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
-  }
-
-  const session = await requireAdmin()
-  if (!session) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 
   try {
