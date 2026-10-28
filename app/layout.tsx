@@ -7,6 +7,8 @@ import { LanguageProvider } from '@/lib/language-context'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { AmnkoIntro } from '@/components/amnko-intro'
+import { isPreviewDemoMode } from '@/lib/preview-demo'
+import { connection } from 'next/server'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -50,23 +52,28 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const demo = isPreviewDemoMode()
+  // Do not prerender live pages without their providers during a preview build.
+  if (demo) await connection()
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className="bg-background" suppressHydrationWarning>
       <body className="font-sans antialiased bg-background">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="hse-theme">
-          <AuthProvider>
-            <LanguageProvider>
-              {children}
-            </LanguageProvider>
-            <Toaster />
-            <AmnkoIntro />
-          </AuthProvider>
-          {process.env.NODE_ENV === 'production' && (
+        <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme={demo ? "light" : undefined} enableSystem={false} storageKey="hse-theme">
+          {demo ? children : (
+            <AuthProvider>
+              <LanguageProvider>
+                {children}
+              </LanguageProvider>
+              <Toaster />
+              <AmnkoIntro />
+            </AuthProvider>
+          )}
+          {!demo && process.env.NODE_ENV === 'production' && (
             <>
               <Analytics />
               <SpeedInsights />
