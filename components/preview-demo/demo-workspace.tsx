@@ -1,4 +1,5 @@
 import { LockKeyhole, ShieldCheck } from "lucide-react"
+import { DemoDocumentLibrary } from "@/components/preview-demo/demo-document-library"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -29,10 +30,6 @@ function DemoSectionTable({ section }: { section: DemoSection }) {
         </CardContent>
         <CardFooter className="flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">Read-only preview · Changes and downloads are unavailable.</p>
-          <div className="flex gap-2">
-            <Button disabled size="sm" variant="outline">Add record</Button>
-            <Button disabled size="sm" variant="outline">Edit / delete</Button>
-          </div>
         </CardFooter>
       </Card>
     </section>
@@ -104,7 +101,9 @@ export function DemoWorkspace({ view }: { view: DemoPagePath }) {
           {view === "/" && <section id="kpi-cards" aria-label="Performance Overview" className="grid scroll-mt-6 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {[["Demo incidents", "2"], ["Demo inspections", "2"], ["Demo courses", "2"], ["Demo journeys", "2"]].map(([label, value]) => <Card key={label}><CardHeader><CardDescription>{label}</CardDescription><CardTitle>{value}</CardTitle></CardHeader><CardContent><Badge variant="outline">DEMO DATA</Badge></CardContent></Card>)}
           </section>}
-          {sections.map(section => <DemoSectionTable key={section.id} section={section} />)}
+          {sections.map(section => section.id === "document-library"
+            ? <DemoDocumentLibrary key={section.id} linkedLibrary={view.startsWith("/admin/")} />
+            : <DemoSectionTable key={section.id} section={section} />)}
           {sections.length === 0 && <DemoRestrictedPage view={view} />}
           <footer className="border-t border-border py-5 text-sm text-muted-foreground">AMNKO HSE · Temporary Preview gallery · No database or storage access</footer>
         </main>

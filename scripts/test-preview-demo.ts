@@ -103,7 +103,24 @@ try {
   else process.env.PREVIEW_DEMO_MODE = previousFlag
 }
 
-for (const filename of ["lib/preview-demo.ts", "lib/preview-demo-data.ts", "components/preview-demo/demo-workspace.tsx", "app/preview-demo/page.tsx", "proxy.ts"]) {
+for (const view of ["/", "/admin/amnko-library", "/admin/amnko-attachments"]) {
+  const library = demoSectionsForPage(view).find(section => section.id === "document-library")
+  assert.ok(library)
+  assert.deepEqual(library.rows, [], "No approved demo files: never invent an inventory")
+  assert.match(library.description, /Document inventory unavailable in safe demo mode/)
+}
+const workspaceSource = readFileSync(path.join(root, "components/preview-demo/demo-workspace.tsx"), "utf8")
+assert.match(workspaceSource, /section.id === "document-library"[\s\S]*?<DemoDocumentLibrary/)
+assert.doesNotMatch(workspaceSource, />Add record<|>Edit \/ delete</)
+const librarySource = readFileSync(path.join(root, "components/preview-demo/demo-document-library.tsx"), "utf8")
+assert.match(librarySource, /data-inventory-status="unavailable"/)
+assert.match(librarySource, /Total documents: Unknown/)
+assert.match(librarySource, /Verified, authorized demo files shown: 0/)
+assert.match(librarySource, /Document inventory unavailable in safe demo mode/)
+assert.doesNotMatch(librarySource, /href=|onClick=|DEMO-DOC-|Sample safety handbook|Sample induction checklist/)
+assert.doesNotMatch(librarySource, /(?:blob_pathname|file_url|READ_WRITE_TOKEN|orderManifest)/)
+
+for (const filename of ["lib/preview-demo.ts", "lib/preview-demo-data.ts", ...filesIn(path.join(root, "components/preview-demo")).map(file => path.relative(root, file)), "app/preview-demo/page.tsx", "proxy.ts"]) {
   const source = readFileSync(path.join(root, filename), "utf8")
   assert.doesNotMatch(source, /from\s+["'][^"']*(?:app\/actions|lib\/db|auth-context|auth-client|lib\/auth["']|@vercel\/blob)/)
   assert.doesNotMatch(source, /\bfetch\s*\(|\buseSWR\s*\(|\buseEffect\s*\(/)
