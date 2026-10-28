@@ -28,14 +28,12 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 0,
   },
-  baseURL: process.env.NODE_ENV === "production"
-    ? "https://www.amnkoo.online"
-    : process.env.BETTER_AUTH_URL
+  baseURL: process.env.BETTER_AUTH_URL
     ? process.env.BETTER_AUTH_URL
-    : process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
         : `${process.env.V0_RUNTIME_URL || "http://localhost:3000"}`,
   trustedOrigins: [
     ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),

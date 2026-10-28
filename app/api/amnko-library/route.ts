@@ -44,15 +44,26 @@ export async function GET() {
     }))
     .sort((a, b) => (a.reference?.order ?? Number.MAX_SAFE_INTEGER) - (b.reference?.order ?? Number.MAX_SAFE_INTEGER) || (a.reference?.sourceId ?? a.fallbackKey).localeCompare(b.reference?.sourceId ?? b.fallbackKey))
 
+  const manifestBySourceId = new Map(orderManifest.items.map((item) => [String(item.sourceId), item]))
+  const folderMap = new Map<string, { id: string; name: string; parentId: string | null; order: number }>()
+  for (const { reference } of orderedRows) {
+    if (!reference?.parentSourceId || !reference.parentName) continue
+    if (!folderMap.has(reference.parentSourceId)) {
+      folderMap.set(reference.parentSourceId, { id: reference.parentSourceId, name: reference.parentName, parentId: null, order: reference.order })
+    }
+  }
+  const folders = [...folderMap.values()].sort((a, b) => a.order - b.order || a.id.localeCompare(b.id))
+
   return NextResponse.json({
     orderSource: 'config/amnko-library-order.json',
     referenceItemCount: orderManifest.items.length,
+    folders,
     documents: orderedRows.map(({ row, reference }) => ({
       rowguid: row.rowguid,
       documentId: row.document_id,
       pathname: row.blob_pathname,
-      title: row.title,
-      fileName: row.file_name,
+      title: reference ? (manifestBySourceId.get(reference.sourceId)?.sourceName ?? row.title) : row.title,
+      fileName: reference ? (() => { const sourceName = manifestBySourceId.get(reference.sourceId)?.sourceName; if (!sourceName) return row.file_name; const extension = basename(row.blob_pathname).split('.').pop(); return extension && !sourceName.toLowerCase().endsWith(`.${extension.toLowerCase()}`) ? `${sourceName}.${extension}` : sourceName })() : row.file_name,
       fileType: row.file_type,
       fileSize: row.file_size,
       category: row.category,

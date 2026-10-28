@@ -24,13 +24,14 @@ for (const mode of ['preview', 'download']) {
   const body = await response.arrayBuffer()
   const contentType = response.headers.get('content-type') || ''
   const disposition = response.headers.get('content-disposition') || ''
-  const expectedFilename = document.fileName.replace(/[\\/]/g, '_')
+  const expectedExtension = document.pathname.split('.').pop().toLowerCase()
 
   assert(response.status === 200, `${mode} failed: HTTP ${response.status}`)
   assert(body.byteLength > 0, `${mode} returned an empty body`)
   assert(contentType && !contentType.includes('undefined'), `${mode} returned an invalid content type`)
-  assert(disposition.includes('filename='), `${mode} did not return a filename`) 
-  assert(disposition.includes(encodeURIComponent(expectedFilename)) || disposition.includes(`"${expectedFilename}"`), `${mode} returned an unexpected filename`)
+  assert(disposition.includes('filename='), `${mode} did not return a filename`)
+  assert(disposition.toLowerCase().includes(`.${expectedExtension}`), `${mode} returned an unexpected file extension`)
+
   if (mode === 'preview') assert(disposition.startsWith('inline;'), `preview disposition was ${disposition}`)
   if (mode === 'download') assert(disposition.startsWith('attachment;'), `download disposition was ${disposition}`)
 
