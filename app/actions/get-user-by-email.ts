@@ -30,11 +30,17 @@ export async function getUserByEmail(email: string): Promise<DbUser | null> {
         COALESCE(e.status, 'Active')  AS status
       FROM neon_auth."user" u
       LEFT JOIN public.employee e ON lower(e.email) = lower(u.email)
-      WHERE lower(u.email) = ${email.toLowerCase()}
+      WHERE lower(u.email) = ${email.trim().toLowerCase()}
       LIMIT 1
     `)
 
     const rows = (result as any).rows ?? []
+    // Log only aggregate metadata; never log the submitted email or credentials.
+    console.info('[auth-user-lookup] completed', {
+      rowCount: rows.length,
+      deploymentEnvironment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'unknown',
+      deploymentIdPresent: Boolean(process.env.VERCEL_DEPLOYMENT_ID),
+    })
     if (rows.length === 0) return null
 
     const row = rows[0]
@@ -50,6 +56,14 @@ export async function getUserByEmail(email: string): Promise<DbUser | null> {
       status: row.status ?? 'Active',
     }
   } catch (error) {
-    return null
+    const err = error as { name?: string; code?: string }
+    console.error('[auth-user-lookup] query failed', {
+      errorName: err?.name ?? 'UnknownError',
+      errorCode: err?.code ?? 'unknown',
+      deploymentEnvironment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'unknown',
+      deploymentIdPresent: Boolean(process.env.VERCEL_DEPLOYMENT_ID),
+    })
+    // Do not misreport a database/query failure as an unknown user.
+    throw new Error('USER_LOOKUP_FAILED')
   }
 }
