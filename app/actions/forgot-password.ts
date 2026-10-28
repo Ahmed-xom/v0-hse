@@ -4,7 +4,7 @@ import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { Resend } from 'resend'
 import crypto from 'crypto'
-import bcrypt from 'bcryptjs'
+import { hashPassword } from '@better-auth/utils/password'
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -69,8 +69,8 @@ export async function requestPasswordReset(email: string) {
 
     const targetUser = existingUser
     const newPassword = generateSecurePassword()
-    // Hash password with bcrypt (same as Better Auth does internally, 10 rounds)
-    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    // Match Better Auth's native credential format.
+    const hashedPassword = await hashPassword(newPassword)
 
     console.log('[v0] Found user:', targetUser.email)
 

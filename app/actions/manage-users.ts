@@ -4,7 +4,7 @@ import { eq, sql } from 'drizzle-orm'
 import { db, pool } from '@/lib/db'
 import { user } from '@/lib/db/schema'
 import { revalidateTag } from 'next/cache'
-import bcrypt from 'bcryptjs'
+import { hashPassword } from '@better-auth/utils/password'
 import crypto from 'crypto'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
@@ -51,7 +51,7 @@ export async function createUser(input: {
 
     // Generate a temporary password
     const tempPassword = crypto.randomBytes(8).toString('hex')
-    const passwordHash = await bcrypt.hash(tempPassword, 10)
+    const passwordHash = await hashPassword(tempPassword)
     const newUserId = crypto.randomUUID()
     const now = new Date().toISOString()
 
@@ -340,7 +340,7 @@ export async function fixMissingAccounts(): Promise<{ fixed: number; error?: str
     let fixed = 0
     for (const row of orphans.rows) {
       const tempPw = crypto.randomBytes(8).toString('hex')
-      const hash = await bcrypt.hash(tempPw, 10)
+      const hash = await hashPassword(tempPw)
       const now = new Date().toISOString()
       await pool.query(
         `INSERT INTO neon_auth."account"

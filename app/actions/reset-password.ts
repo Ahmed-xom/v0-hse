@@ -6,7 +6,7 @@ import { desc, eq } from 'drizzle-orm'
 import { sql } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import crypto from 'crypto'
-import bcrypt from 'bcryptjs'
+import { hashPassword } from '@better-auth/utils/password'
 import { sendEmail } from '@/lib/send-email'
 
 // Generate a secure random password
@@ -57,9 +57,9 @@ export async function resetUserPassword(
 
     const targetUser = targetUserRows[0]
 
-    // Hash the new password (bcrypt, same as Better Auth)
+    // Match Better Auth's credential format for future sign-ins.
     const newPassword = customPassword || generateSecurePassword()
-    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    const hashedPassword = await hashPassword(newPassword)
     const isoNow = new Date().toISOString()
 
     // Update password in neon_auth.account; create the row if missing

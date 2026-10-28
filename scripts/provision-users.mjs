@@ -6,7 +6,7 @@
  */
 
 import { Pool } from 'pg'
-import bcrypt from 'bcryptjs'
+import { hashPassword } from '@better-auth/utils/password'
 import { randomUUID, getRandomValues } from 'crypto'
 import { Resend } from 'resend'
 
@@ -170,7 +170,7 @@ async function run () {
   // ── STEP 3: reset passwords + send emails for every user ─────────────────
   for (const u of allUsersRes.rows) {
     const password = generatePassword()
-    const hash = await bcrypt.hash(password, 10)
+    const hash = await hashPassword(password)
     const now = new Date().toISOString()
 
     // upsert account record

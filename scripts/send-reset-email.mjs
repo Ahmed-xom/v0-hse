@@ -1,5 +1,5 @@
 import { Resend } from '/vercel/share/v0-project/node_modules/resend/dist/index.mjs'
-import bcrypt from '/vercel/share/v0-project/node_modules/bcryptjs/umd/index.js'
+import { hashPassword, verifyPassword } from '@better-auth/utils/password'
 import crypto from 'crypto'
 import pg from 'pg'
 
@@ -21,7 +21,7 @@ console.log('RESEND_API_KEY :', process.env.RESEND_API_KEY?.slice(0, 12) + '...'
 console.log('Sending to     :', recipient)
 console.log('New password   :', newPassword)
 
-const hash = await bcrypt.hash(newPassword, 10)
+const hash = await hashPassword(newPassword)
 const now  = new Date().toISOString()
 
 // Find user
@@ -48,8 +48,8 @@ if (upd.rowCount === 0) {
   console.log('Account        : updated')
 }
 
-const ok = await bcrypt.compare(newPassword, hash)
-console.log('bcrypt verify  :', ok ? 'PASS' : 'FAIL')
+const ok = await verifyPassword(hash, newPassword)
+console.log('Better Auth verify:', ok ? 'PASS' : 'FAIL')
 
 // Build email HTML
 const html = `<!DOCTYPE html>
