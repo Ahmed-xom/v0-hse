@@ -76,15 +76,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Verify password against the hashed value stored in neon_auth.account
     const correlationId = typeof window !== "undefined" ? window.sessionStorage.getItem("password-reset-diagnostic-id") || undefined : undefined
-    const passwordValid = await verifyUserPassword(email, password, correlationId)
-    if (!passwordValid) {
-      return { success: false, error: "Invalid password. Please try again." }
+    const passwordResult = await verifyUserPassword(email, password, correlationId)
+    if (!passwordResult.ok) {
+      console.warn("[v0] Login password verification failed", {
+        diagnosticId: passwordResult.diagnosticId,
+        reason: passwordResult.reason,
+      })
+      return { success: false, error: "Invalid email or password. Please try again." }
     }
 
     // The server-protected APIs use Better Auth sessions, so establish the same
     // session before exposing the client-side user state.
     const authResult = await authClient.signIn.email({ email: foundUser.email, password })
     if (authResult.error) {
+      console.warn("[v0] Better Auth sign-in failed", {
+        diagnosticId: passwordResult.diagnosticId,
+        errorCode: authResult.error.code,
+        errorStatus: authResult.error.status,
+      })
+      return { success: false, error: "Unable to establish a secure session. Please try again." }
+    }
+
+    const sessionResult = await authClient.getSession()
+    if (sessionResult.error || !sessionResult.data?.user) {
+      console.warn("[v0] Better Auth session verification failed", {
+        diagnosticId: passwordResult.diagnosticId,
+        errorCode: sessionResult.error?.code,
+        errorStatus: sessionResult.error?.status,
+      })
       return { success: false, error: "Unable to establish a secure session. Please try again." }
     }
 

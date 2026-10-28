@@ -5,13 +5,16 @@ import { sql } from 'drizzle-orm'
 import { verifyPassword } from '@better-auth/utils/password'
 import { createAuthDiagnosticId, getAuthRuntimeContext } from '@/lib/auth/diagnostic'
 
-export async function verifyUserPassword(email: string, password: string, correlationId?: string): Promise<boolean> {
+export type PasswordVerificationResult =
+  | { ok: true; diagnosticId: string }
+  | { ok: false; reason: 'credential_not_found' | 'password_mismatch' | 'verification_error'; diagnosticId: string }
+
+export async function verifyUserPassword(email: string, password: string, correlationId?: string): Promise<PasswordVerificationResult> {
   const requestId = createAuthDiagnosticId()
   const diagnosticId = correlationId || requestId
   console.info('[auth] verification started', { requestId, diagnosticId, runtime: getAuthRuntimeContext() })
 
   try {
-    // Look up the hashed password from neon_auth.account for this user
     const result = await db.execute(sql`
       SELECT a.password, a."userId"
       FROM neon_auth."account" a
@@ -30,13 +33,11 @@ export async function verifyUserPassword(email: string, password: string, correl
         reason: 'credential_not_found',
         rowCount: rows.length,
       })
-      return false
+      return { ok: false, reason: 'credential_not_found', diagnosticId }
     }
 
-    // Better Auth 1.7.2 stores credential hashes using its scrypt verifier.
-    // Legacy data can contain duplicate rows for the same user/account; accept
-    // the password if any credential row verifies successfully.
-    const verified = await Promise.all(rows.map((row: { password: string }) => verifyPassword(row.password, password))).then((results) => results.some(Boolean))
+    const results = await Promise.all(rows.map((row: { password: string }) => verifyPassword(row.password, password)))
+    const verified = results.some(Boolean)
 
     if (!verified) {
       console.info('[auth] password verification denied', {
@@ -46,9 +47,10 @@ export async function verifyUserPassword(email: string, password: string, correl
         reason: 'password_mismatch',
         userId: rows[0].userId,
       })
+      return { ok: false, reason: 'password_mismatch', diagnosticId }
     }
 
-    return verified
+    return { ok: true, diagnosticId }
   } catch (error) {
     console.error('[auth] password verification error', {
       requestId,
@@ -57,6 +59,6 @@ export async function verifyUserPassword(email: string, password: string, correl
       reason: 'database_or_hash_error',
       errorType: error instanceof Error ? error.name : 'unknown',
     })
-    return false
+    return { ok: false, reason: 'verification_error', diagnosticId }
   }
 }
