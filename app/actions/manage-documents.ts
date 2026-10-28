@@ -91,56 +91,21 @@ export interface DocumentFolder {
   updated_at: string
 }
 
-export async function getDocumentFolders(userEmail: string, companyId: string): Promise<DocumentFolder[]> {
-  try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (!session?.user?.email || session.user.email.toLowerCase() !== userEmail.toLowerCase()) return []
-    const result = await pool.query('SELECT f.* FROM public.document_folder f JOIN public.company_membership m ON m.company_id=f.company_id AND m.user_id=$1 AND m.status=\'Active\' WHERE f.company_id=$2 ORDER BY f.parent_id NULLS FIRST, lower(f.name)', [session.user.id, companyId])
-    return result.rows
-  } catch (e: any) { console.error('[documents] get folders error:', e.message); return [] }
+export async function getDocumentFolders(_userEmail: string, _companyId: string): Promise<DocumentFolder[]> {
+  // Folder storage is unavailable until public.document_folder is provisioned.
+  return []
 }
 
-export async function createDocumentFolder(companyId: string, parentId: string | null, name: string, description?: string): Promise<{ success: boolean; folder?: DocumentFolder; error?: string }> {
-  try {
-    const actor = await requireLibraryManager(companyId)
-    const cleanName = cleanFolderName(name)
-    if (!cleanName) return { success: false, error: 'Folder name is required' }
-    if (cleanName.length > 120) return { success: false, error: 'Folder name is too long' }
-    if (parentId) {
-      const parent = await pool.query('SELECT 1 FROM public.document_folder WHERE id=$1 AND company_id=$2', [parentId, companyId])
-      if (parent.rowCount === 0) return { success: false, error: 'Parent folder not found' }
-    }
-    const id = `folder-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-    const result = await pool.query('INSERT INTO public.document_folder (id, company_id, parent_id, name, description, created_by) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *', [id, companyId, parentId || null, cleanName, description?.trim() || null, actor.id])
-    revalidatePath('/')
-    return { success: true, folder: result.rows[0] }
-  } catch (e: any) {
-    const duplicate = e?.code === '23505'
-    return { success: false, error: duplicate ? 'A folder with this name already exists here' : e.message }
-  }
+export async function createDocumentFolder(_companyId: string, _parentId: string | null, _name: string, _description?: string): Promise<{ success: boolean; folder?: DocumentFolder; error?: string }> {
+  return { success: false, error: 'Folders are unavailable until the document_folder table is provisioned.' }
 }
 
-export async function renameDocumentFolder(id: string, companyId: string, name: string): Promise<{ success: boolean; error?: string }> {
-  try {
-    await requireLibraryManager(companyId)
-    const cleanName = cleanFolderName(name)
-    if (!cleanName) return { success: false, error: 'Folder name is required' }
-    await pool.query('UPDATE public.document_folder SET name=$1, updated_at=NOW() WHERE id=$2 AND company_id=$3', [cleanName, id, companyId])
-    revalidatePath('/')
-    return { success: true }
-  } catch (e: any) { return { success: false, error: e?.code === '23505' ? 'A folder with this name already exists here' : e.message } }
+export async function renameDocumentFolder(_id: string, _companyId: string, _name: string): Promise<{ success: boolean; error?: string }> {
+  return { success: false, error: 'Folders are unavailable until the document_folder table is provisioned.' }
 }
 
-export async function deleteDocumentFolder(id: string, companyId: string): Promise<{ success: boolean; error?: string }> {
-  try {
-    await requireLibraryManager(companyId)
-    const children = await pool.query('SELECT 1 FROM public.document_folder WHERE parent_id=$1 LIMIT 1', [id])
-    const files = await pool.query('SELECT 1 FROM public.document WHERE folder_id=$1 LIMIT 1', [id])
-    if (children.rowCount || files.rowCount) return { success: false, error: 'Folder is not empty. Move its contents before deleting it.' }
-    await pool.query('DELETE FROM public.document_folder WHERE id=$1 AND company_id=$2', [id, companyId])
-    revalidatePath('/')
-    return { success: true }
-  } catch (e: any) { return { success: false, error: e.message } }
+export async function deleteDocumentFolder(_id: string, _companyId: string): Promise<{ success: boolean; error?: string }> {
+  return { success: false, error: 'Folders are unavailable until the document_folder table is provisioned.' }
 }
 
 // Returns documents visible to the given user email.
@@ -197,8 +162,8 @@ export async function createDocument(
         (doc_no, title, category, sub_category, description, version, status,
          file_url, file_name, file_size, file_type, blob_pathname, business_unit,
          owner, owner_email, uploaded_by, uploaded_by_email,
-         review_date, expiry_date, tags, is_public, allowed_emails, company_id, folder_id)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
+         review_date, expiry_date, tags, is_public, allowed_emails, company_id)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
       RETURNING id
     `, [
       doc_no, data.title, data.category,
@@ -209,7 +174,7 @@ export async function createDocument(
       data.business_unit ?? null, data.owner ?? null, data.owner_email ?? null,
       data.uploaded_by ?? null, data.uploaded_by_email ?? null,
       data.review_date ?? null, data.expiry_date ?? null,
-      data.tags ?? [], data.is_public ?? true, data.allowed_emails ?? [], data.company_id ?? null, data.folder_id ?? null,
+      data.tags ?? [], data.is_public ?? true, data.allowed_emails ?? [], data.company_id ?? null,
     ])
     revalidatePath('/')
     return { success: true, id: res.rows[0].id }
@@ -227,18 +192,14 @@ export async function updateDocument(
       const existing = await pool.query('SELECT company_id FROM public.document WHERE id=$1', [id])
       const companyId = data.company_id ?? existing.rows[0]?.company_id
       await requireLibraryManager(companyId)
-      if (data.folder_id) {
-        const folder = await pool.query('SELECT 1 FROM public.document_folder WHERE id=$1 AND company_id=$2', [data.folder_id, companyId])
-        if (folder.rowCount === 0) throw new Error('Destination folder is not authorized')
-      }
       await pool.query(`
   UPDATE public.document SET
         title=$1, category=$2, sub_category=$3, description=$4, version=$5, status=$6,
         file_url=$7, file_name=$8, file_size=$9, file_type=$10, blob_pathname=$11,
         business_unit=$12, owner=$13, owner_email=$14,
         review_date=$15, expiry_date=$16, tags=$17,
-        is_public=$18, allowed_emails=$19, folder_id=$20, updated_at=NOW()
-      WHERE id=$21
+        is_public=$18, allowed_emails=$19, updated_at=NOW()
+      WHERE id=$20
     `, [
       data.title, data.category,
       data.sub_category ?? null, data.description ?? null,
@@ -247,7 +208,7 @@ export async function updateDocument(
       data.file_type ?? null, data.blob_pathname ?? null,
       data.business_unit ?? null, data.owner ?? null, data.owner_email ?? null,
       data.review_date ?? null, data.expiry_date ?? null,
-      data.tags ?? [], data.is_public ?? true, data.allowed_emails ?? [], data.folder_id ?? null,
+      data.tags ?? [], data.is_public ?? true, data.allowed_emails ?? [],
       id,
     ])
     revalidatePath('/')
