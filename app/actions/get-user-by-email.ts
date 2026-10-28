@@ -1,6 +1,5 @@
 'use server'
 
-import { createHash, randomUUID } from 'node:crypto'
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 
@@ -17,16 +16,6 @@ export interface DbUser {
 }
 
 export async function getUserByEmail(email: string): Promise<DbUser | null> {
-  const correlationId = randomUUID()
-  const databaseHostFingerprint = (() => {
-    try {
-      const host = new URL(process.env.DATABASE_URL ?? '').hostname
-      return createHash('sha256').update(host).digest('hex').slice(0, 12)
-    } catch {
-      return 'unavailable'
-    }
-  })()
-
   try {
     const result = await db.execute(sql`
       SELECT
@@ -46,16 +35,6 @@ export async function getUserByEmail(email: string): Promise<DbUser | null> {
     `)
 
     const rows = (result as any).rows ?? []
-    if (process.env.VERCEL_ENV === 'preview') {
-      console.log('[v0] Preview lookup diagnostic', {
-        correlationId,
-        environment: process.env.VERCEL_ENV,
-        databaseHostFingerprint,
-        schema: 'neon_auth',
-        table: 'user joined public.employee',
-        lookupResultCount: rows.length,
-      })
-    }
     if (rows.length === 0) return null
 
     const row = rows[0]
@@ -71,17 +50,6 @@ export async function getUserByEmail(email: string): Promise<DbUser | null> {
       status: row.status ?? 'Active',
     }
   } catch (error) {
-    if (process.env.VERCEL_ENV === 'preview') {
-      console.error('[v0] Preview lookup diagnostic error', {
-        correlationId,
-        environment: process.env.VERCEL_ENV,
-        databaseHostFingerprint,
-        schema: 'neon_auth',
-        table: 'user joined public.employee',
-        errorName: error instanceof Error ? error.name : 'UnknownError',
-        errorCode: typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : 'UNKNOWN',
-      })
-    }
     return null
   }
 }
