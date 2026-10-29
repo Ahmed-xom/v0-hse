@@ -7,7 +7,6 @@ import { Resend } from 'resend'
 import nodemailer from 'nodemailer'
 import sgMail from '@sendgrid/mail'
 import bcrypt from 'bcryptjs'
-import { hashPassword } from '@better-auth/utils/password'
 import crypto from 'crypto'
 
 function generateOtp(): string {
@@ -196,7 +195,7 @@ export async function verifyOtpAndResetPassword(
       .where(eq(passwordResetOtp.id, record.id))
 
     // Hash and save new password
-    const hashedPassword = await hashPassword(newPassword)
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
     const now = new Date().toISOString()
 
     const updateResult = await db.execute(sql`

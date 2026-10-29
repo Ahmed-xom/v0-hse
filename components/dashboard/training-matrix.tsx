@@ -117,7 +117,7 @@ const resultConfig: Record<string, string> = {
 }
 
 export function TrainingMatrix() {
-  const { user } = useAuth()
+  const { user, activeCompanyId } = useAuth()
   const { toast } = useToast()
   const isAdmin = isAdminRole(user?.role ?? "", user?.email ?? "")
   const isReviewer = !isAdmin && isReviewerRole(user?.role ?? "")
@@ -194,22 +194,23 @@ export function TrainingMatrix() {
 
   // Load all users and master courses on mount
   useEffect(() => {
-    getUsers().then((res) => {
+    getUsers(undefined, activeCompanyId ?? undefined).then((res) => {
       if (res.success) {
         const sorted = [...(res.data as User[])].sort((a, b) => a.name.localeCompare(b.name))
         setAllUsers(sorted)
       }
     })
     getCourses().then((courses) => setMasterCourses(courses))
-  }, [])
+  }, [activeCompanyId])
 
   // Fetch records from DB
   useEffect(() => {
     async function fetchRecords() {
       setIsLoading(true)
       try {
-        const result = await getTrainingRecords()
-        if (result.success) setRecords(result.data as TrainingRecord[])
+        setRecords([])
+        const result = await getTrainingRecords(undefined, activeCompanyId ?? undefined)
+        setRecords(result.success ? result.data as TrainingRecord[] : [])
       } catch (err) {
         console.error("[v0] Failed to load training records:", err)
       } finally {
@@ -217,7 +218,7 @@ export function TrainingMatrix() {
       }
     }
     fetchRecords()
-  }, [refreshKey])
+  }, [refreshKey, activeCompanyId])
 
   // Stats
   const stats = useMemo(() => ({
@@ -258,7 +259,7 @@ export function TrainingMatrix() {
     }
     setIsSubmitting(true)
     try {
-      const result = await createTrainingRecord(form)
+      const result = await createTrainingRecord({ ...form, companyId: activeCompanyId ?? undefined })
       if (result.success) {
         toast({ title: "Record added", description: "Training record saved to database." })
         setIsAddOpen(false)
@@ -299,7 +300,7 @@ export function TrainingMatrix() {
     }
     setIsSubmitting(true)
     try {
-      const result = await updateTrainingRecord(editingRecord.id, editForm)
+      const result = await updateTrainingRecord(editingRecord.id, { ...editForm, companyId: activeCompanyId ?? undefined })
       if (result.success) {
         toast({ title: "Record updated", description: "Training record saved successfully." })
         setIsEditOpen(false)
@@ -330,7 +331,7 @@ export function TrainingMatrix() {
           result: "",
         }))
       )
-      const res = await bulkCreateMatrixRecords(rows)
+      const res = await bulkCreateMatrixRecords(rows, activeCompanyId ?? undefined)
       if (res.success) {
         toast({ title: "Matrix created", description: `${res.inserted} records added (${res.skipped} already existed).` })
         setIsMatrixOpen(false)
@@ -395,7 +396,7 @@ export function TrainingMatrix() {
             return
           }
 
-          const res = await importTrainingRecords(rows)
+          const res = await importTrainingRecords(rows, activeCompanyId ?? undefined)
           if (res.success) {
             toast({ title: "Import complete", description: `${res.inserted} records imported.` })
             setRefreshKey((k) => k + 1)
@@ -416,7 +417,7 @@ export function TrainingMatrix() {
 
   // ── Delete ──────────────────────────��─────────────────────
   const handleDelete = async (id: string) => {
-    const res = await deleteTrainingRecord(id)
+    const res = await deleteTrainingRecord(id, activeCompanyId ?? undefined)
     if (res.success) {
       setRefreshKey((k) => k + 1)
       toast({ title: "Record deleted" })

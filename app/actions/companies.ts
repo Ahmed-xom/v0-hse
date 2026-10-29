@@ -8,12 +8,8 @@ import { pool } from '@/lib/db'
 async function getCurrentUser(actorEmail?: string) {
   const session = await auth.api.getSession({ headers: await headers() })
   if (session?.user) {
-    const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
+    const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 AND COALESCE(banned, false) = false LIMIT 1', [session.user.id])
     if (result.rows[0]) return { id: session.user.id, role: result.rows[0].role as string }
-  }
-  if (actorEmail) {
-    const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE lower(email) = lower($1) LIMIT 1', [actorEmail])
-    if (result.rows[0]) return { id: result.rows[0].id as string, role: result.rows[0].role as string }
   }
   return null
 }
@@ -21,7 +17,7 @@ async function getCurrentUser(actorEmail?: string) {
 async function requireMaster(actorEmail?: string) {
   try {
     const currentUser = await getCurrentUser(actorEmail)
-    if (!currentUser || !['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(String(currentUser.role).trim().toUpperCase())) return null
+    if (!currentUser || !['ADMIN SYSTEM', 'ADMIN'].includes(String(currentUser.role).trim().toUpperCase())) return null
     return currentUser
   } catch {
     return null
@@ -30,13 +26,9 @@ async function requireMaster(actorEmail?: string) {
 
 export async function listCompanies(actorEmail?: string) {
   try {
-    const currentUser = await getCurrentUser()
-    const fallbackUser = !currentUser && actorEmail
-      ? (await pool.query('SELECT id, role FROM neon_auth.user WHERE lower(email) = lower($1) LIMIT 1', [actorEmail])).rows[0]
-      : null
-    const resolvedUser = currentUser ?? (fallbackUser ? { id: fallbackUser.id as string, role: fallbackUser.role as string } : null)
+    const resolvedUser = await getCurrentUser()
     if (!resolvedUser) return []
-  const isGlobalAdmin = ['ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(String(resolvedUser.role).trim().toUpperCase())
+    const isGlobalAdmin = ['ADMIN SYSTEM', 'ADMIN'].includes(String(resolvedUser.role).trim().toUpperCase())
   const result = isGlobalAdmin
       ? await pool.query('SELECT id, name, code, status FROM public.company WHERE status = $1 ORDER BY name', ['Active'])
       : await pool.query(`SELECT c.id, c.name, c.code, c.status FROM public.company c INNER JOIN public.company_membership m ON m.company_id = c.id WHERE m.user_id = $1 AND m.status = 'Active' AND c.status = 'Active' ORDER BY c.name`, [resolvedUser.id])

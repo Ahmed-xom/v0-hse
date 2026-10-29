@@ -27,7 +27,7 @@ interface AuthContextType {
   currentUser: AuthUser | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  logout: () => void
+  logout: () => Promise<void>
   updateProfile: (updates: Pick<AuthUser, "name" | "designation" | "businessUnit">) => void
   activeCompanyId: string | null
   setActiveCompanyId: (companyId: string) => void
@@ -38,122 +38,71 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 // Admin user
 const ADMIN_EMAIL = "xom-it-admin@xomoman.com"
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null)
+export function AuthProvider({ children, initialUser = null }: { children: ReactNode; initialUser?: AuthUser | null }) {
+  const [user, setUser] = useState<AuthUser | null>(initialUser)
   const [activeCompanyId, setActiveCompanyIdState] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const sessionState = authClient.useSession()
 
-  useEffect(() => {
-    // Check for existing session
-    const storedCompanyId = localStorage.getItem("hse_active_company")
-    if (storedCompanyId) setActiveCompanyIdState(storedCompanyId)
-    const storedUser = localStorage.getItem("hse_user")
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser))
-      } catch {
-        localStorage.removeItem("hse_user")
-      }
-    }
-    setIsLoading(false)
-  }, [])
+  useEffect(() => { setUser(initialUser) }, [initialUser])
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    // Look up user directly from the database (covers both static and dynamically added users)
-    const foundUser = await getUserByEmail(email)
+    const failure = { success: false, error: "Invalid credentials or unable to establish a secure session. Please try again." }
+    try {
+      const normalizedEmail = email.trim().toLowerCase()
+      const correlationId = typeof window !== "undefined" ? window.sessionStorage.getItem("password-reset-diagnostic-id") || undefined : undefined
+      const passwordValid = await verifyUserPassword(normalizedEmail, password, correlationId)
+      if (passwordValid !== true) return failure
 
-    if (!foundUser) {
-      return { success: false, error: "User not found. Please check your email address." }
+      const authResult = await authClient.signIn.email({ email: normalizedEmail, password })
+      if (authResult.error) return failure
+      const sessionResult = await authClient.getSession()
+      const sessionUser = sessionResult.data?.user
+      if (sessionResult.error || !sessionUser || sessionUser.email.toLowerCase() !== normalizedEmail || sessionResult.data?.session?.userId !== sessionUser.id) return failure
+
+      const foundUser = await getUserByEmail(normalizedEmail)
+      if (!foundUser || foundUser.id !== sessionUser.id || foundUser.banned || foundUser.status !== "Active") {
+        await authClient.signOut()
+        return failure
+      }
+      const [journeyAccess, journeyApprover] = await Promise.all([getUserJourneyAccess(foundUser.email), getUserJourneyApprover(foundUser.email)])
+      const authUser: AuthUser = {
+        id: foundUser.id,
+        payrollNumber: foundUser.payrollNo,
+        name: foundUser.name,
+        email: foundUser.email,
+        role: foundUser.role as UserRole,
+        designation: foundUser.designation,
+        businessUnit: foundUser.businessUnit,
+        status: foundUser.status,
+        journeyAccess,
+        journeyApprover,
+      }
+      setUser(authUser)
+      void createUpcomingMeetingReminders(authUser.email)
+      return { success: true }
+    } catch {
+      return failure
     }
-
-    if (foundUser.banned) {
-      return { success: false, error: "Your account has been suspended. Please contact your administrator." }
-    }
-
-    if (foundUser.status !== "Active") {
-      return { success: false, error: "Your account is inactive. Please contact your administrator." }
-    }
-
-    // Verify password against the hashed value stored in neon_auth.account
-    const correlationId = typeof window !== "undefined" ? window.sessionStorage.getItem("password-reset-diagnostic-id") || undefined : undefined
-    const passwordResult = await verifyUserPassword(email, password, correlationId)
-    if (!passwordResult.ok) {
-      console.warn("[v0] Login password verification failed", {
-        diagnosticId: passwordResult.diagnosticId,
-        reason: passwordResult.reason,
-      })
-      return { success: false, error: "Invalid email or password. Please try again." }
-    }
-
-    // The server-protected APIs use Better Auth sessions, so establish the same
-    // session before exposing the client-side user state.
-    const authResult = await authClient.signIn.email({ email: foundUser.email, password })
-    if (authResult.error) {
-      console.warn("[v0] Better Auth sign-in failed", {
-        diagnosticId: passwordResult.diagnosticId,
-        errorCode: authResult.error.code,
-        errorStatus: authResult.error.status,
-      })
-      return { success: false, error: "Unable to establish a secure session. Please try again." }
-    }
-
-    const sessionResult = await authClient.getSession()
-    if (sessionResult.error || !sessionResult.data?.user) {
-      console.warn("[v0] Better Auth session verification failed", {
-        diagnosticId: passwordResult.diagnosticId,
-        errorCode: sessionResult.error?.code,
-        errorStatus: sessionResult.error?.status,
-      })
-      return { success: false, error: "Unable to establish a secure session. Please try again." }
-    }
-
-    // These independent lookups run together so login is not delayed by serial requests.
-    const [journeyAccess, journeyApprover] = await Promise.all([
-      getUserJourneyAccess(email),
-      getUserJourneyApprover(email),
-    ])
-
-    const authUser: AuthUser = {
-      id: foundUser.id,
-      payrollNumber: foundUser.payrollNo,
-      name: foundUser.name,
-      email: foundUser.email,
-      role: foundUser.role as UserRole,
-      designation: foundUser.designation,
-      businessUnit: foundUser.businessUnit,
-      status: foundUser.status,
-      journeyAccess,
-      journeyApprover,
-    }
-
-    setUser(authUser)
-    localStorage.setItem("hse_user", JSON.stringify(authUser))
-    void createUpcomingMeetingReminders(authUser.email)
-
-    return { success: true }
   }
 
-  const logout = () => {
+  const logout = async () => {
+    const result = await authClient.signOut()
+    if (result.error) throw new Error("Unable to end the secure session. Please try again.")
     setUser(null)
-    localStorage.removeItem("hse_user")
+    setActiveCompanyIdState(null)
   }
 
   const updateProfile = (updates: Pick<AuthUser, "name" | "designation" | "businessUnit">) => {
-    setUser((current) => {
-      if (!current) return current
-      const updated = { ...current, ...updates }
-      localStorage.setItem("hse_user", JSON.stringify(updated))
-      return updated
-    })
+    setUser(current => current ? { ...current, ...updates } : null)
   }
 
   const setActiveCompanyId = (companyId: string) => {
     setActiveCompanyIdState(companyId)
-    localStorage.setItem("hse_active_company", companyId)
   }
 
+  const authenticatedUser = !sessionState.error && (sessionState.isPending || sessionState.data?.user.id === user?.id) ? user : null
   return (
-    <AuthContext.Provider value={{ user, currentUser: user, isLoading, login, logout, updateProfile, activeCompanyId, setActiveCompanyId }}>
+    <AuthContext.Provider value={{ user: authenticatedUser, currentUser: authenticatedUser, isLoading: sessionState.isPending, login, logout, updateProfile, activeCompanyId, setActiveCompanyId }}>
       {children}
     </AuthContext.Provider>
   )
@@ -161,9 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
+  if (context === undefined) throw new Error("useAuth must be used within an AuthProvider")
   return context
 }
 

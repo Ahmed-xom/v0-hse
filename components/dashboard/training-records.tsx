@@ -61,8 +61,13 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/lib/auth-context"
-import { courseCategories, type TrainingRecord, type TrainingStatus, type TrainingResult } from "@/lib/training-records-data"
-import { getTrainingRecords } from "@/app/actions/manage-training"
+import {
+  trainingRecords,
+  courseCategories,
+  type TrainingRecord,
+  type TrainingStatus,
+  type TrainingResult,
+} from "@/lib/training-records-data"
 import { courses } from "@/lib/courses-data"
 import { employees } from "@/lib/employees-data"
 
@@ -105,7 +110,7 @@ export function TrainingRecords() {
   const [isAddRecordOpen, setIsAddRecordOpen] = useState(false)
   const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState<TrainingRecord | null>(null)
-  const [recordsList, setRecordsList] = useState<TrainingRecord[]>([])
+  const [recordsList, setRecordsList] = useState<TrainingRecord[]>(trainingRecords)
   const [newRecord, setNewRecord] = useState({
     employeeId: "",
     employeeName: "",
@@ -125,22 +130,7 @@ export function TrainingRecords() {
 
   const isAdmin = currentUser?.role === "ADMIN SYSTEM" || currentUser?.role === "MASTER USER"
   useEffect(() => {
-    let cancelled = false
-    getTrainingRecords(undefined, activeCompanyId ?? undefined).then((result) => {
-      if (cancelled || !result.success) return
-      setRecordsList(result.data.map((record) => ({
-        id: record.id,
-        employeeName: record.employeeName,
-        employeeId: record.employeeCode,
-        courseName: record.courseName,
-        courseCode: "",
-        status: (record.status as TrainingStatus) || "APPEAR",
-        result: (record.result as TrainingResult) || "PENDING",
-        completedDate: record.completedDate ?? "",
-        expiryDate: record.expiryDate ?? undefined,
-      })))
-    })
-    return () => { cancelled = true }
+    setRecordsList(activeCompanyId === "company-xom-llc" ? trainingRecords : [])
   }, [activeCompanyId])
 
   const itemsPerPage = 15

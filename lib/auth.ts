@@ -3,6 +3,7 @@ import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { db } from "@/lib/db"
 import { account, session, user, verification } from "@/lib/db/schema"
+import { verifyCompatiblePassword } from "@/lib/auth/password-compatibility"
 
 const configuredSecret = process.env.BETTER_AUTH_SECRET
 const authSecret = configuredSecret && configuredSecret.length >= 32
@@ -12,28 +13,23 @@ const authSecret = configuredSecret && configuredSecret.length >= 32
     : undefined
 
 export const auth = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: "pg",
-    schema: {
-      user,
-      session,
-      account,
-      verification,
-    },
-  }),
+  database: drizzleAdapter(db, { provider: "pg", schema: { user, session, account, verification } }),
   emailAndPassword: {
     enabled: true,
+    password: { verify: verifyCompatiblePassword },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 0,
   },
-  baseURL: process.env.BETTER_AUTH_URL
+  baseURL: process.env.NODE_ENV === "production"
+    ? "https://www.amnkoo.online"
+    : process.env.BETTER_AUTH_URL
     ? process.env.BETTER_AUTH_URL
-    : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.VERCEL_PROJECT_PRODUCTION_URL
-        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
         : `${process.env.V0_RUNTIME_URL || "http://localhost:3000"}`,
   trustedOrigins: [
     ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
@@ -41,12 +37,12 @@ export const auth = betterAuth({
       ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`]
       : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
-    "https://sb-21xwitowwlwq.vercel.run",
-    "https://hse-dashboard-44gy9uuf-1.v0.build",
-    process.env.V0_RUNTIME_URL || "http://localhost:3000",
+    ...(process.env.NODE_ENV === "development"
+      ? ["http://localhost:3000", ...[process.env.V0_RUNTIME_URL, process.env.V0_DEV_APP_URL, process.env.V0_BUILD_URL, process.env.V0_SANDBOX_URL].filter((origin): origin is string => Boolean(origin))]
+      : []),
   ],
   secret: authSecret,
-  ...(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview"
+  ...(process.env.NODE_ENV === "development"
     ? {
         advanced: {
           defaultCookieAttributes: {
@@ -60,7 +56,7 @@ export const auth = betterAuth({
         advanced: {
           defaultCookieAttributes: {
             sameSite: "lax" as const,
-            secure: true,
+            secure: process.env.NODE_ENV === "production",
             httpOnly: true,
           },
         },

@@ -1,28 +1,22 @@
 'use server'
 
-import { and, desc, eq, ilike, or, sql } from 'drizzle-orm'
+import { and, eq, desc, ilike, or } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { training } from '@/lib/db/schema'
-import { getAuthorizedCompanyIds } from '@/lib/company-access'
+import { requireCompanyAccess } from '@/lib/company-access'
 import { revalidatePath } from 'next/cache'
 
-async function resolveCompany(companyId?: string) {
-  const access = await getAuthorizedCompanyIds()
-  const selected = companyId && access.companyIds.includes(companyId) ? companyId : access.companyIds[0]
-  if (!access.userId || !selected) throw new Error('No authorized company scope')
-  return selected
-}
+type TrainingInput = { employeeName: string; employeeCode: string; courseName: string; status: string; result?: string; completedDate?: string; expiryDate?: string }
 
 export async function getTrainingRecords(search?: string, companyId?: string) {
   try {
-    const scope = await resolveCompany(companyId)
-    const filters = [eq(training.companyId, scope)]
-    if (search) filters.push(or(ilike(training.employeeName, `%${search}%`), ilike(training.employeeCode, `%${search}%`), ilike(training.courseName, `%${search}%`)) as typeof filters[number])
-    const rows = await db.select().from(training).where(and(...filters)).orderBy(desc(training.createdAt))
+    const scope = await requireCompanyAccess(companyId)
+    const companyFilter = eq(training.companyId, scope.companyId)
+    const filter = search ? and(companyFilter, or(ilike(training.employeeName, `%${search}%`), ilike(training.employeeCode, `%${search}%`), ilike(training.courseName, `%${search}%`))) : companyFilter
+    const rows = await db.select().from(training).where(filter).orderBy(desc(training.createdAt))
     return { success: true, data: rows }
-  } catch (error) {
-    console.error('[v0] Error fetching training records:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unable to load training records', data: [] }
+  } catch {
+    return { success: false, error: 'Unable to access training records in this company', data: [] }
   }
 }
 
@@ -33,80 +27,75 @@ function computeExpiryDate(completedDate?: string): string | null {
   return d.toISOString().split('T')[0]
 }
 
-type TrainingInput = { employeeName: string; employeeCode: string; courseName: string; status: string; result?: string; completedDate?: string; expiryDate?: string; companyId?: string }
-
-export async function createTrainingRecord(data: TrainingInput) {
+export async function createTrainingRecord(data: TrainingInput & { companyId?: string }) {
   try {
-    const companyId = await resolveCompany(data.companyId)
+    const scope = await requireCompanyAccess(data.companyId)
     const id = `tr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-    await db.insert(training).values({ id, companyId, employeeName: data.employeeName, employeeCode: data.employeeCode, courseName: data.courseName, status: data.status, result: data.result || null, completedDate: data.completedDate || null, expiryDate: data.expiryDate || computeExpiryDate(data.completedDate) || null })
+    await db.insert(training).values({ id, companyId: scope.companyId, employeeName: data.employeeName, employeeCode: data.employeeCode, courseName: data.courseName, status: data.status, result: data.result || null, completedDate: data.completedDate || null, expiryDate: data.expiryDate || computeExpiryDate(data.completedDate) || null })
     revalidatePath('/')
     return { success: true }
-  } catch (error) {
-    console.error('[v0] Error creating training record:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unable to create training record' }
+  } catch {
+    return { success: false, error: 'Unable to create training record in this company' }
   }
 }
 
-export async function updateTrainingRecord(id: string, data: Omit<TrainingInput, 'companyId'> & { companyId?: string }) {
+export async function updateTrainingRecord(id: string, data: Partial<TrainingInput> & { companyId?: string }) {
   try {
-    const companyId = await resolveCompany(data.companyId)
+    const scope = await requireCompanyAccess(data.companyId)
     const expiryDate = data.expiryDate || computeExpiryDate(data.completedDate)
-    const result = await db.update(training).set({ ...data, companyId: undefined, completedDate: data.completedDate ?? undefined, expiryDate: expiryDate ?? undefined, updatedAt: new Date() }).where(and(eq(training.id, id), eq(training.companyId, companyId)))
-    if (!result.rowCount) return { success: false, error: 'Training record not found in this company' }
+    const rows = await db.update(training).set({ employeeName: data.employeeName, employeeCode: data.employeeCode, courseName: data.courseName, status: data.status, result: data.result, completedDate: data.completedDate ?? undefined, expiryDate: expiryDate ?? undefined, updatedAt: new Date() }).where(and(eq(training.id, id), eq(training.companyId, scope.companyId))).returning({ id: training.id })
+    if (!rows.length) return { success: false, error: 'Training record not found in this company' }
     revalidatePath('/')
     return { success: true }
-  } catch (error) {
-    console.error('[v0] Error updating training record:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unable to update training record' }
+  } catch {
+    return { success: false, error: 'Unable to update training record in this company' }
   }
 }
 
 export async function deleteTrainingRecord(id: string, companyId?: string) {
   try {
-    const scope = await resolveCompany(companyId)
-    const result = await db.delete(training).where(and(eq(training.id, id), eq(training.companyId, scope)))
-    if (!result.rowCount) return { success: false, error: 'Training record not found in this company' }
+    const scope = await requireCompanyAccess(companyId)
+    const rows = await db.delete(training).where(and(eq(training.id, id), eq(training.companyId, scope.companyId))).returning({ id: training.id })
+    if (!rows.length) return { success: false, error: 'Training record not found in this company' }
     revalidatePath('/')
     return { success: true }
-  } catch (error) {
-    console.error('[v0] Error deleting training record:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unable to delete training record' }
+  } catch {
+    return { success: false, error: 'Unable to delete training record in this company' }
   }
 }
 
-export async function bulkCreateMatrixRecords(records: Array<Omit<TrainingInput, 'companyId'>>, companyId?: string) {
+// Bulk create for the matrix builder — ON CONFLICT DO NOTHING
+export async function bulkCreateMatrixRecords(records: TrainingInput[], companyId?: string) {
   try {
-    const scope = await resolveCompany(companyId)
+    const scope = await requireCompanyAccess(companyId)
     let inserted = 0
     let skipped = 0
     for (const rec of records) {
       const id = `tr-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-      const result = await db.execute(sql`INSERT INTO public.training (id, company_id, employee_name, employee_code, course_name, status, result, created_at, updated_at) VALUES (${id}, ${scope}, ${rec.employeeName}, ${rec.employeeCode}, ${rec.courseName}, ${rec.status}, ${rec.result || null}, now(), now()) ON CONFLICT (employee_code, course_name, company_id) DO NOTHING`)
-      if (Number((result as { rowCount?: number }).rowCount) > 0) inserted++
+      const rows = await db.insert(training).values({ id, companyId: scope.companyId, employeeName: rec.employeeName, employeeCode: rec.employeeCode, courseName: rec.courseName, status: rec.status, result: rec.result || null }).onConflictDoNothing().returning({ id: training.id })
+      if (rows.length) inserted++
       else skipped++
     }
     revalidatePath('/')
     return { success: true, inserted, skipped }
-  } catch (error) {
-    console.error('[v0] Error bulk creating matrix records:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unable to bulk create records', inserted: 0, skipped: 0 }
+  } catch {
+    return { success: false, error: 'Unable to create training matrix in this company', inserted: 0, skipped: 0 }
   }
 }
 
-export async function importTrainingRecords(records: Array<Omit<TrainingInput, 'companyId'>>, companyId?: string) {
+// Bulk import: upsert by (employee_code + course_name)
+export async function importTrainingRecords(records: TrainingInput[], companyId?: string) {
   try {
-    const scope = await resolveCompany(companyId)
+    const scope = await requireCompanyAccess(companyId)
     let inserted = 0
     for (const rec of records) {
       const id = `tr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-      const result = await db.execute(sql`INSERT INTO public.training (id, company_id, employee_name, employee_code, course_name, status, result, completed_date, created_at, updated_at) VALUES (${id}, ${scope}, ${rec.employeeName}, ${rec.employeeCode}, ${rec.courseName}, ${rec.status}, ${rec.result || null}, ${rec.completedDate ? new Date(rec.completedDate) : null}, now(), now()) ON CONFLICT DO NOTHING`)
-      if (Number((result as { rowCount?: number }).rowCount) > 0) inserted++
+      const rows = await db.insert(training).values({ id, companyId: scope.companyId, employeeName: rec.employeeName, employeeCode: rec.employeeCode, courseName: rec.courseName, status: rec.status, result: rec.result || null, completedDate: rec.completedDate || null, expiryDate: rec.expiryDate || computeExpiryDate(rec.completedDate) || null }).onConflictDoNothing().returning({ id: training.id })
+      if (rows.length) inserted++
     }
     revalidatePath('/')
     return { success: true, inserted }
-  } catch (error) {
-    console.error('[v0] Error importing training records:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unable to import training records' }
+  } catch {
+    return { success: false, error: 'Unable to import training records in this company' }
   }
 }

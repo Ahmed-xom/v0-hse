@@ -227,6 +227,7 @@ export const observation = pgTable('observation', {
 // Training Matrix Table
 export const training = pgTable('training', {
   id: text('id').primaryKey(),
+  companyId: text('company_id').notNull(),
   employeeName: text('employee_name').notNull(),
   employeeCode: text('employee_code').notNull(),
   courseName: text('course_name').notNull(),
@@ -234,7 +235,6 @@ export const training = pgTable('training', {
   result: text('result'),
   completedDate: date('completed_date'),
   expiryDate: date('expiry_date'),
-  companyId: text('company_id').notNull(),
   createdAt: timestamp('created_at').notNull().default(sql`now()`),
   updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
 })

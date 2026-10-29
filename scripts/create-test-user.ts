@@ -1,12 +1,12 @@
 import { pool } from '../lib/db'
-import { hashPassword } from '@better-auth/utils/password'
+import { hash } from 'bcryptjs'
 import crypto from 'crypto'
 
 async function createTestUser() {
   try {
     // Hash a test password
     const testPassword = 'Test@12345'
-    const hashedPassword = await hashPassword(testPassword)
+    const hashedPassword = await hash(testPassword, 12)
     
     // Create test user
     const testUserId = crypto.randomUUID()

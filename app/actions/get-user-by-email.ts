@@ -2,6 +2,8 @@
 
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
 
 export interface DbUser {
   id: string
@@ -17,6 +19,8 @@ export interface DbUser {
 
 export async function getUserByEmail(email: string): Promise<DbUser | null> {
   try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!session?.user?.id || session.user.email.toLowerCase() !== email.trim().toLowerCase()) return null
     const result = await db.execute(sql`
       SELECT
         u.id::text            AS id,
@@ -28,19 +32,14 @@ export async function getUserByEmail(email: string): Promise<DbUser | null> {
         COALESCE(e.designation, '')   AS designation,
         COALESCE(e.business_unit, '') AS "businessUnit",
         COALESCE(e.status, 'Active')  AS status
-      FROM neon_auth."user" u
+      FROM neon_auth.user u
       LEFT JOIN public.employee e ON lower(e.email) = lower(u.email)
-      WHERE lower(u.email) = ${email.trim().toLowerCase()}
+        AND e.company_id IN (SELECT cm.company_id FROM public.company_membership cm JOIN public.company c ON c.id = cm.company_id WHERE cm.user_id = ${session.user.id} AND cm.status = 'Active' AND c.status = 'Active')
+      WHERE u.id = ${session.user.id} AND lower(u.email) = ${email.trim().toLowerCase()}
       LIMIT 1
     `)
 
     const rows = (result as any).rows ?? []
-    // Log only aggregate metadata; never log the submitted email or credentials.
-    console.info('[auth-user-lookup] completed', {
-      rowCount: rows.length,
-      deploymentEnvironment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'unknown',
-      deploymentIdPresent: Boolean(process.env.VERCEL_DEPLOYMENT_ID),
-    })
     if (rows.length === 0) return null
 
     const row = rows[0]
@@ -56,14 +55,7 @@ export async function getUserByEmail(email: string): Promise<DbUser | null> {
       status: row.status ?? 'Active',
     }
   } catch (error) {
-    const err = error as { name?: string; code?: string }
-    console.error('[auth-user-lookup] query failed', {
-      errorName: err?.name ?? 'UnknownError',
-      errorCode: err?.code ?? 'unknown',
-      deploymentEnvironment: process.env.VERCEL_ENV ?? process.env.NODE_ENV ?? 'unknown',
-      deploymentIdPresent: Boolean(process.env.VERCEL_DEPLOYMENT_ID),
-    })
-    // Do not misreport a database/query failure as an unknown user.
-    throw new Error('USER_LOOKUP_FAILED')
+    console.error('[getUserByEmail] error:', error)
+    return null
   }
 }

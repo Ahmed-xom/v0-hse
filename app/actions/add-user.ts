@@ -5,7 +5,7 @@ import { user } from '@/lib/db/schema'
 import crypto from 'crypto'
 import { Resend } from 'resend'
 import { sql } from 'drizzle-orm'
-import { hashPassword } from '@better-auth/utils/password'
+import bcrypt from 'bcryptjs'
 
 // Generate a secure random password
 function generateSecurePassword(length = 12): string {
@@ -44,9 +44,9 @@ export async function addNewUser(userData: {
       return { success: false, error: 'Name and email are required' }
     }
 
-    // Generate a credential in Better Auth's native format.
+    // Generate temporary password and hash it (Better Auth uses bcrypt)
     const temporaryPassword = generateSecurePassword()
-    const hashedPassword = await hashPassword(temporaryPassword)
+    const hashedPassword = await bcrypt.hash(temporaryPassword, 10)
 
     // Create user record in Neon
     const newUserId = crypto.randomUUID()

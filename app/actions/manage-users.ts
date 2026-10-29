@@ -4,22 +4,37 @@ import { eq, sql } from 'drizzle-orm'
 import { db, pool } from '@/lib/db'
 import { user } from '@/lib/db/schema'
 import { revalidateTag } from 'next/cache'
-import { hashPassword } from '@better-auth/utils/password'
+import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
+import { getAuthorizedCompanyIds, requireCompanyAccess } from '@/lib/company-access'
 
-async function requireCompanyAdmin(actorEmail?: string) {
+async function requireCompanyAdmin(actorEmail?: string, targetUserId?: string, companyId?: string) {
   const session = await auth.api.getSession({ headers: await headers() })
-  const result = session?.user
-    ? await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
-    : actorEmail
-      ? await pool.query('SELECT id, role FROM neon_auth.user WHERE lower(email) = lower($1) LIMIT 1', [actorEmail])
-      : { rows: [] }
+  if (!session?.user?.id) throw new Error('Unauthorized')
+  const result = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 AND COALESCE(banned, false) = false LIMIT 1', [session.user.id])
   if (!result.rows[0]) throw new Error('Unauthorized')
   const role = String(result.rows[0].role ?? '').trim().toUpperCase()
   if (!['MASTER USER', 'ADMIN SYSTEM', 'HSE ADMIN', 'ADMIN'].includes(role)) throw new Error('Only administrators can manage users')
+  if (!['ADMIN SYSTEM', 'ADMIN'].includes(role)) {
+    const access = await getAuthorizedCompanyIds()
+    if (!access.companyIds.length || (companyId && !access.companyIds.includes(companyId))) throw new Error('Forbidden company scope')
+    if (targetUserId) {
+      const target = await pool.query('SELECT role FROM neon_auth.user WHERE id = $1 LIMIT 1', [targetUserId])
+      if (['ADMIN SYSTEM', 'ADMIN'].includes(String(target.rows[0]?.role).trim().toUpperCase())) throw new Error('Forbidden administrator scope')
+      const memberships = await pool.query('SELECT company_id FROM public.company_membership WHERE user_id = $1 AND status = $2', [targetUserId, 'Active'])
+      if (!memberships.rows.length || memberships.rows.some((membership: { company_id: string }) => !access.companyIds.includes(membership.company_id))) throw new Error('Forbidden target company scope')
+    }
+  }
   return result.rows[0].id as string
+}
+
+async function requireGlobalAdmin() {
+  const id = await requireCompanyAdmin()
+  const result = await pool.query('SELECT role FROM neon_auth.user WHERE id = $1 LIMIT 1', [id])
+  if (!['ADMIN SYSTEM', 'ADMIN'].includes(String(result.rows[0]?.role).trim().toUpperCase())) throw new Error('Only system administrators can change global roles or repair accounts')
+  return id
 }
 
 export async function createUser(input: {
@@ -35,7 +50,8 @@ export async function createUser(input: {
   actorEmail?: string
 }) {
   try {
-    await requireCompanyAdmin(input.actorEmail)
+    await requireCompanyAdmin(input.actorEmail, undefined, input.companyId)
+    if (['ADMIN SYSTEM', 'ADMIN'].includes(input.role.trim().toUpperCase())) await requireGlobalAdmin()
     const { name, email, payrollNo, designation, role, businessUnit, approverName, approverEmail, companyId } = input
 
     if (!name || !email || !companyId) return { success: false, error: 'Name, email, and company are required' }
@@ -51,7 +67,7 @@ export async function createUser(input: {
 
     // Generate a temporary password
     const tempPassword = crypto.randomBytes(8).toString('hex')
-    const passwordHash = await hashPassword(tempPassword)
+    const passwordHash = await bcrypt.hash(tempPassword, 10)
     const newUserId = crypto.randomUUID()
     const now = new Date().toISOString()
 
@@ -76,10 +92,10 @@ export async function createUser(input: {
     // 3. Upsert into public.employee
     await pool.query(
       `INSERT INTO public.employee
-         (id, name, email, payroll_no, designation, business_unit, hse_role, status, created_at, updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,'Active',$8,$8)
+         (id, name, email, payroll_no, designation, business_unit, hse_role, status, created_at, updated_at, company_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,'Active',$8,$8,$9)
        ON CONFLICT (id) DO NOTHING`,
-      [newUserId, name, email, payrollNo || '', designation || '', businessUnit || '', role || 'USER', now]
+      [newUserId, name, email, payrollNo || '', designation || '', businessUnit || '', role || 'USER', now, companyId]
     )
 
     await pool.query(
@@ -102,17 +118,18 @@ export async function createUser(input: {
 export async function getUsers(actorEmail?: string, companyId?: string) {
   try {
     const session = await auth.api.getSession({ headers: await headers() })
-    const actor = session?.user
-      ? await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 LIMIT 1', [session.user.id])
-      : actorEmail
-        ? await pool.query('SELECT id, role FROM neon_auth.user WHERE lower(email) = lower($1) LIMIT 1', [actorEmail])
-        : { rows: [] }
+    if (!session?.user?.id) throw new Error('Unauthorized')
+    const actor = await pool.query('SELECT id, role FROM neon_auth.user WHERE id = $1 AND COALESCE(banned, false) = false LIMIT 1', [session.user.id])
     if (!actor.rows[0]) throw new Error('Unauthorized')
     const actorId = actor.rows[0].id as string
     const current = { rows: [actor.rows[0]] }
     
     const currentRole = String(current.rows[0]?.role ?? '').trim().toUpperCase()
-    const isGlobalAdmin = ['MASTER USER', 'ADMIN SYSTEM', 'ADMIN', 'HSE ADMIN'].includes(currentRole)
+    const isGlobalAdmin = ['ADMIN SYSTEM', 'ADMIN'].includes(currentRole)
+    if (!isGlobalAdmin && companyId) await requireCompanyAccess(companyId)
+    const employeeScope = isGlobalAdmin
+      ? sql`TRUE`
+      : sql`e.company_id IN (SELECT cm.company_id FROM public.company_membership cm JOIN public.company c ON c.id = cm.company_id WHERE cm.user_id = ${actorId} AND cm.status = 'Active' AND c.status = 'Active')`
     const companyScope = companyId
       ? sql`EXISTS (SELECT 1 FROM public.company_membership cm WHERE cm.user_id = u.id AND cm.status = 'Active' AND cm.company_id = ${companyId})`
       : isGlobalAdmin
@@ -136,7 +153,7 @@ export async function getUsers(actorEmail?: string, companyId?: string) {
         COALESCE(e.designation, '')   AS designation,
         COALESCE(e.business_unit, '') AS "businessUnit"
       FROM neon_auth.user u
-      LEFT JOIN public.employee e ON lower(e.email) = lower(u.email)
+      LEFT JOIN public.employee e ON lower(e.email) = lower(u.email) AND ${employeeScope}
       WHERE ${companyScope}
       ORDER BY u."createdAt" ASC
     `)
@@ -175,7 +192,7 @@ export async function updateUserStatus(
   status: 'Active' | 'Inactive'
 ) {
   try {
-    await requireCompanyAdmin()
+    await requireCompanyAdmin(undefined, userId)
     if (!userId) {
       return {
         success: false,
@@ -215,7 +232,7 @@ export async function updateUserRole(
   role: string
 ) {
   try {
-    await requireCompanyAdmin()
+    await requireGlobalAdmin()
     if (!userId || !role) {
       return { success: false, error: 'User ID and role are required' }
     }
@@ -254,7 +271,8 @@ export async function updateUser(
   }
 ) {
   try {
-    await requireCompanyAdmin()
+    await requireCompanyAdmin(undefined, userId)
+    if (input.role) await requireGlobalAdmin()
     if (!userId) return { success: false, error: 'User ID is required' }
 
     const now = new Date().toISOString()
@@ -305,6 +323,7 @@ export async function updateUser(
 // Creates a temporary password for them so they can log in and reset it.
 export async function fixMissingAccounts(): Promise<{ fixed: number; error?: string }> {
   try {
+    await requireGlobalAdmin()
     const orphans = await pool.query(`
       SELECT u.id, u.email
       FROM neon_auth."user" u
@@ -340,7 +359,7 @@ export async function fixMissingAccounts(): Promise<{ fixed: number; error?: str
     let fixed = 0
     for (const row of orphans.rows) {
       const tempPw = crypto.randomBytes(8).toString('hex')
-      const hash = await hashPassword(tempPw)
+      const hash = await bcrypt.hash(tempPw, 10)
       const now = new Date().toISOString()
       await pool.query(
         `INSERT INTO neon_auth."account"
@@ -361,7 +380,7 @@ export async function fixMissingAccounts(): Promise<{ fixed: number; error?: str
 
 export async function deleteUser(userId: string, actorEmail?: string) {
   try {
-    await requireCompanyAdmin(actorEmail)
+    await requireCompanyAdmin(actorEmail, userId)
     if (!userId) {
       return {
         success: false,
@@ -412,7 +431,7 @@ export async function updateUserApprover(
   approverEmail: string,
 ) {
   try {
-    await requireCompanyAdmin()
+    await requireCompanyAdmin(undefined, userId)
     if (!userId) return { success: false, error: 'User ID is required' }
     await db.execute(sql`
       UPDATE neon_auth.user
@@ -430,7 +449,7 @@ export async function updateUserApprover(
 
 export async function updateJourneyAccess(userId: string, grant: boolean, actorEmail?: string) {
   try {
-  await requireCompanyAdmin(actorEmail)
+  await requireCompanyAdmin(actorEmail, userId)
     if (!userId) return { success: false, error: 'User ID is required' }
     await db.execute(sql`
       UPDATE neon_auth."user"
@@ -447,7 +466,7 @@ export async function updateJourneyAccess(userId: string, grant: boolean, actorE
 
 export async function updateJourneyApprover(userId: string, grant: boolean, actorEmail?: string) {
   try {
-  await requireCompanyAdmin(actorEmail)
+  await requireCompanyAdmin(actorEmail, userId)
     if (!userId) return { success: false, error: 'User ID is required' }
     await db.execute(sql`
       UPDATE neon_auth."user"
@@ -464,10 +483,12 @@ export async function updateJourneyApprover(userId: string, grant: boolean, acto
 
 export async function getUserJourneyAccess(email: string): Promise<boolean> {
   try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!session?.user?.id || session.user.email.toLowerCase() !== email.trim().toLowerCase()) return false
     const rows = await db.execute(sql`
       SELECT COALESCE(journey_access, false) AS journey_access
       FROM neon_auth."user"
-      WHERE email = ${email}
+      WHERE id = ${session.user.id}
       LIMIT 1
     `)
     const row = rows.rows?.[0] as any
@@ -479,10 +500,12 @@ export async function getUserJourneyAccess(email: string): Promise<boolean> {
 
 export async function getUserJourneyApprover(email: string): Promise<boolean> {
   try {
+    const session = await auth.api.getSession({ headers: await headers() })
+    if (!session?.user?.id || session.user.email.toLowerCase() !== email.trim().toLowerCase()) return false
     const rows = await db.execute(sql`
       SELECT COALESCE(journey_approver, false) AS journey_approver
       FROM neon_auth."user"
-      WHERE email = ${email}
+      WHERE id = ${session.user.id}
       LIMIT 1
     `)
     return (rows.rows?.[0] as any)?.journey_approver === true
