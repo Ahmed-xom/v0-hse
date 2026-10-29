@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { randomBytes, createHash, createHmac, randomUUID } from "node:crypto"
 import { db } from "@/lib/db"
 import { sql } from "drizzle-orm"
-import { sendEmail } from "@/lib/send-email"
+import { getEmailConfiguration, sendEmail } from "@/lib/send-email"
 
 const genericMessage = "If an account with that email exists, a password reset link has been sent."
 const expirationMs = 60 * 60 * 1000
@@ -23,6 +23,7 @@ function signToken(userId: string, expiresAt: number, token: string) {
 }
 
 export async function POST(request: NextRequest) {
+  const requestId = randomUUID()
   try {
     const body = await request.json().catch(() => ({}))
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : ""
@@ -32,26 +33,40 @@ export async function POST(request: NextRequest) {
 
     const userResult = await db.execute(sql`SELECT id, email, name FROM neon_auth."user" WHERE lower(email) = ${email} LIMIT 1`)
     const user = (userResult as unknown as { rows?: Array<{ id: string; email: string; name: string }> }).rows?.[0]
-    if (!user) return NextResponse.json({ success: true, message: genericMessage })
+    if (!user) {
+      console.info("[password-reset] request skipped", { requestId, reason: "user_not_found" })
+      return NextResponse.json({ success: true, message: genericMessage })
+    }
 
     const recentResult = await db.execute(sql`SELECT count(*)::int AS count FROM public.password_reset_token WHERE user_id = ${user.id} AND created_at > now() - make_interval(mins => ${resetRequestWindowMinutes})`)
     const recentCount = Number((recentResult as unknown as { rows?: Array<{ count: number }> }).rows?.[0]?.count || 0)
-    if (recentCount >= resetRequestLimit) return NextResponse.json({ success: true, message: genericMessage })
+    if (recentCount >= resetRequestLimit) {
+      console.info("[password-reset] request skipped", { requestId, reason: "rate_limited", limit: resetRequestLimit, windowMinutes: resetRequestWindowMinutes })
+      return NextResponse.json({ success: true, message: genericMessage })
+    }
+
+    if (getEmailConfiguration().missing) {
+      console.error("[password-reset] request failed", { requestId, reason: "smtp_not_configured" })
+      return NextResponse.json({ error: "Unable to send password reset email. Please try again later." }, { status: 503 })
+    }
 
     const expiresAt = Date.now() + expirationMs
     const rawToken = randomBytes(32).toString("base64url")
     const signedToken = `${rawToken}.${signToken(user.id, expiresAt, rawToken)}`
-    await db.execute(sql`INSERT INTO public.password_reset_token (id, user_id, token_hash, expires_at) VALUES (${randomUUID()}, ${user.id}, ${hashToken(rawToken)}, to_timestamp(${expiresAt} / 1000.0))`)
-
     const origin = process.env.NODE_ENV === "production" ? "https://www.amnkoo.online" : (process.env.BETTER_AUTH_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || process.env.V0_RUNTIME_URL || "http://localhost:3000").replace(/\/$/, "")
     const resetLink = `${origin.replace(/\/$/, "")}/reset-password?token=${encodeURIComponent(signedToken)}`
     const safeName = user.name.replace(/[<>]/g, "") || "there"
     const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:24px;color:#1f2937"><h1 style="color:#059669">AMNKO HSE</h1><p>Hello ${safeName},</p><p>We received a request to reset your password.</p><p><a href="${resetLink}" style="display:inline-block;background:#059669;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none">Reset Password</a></p><p>This link expires in one hour and can only be used once.</p><p>If you did not request this, you can safely ignore this email.</p></div>`
-    const sent = await sendEmail({ to: user.email, subject: "Reset Your AMNKO HSE Password", html })
-    if (!sent.sent) return NextResponse.json({ error: "Unable to send password reset email. Please try again later." }, { status: 503 })
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`INSERT INTO public.password_reset_token (id, user_id, token_hash, expires_at) VALUES (${randomUUID()}, ${user.id}, ${hashToken(rawToken)}, to_timestamp(${expiresAt} / 1000.0))`)
+      const sent = await sendEmail({ to: user.email, subject: "Reset Your AMNKO HSE Password", html })
+      if (!sent.sent) throw new Error("smtp_delivery_failed")
+    })
+    console.info("[password-reset] message accepted", { requestId })
     return NextResponse.json({ success: true, message: genericMessage })
   } catch (error) {
-    console.error("[password-reset] request failed", { error: error instanceof Error ? error.message : "unknown" })
-    return NextResponse.json({ error: "Unable to send password reset email. Please try again later." }, { status: 500 })
+    const deliveryFailed = error instanceof Error && error.message === "smtp_delivery_failed"
+    console.error("[password-reset] request failed", { requestId, reason: deliveryFailed ? "smtp_delivery_failed" : "database_or_request_error" })
+    return NextResponse.json({ error: "Unable to send password reset email. Please try again later." }, { status: deliveryFailed ? 503 : 500 })
   }
 }

@@ -4,6 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { db } from "@/lib/db"
 import { account, session, user, verification } from "@/lib/db/schema"
 import { verifyCompatiblePassword } from "@/lib/auth/password-compatibility"
+import { withLegacyCredentialIssuer } from "@/lib/auth/legacy-credential-adapter"
 
 const configuredSecret = process.env.BETTER_AUTH_SECRET
 const authSecret = configuredSecret && configuredSecret.length >= 32
@@ -13,7 +14,7 @@ const authSecret = configuredSecret && configuredSecret.length >= 32
     : undefined
 
 export const auth = betterAuth({
-  database: drizzleAdapter(db, { provider: "pg", schema: { user, session, account, verification } }),
+  database: (options: Parameters<ReturnType<typeof drizzleAdapter>>[0]) => withLegacyCredentialIssuer(drizzleAdapter(db, { provider: "pg", schema: { user, session, account, verification } })(options)),
   emailAndPassword: {
     enabled: true,
     password: { verify: verifyCompatiblePassword },
@@ -45,6 +46,7 @@ export const auth = betterAuth({
   ...(process.env.NODE_ENV === "development"
     ? {
         advanced: {
+          database: { generateId: "uuid" },
           defaultCookieAttributes: {
             sameSite: "none" as const,
             secure: true,
@@ -54,6 +56,7 @@ export const auth = betterAuth({
       }
     : {
         advanced: {
+          database: { generateId: "uuid" },
           defaultCookieAttributes: {
             sameSite: "lax" as const,
             secure: process.env.NODE_ENV === "production",
