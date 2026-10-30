@@ -3,7 +3,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react"
 import { authClient } from "@/lib/auth-client"
 import { getUserJourneyAccess, getUserJourneyApprover } from "@/app/actions/manage-users"
-import { verifyUserPassword } from "@/app/actions/verify-password"
 import { getUserByEmail } from "@/app/actions/get-user-by-email"
 import { createUpcomingMeetingReminders } from "@/app/actions/manage-meetings"
 
@@ -49,10 +48,6 @@ export function AuthProvider({ children, initialUser = null }: { children: React
     const failure = { success: false, error: "Invalid credentials or unable to establish a secure session. Please try again." }
     try {
       const normalizedEmail = email.trim().toLowerCase()
-      const correlationId = typeof window !== "undefined" ? window.sessionStorage.getItem("password-reset-diagnostic-id") || undefined : undefined
-      const passwordValid = await verifyUserPassword(normalizedEmail, password, correlationId)
-      if (passwordValid !== true) return failure
-
       const authResult = await authClient.signIn.email({ email: normalizedEmail, password })
       if (authResult.error) return failure
       const sessionResult = await authClient.getSession()

@@ -57,7 +57,7 @@ export async function resetUserPassword(
 
     const targetUser = targetUserRows[0]
 
-    // Hash the new password (bcrypt, same as Better Auth)
+    // Legacy bcrypt is supported by the shared sign-in verifier.
     const newPassword = customPassword || generateSecurePassword()
     const hashedPassword = await bcrypt.hash(newPassword, 10)
     const isoNow = new Date().toISOString()
@@ -66,7 +66,7 @@ export async function resetUserPassword(
     const updateResult = await db.execute(sql`
       UPDATE neon_auth."account"
       SET password = ${hashedPassword}, "updatedAt" = ${isoNow}
-      WHERE "userId" = ${targetUser.id}
+      WHERE "userId" = ${targetUser.id} AND "providerId" = 'credential'
       RETURNING id
     `)
     const updatedRows = (updateResult as any).rows || []
@@ -77,7 +77,7 @@ export async function resetUserPassword(
           (id, "accountId", "providerId", "userId", password, "createdAt", "updatedAt")
         VALUES (
           ${crypto.randomUUID()},
-          ${targetUser.email},
+          ${targetUser.id},
           'credential',
           ${targetUser.id},
           ${hashedPassword},
@@ -163,10 +163,10 @@ export async function resetUserPassword(
       emailError: emailErrorMsg,
     }
   } catch (error) {
-    console.error('[reset-password] Unexpected error:', error)
+    console.error('[reset-password] request failed', { errorType: error instanceof Error ? error.name : 'unknown' })
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to reset password',
+      error: 'Failed to reset password',
     }
   }
 }

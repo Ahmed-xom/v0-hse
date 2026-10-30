@@ -3,6 +3,7 @@
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { verifyCompatiblePassword } from '@/lib/auth/password-compatibility'
+import { selectCredentialAccount } from '@/lib/auth/legacy-credential-adapter'
 import { createAuthDiagnosticId, getAuthRuntimeContext } from '@/lib/auth/diagnostic'
 
 export async function verifyUserPassword(email: string, password: string, correlationId?: string): Promise<boolean> {
@@ -11,18 +12,21 @@ export async function verifyUserPassword(email: string, password: string, correl
   console.info('[auth] verification started', { requestId, diagnosticId, runtime: getAuthRuntimeContext() })
 
   try {
-    // Look up the hashed password from neon_auth.account for this user
     const result = await db.execute(sql`
-      SELECT a.password, a."userId"
+      SELECT a.id, a.password, a."userId", a."accountId", a."providerId", a."updatedAt", u.email
       FROM neon_auth."account" a
       JOIN neon_auth."user" u ON u.id = a."userId"
-      WHERE lower(u.email) = ${email.toLowerCase()}
+      WHERE lower(u.email) = ${email.trim().toLowerCase()}
         AND a."providerId" = 'credential'
     `)
 
-    const rows = (result as any).rows ?? []
+    const rows = (result as unknown as { rows?: Record<string, unknown>[] }).rows ?? []
+    const identity = rows[0]
+    const selected = identity && rows.every((row) => row.userId === identity.userId)
+      ? selectCredentialAccount({ id: identity.userId, email: identity.email }, rows)
+      : null
 
-    if (rows.length === 0 || rows.some((row: { password?: string }) => !row.password)) {
+    if (!selected || typeof selected.password !== 'string' || !selected.password) {
       console.info('[auth] password verification denied', {
         requestId,
         diagnosticId,
@@ -33,10 +37,7 @@ export async function verifyUserPassword(email: string, password: string, correl
       return false
     }
 
-    // Better Auth 1.7.2 stores credential hashes using its scrypt verifier.
-    // Legacy data can contain duplicate rows for the same user/account; accept
-    // the password if any credential row verifies successfully.
-    const verified = await Promise.all(rows.map((row: { password: string }) => verifyCompatiblePassword({ hash: row.password, password }))).then((results) => results.some(Boolean))
+    const verified = await verifyCompatiblePassword({ hash: selected.password, password })
 
     if (!verified) {
       console.info('[auth] password verification denied', {
@@ -44,7 +45,6 @@ export async function verifyUserPassword(email: string, password: string, correl
         diagnosticId,
         runtime: getAuthRuntimeContext(),
         reason: 'password_mismatch',
-        userId: rows[0].userId,
       })
     }
 

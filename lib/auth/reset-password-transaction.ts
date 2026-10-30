@@ -1,4 +1,5 @@
 import { sql, type SQLWrapper } from "drizzle-orm"
+import { verifyCompatiblePassword } from "./password-compatibility"
 
 export type ResetTransaction = {
   execute: (query: string | SQLWrapper) => PromiseLike<unknown>
@@ -21,6 +22,7 @@ export async function resetPasswordInTransaction(
     rawToken: string
     signature: string
     passwordHash: string
+    password: string
     validSignature: (userId: string, expiresAt: string | Date, rawToken: string, signature: string) => boolean
   },
 ) {
@@ -30,9 +32,15 @@ export async function resetPasswordInTransaction(
     throw new Error("invalid reset token")
   }
 
-  const updated = (await tx.execute(sql`UPDATE neon_auth."account" SET password = ${options.passwordHash}, "updatedAt" = now() WHERE "userId" = ${reset.user_id} AND "providerId" = 'credential'`)) as QueryResult
+  const updated = (await tx.execute(sql`UPDATE neon_auth."account" SET password = ${options.passwordHash}, "updatedAt" = now() WHERE "userId" = ${reset.user_id} AND "providerId" = 'credential' RETURNING password`)) as { rowCount?: number; rows?: Array<{ password: string | null }> }
   const updatedCount = Number(updated.rowCount || 0)
   if (updatedCount < 1) throw new Error("credential account not found")
+  if (updated.rows?.length !== updatedCount || updated.rows.some((row) => row.password !== options.passwordHash)) {
+    throw new Error("credential verification failed")
+  }
+  if (!(await verifyCompatiblePassword({ hash: options.passwordHash, password: options.password }))) {
+    throw new Error("credential verification failed")
+  }
 
   const consumed = (await tx.execute(sql`UPDATE public.password_reset_token SET used_at = now() WHERE token_hash = ${options.tokenHash} AND used_at IS NULL AND expires_at > now()`)) as QueryResult
   const consumedCount = Number(consumed.rowCount || 0)
