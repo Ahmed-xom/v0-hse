@@ -1,47 +1,96 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useRef } from "react";
+import useSWR from "swr";
+import { LibraryUploadDialog } from "@/components/dashboard/library-upload-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { BLOB_MAX_FILE_BYTES, libraryErrorMessage } from "@/lib/library-policy";
+import { uploadLibraryFile } from "@/lib/library-upload-client";
 import {
-  Plus, Search, RefreshCw, Eye, Edit, Trash2, FileText, FilePlus,
-  Download, ExternalLink, ChevronDown, FolderOpen, Upload,
-  Lock, Globe, Users, Shield, X, FileUp, CheckCircle2, AlertTriangle,
+  Plus,
+  Search,
+  RefreshCw,
+  Eye,
+  Edit,
+  Trash2,
+  FileText,
+  FilePlus,
+  Download,
+  ExternalLink,
+  ChevronDown,
+  FolderOpen,
+  Upload,
+  Lock,
+  Globe,
+  Users,
+  Shield,
+  X,
+  FileUp,
+  CheckCircle2,
+  AlertTriangle,
   CalendarClock,
-  FileSpreadsheet, FileCode, File,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Progress } from "@/components/ui/progress"
+  FileSpreadsheet,
+  FileCode,
+  File,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog"
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table"
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { format, parseISO } from "date-fns"
-import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/lib/auth-context"
-import { useLanguage } from "@/lib/language-context"
-import { isAdminRole, isReviewerRole } from "@/lib/auth-roles"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { format, parseISO } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/auth-context";
+import { useLanguage } from "@/lib/language-context";
 import {
-  getDocuments, createDocument, updateDocument, deleteDocument,
-  updateDocumentAccess, getAllUserEmails, uploadFileAction,
-  getDocumentFolders, createDocumentFolder, renameDocumentFolder, deleteDocumentFolder,
-  type HSEDocument, type DocumentFolder,
-} from "@/app/actions/manage-documents"
-import { DOCUMENT_CATEGORIES } from "@/lib/hse-constants"
+  getDocuments,
+  createDocument,
+  updateDocument,
+  deleteDocument,
+  updateDocumentAccess,
+  getAllUserEmails,
+  getLibraryPermissions,
+  getDocumentFolders,
+  createDocumentFolder,
+  renameDocumentFolder,
+  deleteDocumentFolder,
+  type HSEDocument,
+  type DocumentFolder,
+} from "@/app/actions/manage-documents";
+import { DOCUMENT_CATEGORIES } from "@/lib/hse-constants";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -50,380 +99,897 @@ const STATUS_STYLES: Record<string, string> = {
   "Under Review": "bg-blue-500/10 text-blue-500 border-blue-500/20",
   Superseded: "bg-amber-500/10 text-amber-600 border-amber-500/20",
   Archived: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
-}
+};
 
 function fileIcon(name: string | null, type: string | null) {
-  const ext = (name ?? '').split('.').pop()?.toLowerCase() ?? ''
-  const t = (type ?? '').toLowerCase()
-  if (['pdf'].includes(ext) || t.includes('pdf'))
-    return <FileText className="h-5 w-5 text-red-500" />
-  if (['xls', 'xlsx', 'csv'].includes(ext) || t.includes('sheet') || t.includes('excel'))
-    return <FileText className="h-5 w-5 text-emerald-500" />
-  if (['doc', 'docx'].includes(ext) || t.includes('word'))
-    return <FileText className="h-5 w-5 text-blue-500" />
-  if (['ppt', 'pptx'].includes(ext))
-    return <FileText className="h-5 w-5 text-orange-500" />
-  return <FileText className="h-5 w-5 text-muted-foreground" />
+  const ext = (name ?? "").split(".").pop()?.toLowerCase() ?? "";
+  const t = (type ?? "").toLowerCase();
+  if (["pdf"].includes(ext) || t.includes("pdf"))
+    return <FileText className="h-5 w-5 text-red-500" />;
+  if (
+    ["xls", "xlsx", "csv"].includes(ext) ||
+    t.includes("sheet") ||
+    t.includes("excel")
+  )
+    return <FileText className="h-5 w-5 text-emerald-500" />;
+  if (["doc", "docx"].includes(ext) || t.includes("word"))
+    return <FileText className="h-5 w-5 text-blue-500" />;
+  if (["ppt", "pptx"].includes(ext))
+    return <FileText className="h-5 w-5 text-orange-500" />;
+  return <FileText className="h-5 w-5 text-muted-foreground" />;
 }
 
 function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / 1048576).toFixed(1)} MB`
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1048576).toFixed(1)} MB`;
 }
 
 function fmtDate(d: string | null) {
-  if (!d) return '—'
-  try { return format(parseISO(d), 'dd MMM yyyy') } catch { return d }
+  if (!d) return "—";
+  try {
+    return format(parseISO(d), "dd MMM yyyy");
+  } catch {
+    return d;
+  }
 }
 
 function expiryState(expiryDate: string | null) {
-  if (!expiryDate) return { label: 'No expiry date', className: 'text-muted-foreground', icon: CalendarClock }
-  const expiry = parseISO(expiryDate)
-  const days = Math.ceil((expiry.getTime() - Date.now()) / 86400000)
-  if (days < 0) return { label: 'Expired', className: 'text-destructive', icon: AlertTriangle }
-  if (days <= 30) return { label: `Expires in ${days}d`, className: 'text-amber-600', icon: CalendarClock }
-  return { label: `Valid until ${fmtDate(expiryDate)}`, className: 'text-emerald-600', icon: CheckCircle2 }
+  if (!expiryDate)
+    return {
+      label: "No expiry date",
+      className: "text-muted-foreground",
+      icon: CalendarClock,
+    };
+  const expiry = parseISO(expiryDate);
+  const days = Math.ceil((expiry.getTime() - Date.now()) / 86400000);
+  if (days < 0)
+    return {
+      label: "Expired",
+      className: "text-destructive",
+      icon: AlertTriangle,
+    };
+  if (days <= 30)
+    return {
+      label: `Expires in ${days}d`,
+      className: "text-amber-600",
+      icon: CalendarClock,
+    };
+  return {
+    label: `Valid until ${fmtDate(expiryDate)}`,
+    className: "text-emerald-600",
+    icon: CheckCircle2,
+  };
 }
 
 // ── types ─────────────────────────────────────────────────────────────────────
 
-type FormData = Omit<HSEDocument, 'id' | 'doc_no' | 'created_at' | 'updated_at'>
+type FormData = Omit<
+  HSEDocument,
+  "id" | "doc_no" | "created_at" | "updated_at"
+>;
 
 const EMPTY_FORM: FormData = {
-  title: '', category: 'Policy', sub_category: '', description: '',
-  version: '1.0', status: 'Active',
-  file_url: '', file_name: '', file_size: '', file_type: '', blob_pathname: '',
-  business_unit: '', owner: '', owner_email: '',
-  uploaded_by: '', uploaded_by_email: '',
-  review_date: '', expiry_date: '',
-  tags: [], is_public: true, allowed_emails: [], folder_id: null,
-}
+  title: "",
+  category: "Policy",
+  sub_category: "",
+  description: "",
+  version: "1.0",
+  status: "Active",
+  file_url: "",
+  file_name: "",
+  file_size: "",
+  file_type: "",
+  blob_pathname: "",
+  business_unit: "",
+  owner: "",
+  owner_email: "",
+  uploaded_by: "",
+  uploaded_by_email: "",
+  review_date: "",
+  expiry_date: "",
+  tags: [],
+  is_public: true,
+  allowed_emails: [],
+  folder_id: null,
+};
 
-interface Props { readOnly?: boolean; activeCompanyId?: string | null }
+interface Props {
+  readOnly?: boolean;
+  activeCompanyId?: string | null;
+}
 
 // ── component ─────────────────────────────────────────────────────────────────
 
-export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: Props) {
-  const { currentUser } = useAuth()
-  const { t } = useLanguage()
-  const isAdmin = isAdminRole(currentUser?.role ?? '', currentUser?.email ?? '')
-  const isReviewer = !isAdmin && isReviewerRole(currentUser?.role ?? '')
-  const canEdit = !readOnly && (isAdmin || isReviewer)
-  const canUpload = !readOnly && Boolean(currentUser) && ['ADMIN SYSTEM', 'HSE ADMIN', 'MASTER USER', 'ADMIN', 'MANAGEMENT'].includes((currentUser?.role ?? '').toUpperCase())
-  const { toast } = useToast()
+export function DocumentsLibrary({
+  readOnly = false,
+  activeCompanyId = null,
+}: Props) {
+  const { currentUser } = useAuth();
+  const { t } = useLanguage();
+  const {
+    data: library,
+    error: loadError,
+    isLoading: loading,
+    mutate: refreshLibrary,
+  } = useSWR(
+    currentUser && activeCompanyId
+      ? ["hse-library", currentUser.email, activeCompanyId]
+      : null,
+    async () => {
+      const [documents, folders, permissions] = await Promise.all([
+        getDocuments(undefined, undefined, activeCompanyId),
+        getDocumentFolders(currentUser?.email ?? "", activeCompanyId!),
+        getLibraryPermissions(activeCompanyId),
+      ]);
+      return { documents, folders, permissions };
+    },
+  );
+  const isAdmin = library?.permissions.canManage === true;
+  const canEdit = !readOnly && isAdmin;
+  const canUpload = canEdit;
+  const docs = library?.documents ?? [];
+  const folders = library?.folders ?? [];
+  const [batchOpen, setBatchOpen] = useState(false);
+  const { toast } = useToast();
 
   // list state
-  const [docs, setDocs] = useState<HSEDocument[]>([])
-  const [folders, setFolders] = useState<DocumentFolder[]>([])
-  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [folderDialogOpen, setFolderDialogOpen] = useState(false)
-  const [folderName, setFolderName] = useState('')
-  const [folderDescription, setFolderDescription] = useState('')
-  const [search, setSearch] = useState('')
-  const [filterCategory, setFilterCategory] = useState('all')
-  const [filterStatus, setFilterStatus] = useState('all')
-  const [filterExpiry, setFilterExpiry] = useState('all')
+  const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const [folderName, setFolderName] = useState("");
+  const [folderDescription, setFolderDescription] = useState("");
+  const [search, setSearch] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterExpiry, setFilterExpiry] = useState("all");
 
   // dialogs
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [isViewOpen, setIsViewOpen] = useState(false)
-  const [isAccessOpen, setIsAccessOpen] = useState(false)
-  const [selected, setSelected] = useState<HSEDocument | null>(null)
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isAccessOpen, setIsAccessOpen] = useState(false);
+  const [selected, setSelected] = useState<HSEDocument | null>(null);
 
   // form
-  const [form, setForm] = useState<FormData>(EMPTY_FORM)
-  const [tagInput, setTagInput] = useState('')
-  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState<FormData>(EMPTY_FORM);
+  const [tagInput, setTagInput] = useState("");
+  const [saving, setSaving] = useState(false);
 
   // file upload
-  const [uploadFile, setUploadFile] = useState<File | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const fileRef = useRef<HTMLInputElement>(null)
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // access management
-  const [allUsers, setAllUsers] = useState<{ name: string; email: string }[]>([])
-  const [accessEmails, setAccessEmails] = useState<string[]>([])
-  const [accessIsPublic, setAccessIsPublic] = useState(true)
-  const [accessSearch, setAccessSearch] = useState('')
-  const [savingAccess, setSavingAccess] = useState(false)
+  const [allUsers, setAllUsers] = useState<{ name: string; email: string }[]>(
+    [],
+  );
+  const [accessEmails, setAccessEmails] = useState<string[]>([]);
+  const [accessIsPublic, setAccessIsPublic] = useState(true);
+  const [accessSearch, setAccessSearch] = useState("");
+  const [savingAccess, setSavingAccess] = useState(false);
 
   // ── data load ────────────────────────────────────────────────────────────
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    const companyId = activeCompanyId
-    const data = await getDocuments(currentUser?.email ?? '', isAdmin, isAdmin ? companyId : activeCompanyId)
-    const folderData = currentUser?.email && companyId ? await getDocumentFolders(currentUser.email, companyId) : []
-    setDocs(data)
-    setFolders(folderData)
-    setLoading(false)
-  }, [currentUser?.email, isAdmin, activeCompanyId])
+  const load = () => refreshLibrary();
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    setCurrentFolderId(null);
+    setBatchOpen(false);
+  }, [activeCompanyId]);
 
   // ── filtering ─────────────────────────────────────────────────────────────
 
-  const visibleFolders = folders.filter(folder => folder.parent_id === currentFolderId)
-  const currentFolder = folders.find(folder => folder.id === currentFolderId) ?? null
-  const breadcrumbs = currentFolderId ? (() => { const chain: DocumentFolder[] = []; let cursor = currentFolder; while (cursor) { chain.unshift(cursor); cursor = folders.find(folder => folder.id === cursor?.parent_id) ?? null } return chain })() : []
+  const visibleFolders = folders.filter(
+    (folder) => folder.parent_id === currentFolderId,
+  );
+  const currentFolder =
+    folders.find((folder) => folder.id === currentFolderId) ?? null;
+  const breadcrumbs = currentFolderId
+    ? (() => {
+        const chain: DocumentFolder[] = [];
+        let cursor = currentFolder;
+        while (cursor) {
+          chain.unshift(cursor);
+          cursor =
+            folders.find((folder) => folder.id === cursor?.parent_id) ?? null;
+        }
+        return chain;
+      })()
+    : [];
 
-  const filtered = docs.filter(d => {
-    const q = search.toLowerCase()
-    const matchSearch = !search ||
+  const filtered = docs.filter((d) => {
+    const q = search.toLowerCase();
+    const matchSearch =
+      !search ||
       d.title.toLowerCase().includes(q) ||
-      (d.doc_no ?? '').toLowerCase().includes(q) ||
-      (d.file_name ?? '').toLowerCase().includes(q) ||
-      (d.category ?? '').toLowerCase().includes(q) ||
-      (d.business_unit ?? '').toLowerCase().includes(q) ||
-      (d.owner ?? '').toLowerCase().includes(q) ||
-      d.tags?.some(t => t.toLowerCase().includes(q))
-    const matchCat = filterCategory === 'all' || d.category === filterCategory
-    const matchStatus = filterStatus === 'all' || d.status === filterStatus
-    const expiry = d.expiry_date ? Math.ceil((parseISO(d.expiry_date).getTime() - Date.now()) / 86400000) : null
-    const matchExpiry = filterExpiry === 'all' ||
-      (filterExpiry === 'expired' && expiry !== null && expiry < 0) ||
-      (filterExpiry === 'soon' && expiry !== null && expiry >= 0 && expiry <= 30) ||
-      (filterExpiry === 'missing' && expiry === null) ||
-      (filterExpiry === 'valid' && expiry !== null && expiry > 30)
-    return d.folder_id === currentFolderId && matchSearch && matchCat && matchStatus && matchExpiry
-  })
+      (d.doc_no ?? "").toLowerCase().includes(q) ||
+      (d.file_name ?? "").toLowerCase().includes(q) ||
+      (d.category ?? "").toLowerCase().includes(q) ||
+      (d.business_unit ?? "").toLowerCase().includes(q) ||
+      (d.owner ?? "").toLowerCase().includes(q) ||
+      d.tags?.some((t) => t.toLowerCase().includes(q));
+    const matchCat = filterCategory === "all" || d.category === filterCategory;
+    const matchStatus = filterStatus === "all" || d.status === filterStatus;
+    const expiry = d.expiry_date
+      ? Math.ceil((parseISO(d.expiry_date).getTime() - Date.now()) / 86400000)
+      : null;
+    const matchExpiry =
+      filterExpiry === "all" ||
+      (filterExpiry === "expired" && expiry !== null && expiry < 0) ||
+      (filterExpiry === "soon" &&
+        expiry !== null &&
+        expiry >= 0 &&
+        expiry <= 30) ||
+      (filterExpiry === "missing" && expiry === null) ||
+      (filterExpiry === "valid" && expiry !== null && expiry > 30);
+    return (
+      d.folder_id === currentFolderId &&
+      matchSearch &&
+      matchCat &&
+      matchStatus &&
+      matchExpiry
+    );
+  });
 
   const stats = {
     total: docs.length,
-    active: docs.filter(d => d.status === 'Active').length,
-    policies: docs.filter(d => d.category === 'Policy').length,
-    restricted: docs.filter(d => !d.is_public).length,
-    expired: docs.filter(d => d.expiry_date && parseISO(d.expiry_date).getTime() < Date.now()).length,
-    expiringSoon: docs.filter(d => {
-      if (!d.expiry_date) return false
-      const days = Math.ceil((parseISO(d.expiry_date).getTime() - Date.now()) / 86400000)
-      return days >= 0 && days <= 30
+    active: docs.filter((d) => d.status === "Active").length,
+    policies: docs.filter((d) => d.category === "Policy").length,
+    restricted: docs.filter((d) => !d.is_public).length,
+    expired: docs.filter(
+      (d) => d.expiry_date && parseISO(d.expiry_date).getTime() < Date.now(),
+    ).length,
+    expiringSoon: docs.filter((d) => {
+      if (!d.expiry_date) return false;
+      const days = Math.ceil(
+        (parseISO(d.expiry_date).getTime() - Date.now()) / 86400000,
+      );
+      return days >= 0 && days <= 30;
     }).length,
-    missingExpiry: docs.filter(d => !d.expiry_date).length,
-    missingFile: docs.filter(d => !d.file_url || !d.file_name).length,
-  }
+    missingExpiry: docs.filter((d) => !d.expiry_date).length,
+    missingFile: docs.filter((d) => !d.file_url || !d.file_name).length,
+  };
 
   // ── file upload ───────────────────────────────────────────────────────────
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    if (!f) return
-    if (f.size > 50 * 1024 * 1024) {
-      toast({ title: 'File too large', description: 'Maximum file size is 50 MB', variant: 'destructive' })
-      return
+    const f = e.target.files?.[0];
+    if (!f || saving || uploading) return;
+    if (f.size > BLOB_MAX_FILE_BYTES || f.size === 0) {
+      toast({
+        title: "Cannot upload file",
+        description:
+          f.size === 0
+            ? "The file is empty."
+            : "Vercel Blob supports up to 5 TB per file.",
+        variant: "destructive",
+      });
+      return;
     }
-    setUploadFile(f)
-    setForm(prev => ({
+    setUploadedReplacement(null);
+    setUploadFile(f);
+    setForm((prev) => ({
       ...prev,
       file_name: f.name,
-      file_type: f.type || f.name.split('.').pop()?.toUpperCase() || '',
+      file_type: f.type || f.name.split(".").pop()?.toUpperCase() || "",
       file_size: formatBytes(f.size),
-    }))
-  }
+    }));
+  };
 
-  const uploadToBlob = async (): Promise<{ url: string; pathname: string } | null> => {
-    if (!uploadFile) return null
-    setUploading(true)
-    setUploadProgress(20)
+  const [uploadedReplacement, setUploadedReplacement] = useState<{
+    url: string;
+    pathname: string;
+    receipt: string;
+  } | null>(null);
 
+  const uploadToBlob = async () => {
+    if (uploadedReplacement) return uploadedReplacement;
+    if (!uploadFile) return null;
+    const companyId = selected?.company_id ?? activeCompanyId;
+    if (!companyId) return null;
+    setUploading(true);
+    setUploadProgress(0);
     try {
-      // Use server action to avoid CORS/iframe origin issues in the preview environment
-      const fd = new FormData()
-      fd.append('file', uploadFile)
-      if (activeCompanyId) fd.append('companyId', activeCompanyId)
-      setUploadProgress(50)
-      const result = await uploadFileAction(fd)
-      setUploadProgress(100)
-      if (!result.success || !result.url) {
-        throw new Error(result.error ?? 'Upload failed')
-      }
-      return { url: result.url, pathname: result.pathname! }
-    } catch (e: any) {
-      toast({ title: 'Upload failed', description: e.message, variant: 'destructive' })
-      return null
+      const result = await uploadLibraryFile(
+        uploadFile,
+        companyId,
+        setUploadProgress,
+      );
+      setUploadedReplacement(result);
+      return result;
+    } catch (error) {
+      toast({
+        title: "Upload failed — retry this file",
+        description: libraryErrorMessage(error),
+        variant: "destructive",
+      });
+      return null;
     } finally {
-      setUploading(false)
+      setUploading(false);
     }
-  }
+  };
 
   // ── form open/close ───────────────────────────────────────────────────────
 
   const openCreate = () => {
-    setSelected(null)
+    setSelected(null);
     setForm({
       ...EMPTY_FORM,
-      owner: currentUser?.name ?? '',
-      owner_email: currentUser?.email ?? '',
-      uploaded_by: currentUser?.name ?? '',
-      uploaded_by_email: currentUser?.email ?? '',
+      owner: currentUser?.name ?? "",
+      owner_email: currentUser?.email ?? "",
+      uploaded_by: currentUser?.name ?? "",
+      uploaded_by_email: currentUser?.email ?? "",
       folder_id: currentFolderId,
-    })
-    setUploadFile(null)
-    setTagInput('')
-    setIsFormOpen(true)
-  }
+    });
+    setUploadFile(null);
+    setUploadedReplacement(null);
+    setTagInput("");
+    setIsFormOpen(true);
+  };
 
   const openEdit = (d: HSEDocument) => {
-    setSelected(d)
+    setSelected(d);
     setForm({
-      title: d.title, category: d.category, sub_category: d.sub_category ?? '',
-      description: d.description ?? '', version: d.version, status: d.status,
-      file_url: d.file_url ?? '', file_name: d.file_name ?? '',
-      file_size: d.file_size ?? '', file_type: d.file_type ?? '',
-      blob_pathname: d.blob_pathname ?? '',
-      business_unit: d.business_unit ?? '', owner: d.owner ?? '',
-      owner_email: d.owner_email ?? '',
-      uploaded_by: d.uploaded_by ?? '', uploaded_by_email: d.uploaded_by_email ?? '',
-      review_date: d.review_date ? d.review_date.slice(0, 10) : '',
-      expiry_date: d.expiry_date ? d.expiry_date.slice(0, 10) : '',
-      tags: d.tags ?? [], is_public: d.is_public, allowed_emails: d.allowed_emails ?? [], folder_id: d.folder_id ?? null,
-    })
-    setUploadFile(null)
-    setTagInput('')
-    setIsFormOpen(true)
-  }
+      title: d.title,
+      category: d.category,
+      sub_category: d.sub_category ?? "",
+      description: d.description ?? "",
+      version: d.version,
+      status: d.status,
+      file_url: d.file_url ?? "",
+      file_name: d.file_name ?? "",
+      file_size: d.file_size ?? "",
+      file_type: d.file_type ?? "",
+      blob_pathname: d.blob_pathname ?? "",
+      business_unit: d.business_unit ?? "",
+      owner: d.owner ?? "",
+      owner_email: d.owner_email ?? "",
+      uploaded_by: d.uploaded_by ?? "",
+      uploaded_by_email: d.uploaded_by_email ?? "",
+      review_date: d.review_date ? d.review_date.slice(0, 10) : "",
+      expiry_date: d.expiry_date ? d.expiry_date.slice(0, 10) : "",
+      tags: d.tags ?? [],
+      is_public: d.is_public,
+      allowed_emails: d.allowed_emails ?? [],
+      folder_id: d.folder_id ?? null,
+    });
+    setUploadFile(null);
+    setUploadedReplacement(null);
+    setTagInput("");
+    setIsFormOpen(true);
+  };
 
   // ── save ─────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
     if (!canUpload) {
-      toast({ title: 'Permission denied', description: 'Only Admin and Master users can create library documents.', variant: 'destructive' })
-      return
+      toast({
+        title: "Permission denied",
+        description: "Only Admin users can manage library documents.",
+        variant: "destructive",
+      });
+      return;
     }
     if (!form.title.trim()) {
-      toast({ title: 'Title is required', variant: 'destructive' }); return
+      toast({ title: "Title is required", variant: "destructive" });
+      return;
     }
-    setSaving(true)
-    let fileData = { file_url: form.file_url, blob_pathname: form.blob_pathname }
+    setSaving(true);
+    let fileData = {
+      file_url: form.file_url,
+      blob_pathname: form.blob_pathname,
+    };
+    let receipt: string | undefined;
 
     // Upload new file if selected
     if (uploadFile) {
-      const uploaded = await uploadToBlob()
-      if (!uploaded) { setSaving(false); return }
-      fileData = { file_url: uploaded.url, blob_pathname: uploaded.pathname }
+      const uploaded = await uploadToBlob();
+      if (!uploaded) {
+        setSaving(false);
+        return;
+      }
+      fileData = { file_url: uploaded.url, blob_pathname: uploaded.pathname };
+      receipt = uploaded.receipt;
     }
 
-    const companyId = selected?.company_id ?? activeCompanyId
+    const companyId = selected?.company_id ?? activeCompanyId;
     if (!companyId) {
-      toast({ title: 'Company is required', description: 'Select a company before saving a library document.', variant: 'destructive' })
-      setSaving(false)
-      return
+      toast({
+        title: "Company is required",
+        description: "Select a company before saving a library document.",
+        variant: "destructive",
+      });
+      setSaving(false);
+      return;
     }
-    const payload = { ...form, ...fileData, company_id: companyId }
+    const payload = { ...form, ...fileData, company_id: companyId };
     const res = selected
-      ? await updateDocument(selected.id, payload)
-      : await createDocument(payload)
+      ? await updateDocument(selected.id, payload, receipt)
+      : await createDocument(payload, receipt);
 
-    setSaving(false)
+    setSaving(false);
     if (res.success) {
-      toast({ title: selected ? 'Document updated' : 'Document uploaded to library' })
-      setIsFormOpen(false)
-      setUploadFile(null)
-      load()
+      toast({
+        title: selected ? "Document updated" : "Document uploaded to library",
+      });
+      setIsFormOpen(false);
+      setUploadFile(null);
+      load();
     } else {
-      toast({ title: 'Failed to save document', variant: 'destructive' })
+      toast({
+        title: "Failed to save document — retry",
+        description: res.error,
+        variant: "destructive",
+      });
     }
-  }
+  };
 
   const handleCreateFolder = async () => {
-    if (!activeCompanyId) { toast({ title: 'Company is required', variant: 'destructive' }); return }
-    const result = await createDocumentFolder(activeCompanyId, currentFolderId, folderName, folderDescription)
-    if (!result.success) { toast({ title: 'Could not create folder', description: result.error, variant: 'destructive' }); return }
-    setFolders(previous => [...previous, result.folder!].sort((a, b) => a.name.localeCompare(b.name)))
-    setFolderName(''); setFolderDescription(''); setFolderDialogOpen(false)
-    toast({ title: 'Folder created' })
-  }
+    if (!activeCompanyId) {
+      toast({ title: "Company is required", variant: "destructive" });
+      return;
+    }
+    const result = await createDocumentFolder(
+      activeCompanyId,
+      currentFolderId,
+      folderName,
+      folderDescription,
+    );
+    if (!result.success) {
+      toast({
+        title: "Could not create folder",
+        description: result.error,
+        variant: "destructive",
+      });
+      return;
+    }
+    await load();
+    setFolderName("");
+    setFolderDescription("");
+    setFolderDialogOpen(false);
+    toast({ title: "Folder created" });
+  };
 
   // ── delete ────────────────────────────────────────────────────────────────
 
   const handleDelete = async (id: string) => {
-    const res = await deleteDocument(id)
-    if (res.success) { toast({ title: 'Document deleted' }); load() }
-    else toast({ title: 'Failed to delete', variant: 'destructive' })
-  }
+    const res = await deleteDocument(id);
+    if (res.success) {
+      toast({ title: "Document deleted" });
+      load();
+    } else toast({ title: "Failed to delete", variant: "destructive" });
+  };
 
   // ── access management ─────────────────────────────────────────────────────
 
   const openAccess = async (d: HSEDocument) => {
-    setSelected(d)
-    setAccessEmails(d.allowed_emails ?? [])
-    setAccessIsPublic(d.is_public)
-    setAccessSearch('')
+    setSelected(d);
+    setAccessEmails(d.allowed_emails ?? []);
+    setAccessIsPublic(d.is_public);
+    setAccessSearch("");
     if (allUsers.length === 0) {
-      const users = await getAllUserEmails()
-      setAllUsers(users)
+      const users = await getAllUserEmails();
+      setAllUsers(users);
     }
-    setIsAccessOpen(true)
-  }
+    setIsAccessOpen(true);
+  };
 
   const handleSaveAccess = async () => {
-    if (!selected) return
-    setSavingAccess(true)
-    const res = await updateDocumentAccess(selected.id, accessEmails, accessIsPublic)
-    setSavingAccess(false)
+    if (!selected) return;
+    setSavingAccess(true);
+    const res = await updateDocumentAccess(
+      selected.id,
+      accessEmails,
+      accessIsPublic,
+    );
+    setSavingAccess(false);
     if (res.success) {
-      toast({ title: 'Access settings updated' })
-      setIsAccessOpen(false)
-      load()
+      toast({ title: "Access settings updated" });
+      setIsAccessOpen(false);
+      load();
     } else {
-      toast({ title: 'Failed to update access', variant: 'destructive' })
+      toast({ title: "Failed to update access", variant: "destructive" });
     }
-  }
+  };
 
   const toggleUserAccess = (email: string) => {
-    setAccessEmails(prev =>
-      prev.includes(email) ? prev.filter(e => e !== email) : [...prev, email]
-    )
-  }
+    setAccessEmails((prev) =>
+      prev.includes(email) ? prev.filter((e) => e !== email) : [...prev, email],
+    );
+  };
 
   // ── tags ─��────────────────────────────��───────────────────────────────────
 
   const addTag = () => {
-    const t = tagInput.trim()
-    if (t && !form.tags.includes(t)) setForm(f => ({ ...f, tags: [...f.tags, t] }))
-    setTagInput('')
-  }
+    const t = tagInput.trim();
+    if (t && !form.tags.includes(t))
+      setForm((f) => ({ ...f, tags: [...f.tags, t] }));
+    setTagInput("");
+  };
 
   // ── render ────────────────────��───────────────────────────────────────────
 
   return (
     <div className="space-y-6">
-
       <section className="overflow-hidden rounded-xl border border-emerald-900/10 bg-card shadow-sm">
         <div className="bg-emerald-100/70 px-5 py-4 sm:px-7">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div><h1 className="text-3xl font-semibold tracking-tight text-primary">{t("View Library")}</h1><p className="mt-1 text-sm text-muted-foreground">{stats.total} {t("Documents")} {t("for this company")}</p></div>
-            {canUpload && <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => setFolderDialogOpen(true)}><FolderOpen className="me-2 h-4 w-4" />{t("Create Folder")}</Button><Button size="sm" variant="outline" onClick={openCreate}><FilePlus className="me-2 h-4 w-4" />{t("Create Document")}</Button><Button size="sm" onClick={openCreate}><Upload className="me-2 h-4 w-4" />{t("Choose File")}</Button></div>}
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight text-primary">
+                {t("View Library")}
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {stats.total} {t("Documents")} {t("for this company")}
+              </p>
+            </div>
+            {canUpload && (
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setFolderDialogOpen(true)}
+                >
+                  <FolderOpen className="me-2 h-4 w-4" />
+                  {t("Create Folder")}
+                </Button>
+                <Button size="sm" variant="outline" onClick={openCreate}>
+                  <FilePlus className="me-2 h-4 w-4" />
+                  {t("Create Document")}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setBatchOpen(true)}
+                  disabled={!activeCompanyId}
+                >
+                  <Upload data-icon="inline-start" />
+                  {t("Add File")}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
         <div className="space-y-5 p-5 sm:p-7">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Document audit summary">
-            <AuditStat label="Active" value={stats.active} tone="text-emerald-600" />
-            <AuditStat label="Expired" value={stats.expired} tone="text-destructive" />
-            <AuditStat label="Expiring in 30 days" value={stats.expiringSoon} tone="text-amber-600" />
-            <AuditStat label="Missing file / expiry" value={`${stats.missingFile} / ${stats.missingExpiry}`} tone="text-muted-foreground" />
+          <div
+            className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"
+            aria-label="Document audit summary"
+          >
+            <AuditStat
+              label="Active"
+              value={stats.active}
+              tone="text-emerald-600"
+            />
+            <AuditStat
+              label="Expired"
+              value={stats.expired}
+              tone="text-destructive"
+            />
+            <AuditStat
+              label="Expiring in 30 days"
+              value={stats.expiringSoon}
+              tone="text-amber-600"
+            />
+            <AuditStat
+              label="Missing file / expiry"
+              value={`${stats.missingFile} / ${stats.missingExpiry}`}
+              tone="text-muted-foreground"
+            />
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row"><div className="relative flex-1"><Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input aria-label="Search documents" placeholder="Search title, file, category, company, owner, or document number" className="pl-9" value={search} onChange={e => setSearch(e.target.value)} /></div><Button onClick={() => setSearch(search.trim())}>Go</Button><Button variant="outline" size="icon" onClick={load} aria-label="Refresh"><RefreshCw className="h-4 w-4" /></Button></div>
-          <div className="flex flex-wrap gap-2 border-b pb-4"><Select value={filterCategory} onValueChange={setFilterCategory}><SelectTrigger className="w-44"><SelectValue placeholder="Category" /></SelectTrigger><SelectContent><SelectItem value="all">All Categories</SelectItem>{DOCUMENT_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select><Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem>{Object.keys(STATUS_STYLES).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><Select value={filterExpiry} onValueChange={setFilterExpiry}><SelectTrigger className="w-44"><SelectValue placeholder="Expiry" /></SelectTrigger><SelectContent><SelectItem value="all">All expiry states</SelectItem><SelectItem value="valid">Valid</SelectItem><SelectItem value="soon">Expiring soon</SelectItem><SelectItem value="expired">Expired</SelectItem><SelectItem value="missing">Missing expiry</SelectItem></SelectContent></Select></div>
-          <div className="flex flex-wrap items-center gap-1 text-sm" aria-label="Folder breadcrumbs"><button type="button" className="font-medium text-primary hover:underline" onClick={() => setCurrentFolderId(null)}>Library</button>{breadcrumbs.map(folder => <span key={folder.id} className="flex items-center gap-1"><span className="text-muted-foreground">/</span><button type="button" className="text-primary hover:underline" onClick={() => setCurrentFolderId(folder.id)}>{folder.name}</button></span>)}</div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                aria-label="Search documents"
+                placeholder="Search title, file, category, company, owner, or document number"
+                className="pl-9"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <Button onClick={() => setSearch(search.trim())}>Go</Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={load}
+              aria-label="Refresh"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2 border-b pb-4">
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {DOCUMENT_CATEGORIES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                {Object.keys(STATUS_STYLES).map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={filterExpiry} onValueChange={setFilterExpiry}>
+              <SelectTrigger className="w-44">
+                <SelectValue placeholder="Expiry" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All expiry states</SelectItem>
+                <SelectItem value="valid">Valid</SelectItem>
+                <SelectItem value="soon">Expiring soon</SelectItem>
+                <SelectItem value="expired">Expired</SelectItem>
+                <SelectItem value="missing">Missing expiry</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div
+            className="flex flex-wrap items-center gap-1 text-sm"
+            aria-label="Folder breadcrumbs"
+          >
+            <button
+              type="button"
+              className="font-medium text-primary hover:underline"
+              onClick={() => setCurrentFolderId(null)}
+            >
+              Library
+            </button>
+            {breadcrumbs.map((folder) => (
+              <span key={folder.id} className="flex items-center gap-1">
+                <span className="text-muted-foreground">/</span>
+                <button
+                  type="button"
+                  className="text-primary hover:underline"
+                  onClick={() => setCurrentFolderId(folder.id)}
+                >
+                  {folder.name}
+                </button>
+              </span>
+            ))}
+          </div>
           <div className="min-h-[360px] font-sans text-sm">
-            {loading ? <p className="py-8 text-muted-foreground">Loading files...</p> : filtered.length === 0 ? <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground"><FolderOpen className="h-12 w-12 opacity-30" /><p>{search ? 'No matching files found' : 'No files in this company library'}</p></div> : <div className="space-y-1"><div className="flex items-center gap-1 font-medium text-primary"><FolderOpen className="h-4 w-4 text-amber-500" />{currentFolder?.name ?? 'Library'}</div>{visibleFolders.map(folder => <button type="button" key={folder.id} className="flex w-full items-center gap-2 rounded px-2 py-2 text-start hover:bg-muted" onClick={() => setCurrentFolderId(folder.id)}><FolderOpen className="h-5 w-5 text-amber-500" /><span className="font-medium">{folder.name}</span>{folder.description && <span className="truncate text-xs text-muted-foreground">{folder.description}</span>}</button>)}{Array.from(new Set(filtered.map(d => d.category))).map(category => <div key={category} className="ml-5"><div className="flex items-center gap-1 py-1 text-foreground"><ChevronDown className="h-4 w-4 text-muted-foreground" /><FolderOpen className="h-4 w-4 text-amber-500" />{category}</div><div className="ml-6 space-y-1">{filtered.filter(d => d.category === category).map(d => <div key={d.id} className="group flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted"><span className="shrink-0">{fileIcon(d.file_name, d.file_type)}</span><button className="min-w-0 flex-1 truncate text-left text-primary hover:underline" onClick={() => { setSelected(d); setIsViewOpen(true) }}>{d.title}</button><span className="hidden text-xs text-muted-foreground sm:inline">v{d.version} · {d.status}</span><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7"><ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="w-48"><DropdownMenuItem onClick={() => { setSelected(d); setIsViewOpen(true) }}><Eye className="mr-2 h-4 w-4" />View Details</DropdownMenuItem>{d.file_url && <DropdownMenuItem asChild><a href={d.file_url} target="_blank" rel="noopener noreferrer" download={d.file_name ?? true}><Download className="mr-2 h-4 w-4" />Download File</a></DropdownMenuItem>}{canEdit && <><DropdownMenuItem onClick={() => openEdit(d)}><Edit className="mr-2 h-4 w-4" />Edit Details</DropdownMenuItem>{isAdmin && <DropdownMenuItem onClick={() => openAccess(d)}><Shield className="mr-2 h-4 w-4" />Manage Access</DropdownMenuItem>}<DropdownMenuSeparator /><DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(d.id)}><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem></>}</DropdownMenuContent></DropdownMenu></div>)}</div></div>)}</div>}
+            {loading ? (
+              <p className="py-8 text-muted-foreground">Loading files...</p>
+            ) : filtered.length === 0 && visibleFolders.length === 0 ? (
+              <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+                <FolderOpen className="h-12 w-12 opacity-30" />
+                <p>
+                  {search
+                    ? "No matching files found"
+                    : "No files in this company library"}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 font-medium text-primary">
+                  <FolderOpen className="h-4 w-4 text-amber-500" />
+                  {currentFolder?.name ?? "Library"}
+                </div>
+                {visibleFolders.map((folder) => (
+                  <button
+                    type="button"
+                    key={folder.id}
+                    className="flex w-full items-center gap-2 rounded px-2 py-2 text-start hover:bg-muted"
+                    onClick={() => setCurrentFolderId(folder.id)}
+                  >
+                    <FolderOpen className="h-5 w-5 text-amber-500" />
+                    <span className="font-medium">{folder.name}</span>
+                    {folder.description && (
+                      <span className="truncate text-xs text-muted-foreground">
+                        {folder.description}
+                      </span>
+                    )}
+                  </button>
+                ))}
+                {Array.from(new Set(filtered.map((d) => d.category))).map(
+                  (category) => (
+                    <div key={category} className="ml-5">
+                      <div className="flex items-center gap-1 py-1 text-foreground">
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        <FolderOpen className="h-4 w-4 text-amber-500" />
+                        {category}
+                      </div>
+                      <div className="ml-6 space-y-1">
+                        {filtered
+                          .filter((d) => d.category === category)
+                          .map((d) => (
+                            <div
+                              key={d.id}
+                              className="group flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted"
+                            >
+                              <span className="shrink-0">
+                                {fileIcon(d.file_name, d.file_type)}
+                              </span>
+                              <button
+                                className="min-w-0 flex-1 truncate text-left text-primary hover:underline"
+                                onClick={() => {
+                                  setSelected(d);
+                                  setIsViewOpen(true);
+                                }}
+                              >
+                                {d.title}
+                              </button>
+                              <span className="hidden text-xs text-muted-foreground sm:inline">
+                                v{d.version} · {d.status}
+                              </span>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    aria-label={`Options for ${d.title}`}
+                                  >
+                                    <ChevronDown className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                  align="end"
+                                  className="w-48"
+                                >
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelected(d);
+                                      setIsViewOpen(true);
+                                    }}
+                                  >
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    View Details
+                                  </DropdownMenuItem>
+                                  {d.file_url && (
+                                    <DropdownMenuItem asChild>
+                                      <a
+                                        href={`/api/hse-files/${encodeURIComponent(d.id)}/download`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        download={d.file_name ?? true}
+                                      >
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Download File
+                                      </a>
+                                    </DropdownMenuItem>
+                                  )}
+                                  {canEdit && (
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() => openEdit(d)}
+                                      >
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Edit Details
+                                      </DropdownMenuItem>
+                                      {canEdit && (
+                                        <DropdownMenuItem
+                                          onClick={() => openAccess(d)}
+                                        >
+                                          <Shield className="mr-2 h-4 w-4" />
+                                          Manage Access
+                                        </DropdownMenuItem>
+                                      )}
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        className="text-destructive focus:text-destructive"
+                                        onClick={() => handleDelete(d.id)}
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  ),
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      {canUpload && <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}><DialogContent className="max-w-md"><DialogHeader><DialogTitle>{t("Create Folder")}</DialogTitle></DialogHeader><div className="space-y-4"><div className="space-y-1.5"><Label htmlFor="folder-name">{t("Folder name")}</Label><Input id="folder-name" value={folderName} onChange={event => setFolderName(event.target.value)} placeholder={t("Enter folder name")} maxLength={120} /></div><div className="space-y-1.5"><Label htmlFor="folder-description">{t("Description")}</Label><Textarea id="folder-description" value={folderDescription} onChange={event => setFolderDescription(event.target.value)} placeholder={t("Optional description")} rows={3} /></div></div><DialogFooter><Button variant="outline" onClick={() => setFolderDialogOpen(false)}>{t("Cancel")}</Button><Button onClick={handleCreateFolder} disabled={!folderName.trim()}>{t("Create Folder")}</Button></DialogFooter></DialogContent></Dialog>}
+      {canUpload && (
+        <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{t("Create Folder")}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="folder-name">{t("Folder name")}</Label>
+                <Input
+                  id="folder-name"
+                  value={folderName}
+                  onChange={(event) => setFolderName(event.target.value)}
+                  placeholder={t("Enter folder name")}
+                  maxLength={120}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="folder-description">{t("Description")}</Label>
+                <Textarea
+                  id="folder-description"
+                  value={folderDescription}
+                  onChange={(event) => setFolderDescription(event.target.value)}
+                  placeholder={t("Optional description")}
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setFolderDialogOpen(false)}
+              >
+                {t("Cancel")}
+              </Button>
+              <Button
+                onClick={handleCreateFolder}
+                disabled={!folderName.trim()}
+              >
+                {t("Create Folder")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {canUpload && activeCompanyId && (
+        <LibraryUploadDialog
+          key={activeCompanyId}
+          open={batchOpen}
+          onOpenChange={setBatchOpen}
+          companyId={activeCompanyId}
+          folders={folders}
+          folderId={currentFolderId}
+          onSaved={() => {
+            void load();
+          }}
+        />
+      )}
+      {loadError && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            Could not load this company library. Check your access and retry.
+            تعذر تحميل مكتبة الشركة؛ تحقق من الصلاحية وأعد المحاولة.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* ── Upload / Edit Dialog ─────────────────────────────────────────── */}
       {canUpload && (
-        <Dialog open={isFormOpen} onOpenChange={v => { setIsFormOpen(v); if (!v) setUploadFile(null) }}>
+        <Dialog
+          open={isFormOpen}
+          onOpenChange={(v) => {
+            if (!saving && !uploading) {
+              setIsFormOpen(v);
+              if (!v) {
+                setUploadFile(null);
+                setUploadedReplacement(null);
+              }
+            }
+          }}
+        >
           <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {selected ? `Edit — ${selected.title}` : 'Upload File to HSE Library'}
+                {selected
+                  ? `Edit — ${selected.title}`
+                  : "Upload File to HSE Library"}
               </DialogTitle>
             </DialogHeader>
 
@@ -432,22 +998,23 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
               <div
                 className="relative flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-8 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
                 onClick={() => fileRef.current?.click()}
-                onDragOver={e => e.preventDefault()}
-                onDrop={e => {
-                  e.preventDefault()
-                  const f = e.dataTransfer.files[0]
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const f = e.dataTransfer.files[0];
                   if (f) {
-                    const synth = { target: { files: e.dataTransfer.files } } as any
-                    handleFileSelect(synth)
+                    const synth = {
+                      target: { files: e.dataTransfer.files },
+                    } as any;
+                    handleFileSelect(synth);
                   }
                 }}
               >
-  <input
-  ref={fileRef}
-  aria-label="Choose library file"
+                <input
+                  ref={fileRef}
+                  aria-label="Choose library file"
                   type="file"
                   className="hidden"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.txt,.png,.jpg,.jpeg,.zip"
                   onChange={handleFileSelect}
                 />
                 {uploadFile ? (
@@ -455,13 +1022,21 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                     {fileIcon(uploadFile.name, uploadFile.type)}
                     <div className="text-center">
                       <p className="font-medium text-sm">{uploadFile.name}</p>
-                      <p className="text-xs text-muted-foreground">{formatBytes(uploadFile.size)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatBytes(uploadFile.size)}
+                      </p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="absolute top-2 right-2 h-7 w-7 p-0"
-                      onClick={e => { e.stopPropagation(); setUploadFile(null) }}
+                      disabled={saving || uploading}
+                      aria-label="Remove selected file"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUploadFile(null);
+                        setUploadedReplacement(null);
+                      }}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -470,16 +1045,25 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                   <>
                     {fileIcon(form.file_name, form.file_type)}
                     <div className="text-center">
-                      <p className="text-sm font-medium text-muted-foreground">Current: {form.file_name}</p>
-                      <p className="text-xs text-muted-foreground">Click to replace file</p>
+                      <p className="text-sm font-medium text-muted-foreground">
+                        Current: {form.file_name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Click to replace file
+                      </p>
                     </div>
                   </>
                 ) : (
                   <>
                     <FileUp className="h-10 w-10 text-muted-foreground/50" />
                     <div className="text-center">
-                      <p className="font-medium text-sm">Click or drag and drop to upload</p>
-                      <p className="text-xs text-muted-foreground">PDF, Word, Excel, PowerPoint, Images — max 50 MB</p>
+                      <p className="font-medium text-sm">
+                        Click or drag and drop to upload
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        All file types · Direct multipart upload · Vercel Blob
+                        limit: 5 TB per file
+                      </p>
                     </div>
                   </>
                 )}
@@ -488,36 +1072,57 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
               {/* Upload progress */}
               {uploading && (
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Uploading file...</p>
+                  <p className="text-sm text-muted-foreground">
+                    Uploading file... {Math.round(uploadProgress)}%
+                  </p>
                   <Progress value={uploadProgress} className="h-1.5" />
                 </div>
               )}
 
               {/* Meta fields */}
               <div className="space-y-1.5">
-                <Label>Title <span className="text-destructive">*</span></Label>
+                <Label>
+                  Title <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   value={form.title}
-                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, title: e.target.value }))
+                  }
                   placeholder="Document title"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label>Category <span className="text-destructive">*</span></Label>
-                  <Select value={form.category} onValueChange={v => setForm(f => ({ ...f, category: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Label>
+                    Category <span className="text-destructive">*</span>
+                  </Label>
+                  <Select
+                    value={form.category}
+                    onValueChange={(v) =>
+                      setForm((f) => ({ ...f, category: v }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      {DOCUMENT_CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      {DOCUMENT_CATEGORIES.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Sub-Category</Label>
                   <Input
-                    value={form.sub_category ?? ''}
-                    onChange={e => setForm(f => ({ ...f, sub_category: e.target.value }))}
+                    value={form.sub_category ?? ""}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, sub_category: e.target.value }))
+                    }
                     placeholder="e.g. Fire Safety"
                   />
                 </div>
@@ -527,51 +1132,121 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                 <Label>Description</Label>
                 <Textarea
                   rows={2}
-                  value={form.description ?? ''}
-                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                  value={form.description ?? ""}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, description: e.target.value }))
+                  }
                   placeholder="Brief description of this document"
                 />
               </div>
 
-              <div className="space-y-1.5"><Label>Destination folder</Label><Select value={form.folder_id ?? 'root'} onValueChange={value => setForm(f => ({ ...f, folder_id: value === 'root' ? null : value }))}><SelectTrigger><SelectValue placeholder="Library root" /></SelectTrigger><SelectContent><SelectItem value="root">Library root</SelectItem>{folders.map(folder => <SelectItem key={folder.id} value={folder.id}>{folder.parent_id ? `↳ ${folder.name}` : folder.name}</SelectItem>)}</SelectContent></Select></div>
+              <div className="space-y-1.5">
+                <Label>Destination folder</Label>
+                <Select
+                  value={form.folder_id ?? "root"}
+                  onValueChange={(value) =>
+                    setForm((f) => ({
+                      ...f,
+                      folder_id: value === "root" ? null : value,
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Library root" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="root">Library root</SelectItem>
+                    {folders.map((folder) => (
+                      <SelectItem key={folder.id} value={folder.id}>
+                        {folder.parent_id ? `↳ ${folder.name}` : folder.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1.5">
                   <Label>Version</Label>
-                  <Input value={form.version} onChange={e => setForm(f => ({ ...f, version: e.target.value }))} placeholder="1.0" />
+                  <Input
+                    value={form.version}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, version: e.target.value }))
+                    }
+                    placeholder="1.0"
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Status</Label>
-                  <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{Object.keys(STATUS_STYLES).map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                  <Select
+                    value={form.status}
+                    onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.keys(STATUS_STYLES).map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Business Unit</Label>
-                  <Input value={form.business_unit ?? ''} onChange={e => setForm(f => ({ ...f, business_unit: e.target.value }))} />
+                  <Input
+                    value={form.business_unit ?? ""}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, business_unit: e.target.value }))
+                    }
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>Document Owner</Label>
-                  <Input value={form.owner ?? ''} onChange={e => setForm(f => ({ ...f, owner: e.target.value }))} />
+                  <Input
+                    value={form.owner ?? ""}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, owner: e.target.value }))
+                    }
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Owner Email</Label>
-                  <Input type="email" value={form.owner_email ?? ''} onChange={e => setForm(f => ({ ...f, owner_email: e.target.value }))} />
+                  <Input
+                    type="email"
+                    value={form.owner_email ?? ""}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, owner_email: e.target.value }))
+                    }
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>Review Date</Label>
-                  <Input type="date" value={form.review_date ?? ''} onChange={e => setForm(f => ({ ...f, review_date: e.target.value }))} />
+                  <Input
+                    type="date"
+                    value={form.review_date ?? ""}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, review_date: e.target.value }))
+                    }
+                  />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Expiry Date</Label>
-                  <Input type="date" value={form.expiry_date ?? ''} onChange={e => setForm(f => ({ ...f, expiry_date: e.target.value }))} />
+                  <Input
+                    type="date"
+                    value={form.expiry_date ?? ""}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, expiry_date: e.target.value }))
+                    }
+                  />
                 </div>
               </div>
 
@@ -581,20 +1256,36 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                 <div className="flex gap-2">
                   <Input
                     value={tagInput}
-                    onChange={e => setTagInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); addTag() } }}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" &&
+                        !e.nativeEvent.isComposing &&
+                        e.nativeEvent.keyCode !== 229
+                      ) {
+                        e.preventDefault();
+                        addTag();
+                      }
+                    }}
                     placeholder="Add a tag and press Enter"
                   />
-                  <Button type="button" variant="outline" onClick={addTag}>Add</Button>
+                  <Button type="button" variant="outline" onClick={addTag}>
+                    Add
+                  </Button>
                 </div>
                 {form.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {form.tags.map(t => (
+                    {form.tags.map((t) => (
                       <Badge
                         key={t}
                         variant="secondary"
                         className="cursor-pointer"
-                        onClick={() => setForm(f => ({ ...f, tags: f.tags.filter(x => x !== t) }))}
+                        onClick={() =>
+                          setForm((f) => ({
+                            ...f,
+                            tags: f.tags.filter((x) => x !== t),
+                          }))
+                        }
                       >
                         {t} &times;
                       </Badge>
@@ -608,24 +1299,46 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                 <Checkbox
                   id="is_public"
                   checked={form.is_public}
-                  onCheckedChange={v => setForm(f => ({ ...f, is_public: !!v }))}
+                  onCheckedChange={(v) =>
+                    setForm((f) => ({ ...f, is_public: !!v }))
+                  }
                 />
                 <div>
-                  <Label htmlFor="is_public" className="cursor-pointer font-medium flex items-center gap-1.5">
+                  <Label
+                    htmlFor="is_public"
+                    className="cursor-pointer font-medium flex items-center gap-1.5"
+                  >
                     <Globe className="h-4 w-4 text-emerald-500" />
                     Visible to all users
                   </Label>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    When unchecked, only users explicitly granted access by an admin can view this file.
+                    When unchecked, only users explicitly granted access by an
+                    admin can view this file.
                   </p>
                 </div>
               </div>
             </div>
 
             <DialogFooter className="mt-4">
-              <Button variant="outline" onClick={() => { setIsFormOpen(false); setUploadFile(null) }}>Cancel</Button>
+              <Button
+                variant="outline"
+                disabled={saving || uploading}
+                onClick={() => {
+                  setIsFormOpen(false);
+                  setUploadFile(null);
+                  setUploadedReplacement(null);
+                }}
+              >
+                Cancel
+              </Button>
               <Button onClick={handleSave} disabled={saving || uploading}>
-                {saving || uploading ? (uploadFile ? 'Uploading...' : 'Saving...') : selected ? 'Update Document' : 'Upload & Save'}
+                {saving || uploading
+                  ? uploadFile
+                    ? "Uploading..."
+                    : "Saving..."
+                  : selected
+                    ? "Update Document"
+                    : "Upload & Save"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -644,16 +1357,49 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
           {selected && (
             <div className="space-y-3 text-sm">
               <div className="flex flex-wrap gap-2">
-                <Badge variant="outline" className={STATUS_STYLES[selected.status]}>{selected.status}</Badge>
+                <Badge
+                  variant="outline"
+                  className={STATUS_STYLES[selected.status]}
+                >
+                  {selected.status}
+                </Badge>
                 <Badge variant="outline">{selected.category}</Badge>
                 <Badge variant="outline">v{selected.version}</Badge>
-                {selected.is_public
-                  ? <Badge variant="outline" className="gap-1 text-emerald-600 border-emerald-500/30"><Globe className="h-3 w-3" />Public</Badge>
-                  : <Badge variant="outline" className="gap-1 text-amber-600 border-amber-500/30"><Lock className="h-3 w-3" />Restricted</Badge>
-                }
+                {selected.is_public ? (
+                  <Badge
+                    variant="outline"
+                    className="gap-1 text-emerald-600 border-emerald-500/30"
+                  >
+                    <Globe className="h-3 w-3" />
+                    Public
+                  </Badge>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className="gap-1 text-amber-600 border-amber-500/30"
+                  >
+                    <Lock className="h-3 w-3" />
+                    Restricted
+                  </Badge>
+                )}
               </div>
-              {selected.description && <p className="text-muted-foreground leading-relaxed">{selected.description}</p>}
-              {(() => { const state = expiryState(selected.expiry_date); const Icon = state.icon; return <div className={`flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 ${state.className}`}><Icon className="h-4 w-4" /><span className="font-medium">{state.label}</span></div> })()}
+              {selected.description && (
+                <p className="text-muted-foreground leading-relaxed">
+                  {selected.description}
+                </p>
+              )}
+              {(() => {
+                const state = expiryState(selected.expiry_date);
+                const Icon = state.icon;
+                return (
+                  <div
+                    className={`flex items-center gap-2 rounded-lg border bg-muted/30 px-3 py-2 ${state.className}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="font-medium">{state.label}</span>
+                  </div>
+                );
+              })()}
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg bg-muted/40 p-3">
                 <Row label="Doc No." value={selected.doc_no} />
                 <Row label="Sub-Category" value={selected.sub_category} />
@@ -662,24 +1408,34 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                 <Row label="Uploaded By" value={selected.uploaded_by} />
                 <Row label="File" value={selected.file_name} />
                 <Row label="File Size" value={selected.file_size} />
-                <Row label="Review Date" value={fmtDate(selected.review_date)} />
-                <Row label="Expiry Date" value={fmtDate(selected.expiry_date)} />
+                <Row
+                  label="Review Date"
+                  value={fmtDate(selected.review_date)}
+                />
+                <Row
+                  label="Expiry Date"
+                  value={fmtDate(selected.expiry_date)}
+                />
               </div>
               {selected.tags?.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  {selected.tags.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
+                  {selected.tags.map((t) => (
+                    <Badge key={t} variant="secondary">
+                      {t}
+                    </Badge>
+                  ))}
                 </div>
               )}
               {selected.file_url && (
                 <a
-                  href={selected.file_url}
+                  href={`/api/hse-files/${encodeURIComponent(selected.id)}/download`}
                   target="_blank"
                   rel="noopener noreferrer"
                   download={selected.file_name ?? true}
                   className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                 >
                   <Download className="h-4 w-4" />
-                  Download {selected.file_name ?? 'File'}
+                  Download {selected.file_name ?? "File"}
                 </a>
               )}
             </div>
@@ -688,7 +1444,7 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
       </Dialog>
 
       {/* ── Access Management Dialog (admin only) ────────────────────────── */}
-      {isAdmin && (
+      {canEdit && (
         <Dialog open={isAccessOpen} onOpenChange={setIsAccessOpen}>
           <DialogContent className="max-w-md">
             <DialogHeader>
@@ -704,10 +1460,13 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                 <Checkbox
                   id="access_public"
                   checked={accessIsPublic}
-                  onCheckedChange={v => setAccessIsPublic(!!v)}
+                  onCheckedChange={(v) => setAccessIsPublic(!!v)}
                 />
                 <div>
-                  <Label htmlFor="access_public" className="cursor-pointer font-medium flex items-center gap-1.5">
+                  <Label
+                    htmlFor="access_public"
+                    className="cursor-pointer font-medium flex items-center gap-1.5"
+                  >
                     <Globe className="h-4 w-4 text-emerald-500" />
                     Visible to all users
                   </Label>
@@ -721,20 +1480,27 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm font-medium">Grant access to specific users</p>
+                    <p className="text-sm font-medium">
+                      Grant access to specific users
+                    </p>
                   </div>
 
                   <Input
                     placeholder="Search users..."
                     value={accessSearch}
-                    onChange={e => setAccessSearch(e.target.value)}
+                    onChange={(e) => setAccessSearch(e.target.value)}
                   />
 
                   {accessEmails.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {accessEmails.map(e => (
-                        <Badge key={e} variant="secondary" className="gap-1 cursor-pointer" onClick={() => toggleUserAccess(e)}>
-                          {allUsers.find(u => u.email === e)?.name ?? e}
+                      {accessEmails.map((e) => (
+                        <Badge
+                          key={e}
+                          variant="secondary"
+                          className="gap-1 cursor-pointer"
+                          onClick={() => toggleUserAccess(e)}
+                        >
+                          {allUsers.find((u) => u.email === e)?.name ?? e}
                           <X className="h-3 w-3" />
                         </Badge>
                       ))}
@@ -744,18 +1510,21 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                   <ScrollArea className="h-56 rounded-lg border">
                     <div className="p-2 space-y-1">
                       {allUsers
-                        .filter(u => {
-                          if (!accessSearch) return true
-                          const q = accessSearch.toLowerCase()
-                          return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+                        .filter((u) => {
+                          if (!accessSearch) return true;
+                          const q = accessSearch.toLowerCase();
+                          return (
+                            u.name.toLowerCase().includes(q) ||
+                            u.email.toLowerCase().includes(q)
+                          );
                         })
-                        .map(u => (
+                        .map((u) => (
                           <div
                             key={u.email}
                             className={`flex items-center gap-3 rounded-md px-3 py-2 cursor-pointer transition-colors ${
                               accessEmails.includes(u.email)
-                                ? 'bg-primary/10 border border-primary/20'
-                                : 'hover:bg-muted'
+                                ? "bg-primary/10 border border-primary/20"
+                                : "hover:bg-muted"
                             }`}
                             onClick={() => toggleUserAccess(u.email)}
                           >
@@ -763,8 +1532,12 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
                               {u.name.charAt(0).toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium leading-tight truncate">{u.name}</p>
-                              <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                              <p className="text-sm font-medium leading-tight truncate">
+                                {u.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {u.email}
+                              </p>
                             </div>
                             {accessEmails.includes(u.email) && (
                               <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
@@ -782,29 +1555,49 @@ export function DocumentsLibrary({ readOnly = false, activeCompanyId = null }: P
             </div>
 
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAccessOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setIsAccessOpen(false)}>
+                Cancel
+              </Button>
               <Button onClick={handleSaveAccess} disabled={savingAccess}>
-                {savingAccess ? 'Saving...' : 'Save Access Settings'}
+                {savingAccess ? "Saving..." : "Save Access Settings"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
     </div>
-  )
+  );
 }
 
-  // ── small helper ──────────────────────────────────────────────────────────────
-function AuditStat({ label, value, tone }: { label: string; value: string | number; tone: string }) {
-  return <div className="rounded-lg border border-border/70 bg-background/60 p-3"><p className="text-xs text-muted-foreground">{label}</p><p className={`mt-1 text-xl font-semibold ${tone}`}>{value}</p></div>
+// ── small helper ──────────────────────────────────────────────────────────────
+function AuditStat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string | number;
+  tone: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-background/60 p-3">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className={`mt-1 text-xl font-semibold ${tone}`}>{value}</p>
+    </div>
+  );
 }
 
- function Row({ label, value }: { label: string; value: string | null | undefined }) {
-
+function Row({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | null | undefined;
+}) {
   return (
     <div>
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium truncate">{value || '—'}</p>
+      <p className="text-sm font-medium truncate">{value || "—"}</p>
     </div>
-  )
+  );
 }

@@ -1,29 +1,16 @@
 'use server'
 
-import { Pool } from 'pg'
-import { put, del } from '@vercel/blob'
+import { randomUUID } from 'node:crypto'
+import { and, asc, eq, or, sql } from 'drizzle-orm'
+import { del } from '@vercel/blob'
 import { revalidatePath } from 'next/cache'
-import { headers } from 'next/headers'
-import { auth } from '@/lib/auth'
-
-const LIBRARY_MANAGER_ROLES = new Set(['MASTER USER', 'ADMIN SYSTEM', 'HSE ADMIN', 'ADMIN'])
-
-function cleanFolderName(value: unknown) {
-  return String(value ?? '').replace(/[\\/<>:"|?*\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim()
-}
-
-async function requireLibraryManager(companyId?: string | null) {
-  const session = await auth.api.getSession({ headers: await headers() })
-  const role = String((session?.user as { role?: string } | undefined)?.role ?? '').trim().toUpperCase()
-  if (!session?.user?.id || !LIBRARY_MANAGER_ROLES.has(role)) throw new Error('Only Admin and Master users can manage library documents')
-  if (companyId) {
-    const membership = await pool.query('SELECT 1 FROM public.company_membership WHERE user_id=$1 AND company_id=$2 AND status=\'Active\' LIMIT 1', [session.user.id, companyId])
-    if (membership.rowCount === 0 && role !== 'ADMIN SYSTEM') throw new Error('You are not authorized for this company')
-  }
-  return session.user
-}
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+import { z } from 'zod'
+import { db } from '@/lib/db'
+import { user } from '@/lib/db/schema'
+import { libraryDocument, libraryFolder } from '@/lib/db/library-schema'
+import { getAuthorizedLibraryDocument, requireLibraryAdmin, requireLibraryCompany, requireLibraryFolder, requireLibraryUser } from '@/lib/library-access'
+import { isLibraryAdmin, libraryErrorMessage } from '@/lib/library-policy'
+import { libraryBlobToken, verifiedLibraryBlob } from '@/lib/library-upload'
 
 export interface HSEDocument {
   id: string
@@ -55,31 +42,6 @@ export interface HSEDocument {
   company_id?: string | null
 }
 
-// Upload a file to Vercel Blob via server action (avoids client-side CORS issues in preview)
-export async function uploadFileAction(
-  formData: FormData
-): Promise<{ success: boolean; url?: string; pathname?: string; error?: string }> {
-  try {
-    await requireLibraryManager()
-    const file = formData.get('file') as File | null
-    if (!file || file.size === 0) return { success: false, error: 'No file provided' }
-    if (file.size > 50 * 1024 * 1024) return { success: false, error: 'File exceeds 50 MB limit' }
-
-    const companyId = String(formData.get('companyId') ?? '').trim()
-    if (!companyId) return { success: false, error: 'Select a company before uploading a document' }
-    await requireLibraryManager(companyId)
-    const safeCompanyId = companyId.replace(/[^a-zA-Z0-9_-]/g, '_')
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
-    const pathname = `hse-files/${safeCompanyId}/${Date.now()}-${safeName}`
-    const blob = await put(pathname, file, { access: 'public' })
-
-    return { success: true, url: blob.url, pathname: blob.pathname }
-  } catch (e: any) {
-    console.error('[documents] uploadFileAction error:', e.message)
-    return { success: false, error: e.message ?? 'Upload failed' }
-  }
-}
-
 export interface DocumentFolder {
   id: string
   company_id: string
@@ -91,222 +53,171 @@ export interface DocumentFolder {
   updated_at: string
 }
 
-export async function getDocumentFolders(userEmail: string, companyId: string): Promise<DocumentFolder[]> {
-  try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (!session?.user?.email || session.user.email.toLowerCase() !== userEmail.toLowerCase()) return []
-    const result = await pool.query('SELECT f.* FROM public.document_folder f JOIN public.company_membership m ON m.company_id=f.company_id AND m.user_id=$1 AND m.status=\'Active\' WHERE f.company_id=$2 ORDER BY f.parent_id NULLS FIRST, lower(f.name)', [session.user.id, companyId])
-    return result.rows
-  } catch (e: any) { console.error('[documents] get folders error:', e.message); return [] }
+const optionalText = z.string().trim().nullish().transform(value => value || null)
+const optionalDate = optionalText.refine(value => !value || !Number.isNaN(Date.parse(value)), 'Invalid date')
+const documentInput = z.object({
+  title: z.string().trim().min(1, 'Title is required').max(500),
+  category: z.string().trim().min(1).max(200),
+  sub_category: optionalText, description: optionalText,
+  version: z.string().trim().min(1).max(100).default('1.0'),
+  status: z.enum(['Active', 'Under Review', 'Superseded', 'Archived']).default('Active'),
+  business_unit: optionalText, owner: optionalText, owner_email: optionalText,
+  review_date: optionalDate, expiry_date: optionalDate,
+  tags: z.array(z.string().trim().min(1).max(200)).default([]),
+  is_public: z.boolean().default(true),
+  allowed_emails: z.array(z.email().transform(value => value.toLowerCase())).default([]),
+  folder_id: optionalText,
+  company_id: z.string().trim().min(1, 'Select a company'),
+})
+
+function documentResult(row: typeof libraryDocument.$inferSelect): HSEDocument {
+  return { ...row, tags: row.tags ?? [], allowed_emails: row.allowed_emails ?? [], is_public: row.is_public ?? false, created_at: row.created_at ?? '', updated_at: row.updated_at ?? '' }
 }
 
-export async function createDocumentFolder(companyId: string, parentId: string | null, name: string, description?: string): Promise<{ success: boolean; folder?: DocumentFolder; error?: string }> {
+function folderResult(row: typeof libraryFolder.$inferSelect): DocumentFolder {
+  return { ...row, created_at: row.created_at ?? '', updated_at: row.updated_at ?? '' }
+}
+
+function errorResult(error: unknown) {
+  return { success: false as const, error: error instanceof z.ZodError ? error.issues.map(issue => issue.message).join('; ') : libraryErrorMessage(error) }
+}
+
+function cleanFolderName(value: unknown) {
+  return String(value ?? '').replace(/[\\/<>:"|?*\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim()
+}
+
+export async function getLibraryPermissions(companyId: string | null) {
   try {
-    const actor = await requireLibraryManager(companyId)
+    const actor = await requireLibraryUser()
+    if (!companyId) return { canManage: false }
+    await requireLibraryCompany(actor, companyId)
+    return { canManage: isLibraryAdmin(actor.role) }
+  } catch { return { canManage: false } }
+}
+
+export async function getDocumentFolders(_userEmail: string, companyId: string): Promise<DocumentFolder[]> {
+  const actor = await requireLibraryUser()
+  await requireLibraryCompany(actor, companyId)
+  return (await db.select().from(libraryFolder).where(eq(libraryFolder.company_id, companyId)).orderBy(asc(libraryFolder.name))).map(folderResult)
+}
+
+export async function createDocumentFolder(companyId: string, parentId: string | null, name: string, description?: string) {
+  try {
+    const actor = await requireLibraryAdmin(companyId)
+    await requireLibraryFolder(companyId, parentId)
     const cleanName = cleanFolderName(name)
-    if (!cleanName) return { success: false, error: 'Folder name is required' }
-    if (cleanName.length > 120) return { success: false, error: 'Folder name is too long' }
-    if (parentId) {
-      const parent = await pool.query('SELECT 1 FROM public.document_folder WHERE id=$1 AND company_id=$2', [parentId, companyId])
-      if (parent.rowCount === 0) return { success: false, error: 'Parent folder not found' }
-    }
-    const id = `folder-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-    const result = await pool.query('INSERT INTO public.document_folder (id, company_id, parent_id, name, description, created_by) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *', [id, companyId, parentId || null, cleanName, description?.trim() || null, actor.id])
+    if (!cleanName || cleanName.length > 120) throw new Error('Folder name must contain 1–120 characters')
+    const [folder] = await db.insert(libraryFolder).values({ id: `folder-${randomUUID()}`, company_id: companyId, parent_id: parentId || null, name: cleanName, description: description?.trim() || null, created_by: actor.id }).returning()
     revalidatePath('/')
-    return { success: true, folder: result.rows[0] }
-  } catch (e: any) {
-    const duplicate = e?.code === '23505'
-    return { success: false, error: duplicate ? 'A folder with this name already exists here' : e.message }
-  }
+    return { success: true as const, folder: folderResult(folder) }
+  } catch (error) { return errorResult(error) }
 }
 
-export async function renameDocumentFolder(id: string, companyId: string, name: string): Promise<{ success: boolean; error?: string }> {
+export async function renameDocumentFolder(id: string, companyId: string, name: string) {
   try {
-    await requireLibraryManager(companyId)
+    await requireLibraryAdmin(companyId)
     const cleanName = cleanFolderName(name)
-    if (!cleanName) return { success: false, error: 'Folder name is required' }
-    await pool.query('UPDATE public.document_folder SET name=$1, updated_at=NOW() WHERE id=$2 AND company_id=$3', [cleanName, id, companyId])
+    if (!cleanName || cleanName.length > 120) throw new Error('Folder name must contain 1–120 characters')
+    const changed = await db.update(libraryFolder).set({ name: cleanName, updated_at: new Date().toISOString() }).where(and(eq(libraryFolder.id, id), eq(libraryFolder.company_id, companyId))).returning({ id: libraryFolder.id })
+    if (!changed.length) throw new Error('Folder not found')
     revalidatePath('/')
     return { success: true }
-  } catch (e: any) { return { success: false, error: e?.code === '23505' ? 'A folder with this name already exists here' : e.message } }
+  } catch (error) { return errorResult(error) }
 }
 
-export async function deleteDocumentFolder(id: string, companyId: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteDocumentFolder(id: string, companyId: string) {
   try {
-    await requireLibraryManager(companyId)
-    const children = await pool.query('SELECT 1 FROM public.document_folder WHERE parent_id=$1 LIMIT 1', [id])
-    const files = await pool.query('SELECT 1 FROM public.document WHERE folder_id=$1 LIMIT 1', [id])
-    if (children.rowCount || files.rowCount) return { success: false, error: 'Folder is not empty. Move its contents before deleting it.' }
-    await pool.query('DELETE FROM public.document_folder WHERE id=$1 AND company_id=$2', [id, companyId])
+    await requireLibraryAdmin(companyId)
+    const children = await db.select({ id: libraryFolder.id }).from(libraryFolder).where(eq(libraryFolder.parent_id, id)).limit(1)
+    const files = await db.select({ id: libraryDocument.id }).from(libraryDocument).where(eq(libraryDocument.folder_id, id)).limit(1)
+    if (children.length || files.length) throw new Error('Folder is not empty. Move its contents before deleting it.')
+    await db.delete(libraryFolder).where(and(eq(libraryFolder.id, id), eq(libraryFolder.company_id, companyId)))
     revalidatePath('/')
     return { success: true }
-  } catch (e: any) { return { success: false, error: e.message } }
+  } catch (error) { return errorResult(error) }
 }
 
-// Returns documents visible to the given user email.
-// Admins see everything. Regular users see: is_public=true OR their email is in allowed_emails.
-export async function getDocuments(userEmail?: string, isAdmin?: boolean, companyId?: string | null): Promise<HSEDocument[]> {
+export async function getDocuments(_userEmail?: string, _isAdmin?: boolean, companyId?: string | null): Promise<HSEDocument[]> {
+  const actor = await requireLibraryUser()
+  if (!companyId) return []
+  await requireLibraryCompany(actor, companyId)
+  const visibility = isLibraryAdmin(actor.role) ? undefined : or(eq(libraryDocument.is_public, true), sql`${actor.email.toLowerCase()} = ANY(${libraryDocument.allowed_emails})`)
+  const rows = await db.select().from(libraryDocument).where(and(eq(libraryDocument.company_id, companyId), visibility)).orderBy(asc(libraryDocument.category), asc(libraryDocument.title))
+  return rows.map(documentResult)
+}
+
+export async function createDocument(data: Partial<HSEDocument> & { title: string; category: string }, uploadReceipt?: string): Promise<{ success: boolean; id?: string; error?: string }> {
   try {
-    let query: string
-    let params: string[]
-    if (isAdmin && companyId) {
-      query = 'SELECT * FROM public.document WHERE company_id = $1 ORDER BY category, title'
-      params = [companyId]
-    } else if (isAdmin) {
-      query = 'SELECT * FROM public.document ORDER BY category, title'
-      params = []
-    } else if (userEmail && companyId) {
-      query = `SELECT * FROM public.document
-               WHERE company_id = $1 AND (is_public = true OR $2 = ANY(allowed_emails))
-               ORDER BY category, title`
-      params = [companyId, userEmail]
-    } else {
-      query = 'SELECT * FROM public.document WHERE false'
-      params = []
+    const actor = await requireLibraryAdmin(data.company_id)
+    const metadata = documentInput.parse(data)
+    await requireLibraryCompany(actor, metadata.company_id)
+    await requireLibraryFolder(metadata.company_id, metadata.folder_id)
+    if (!uploadReceipt && (data.file_url || data.blob_pathname)) throw new Error('A verified upload is required')
+    const file = uploadReceipt ? await verifiedLibraryBlob(uploadReceipt, actor, metadata.company_id) : null
+    const id = file?.id ?? randomUUID()
+    const now = new Date().toISOString()
+    const [created] = await db.insert(libraryDocument).values({
+      ...metadata, ...file, id, doc_no: `DOC-${new Date().getFullYear()}-${id}`,
+      uploaded_by: actor.name, uploaded_by_email: actor.email, created_at: now, updated_at: now,
+    }).onConflictDoNothing({ target: libraryDocument.id }).returning({ id: libraryDocument.id })
+    if (!created) {
+      const [existing] = await db.select({ id: libraryDocument.id }).from(libraryDocument).where(and(eq(libraryDocument.id, id), eq(libraryDocument.company_id, metadata.company_id), eq(libraryDocument.uploaded_by_email, actor.email))).limit(1)
+      if (!existing) throw new Error('Could not confirm the saved document')
     }
-    const res = await pool.query(query, params)
-    const toStr = (v: unknown) => (v instanceof Date ? v.toISOString() : (v as string | null) ?? null)
-    return res.rows.map(r => ({
-      ...r,
-      tags: r.tags ?? [],
-      allowed_emails: r.allowed_emails ?? [],
-      // pg returns TIMESTAMPTZ columns as Date objects — convert to ISO strings
-      created_at: toStr(r.created_at) ?? '',
-      updated_at: toStr(r.updated_at) ?? '',
-      review_date: toStr(r.review_date),
-      expiry_date: toStr(r.expiry_date),
-    }))
-  } catch (e: any) {
-    console.error('[documents] getDocuments error:', e.message)
-    return []
-  }
-}
-
-export async function createDocument(
-  data: Partial<HSEDocument> & { title: string; category: string }
-): Promise<{ success: boolean; id?: string }> {
-  try {
-    await requireLibraryManager(data.company_id)
-    const year = new Date().getFullYear()
-    const count = await pool.query("SELECT COUNT(*) FROM public.document WHERE doc_no LIKE $1", [`DOC-${year}-%`])
-    const seq = String(Number(count.rows[0].count) + 1).padStart(4, '0')
-    const doc_no = `DOC-${year}-${seq}`
-
-    const res = await pool.query(`
-      INSERT INTO public.document
-        (doc_no, title, category, sub_category, description, version, status,
-         file_url, file_name, file_size, file_type, blob_pathname, business_unit,
-         owner, owner_email, uploaded_by, uploaded_by_email,
-         review_date, expiry_date, tags, is_public, allowed_emails, company_id, folder_id)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
-      RETURNING id
-    `, [
-      doc_no, data.title, data.category,
-      data.sub_category ?? null, data.description ?? null,
-      data.version ?? '1.0', data.status ?? 'Active',
-      data.file_url ?? null, data.file_name ?? null, data.file_size ?? null,
-      data.file_type ?? null, data.blob_pathname ?? null,
-      data.business_unit ?? null, data.owner ?? null, data.owner_email ?? null,
-      data.uploaded_by ?? null, data.uploaded_by_email ?? null,
-      data.review_date ?? null, data.expiry_date ?? null,
-      data.tags ?? [], data.is_public ?? true, data.allowed_emails ?? [], data.company_id ?? null, data.folder_id ?? null,
-    ])
     revalidatePath('/')
-    return { success: true, id: res.rows[0].id }
-  } catch (e: any) {
-    console.error('[documents] create error:', e.message)
-    return { success: false }
-  }
+    return { success: true, id }
+  } catch (error) { return errorResult(error) }
 }
 
-export async function updateDocument(
-  id: string,
-  data: Partial<HSEDocument>
-  ): Promise<{ success: boolean }> {
-    try {
-      const existing = await pool.query('SELECT company_id FROM public.document WHERE id=$1', [id])
-      const companyId = data.company_id ?? existing.rows[0]?.company_id
-      await requireLibraryManager(companyId)
-      if (data.folder_id) {
-        const folder = await pool.query('SELECT 1 FROM public.document_folder WHERE id=$1 AND company_id=$2', [data.folder_id, companyId])
-        if (folder.rowCount === 0) throw new Error('Destination folder is not authorized')
-      }
-      await pool.query(`
-  UPDATE public.document SET
-        title=$1, category=$2, sub_category=$3, description=$4, version=$5, status=$6,
-        file_url=$7, file_name=$8, file_size=$9, file_type=$10, blob_pathname=$11,
-        business_unit=$12, owner=$13, owner_email=$14,
-        review_date=$15, expiry_date=$16, tags=$17,
-        is_public=$18, allowed_emails=$19, folder_id=$20, updated_at=NOW()
-      WHERE id=$21
-    `, [
-      data.title, data.category,
-      data.sub_category ?? null, data.description ?? null,
-      data.version ?? '1.0', data.status ?? 'Active',
-      data.file_url ?? null, data.file_name ?? null, data.file_size ?? null,
-      data.file_type ?? null, data.blob_pathname ?? null,
-      data.business_unit ?? null, data.owner ?? null, data.owner_email ?? null,
-      data.review_date ?? null, data.expiry_date ?? null,
-      data.tags ?? [], data.is_public ?? true, data.allowed_emails ?? [], data.folder_id ?? null,
-      id,
-    ])
+export async function updateDocument(id: string, data: Partial<HSEDocument>, uploadReceipt?: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { actor, document } = await getAuthorizedLibraryDocument(id, true)
+    if (data.company_id && data.company_id !== document.company_id) throw new Error('Moving documents between companies is not allowed')
+    const metadata = documentInput.parse({ ...document, ...data, company_id: document.company_id })
+    await requireLibraryFolder(metadata.company_id, metadata.folder_id)
+    if (!uploadReceipt && ((data.file_url !== undefined && data.file_url !== document.file_url) || (data.blob_pathname !== undefined && data.blob_pathname !== document.blob_pathname))) throw new Error('A verified upload is required to replace a file')
+    const file = uploadReceipt ? await verifiedLibraryBlob(uploadReceipt, actor, metadata.company_id) : null
+    const replacement = file ? { file_url: file.file_url, blob_pathname: file.blob_pathname, file_name: file.file_name, file_type: file.file_type, file_size: file.file_size } : {}
+    await db.update(libraryDocument).set({ ...metadata, ...replacement, updated_at: new Date().toISOString() }).where(and(eq(libraryDocument.id, id), eq(libraryDocument.company_id, metadata.company_id)))
     revalidatePath('/')
     return { success: true }
-  } catch (e: any) {
-    console.error('[documents] update error:', e.message)
-    return { success: false }
-  }
+  } catch (error) { return errorResult(error) }
 }
 
-export async function deleteDocument(id: string): Promise<{ success: boolean }> {
+export async function deleteDocument(id: string): Promise<{ success: boolean; error?: string }> {
   try {
-    const r = await pool.query('SELECT file_url, company_id FROM public.document WHERE id=$1', [id])
-    await requireLibraryManager(r.rows[0]?.company_id)
-    // Delete the blob file if one exists
-
-    if (r.rows[0]?.file_url) {
-      await del(r.rows[0].file_url).catch(() => {})
+    const { document } = await getAuthorizedLibraryDocument(id, true)
+    // Legacy/imported blobs can be shared. Only remove this library's new, uniquely owned blobs.
+    if (document.blob_pathname && /^hse-files\/[^/]+\/[^/]+\/[0-9a-f-]{36}\//i.test(document.blob_pathname)) {
+      const references = await db.select({ id: libraryDocument.id }).from(libraryDocument).where(eq(libraryDocument.blob_pathname, document.blob_pathname)).limit(2)
+      if (references.length === 1) await del(document.blob_pathname, { token: libraryBlobToken() })
     }
-    await pool.query('DELETE FROM public.document WHERE id=$1', [id])
+    await db.delete(libraryDocument).where(and(eq(libraryDocument.id, id), eq(libraryDocument.company_id, document.company_id!)))
     revalidatePath('/')
     return { success: true }
-  } catch (e: any) {
-    console.error('[documents] delete error:', e.message)
-    return { success: false }
-  }
+  } catch (error) { return errorResult(error) }
 }
 
-// Admin: grant access to specific user emails for a private document
-export async function updateDocumentAccess(
-  id: string,
-  allowedEmails: string[],
-  isPublic: boolean
-  ): Promise<{ success: boolean }> {
-    try {
-      const document = await pool.query('SELECT company_id FROM public.document WHERE id=$1', [id])
-      await requireLibraryManager(document.rows[0]?.company_id)
-      await pool.query(
-    'UPDATE public.document SET allowed_emails=$1, is_public=$2, updated_at=NOW() WHERE id=$3',
-      [allowedEmails, isPublic, id]
-    )
+export async function updateDocumentAccess(id: string, allowedEmails: string[], isPublic: boolean): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { document } = await getAuthorizedLibraryDocument(id, true)
+    const emails = z.array(z.email().transform(email => email.toLowerCase())).parse(allowedEmails)
+    const visible = z.boolean().parse(isPublic)
+    await db.update(libraryDocument).set({ allowed_emails: emails, is_public: visible, updated_at: new Date().toISOString() }).where(and(eq(libraryDocument.id, id), eq(libraryDocument.company_id, document.company_id!)))
     revalidatePath('/')
     return { success: true }
-  } catch (e: any) {
-    console.error('[documents] updateAccess error:', e.message)
-    return { success: false }
-  }
+  } catch (error) { return errorResult(error) }
 }
 
-// Get all user emails for the access management dropdown
 export async function getAllUserEmails(): Promise<{ name: string; email: string }[]> {
+  await requireLibraryAdmin()
+  const rows = await db.select({ name: user.name, email: user.email }).from(user).where(eq(user.banned, false)).orderBy(asc(user.name))
+  return rows.map(row => ({ name: row.name ?? row.email, email: row.email }))
+}
+
+export async function uploadFileAction(_formData: FormData): Promise<{ success: boolean; url?: string; pathname?: string; error?: string }> {
   try {
-    const r = await pool.query(
-      `SELECT name, email FROM neon_auth.user WHERE banned=false AND email IS NOT NULL ORDER BY name`,
-      []
-    )
-    return r.rows
-  } catch (e: any) {
-    console.error('[documents] getAllUserEmails error:', e.message)
-    return []
-  }
+    await requireLibraryAdmin()
+    return { success: false, error: 'Use the library direct-upload flow, which supports large files without sending file bodies through a Server Action.' }
+  } catch (error) { return errorResult(error) }
 }

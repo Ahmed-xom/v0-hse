@@ -78,6 +78,7 @@ const translations: Record<string, string> = {
   "View Library": "عرض المكتبة",
   "Create Document": "إنشاء مستند",
   "Choose File": "اختيار ملف",
+  "Add File": "إضافة ملف",
   "Upload File": "رفع ملف",
   "Create Folder": "إنشاء مجلد",
   "Folder name": "اسم المجلد",
