@@ -544,35 +544,9 @@ export function UsersManagement() {
             <CardDescription>Manage {isLoadingUsers ? '...' : localUsers.length} HSE personnel across all business units</CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
-            {canDownloadTemplate && (
-              <Button variant="outline" className="gap-2" onClick={downloadImportTemplate}>
-                <FileSpreadsheet className="h-4 w-4" />
-                Import Template
-              </Button>
-            )}
-            {canImportExcel && (
-              <>
-                <input
-                  ref={importInputRef}
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  className="sr-only"
-                  onChange={handleImportExcel}
-                />
-                <Button
-                  variant="outline"
-                  className="gap-2"
-                  onClick={() => importInputRef.current?.click()}
-                  disabled={isImporting}
-                >
-                  <Upload className="h-4 w-4" />
-                  {isImporting ? "Importing..." : "Import Data"}
-                </Button>
-              </>
-            )}
             <Button variant="outline" className="gap-2" onClick={handleExportToExcel}>
               <Download className="h-4 w-4" />
-              Export Data
+              Export
             </Button>
             {canManageUsers && (
               <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>

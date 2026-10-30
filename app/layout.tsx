@@ -1,16 +1,15 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { AuthProvider } from '@/lib/auth-context'
 import { LanguageProvider } from '@/lib/language-context'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
-import { AmnkoIntro } from '@/components/amnko-intro'
 import './globals.css'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const _geist = localFont({ src: './fonts/Geist-latin-variable.woff2', display: 'swap' });
+const _geistMono = localFont({ src: './fonts/GeistMono-latin-variable.woff2', display: 'swap' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.amnkoo.online'),
@@ -64,7 +63,6 @@ export default function RootLayout({
               {children}
             </LanguageProvider>
             <Toaster />
-            <AmnkoIntro />
           </AuthProvider>
           {process.env.NODE_ENV === 'production' && (
             <>

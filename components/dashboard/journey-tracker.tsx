@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useState, useCallback, useMemo, useRef } from "react"
 import {
   Search, Plus, MoreHorizontal, Route, MapPin,
-  Loader2,
+  CheckCircle2, AlertCircle, Loader2,
   Trash2, Car, CalendarDays, Users, FileText, Download,
   Paperclip, X, ExternalLink,
   Sun, Moon,
@@ -141,17 +141,14 @@ export function JourneyTracker() {
   const [isImportingTemplate, setIsImportingTemplate] = useState(false)
   const [journeyTab, setJourneyTab] = useState<"all" | "morning" | "night">("all")
   const [formStep, setFormStep] = useState("summary")
-  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false)
   const formSteps = [['summary','Summary'],['driver','Driver Details'],['resources','Resources'],['journey','Journey'],['vehicle','Vehicle'],['checkin','Check-In'],['attachments','Attachments'],['inspection','Pre-Trip Inspection'],['route','Route Plan'],['changes','Route Changes'],['passengers','Passengers'],['night','Night Driving'],['hazards','Road Hazards'],['emergency','Emergency Contacts'],['risk','Risk Assessment']] as const
   const [inspection, setInspection] = useState<Record<string, "yes" | "no" | "na">>({})
   const inspectionItems = ["Air Bags", "Air Compressor", "Air Conditioning", "Brakes – Hand Brakes", "Drinking Water / Food", "Defensive Driving Certificate", "Driving License", "Fire Extinguisher", "First Aid Box", "Front & Side Mirrors", "Fuel Level", "Goods / Cargo Manifest", "IVMS / Drive Right", "Jack, Tools, Jack Plates", "Lights & Indicators", "Load Secured", "Oil Level", "Radiator Coolant Level", "Reflective Triangle", "Rollover Bar", "Seat Belts", "Spare Tire", "Tires", "Vehicle License"]
   const validationErrors = useMemo(() => validateJourneyForm(form, inspection, inspectionItems), [form, inspection])
-  const visibleErrors = hasAttemptedSubmit ? validationErrors : []
-  const errorsByStep = useMemo(() => visibleErrors.reduce<Record<string, JourneyValidationError[]>>((groups, error) => { (groups[error.step] ??= []).push(error); return groups }, {}), [visibleErrors])
-  const firstErrorFor = (field: string) => visibleErrors.find((error) => error.field === field)
+  const errorsByStep = useMemo(() => validationErrors.reduce<Record<string, JourneyValidationError[]>>((groups, error) => { (groups[error.step] ??= []).push(error); return groups }, {}), [validationErrors])
+  const firstErrorFor = (field: string) => validationErrors.find((error) => error.field === field)
   const fieldClass = (field: string) => firstErrorFor(field) ? "border-destructive focus-visible:ring-destructive" : ""
-  const requiredFormSteps = new Set(["summary", "driver", "inspection"])
-  const isFormStepComplete = (step: string) => requiredFormSteps.has(step) && !validationErrors.some((error) => error.step === step)
+  const isFormStepComplete = (step: string) => !(errorsByStep[step]?.length)
   const weatherHazards = ["Cloudy", "Fog", "High Temperature / Hot", "Low Temperature / Cold", "Rain", "Sand Storm", "Snow", "Storm", "Sunny", "Wind"]
   const roadHazards = ["Black Top", "Clear Visibility", "Dry", "Foggy", "Graded", "Gravel", "High Wind", "Low Visibility", "Mud", "Others", "Poor Visibility", "Sand", "Snow / Ice", "Unpaved", "Wet"]
   const riskFactors = ["Driver condition", "Driver competency", "Vehicle condition", "Route", "Weather", "Road conditions", "Journey duration", "Night driving", "Remote location", "Load", "Other hazards"]
@@ -222,14 +219,10 @@ export function JourneyTracker() {
   }), [journeys])
 
   const handleSubmit = async () => {
-    if (!user || isSaving) return
+    if (!user) return
     const errors = validateJourneyForm(form, inspection, inspectionItems)
-    setHasAttemptedSubmit(true)
-    if (errors.length > 0) {
-      setFormStep(errors[0].step)
-      requestAnimationFrame(() => document.getElementById(errors[0].field)?.focus())
-      return
-    }
+    const isDraft = errors.length > 0
+    if (isDraft) setFormStep(errors[0].step)
     setIsSaving(true)
 
     // Upload attachment if selected
@@ -273,10 +266,9 @@ export function JourneyTracker() {
     })
     setIsSaving(false)
     if (res.success) {
-      toast({ title: "Journey logged", description: "Your journey has been saved successfully." })
-      setIsDialogOpen(false)
-      setForm(emptyForm)
-      setHasAttemptedSubmit(false)
+      toast({ title: isDraft ? "Journey draft saved" : "Journey logged", description: isDraft ? `Incomplete Journey – ${errors.length} required fields missing. Complete the highlighted fields before final submission.` : "Your journey has been saved successfully." })
+      if (!isDraft) setIsDialogOpen(false)
+      if (!isDraft) setForm(emptyForm)
       setAttachedFile(null)
       fetchJourneys()
     } else {
@@ -598,34 +590,49 @@ export function JourneyTracker() {
       </Card>
 
       {/* New Journey Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (open) { setFormStep("summary"); setHasAttemptedSubmit(false) } if (!open) { setForm(emptyForm); setAttachedFile(null); setFormStep("summary"); setHasAttemptedSubmit(false) } }}>
+      <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (open) setFormStep("summary"); if (!open) { setForm(emptyForm); setAttachedFile(null); setFormStep("summary") } }}>
         <DialogContent className="max-h-[92vh] w-[calc(100vw-1rem)] max-w-5xl overflow-y-auto p-4 sm:w-[calc(100vw-2rem)] sm:p-6">
           <DialogHeader>
             <DialogTitle>New Journey</DialogTitle>
             <DialogDescription>Fill in the details below to log a new journey.</DialogDescription>
           </DialogHeader>
 
-          {hasAttemptedSubmit && visibleErrors.length > 0 && <div role="alert" className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-destructive">
-            <p className="font-semibold">Incomplete Journey — {visibleErrors.length} required {visibleErrors.length === 1 ? "field" : "fields"} missing</p>
-            <p className="mt-1 text-sm">Complete the highlighted fields before logging the Journey.</p>
-            <div className="mt-2 flex flex-wrap gap-2">{formSteps.filter(([step]) => errorsByStep[step]?.length).map(([step, label]) => <button type="button" key={step} className="rounded-full border border-destructive/40 px-2 py-1 text-xs hover:bg-destructive/10" onClick={() => { setFormStep(step); requestAnimationFrame(() => document.getElementById(errorsByStep[step][0].field)?.focus()) }}>{label}: {errorsByStep[step].length} missing</button>)}</div>
-            <ul className="mt-2 space-y-1 text-sm">{visibleErrors.map((error) => <li key={`${error.step}-${error.field}`}><button type="button" className="underline underline-offset-2" onClick={() => { setFormStep(error.step); requestAnimationFrame(() => document.getElementById(error.field)?.focus()) }}>{error.label}: {error.message}</button></li>)}</ul>
+          {validationErrors.length > 0 && <div role="alert" className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-destructive">
+            <p className="font-semibold">Incomplete Journey – {validationErrors.length} required fields missing</p>
+            <p className="mt-1 text-sm">بيانات ناقصة · Complete the highlighted fields before final submission.</p>
+            <div className="mt-2 flex flex-wrap gap-2">{formSteps.filter(([step]) => errorsByStep[step]?.length).map(([step, label]) => <button type="button" key={step} className="rounded-full border border-destructive/40 px-2 py-1 text-xs hover:bg-destructive/10" onClick={() => { setFormStep(step); requestAnimationFrame(() => document.getElementById(errorsByStep[step][0].field)?.focus()) }}>⚠ {label}: {errorsByStep[step].length} missing</button>)}</div>
+            <ul className="mt-2 space-y-1 text-sm">{validationErrors.map((error) => <li key={`${error.step}-${error.field}`}><button type="button" className="underline underline-offset-2" onClick={() => { setFormStep(error.step); requestAnimationFrame(() => document.getElementById(error.field)?.focus()) }}>{error.label}: {error.message}</button></li>)}</ul>
           </div>}
-          <div className="mb-4 rounded-lg border border-border/50 bg-muted/20 p-4">
-            <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
-              <div><p className="text-sm font-semibold">Journey completion</p><p className="text-xs text-muted-foreground">{hasAttemptedSubmit && visibleErrors.length > 0 ? "Review the highlighted sections before submitting." : "Complete each section before logging the Journey."}</p></div>
-              <Badge variant="outline">{completedFormSteps} of {formSteps.length} sections</Badge>
+          <div className="mb-4 rounded-lg border border-border/50 bg-muted/20 p-3">
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-sm font-semibold">Journey completion</p>
+                <p className="text-xs text-muted-foreground">Completion is based on saved user data and the fields completed in this journey.</p>
+              </div>
+              <Badge variant="outline">{completedFormSteps} / {formSteps.length} steps</Badge>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuemin={0} aria-valuemax={formSteps.length} aria-valuenow={completedFormSteps} aria-label="Journey completion"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(completedFormSteps / formSteps.length) * 100}%` }} /></div>
+            <div className="flex flex-wrap gap-2">
+              <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${user?.id ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" : "border-border text-muted-foreground"}`}>
+                {user?.id ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                <span>Sign Up</span><span className="text-[10px] opacity-80">{user?.id ? "Completed" : "Pending"}</span>
+              </div>
+              {formSteps.map(([value, label]) => {
+                const completed = isFormStepComplete(value)
+                const missing = errorsByStep[value]?.length ?? 0
+                return <button type="button" key={value} onClick={() => setFormStep(value)} className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${missing ? "border-destructive/50 bg-destructive/10 text-destructive" : completed ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700" : "border-border text-muted-foreground"}`}>
+                  {missing ? <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" /> : completed ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : null}
+                  <span>{label}</span><span className="text-[10px] opacity-80">{missing ? `${missing} missing` : completed ? "Completed" : "Not Completed"}</span>
+                </button>
+              })}
+            </div>
           </div>
 
           <Tabs value={formStep} onValueChange={setFormStep} className="mt-2">
-            <TabsList className="grid h-auto w-full grid-cols-2 gap-2 overflow-visible bg-muted/50 p-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 overflow-visible bg-muted/50 p-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {formSteps.map(([value, label], index) => {
                 const completed = isFormStepComplete(value)
                 const missing = errorsByStep[value]?.length ?? 0
-                const incomplete = hasAttemptedSubmit && missing > 0
-                return <TabsTrigger key={value} value={value} className={`h-auto min-h-12 w-full min-w-0 justify-start gap-2 whitespace-normal rounded-md px-3 py-2 text-left text-xs leading-tight ${incomplete ? "text-destructive" : completed ? "text-emerald-700" : "text-muted-foreground"}`}><span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold ${incomplete ? "bg-destructive/15 text-destructive" : completed ? "bg-emerald-500/15 text-emerald-700" : "bg-background text-muted-foreground"}`}>{completed ? <Check className="h-3.5 w-3.5" aria-label="Completed" /> : index + 1}</span><span className="min-w-0 flex-1">{label}{incomplete ? <span className="block text-[10px] font-normal">{missing} missing</span> : null}</span></TabsTrigger>
+                return <TabsTrigger key={value} value={value} className={`h-auto w-full min-w-0 whitespace-normal px-2 py-2 text-center text-[11px] leading-tight sm:text-xs ${missing ? "text-destructive" : ""}`}><span className="mr-1 font-semibold">{index + 1}.</span>{missing ? <AlertCircle className="mr-1 inline h-3.5 w-3.5" aria-label="Missing required data" /> : completed ? <Check className="mr-1 inline h-3.5 w-3.5 text-emerald-600" aria-label="Completed" /> : null}{label}{missing ? <span className="ml-1 text-[10px]">({missing} missing)</span> : null}</TabsTrigger>
               })}
             </TabsList>
             <TabsContent value="summary" className="grid gap-4 py-4">
@@ -853,7 +860,7 @@ export function JourneyTracker() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => { setIsDialogOpen(false); setForm(emptyForm); setAttachedFile(null); setHasAttemptedSubmit(false); setFormStep("summary") }}
+              onClick={() => { setIsDialogOpen(false); setForm(emptyForm); setAttachedFile(null) }}
               disabled={isSaving}
             >
               Cancel

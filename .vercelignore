@@ -1,0 +1,10 @@
+.git/
+.next/
+node_modules/
+.env*
+.tmp/
+reports/
+*.tsbuildinfo
+**/*.md
+**/*.markdown
+**/*.zip

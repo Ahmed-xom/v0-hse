@@ -27,9 +27,6 @@ import {
   RefreshCw,
   UserCheck,
   ShieldCheck,
-  Download,
-  Upload,
-  FileSpreadsheet,
 } from "lucide-react"
 import { getReviewersApprovers, updateReviewerApproverStatus, addReviewerApprover, type ReviewerApproverUser } from "@/app/actions/get-reviewers-approvers"
 import { getUsers } from "@/app/actions/manage-users"
@@ -248,25 +245,6 @@ export function MasterSettings() {
     toast({ title: "Licence renewed", description: `${renewalItem.name} now expires on ${renewalDate}.` })
   }
 
-  const downloadCsv = (content: string, filename: string) => {
-    const url = URL.createObjectURL(new Blob([content], { type: "text/csv;charset=utf-8" }))
-    const link = document.createElement("a")
-    link.href = url
-    link.download = filename
-    link.click()
-    URL.revokeObjectURL(url)
-  }
-
-  const handleDownloadTemplate = () => {
-    downloadCsv("name,description,expiryDate,isActive\n", `${selectedSection?.name ?? "master-data"}-import-template.csv`)
-  }
-
-  const handleExportMasterData = () => {
-    const headers = ["name", "description", "expiryDate", "isActive"]
-    const rows = masterValues.map((value) => headers.map((header) => JSON.stringify(value[header as keyof typeof value] ?? "")).join(","))
-    downloadCsv([headers.join(","), ...rows].join("\n"), `${selectedSection?.name ?? "master-data"}.csv`)
-  }
-
   const handleBackToCategories = () => {
     setSelectedCategory(null)
     setSelectedSection(null)
@@ -323,26 +301,12 @@ export function MasterSettings() {
             )}
             {selectedSection && !["company", "vehicle-details", "jm-vehicle-detail"].includes(selectedSection.id) && (
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button size="sm" variant="outline" onClick={handleDownloadTemplate} className="gap-2">
-                    <FileSpreadsheet className="h-4 w-4" />
-                    Import Template
+                <DialogTrigger asChild>
+                  <Button size="sm" className="bg-primary hover:bg-primary/90">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add New
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => toast({ title: "Import ready", description: "Choose a completed template to import data." })} className="gap-2">
-                    <Upload className="h-4 w-4" />
-                    Import Data
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={handleExportMasterData} className="gap-2">
-                    <Download className="h-4 w-4" />
-                    Export Data
-                  </Button>
-                  <DialogTrigger asChild>
-                    <Button size="sm" className="bg-primary hover:bg-primary/90">
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add New
-                    </Button>
-                  </DialogTrigger>
-                </div>
+                </DialogTrigger>
                 <DialogContent className="sm:max-w-[500px]">
                   <DialogHeader>
                     <DialogTitle>Add New {selectedSection.name}</DialogTitle>

@@ -28,7 +28,7 @@ export async function getUserByEmail(email: string): Promise<DbUser | null> {
         COALESCE(e.designation, '')   AS designation,
         COALESCE(e.business_unit, '') AS "businessUnit",
         COALESCE(e.status, 'Active')  AS status
-      FROM neon_auth."user" u
+      FROM neon_auth.user u
       LEFT JOIN public.employee e ON lower(e.email) = lower(u.email)
       WHERE lower(u.email) = ${email.toLowerCase()}
       LIMIT 1

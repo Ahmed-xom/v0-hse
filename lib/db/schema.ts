@@ -234,7 +234,6 @@ export const training = pgTable('training', {
   result: text('result'),
   completedDate: date('completed_date'),
   expiryDate: date('expiry_date'),
-  companyId: text('company_id').notNull(),
   createdAt: timestamp('created_at').notNull().default(sql`now()`),
   updatedAt: timestamp('updated_at').notNull().default(sql`now()`),
 })
