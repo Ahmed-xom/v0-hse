@@ -20,7 +20,7 @@ const sections = [
   ["Business Units", "business-units"],
   ["Document Library", "document-library"],
   ["Company Management", "company-management"],
-  ["Journey Tracker", "journey-tracker"],
+  ["Journey Trucker", "journey-tracker"],
   ["Meetings", "meetings"],
   ["Reports", "reports"],
   ["Ticket & Invoice Tracker", "ticket-invoice-tracker"],

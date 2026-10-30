@@ -242,8 +242,8 @@ export function UsersManagement() {
       toast({ title: "Error", description: result.error, variant: "destructive" })
     } else {
       toast({
-        title: newValue ? "Journey Tracker access granted" : "Journey Tracker access revoked",
-        description: `${u.name} ${newValue ? "can now" : "can no longer"} access the Journey Tracker.`,
+        title: newValue ? "Journey Trucker access granted" : "Journey Trucker access revoked",
+        description: `${u.name} ${newValue ? "can now" : "can no longer"} access the Journey Trucker.`,
       })
     }
   }
@@ -923,7 +923,7 @@ export function UsersManagement() {
                               <DropdownMenuSeparator />
                               <DropdownMenuItem onClick={() => handleToggleJourneyAccess(user)}>
                                 <Route className="mr-2 h-4 w-4" />
-                                {user.journeyAccess ? "Revoke Journey Tracker" : "Grant Journey Tracker"}
+                                {user.journeyAccess ? "Revoke Journey Trucker" : "Grant Journey Trucker"}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => handleToggleJourneyApprover(user)}>
                                 <ShieldCheck className="mr-2 h-4 w-4" />

@@ -8,8 +8,8 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
-const _geist = localFont({ src: './fonts/Geist-latin-variable.woff2', display: 'swap' });
-const _geistMono = localFont({ src: './fonts/GeistMono-latin-variable.woff2', display: 'swap' });
+const _sans = localFont({ src: './fonts/NotoSansArabic-Regular.ttf', display: 'swap', variable: '--font-amnko-sans' });
+const _geistMono = localFont({ src: './fonts/GeistMono-latin-variable.woff2', display: 'swap', variable: '--font-geist-mono' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.amnkoo.online'),
@@ -55,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className={`bg-background ${_sans.variable} ${_geistMono.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased bg-background">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="hse-theme">
           <AuthProvider>

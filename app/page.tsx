@@ -113,7 +113,7 @@ export default function HSEDashboard() {
           </section>
 
           {/* Journey Tracker */}
-          <section id="journey-tracker" aria-label="Journey Tracker">
+          <section id="journey-tracker" aria-label="Journey Trucker">
             <JourneyTracker />
           </section>
 

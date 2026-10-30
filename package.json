@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test:library": "node scripts/test-library.mjs",
+    "test:journey": "tsx --test scripts/test-journey-domain.ts",
     "test:password-reset-rate-limit": "node scripts/test-password-reset-rate-limit.mjs",
     "test:password-reset-compatibility": "node scripts/test-password-reset-compatibility.mjs",
     "test:password-reset-flow": "tsx scripts/test-password-reset-flow.mjs"

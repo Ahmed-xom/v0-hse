@@ -105,8 +105,8 @@ html[dir="rtl"] [data-ltr] {
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans: var(--font-amnko-sans), sans-serif;
+  --font-mono: var(--font-geist-mono), var(--font-amnko-sans), monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
