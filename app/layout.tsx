@@ -3,24 +3,13 @@ import localFont from 'next/font/local'
 import { Analytics } from '@vercel/analytics/next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { AuthProvider } from '@/lib/auth-context'
-import { getInitialAuthUser } from '@/lib/auth/server-profile'
 import { LanguageProvider } from '@/lib/language-context'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
-const _geist = localFont({
-  src: './fonts/Geist-latin-variable.woff2',
-  weight: '100 900',
-  style: 'normal',
-  display: 'swap',
-});
-const _geistMono = localFont({
-  src: './fonts/GeistMono-latin-variable.woff2',
-  weight: '100 900',
-  style: 'normal',
-  display: 'swap',
-});
+const _geist = localFont({ src: './fonts/Geist-latin-variable.woff2', display: 'swap' });
+const _geistMono = localFont({ src: './fonts/GeistMono-latin-variable.woff2', display: 'swap' });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.amnkoo.online'),
@@ -60,17 +49,16 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const initialUser = await getInitialAuthUser()
   return (
-    <html lang="ar" dir="rtl" className="bg-background" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body className="font-sans antialiased bg-background">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="hse-theme">
-          <AuthProvider initialUser={initialUser}>
+          <AuthProvider>
             <LanguageProvider>
               {children}
             </LanguageProvider>

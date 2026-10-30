@@ -2,8 +2,6 @@
 
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
-import { headers } from 'next/headers'
-import { auth } from '@/lib/auth'
 
 export interface DbUser {
   id: string
@@ -19,8 +17,6 @@ export interface DbUser {
 
 export async function getUserByEmail(email: string): Promise<DbUser | null> {
   try {
-    const session = await auth.api.getSession({ headers: await headers() })
-    if (!session?.user?.id || session.user.email.toLowerCase() !== email.trim().toLowerCase()) return null
     const result = await db.execute(sql`
       SELECT
         u.id::text            AS id,
@@ -34,8 +30,7 @@ export async function getUserByEmail(email: string): Promise<DbUser | null> {
         COALESCE(e.status, 'Active')  AS status
       FROM neon_auth.user u
       LEFT JOIN public.employee e ON lower(e.email) = lower(u.email)
-        AND e.company_id IN (SELECT cm.company_id FROM public.company_membership cm JOIN public.company c ON c.id = cm.company_id WHERE cm.user_id = ${session.user.id} AND cm.status = 'Active' AND c.status = 'Active')
-      WHERE u.id = ${session.user.id} AND lower(u.email) = ${email.trim().toLowerCase()}
+      WHERE lower(u.email) = ${email.toLowerCase()}
       LIMIT 1
     `)
 

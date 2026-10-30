@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto"
-import { hashPassword } from "@better-auth/utils/password"
+import { hashPassword, verifyPassword } from "@better-auth/utils/password"
 import { db } from "@/lib/db"
 import { resetPasswordInTransaction } from "@/lib/auth/reset-password-transaction"
 import { createAuthDiagnosticId, getAuthRuntimeContext } from "@/lib/auth/diagnostic"
+import { sql } from "drizzle-orm"
 
 function getSecret() {
   if (!process.env.BETTER_AUTH_SECRET) throw new Error("BETTER_AUTH_SECRET is not configured")
@@ -48,10 +49,18 @@ export async function POST(request: NextRequest) {
         rawToken,
         signature,
         passwordHash,
-        password,
-        validSignature,
+        validSignature: validSignature,
       })
-      console.info("[password-reset] credential update verified", { requestId, diagnosticCorrelationId, affectedRows: result.updatedCount, consumedRows: result.consumedCount })
+      console.info("[password-reset] credential update", { requestId, diagnosticCorrelationId, stage: "credential_update_executed", affectedRows: result.updatedCount, consumedRows: result.consumedCount, userId: result.userId })
+      return result
+    }).then(async (result) => {
+      console.info("[password-reset] transaction committed", { requestId, diagnosticCorrelationId, userId: result.userId })
+      const fresh = await db.execute(sql`SELECT password FROM neon_auth."account" WHERE "userId" = ${result.userId} AND "providerId" = 'credential'`)
+      const freshRows = (fresh as unknown as { rows?: Array<{ password?: string }> }).rows || []
+      console.info("[password-reset] fresh credential read completed", { requestId, diagnosticCorrelationId, rows: freshRows.length })
+      const freshVerified = freshRows.length > 0 && freshRows.every((row) => typeof row.password === "string") && (await Promise.all(freshRows.map((row) => verifyPassword(row.password as string, password)))).every(Boolean)
+      console.info("[password-reset] new password verification result", { requestId, diagnosticCorrelationId, verified: freshVerified })
+      return result
     })
 
     console.info("[password-reset] request completed", { requestId, diagnosticCorrelationId, outcome: "success" })

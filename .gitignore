@@ -13,9 +13,3 @@ __v0_jsx-dev-runtime.ts
 node_modules
 .next/
 .DS_Store
-/.swc
-
-# Imported archives and generated extraction workspace
-XOM_Files.ZIP
-XOM_Files_Extracted/
-.tmp/aegis-xom-pilot-verification.json

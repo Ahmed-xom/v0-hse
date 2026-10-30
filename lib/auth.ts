@@ -1,10 +1,6 @@
 import { createHash } from "node:crypto"
 import { betterAuth } from "better-auth"
-import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { db } from "@/lib/db"
-import { account, session, user, verification } from "@/lib/db/schema"
-import { verifyCompatiblePassword } from "@/lib/auth/password-compatibility"
-import { withLegacyCredentialIssuer } from "@/lib/auth/legacy-credential-adapter"
+import { pool } from "@/lib/db"
 
 const configuredSecret = process.env.BETTER_AUTH_SECRET
 const authSecret = configuredSecret && configuredSecret.length >= 32
@@ -14,10 +10,11 @@ const authSecret = configuredSecret && configuredSecret.length >= 32
     : undefined
 
 export const auth = betterAuth({
-  database: (options: Parameters<ReturnType<typeof drizzleAdapter>>[0]) => withLegacyCredentialIssuer(drizzleAdapter(db, { provider: "pg", schema: { user, session, account, verification } })(options)),
+  // Pass the pg Pool directly — Better Auth uses its built-in pg adapter.
+  // The Pool's search_path (set in lib/db/index.ts) routes queries to neon_auth schema.
+  database: pool,
   emailAndPassword: {
     enabled: true,
-    password: { verify: verifyCompatiblePassword },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,
@@ -38,30 +35,14 @@ export const auth = betterAuth({
       ? [`https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`]
       : []),
     ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
-    ...(process.env.NODE_ENV === "development"
-      ? ["http://localhost:3000", ...[process.env.V0_RUNTIME_URL, process.env.V0_DEV_APP_URL, process.env.V0_BUILD_URL, process.env.V0_SANDBOX_URL].filter((origin): origin is string => Boolean(origin))]
-      : []),
+    process.env.V0_RUNTIME_URL || "http://localhost:3000",
   ],
   secret: authSecret,
-  ...(process.env.NODE_ENV === "development"
-    ? {
-        advanced: {
-          database: { generateId: "uuid" },
-          defaultCookieAttributes: {
-            sameSite: "none" as const,
-            secure: true,
-            httpOnly: true,
-          },
-        },
-      }
-    : {
-        advanced: {
-          database: { generateId: "uuid" },
-          defaultCookieAttributes: {
-            sameSite: "lax" as const,
-            secure: process.env.NODE_ENV === "production",
-            httpOnly: true,
-          },
-        },
-      }),
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+    },
+  },
 })

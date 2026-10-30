@@ -69,7 +69,7 @@ export async function requestPasswordReset(email: string) {
 
     const targetUser = existingUser
     const newPassword = generateSecurePassword()
-    // Legacy bcrypt is supported by the shared sign-in verifier.
+    // Hash password with bcrypt (same as Better Auth does internally, 10 rounds)
     const hashedPassword = await bcrypt.hash(newPassword, 10)
 
     console.log('[v0] Found user:', targetUser.email)
@@ -81,7 +81,7 @@ export async function requestPasswordReset(email: string) {
       const result = await db.execute(sql`
         UPDATE neon_auth."account" 
         SET password = ${hashedPassword}, "updatedAt" = ${new Date().toISOString()}
-        WHERE "userId" = ${targetUser.id} AND "providerId" = 'credential'
+        WHERE "userId" = ${targetUser.id}
         RETURNING id
       `)
       
@@ -99,8 +99,8 @@ export async function requestPasswordReset(email: string) {
         `)
       }
     } catch (err: any) {
-      console.error('[password-reset] credential update failed', { errorType: err instanceof Error ? err.name : 'unknown' })
-      throw new Error('Failed to update password')
+      console.error('[v0] Password update error:', err)
+      throw new Error(`Failed to update password: ${err?.message || 'Unknown error'}`)
     }
 
     console.log('[v0] Password updated in database')
@@ -112,7 +112,9 @@ export async function requestPasswordReset(email: string) {
     if (!process.env.RESEND_API_KEY) {
       emailError = 'Resend API key not configured'
       console.warn('[v0] Resend API key missing - emails disabled')
-      console.warn('[password-reset] message not sent', { reason: 'email_not_configured' })
+      // Log password to console for development/testing
+      console.log('[v0] PASSWORD RESET - Temporary Password:', newPassword)
+      console.log('[v0] PASSWORD RESET - For user:', email)
     } else {
       try {
         const resend = new Resend(process.env.RESEND_API_KEY)
@@ -175,7 +177,12 @@ export async function requestPasswordReset(email: string) {
           emailError = `Email failed: ${errorMsg}`
           console.error('[v0] Resend email error:', error)
           
-
+          // Log password to console if email fails
+          if (errorMsg.includes('invalid') || errorMsg.includes('API')) {
+            console.log('[v0] EMAIL FAILED - Password available in UI')
+            console.log('[v0] TEMPORARY PASSWORD:', newPassword)
+            console.log('[v0] USER EMAIL:', email)
+          }
         } else {
           console.log('[v0] Password reset email sent successfully:', data?.id)
           emailSent = true
@@ -185,7 +192,10 @@ export async function requestPasswordReset(email: string) {
         console.error('[v0] Email send error:', errMsg)
         emailError = `Email failed: ${errMsg}`
         
-
+        // Log password to console if exception occurs
+        console.log('[v0] PASSWORD RESET EXCEPTION - Using console fallback')
+        console.log('[v0] TEMPORARY PASSWORD:', newPassword)
+        console.log('[v0] USER EMAIL:', email)
       }
     }
 
