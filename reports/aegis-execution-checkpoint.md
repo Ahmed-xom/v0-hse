@@ -55,3 +55,11 @@ audit/aegis-migration-status-20261031
 
 ## Next action
 Use GitHub file/tree retrieval to locate source export manifests and app database access code. If archive bytes are not available in the repository, locate the user's existing Library archive and inspect its manifest. Keep all database operations read-only until explicit Staging write gates are satisfied.
+
+
+## Backup work performed — 2026-10-31
+- Attempted Neon manual snapshot on Staging branch br-wispy-hill-apxr32tq. Neon rejected it: "not allowed to snapshot non-root branch" (HTTP 400). No data changed.
+- Created no-compute child branch aegis-pilot-backup-20261031, ID br-gentle-glitter-ap2nrr19, parent br-wispy-hill-apxr32tq. Branch reached state ready. This is a branch clone/fallback backup point, NOT a Neon snapshot and NOT proof of a successful restore test.
+- Created a second no-compute child branch aegis-pilot-backup-restore-check-20261031, ID br-lively-rice-aptweza6, parent backup branch. Validation query failed with "endpoint not found" (HTTP 404) because the no-compute branch has no endpoint. Thus restore/validation remains unverified.
+- Attempt to create branch with custom compute settings failed: account does not permit modifying suspend interval (HTTP 412); retry without compute succeeded.
+- Next safe step: obtain an endpoint for a disposable validation branch through permitted Neon settings or use Neon Console to perform a supported restore test. Do not label clone as restore evidence.
