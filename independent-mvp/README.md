@@ -18,4 +18,4 @@ pnpm build
 ```
 
 ## Current limits
-Authentication and persistence require the dedicated database. No database connection or migration is attempted by this repository setup.
+Authentication and persistence require the dedicated database. No database connection or migration is attempted by this repository setup. Sessions are pinned to one active membership; branch-scoped members see records for their branch plus company-wide records, while company-level memberships can see all branches.
