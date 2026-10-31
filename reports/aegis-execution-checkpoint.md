@@ -74,3 +74,16 @@ Use GitHub file/tree retrieval to locate source export manifests and app databas
 - The archive is tracked on the audit branch, but current tool retrieval cannot provide binary bytes to validate all 341 table entries afresh. Exact per-table source counts and checksums remain pending a local/runtime archive extraction.
 - App schema and migration code are present in the repository (`lib/db/schema.ts`, `lib/aegis-field-mapping.ts`, `scripts/validate-aegis-export.mjs`, `scripts/reconcile-aegis-export.mjs`). Their existence alone does not establish source-to-target mappings.
 - No Neon SQL, DDL, DML, restore, deployment, or Production/main modification was performed in this follow-up.
+
+
+## Follow-up verification — 2026-10-31 (latest)
+- Reconfirmed Neon branch identities: Staging is br-wispy-hill-apxr32tq (aegis-pilot-20261009), parented to Production main br-falling-violet-apb5begy. Production remains untouched.
+- Reconfirmed Staging backup schedule is empty.
+- Reconfirmed child clone br-gentle-glitter-ap2nrr19 is ready and parented to Staging at LSN 0/81ED780 / timestamp 2026-10-31T12:40:19Z. The second validation child br-lively-rice-aptweza6 is ready but has no compute endpoint; attempted read query returned endpoint not found (HTTP 404). This does not constitute a restore test.
+- Re-read mapping files: config/aegis-table-mapping.json has approved=false and tables=[]; config/aegis-core-mapping-review.json and config/aegis-core-pilot-mapping.json also have approved=false. No mapping can be activated from current evidence.
+- Re-read importer implementation and identified additional safeguards needed before any use: approvedMappings filters only status === APPROVED and does not also require item.approved === true; the connection uses DATABASE_URL_UNPOOLED || DATABASE_URL without verifying the exact Staging branch; it has no branch-ID assertion; dry-run still depends on the local connection string; it inserts row-by-row with ON CONFLICT DO NOTHING and checkpoint completion is table-level. Do not enable writes.
+- Rechecked Staging control tables: aegis_migration_mapping=0, aegis_migration_import=0, aegis_migration_issue=0, aegis_migration_record=0. Existing target schemas/constraints confirm payroll_no and email uniqueness in employee, (company_id,name) uniqueness in business_unit, and unique company code/name; these conflicts require explicit handling.
+- Staging currently has company, business_unit, employee, incident, document and attachment_records. document_folder is absent. The current attachment_records schema has non-null target_table, target_id, legacy identifiers, blob path and SHA-256; unlinked attachment targets cannot be invented.
+- Attempted read-only count query against the no-compute backup/restore-check branches; Neon returned endpoint not found. No database mutation occurred.
+- No source archive was re-extracted in this pass; GitHub binary fetch still does not expose archive bytes to this runtime.
+- No DDL/DML, data transfer, restore, Vercel/Blob/environment changes, deployment, or Production/main modification was performed.
