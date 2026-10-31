@@ -3,7 +3,9 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { createSession } from "@/lib/session";
 export async function POST(req: Request) {
+  const origin = req.headers.get("origin"); if (origin && new URL(origin).origin !== new URL(req.url).origin) return NextResponse.json({error:"Invalid request origin"},{status:403});
   const form = await req.formData(); const email = String(form.get("email") ?? "").trim().toLowerCase(); const password = String(form.get("password") ?? "");
+  if (!email || email.length > 254 || password.length > 1024) return NextResponse.json({error:"Invalid credentials"},{status:401});
   const result = await db().query("SELECT id,password_hash FROM app_users WHERE email=$1 AND active=true",[email]);
   const user = result.rows[0];
   if (!user || !(await bcrypt.compare(password,user.password_hash))) return NextResponse.json({error:"Invalid credentials"},{status:401});
