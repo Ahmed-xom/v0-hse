@@ -1,0 +1,7 @@
+item,source_value,target_candidate,status,reason,required_evidence
+BusinessUnit BU6,XOM LLC,XOM LLC Finance HR Supply Chain,AMBIGUOUS,"Names and meaning differ; do not infer equivalence","Explicit approved business mapping from owner"
+BusinessUnit BU7,Not in Use,,REJECTED,"Source unit is marked not in use","Confirm archival/omission policy"
+Employee unmatched,17 source employees,,UNRESOLVED,"No exact payroll target match","Authoritative employee crosswalk or approved create policy"
+Employee BU/designation,100 matched employees,,UNRESOLVED,"Target business_unit and designation missing in prior audit","Verified source BU/designation target IDs and approval"
+Designation payroll L-328543,3rd Party Contractor,System Administrator,AMBIGUOUS,"Source and target titles conflict","Business owner decision"
+Designation payroll L-NSE-0110,Workshop Foremen,Workshop Supervisor,AMBIGUOUS,"Source and target titles differ","Business owner decision"
