@@ -826,7 +826,6 @@ export function DocumentsLibrary({
               </div>
             )}
           </div>
-          </div>
         </div>
       </section>
 
