@@ -1,0 +1,3 @@
+source_schema,source_table,source_rows,row_count_quality,notes
+dbo,ALL_EXPORTED_TABLES,139123,exact_from_prior_export_manifest,"341 source tables total; 269 populated; 72 empty; table-level counts must be regenerated from original archive manifest before import"
+aegis_import,source_rows,139123,exact_read_only_neon_count,"Present on main only; absent from Staging; not an application-table import"
