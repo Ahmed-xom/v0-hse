@@ -43,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Check for existing session
     const storedCompanyId = localStorage.getItem("hse_active_company")
     if (storedCompanyId) setActiveCompanyIdState(storedCompanyId)
     const storedUser = localStorage.getItem("hse_user")
@@ -58,12 +57,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    // Look up user directly from the database (covers both static and dynamically added users)
-    const foundUser = await getUserByEmail(email)
+    const lookup = await getUserByEmail(email)
 
-    if (!foundUser) {
+    if (lookup.status === "unavailable") {
+      return {
+        success: false,
+        error: `Unable to reach the authentication service. Please try again later. Reference: ${lookup.requestId}`,
+      }
+    }
+
+    if (lookup.status === "not_found") {
       return { success: false, error: "User not found. Please check your email address." }
     }
+
+    const foundUser = lookup.user
 
     if (foundUser.banned) {
       return { success: false, error: "Your account has been suspended. Please contact your administrator." }
@@ -73,14 +80,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: "Your account is inactive. Please contact your administrator." }
     }
 
-    // Verify password against the hashed value stored in neon_auth.account
-    const correlationId = typeof window !== "undefined" ? window.sessionStorage.getItem("password-reset-diagnostic-id") || undefined : undefined
-    const passwordValid = await verifyUserPassword(email, password, correlationId)
-    if (!passwordValid) {
+    const correlationId = typeof window !== "undefined"
+      ? window.sessionStorage.getItem("password-reset-diagnostic-id") || undefined
+      : undefined
+    const passwordResult = await verifyUserPassword(email, password, correlationId)
+
+    if (passwordResult.status === "unavailable") {
+      return {
+        success: false,
+        error: `Unable to verify your credentials because the authentication service is unavailable. Please try again later. Reference: ${passwordResult.requestId}`,
+      }
+    }
+
+    if (passwordResult.status === "invalid") {
       return { success: false, error: "Invalid password. Please try again." }
     }
 
-    // These independent lookups run together so login is not delayed by serial requests.
     const [journeyAccess, journeyApprover] = await Promise.all([
       getUserJourneyAccess(email),
       getUserJourneyApprover(email),
