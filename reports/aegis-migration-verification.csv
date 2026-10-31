@@ -1,0 +1,10 @@
+scope,check,expected_or_observed,result,notes
+Staging,aegis_migration_import rows,0,OBSERVED,"No import run recorded"
+Staging,aegis_migration_mapping rows,0,OBSERVED,"No mapping contract staged"
+Staging,aegis_migration_issue rows,0,OBSERVED,"No issue records"
+Staging,aegis_migration_record rows,0,OBSERVED,"No row-level comparison evidence"
+Staging,attachment_records rows,46,OBSERVED,"All 46 unlinked"
+Main,aegis_import.source_rows rows,139123,OBSERVED,"139123 source rows; 269 source tables; 0 null source_table/data"
+Staging,aegis_import.source_rows existence,absent,OBSERVED,"Source dataset not available on staging"
+Staging,snapshot_restore_evidence,required,MISSING,"Only listed snapshot is main snapshot"
+Full migration,per-table source-target reconciliation,required,NOT_STARTED,"No import has been executed"
