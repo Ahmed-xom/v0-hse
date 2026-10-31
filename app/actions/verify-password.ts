@@ -3,12 +3,23 @@
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { verifyPassword } from '@better-auth/utils/password'
+import bcrypt from 'bcryptjs'
 import { createAuthDiagnosticId, getAuthRuntimeContext } from '@/lib/auth/diagnostic'
 
 export type PasswordVerificationResult =
   | { status: 'verified' }
   | { status: 'invalid' }
   | { status: 'unavailable'; requestId: string }
+
+async function verifyStoredPassword(storedHash: string, candidate: string): Promise<boolean> {
+  if (/^[^:]+:[0-9a-f]+$/i.test(storedHash)) {
+    return verifyPassword(storedHash, candidate)
+  }
+  if (/^\$2[aby]\$\d{2}\$/.test(storedHash)) {
+    return bcrypt.compare(candidate, storedHash)
+  }
+  return false
+}
 
 export async function verifyUserPassword(
   email: string,
@@ -44,43 +55,32 @@ export async function verifyUserPassword(
     `)
 
     const rows = (result as any).rows ?? []
-
     if (rows.length === 0 || rows.some((row: { password?: string }) => !row.password)) {
       console.info('[auth] password verification denied', {
-        requestId,
-        diagnosticId,
-        runtime: getAuthRuntimeContext(),
-        reason: 'credential_not_found',
-        rowCount: rows.length,
+        requestId, diagnosticId, runtime: getAuthRuntimeContext(),
+        reason: 'credential_not_found', rowCount: rows.length,
       })
       return { status: 'invalid' }
     }
 
     const verified = await Promise.all(
-      rows.map((row: { password: string }) => verifyPassword(row.password, password)),
+      rows.map((row: { password: string }) => verifyStoredPassword(row.password, password)),
     ).then((results) => results.some(Boolean))
 
     if (!verified) {
       console.info('[auth] password verification denied', {
-        requestId,
-        diagnosticId,
-        runtime: getAuthRuntimeContext(),
-        reason: 'password_mismatch',
-        userId: rows[0].userId,
+        requestId, diagnosticId, runtime: getAuthRuntimeContext(),
+        reason: 'password_mismatch', userId: rows[0].userId,
       })
     }
-
     return verified ? { status: 'verified' } : { status: 'invalid' }
   } catch (error) {
     console.error('[auth] password verification error', {
-      requestId,
-      diagnosticId,
-      runtime: getAuthRuntimeContext(),
+      requestId, diagnosticId, runtime: getAuthRuntimeContext(),
       reason: 'database_or_hash_error',
       errorType: error instanceof Error ? error.name : 'unknown',
       errorCode: typeof error === 'object' && error !== null && 'code' in error
-        ? String((error as { code?: unknown }).code)
-        : undefined,
+        ? String((error as { code?: unknown }).code) : undefined,
     })
     return { status: 'unavailable', requestId }
   }
