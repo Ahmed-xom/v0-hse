@@ -235,6 +235,7 @@ export function DocumentsLibrary({
 
   // list state
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(() => new Set());
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [folderName, setFolderName] = useState("");
   const [folderDescription, setFolderDescription] = useState("");
@@ -760,144 +761,71 @@ export function DocumentsLibrary({
               </span>
             ))}
           </div>
-          <div className="min-h-[360px] font-sans text-sm">
+          <div className="min-h-[360px] rounded-lg border bg-background p-3 font-sans text-sm">
             {loading ? (
-              <p className="py-8 text-muted-foreground">Loading files...</p>
-            ) : filtered.length === 0 && visibleFolders.length === 0 ? (
+              <p className="py-8 text-muted-foreground">Loading library...</p>
+            ) : folders.length === 0 && docs.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
                 <FolderOpen className="h-12 w-12 opacity-30" />
-                <p>
-                  {search
-                    ? "No matching files found"
-                    : "No files in this company library"}
-                </p>
+                <p>{search ? "No matching files found" : "No files in this company library"}</p>
               </div>
             ) : (
-              <div className="space-y-1">
-                <div className="flex items-center gap-1 font-medium text-primary">
-                  <FolderOpen className="h-4 w-4 text-amber-500" />
-                  {currentFolder?.name ?? "Library"}
+              <div role="tree" aria-label="HSE document library" className="space-y-0.5">
+                <div className="flex items-center gap-2 rounded px-2 py-2 font-semibold text-primary">
+                  <FolderOpen className="h-5 w-5 text-amber-500" />
+                  <button type="button" onClick={() => setCurrentFolderId(null)} className="hover:underline">Library</button>
+                  <span className="text-xs font-normal text-muted-foreground">({docs.length} files · {folders.length} folders)</span>
                 </div>
-                {visibleFolders.map((folder) => (
-                  <button
-                    type="button"
-                    key={folder.id}
-                    className="flex w-full items-center gap-2 rounded px-2 py-2 text-start hover:bg-muted"
-                    onClick={() => setCurrentFolderId(folder.id)}
-                  >
-                    <FolderOpen className="h-5 w-5 text-amber-500" />
-                    <span className="font-medium">{folder.name}</span>
-                    {folder.description && (
-                      <span className="truncate text-xs text-muted-foreground">
-                        {folder.description}
-                      </span>
-                    )}
-                  </button>
-                ))}
-                {Array.from(new Set(filtered.map((d) => d.category))).map(
-                  (category) => (
-                    <div key={category} className="ml-5">
-                      <div className="flex items-center gap-1 py-1 text-foreground">
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                        <FolderOpen className="h-4 w-4 text-amber-500" />
-                        {category}
-                      </div>
-                      <div className="ml-6 space-y-1">
-                        {filtered
-                          .filter((d) => d.category === category)
-                          .map((d) => (
-                            <div
-                              key={d.id}
-                              className="group flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted"
-                            >
-                              <span className="shrink-0">
-                                {fileIcon(d.file_name, d.file_type)}
-                              </span>
-                              <button
-                                className="min-w-0 flex-1 truncate text-left text-primary hover:underline"
-                                onClick={() => {
-                                  setSelected(d);
-                                  setIsViewOpen(true);
-                                }}
-                              >
-                                {d.title}
+                {(() => {
+                  const renderFolder = (parentId: string | null, depth: number): JSX.Element[] => {
+                    const childFolders = folders.filter((folder) => folder.parent_id === parentId);
+                    const childDocs = docs.filter((doc) => {
+                      if (doc.folder_id !== parentId) return false;
+                      const q = search.trim().toLowerCase();
+                      return !q || [doc.title, doc.file_name ?? "", doc.doc_no ?? "", doc.category ?? ""].some((value) => value.toLowerCase().includes(q));
+                    });
+                    return [
+                      ...childFolders.map((folder) => {
+                        const isExpanded = expandedFolderIds.has(folder.id);
+                        const folderCount = docs.filter((doc) => doc.folder_id === folder.id).length;
+                        return (
+                          <div key={folder.id} role="treeitem" aria-expanded={isExpanded}>
+                            <div className="group flex items-center gap-2 rounded-md py-2 pe-2 hover:bg-muted" style={{ paddingLeft: 10 + depth * 22 }}>
+                              <button type="button" aria-label={isExpanded ? `Collapse ${folder.name}` : `Expand ${folder.name}`} className="flex h-6 w-6 shrink-0 items-center justify-center rounded hover:bg-background" onClick={() => setExpandedFolderIds((previous) => { const next = new Set(previous); if (next.has(folder.id)) next.delete(folder.id); else next.add(folder.id); return next; })}>
+                                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isExpanded ? "" : "-rotate-90"}`} />
                               </button>
-                              <span className="hidden text-xs text-muted-foreground sm:inline">
-                                v{d.version} · {d.status}
-                              </span>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7"
-                                    aria-label={`Options for ${d.title}`}
-                                  >
-                                    <ChevronDown className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                  align="end"
-                                  className="w-48"
-                                >
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setSelected(d);
-                                      setIsViewOpen(true);
-                                    }}
-                                  >
-                                    <Eye className="mr-2 h-4 w-4" />
-                                    View Details
-                                  </DropdownMenuItem>
-                                  {d.file_url && (
-                                    <DropdownMenuItem asChild>
-                                      <a
-                                        href={`/api/hse-files/${encodeURIComponent(d.id)}/download`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        download={d.file_name ?? true}
-                                      >
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Download File
-                                      </a>
-                                    </DropdownMenuItem>
-                                  )}
-                                  {canEdit && (
-                                    <>
-                                      <DropdownMenuItem
-                                        onClick={() => openEdit(d)}
-                                      >
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        Edit Details
-                                      </DropdownMenuItem>
-                                      {canEdit && (
-                                        <DropdownMenuItem
-                                          onClick={() => openAccess(d)}
-                                        >
-                                          <Shield className="mr-2 h-4 w-4" />
-                                          Manage Access
-                                        </DropdownMenuItem>
-                                      )}
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem
-                                        className="text-destructive focus:text-destructive"
-                                        onClick={() => handleDelete(d.id)}
-                                      >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
-                                      </DropdownMenuItem>
-                                    </>
-                                  )}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              <FolderOpen className="h-5 w-5 shrink-0 text-amber-500" />
+                              <button type="button" className="min-w-0 flex-1 truncate text-left font-medium text-foreground hover:text-primary" onClick={() => { setCurrentFolderId(folder.id); setExpandedFolderIds((previous) => new Set(previous).add(folder.id)); }}>
+                                {folder.name}
+                              </button>
+                              <span className="text-xs text-muted-foreground">{folderCount} files</span>
                             </div>
-                          ))}
-                      </div>
-                    </div>
-                  ),
-                )}
+                            {isExpanded && <div>{renderFolder(folder.id, depth + 1)}</div>}
+                          </div>
+                        );
+                      }),
+                      ...childDocs.map((doc) => (
+                        <div key={doc.id} role="treeitem" className="group flex items-center gap-2 rounded-md py-1.5 pe-2 hover:bg-muted" style={{ paddingLeft: 42 + depth * 22 }}>
+                          <span className="shrink-0">{fileIcon(doc.file_name, doc.file_type)}</span>
+                          <button type="button" className="min-w-0 flex-1 truncate text-left text-primary hover:underline" onClick={() => { setSelected(doc); setIsViewOpen(true); }}>{doc.title}</button>
+                          <span className="hidden text-xs text-muted-foreground sm:inline">{doc.category} · v{doc.version}</span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`Options for ${doc.title}`}><ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              <DropdownMenuItem onClick={() => { setSelected(doc); setIsViewOpen(true); }}><Eye className="mr-2 h-4 w-4" />View Details</DropdownMenuItem>
+                              {doc.file_url && <DropdownMenuItem asChild><a href={`/api/hse-files/${encodeURIComponent(doc.id)}/download`} target="_blank" rel="noopener noreferrer" download={doc.file_name ?? true}><Download className="mr-2 h-4 w-4" />Download File</a></DropdownMenuItem>}
+                              {canEdit && <><DropdownMenuItem onClick={() => openEdit(doc)}><Edit className="mr-2 h-4 w-4" />Edit Details</DropdownMenuItem><DropdownMenuItem onClick={() => openAccess(doc)}><Shield className="mr-2 h-4 w-4" />Manage Access</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(doc.id)}><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem></>}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      )),
+                    ];
+                  };
+                  return renderFolder(null, 0);
+                })()}
               </div>
             )}
+          </div>
           </div>
         </div>
       </section>
