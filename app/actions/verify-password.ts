@@ -5,18 +5,41 @@ import { sql } from 'drizzle-orm'
 import { verifyPassword } from '@better-auth/utils/password'
 import { createAuthDiagnosticId, getAuthRuntimeContext } from '@/lib/auth/diagnostic'
 
-export async function verifyUserPassword(email: string, password: string, correlationId?: string): Promise<boolean> {
+export type PasswordVerificationResult =
+  | { status: 'verified' }
+  | { status: 'invalid' }
+  | { status: 'unavailable'; requestId: string }
+
+export async function verifyUserPassword(
+  email: string,
+  password: string,
+  correlationId?: string,
+): Promise<PasswordVerificationResult> {
   const requestId = createAuthDiagnosticId()
   const diagnosticId = correlationId || requestId
-  console.info('[auth] verification started', { requestId, diagnosticId, runtime: getAuthRuntimeContext() })
+
+  if (!process.env.DATABASE_URL) {
+    console.error('[auth] password verification unavailable', {
+      requestId,
+      diagnosticId,
+      reason: 'database_url_missing',
+      runtime: getAuthRuntimeContext(),
+    })
+    return { status: 'unavailable', requestId }
+  }
+
+  console.info('[auth] verification started', {
+    requestId,
+    diagnosticId,
+    runtime: getAuthRuntimeContext(),
+  })
 
   try {
-    // Look up the hashed password from neon_auth.account for this user
     const result = await db.execute(sql`
       SELECT a.password, a."userId"
       FROM neon_auth."account" a
       JOIN neon_auth."user" u ON u.id = a."userId"
-      WHERE lower(u.email) = ${email.toLowerCase()}
+      WHERE lower(u.email) = ${email.trim().toLowerCase()}
         AND a."providerId" = 'credential'
     `)
 
@@ -30,13 +53,12 @@ export async function verifyUserPassword(email: string, password: string, correl
         reason: 'credential_not_found',
         rowCount: rows.length,
       })
-      return false
+      return { status: 'invalid' }
     }
 
-    // Better Auth 1.7.2 stores credential hashes using its scrypt verifier.
-    // Legacy data can contain duplicate rows for the same user/account; accept
-    // the password if any credential row verifies successfully.
-    const verified = await Promise.all(rows.map((row: { password: string }) => verifyPassword(row.password, password))).then((results) => results.some(Boolean))
+    const verified = await Promise.all(
+      rows.map((row: { password: string }) => verifyPassword(row.password, password)),
+    ).then((results) => results.some(Boolean))
 
     if (!verified) {
       console.info('[auth] password verification denied', {
@@ -48,7 +70,7 @@ export async function verifyUserPassword(email: string, password: string, correl
       })
     }
 
-    return verified
+    return verified ? { status: 'verified' } : { status: 'invalid' }
   } catch (error) {
     console.error('[auth] password verification error', {
       requestId,
@@ -56,7 +78,10 @@ export async function verifyUserPassword(email: string, password: string, correl
       runtime: getAuthRuntimeContext(),
       reason: 'database_or_hash_error',
       errorType: error instanceof Error ? error.name : 'unknown',
+      errorCode: typeof error === 'object' && error !== null && 'code' in error
+        ? String((error as { code?: unknown }).code)
+        : undefined,
     })
-    return false
+    return { status: 'unavailable', requestId }
   }
 }
