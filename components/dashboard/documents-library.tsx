@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
 import { LibraryUploadDialog } from "@/components/dashboard/library-upload-dialog";
+import { DocumentFolderTree } from "@/components/dashboard/document-folder-tree";
+import { getLibraryFolderPath } from "@/lib/library-tree";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BLOB_MAX_FILE_BYTES, libraryErrorMessage } from "@/lib/library-policy";
 import { uploadLibraryFile } from "@/lib/library-upload-client";
@@ -66,6 +68,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -88,7 +91,6 @@ import {
   renameDocumentFolder,
   deleteDocumentFolder,
   type HSEDocument,
-  type DocumentFolder,
 } from "@/app/actions/manage-documents";
 import { DOCUMENT_CATEGORIES } from "@/lib/hse-constants";
 
@@ -276,33 +278,35 @@ export function DocumentsLibrary({
 
   useEffect(() => {
     setCurrentFolderId(null);
+    setExpandedFolderIds(new Set());
+    setSearch("");
+    setFilterCategory("all");
+    setFilterStatus("all");
+    setFilterExpiry("all");
+    setSelected(null);
+    setIsViewOpen(false);
+    setIsFormOpen(false);
+    setIsAccessOpen(false);
     setBatchOpen(false);
   }, [activeCompanyId]);
 
   // ── filtering ─────────────────────────────────────────────────────────────
 
-  const visibleFolders = folders.filter(
-    (folder) => folder.parent_id === currentFolderId,
-  );
-  const currentFolder =
-    folders.find((folder) => folder.id === currentFolderId) ?? null;
-  const breadcrumbs = currentFolderId
-    ? (() => {
-        const chain: DocumentFolder[] = [];
-        let cursor = currentFolder;
-        while (cursor) {
-          chain.unshift(cursor);
-          cursor =
-            folders.find((folder) => folder.id === cursor?.parent_id) ?? null;
-        }
-        return chain;
-      })()
-    : [];
+  const breadcrumbs = getLibraryFolderPath(folders, currentFolderId);
+
+  const selectFolder = (id: string | null) => {
+    setCurrentFolderId(id);
+    setExpandedFolderIds((previous) => {
+      const next = new Set(previous);
+      for (const folder of getLibraryFolderPath(folders, id)) next.add(folder.id);
+      return next;
+    });
+  };
 
   const filtered = docs.filter((d) => {
-    const q = search.toLowerCase();
+    const q = search.trim().toLowerCase();
     const matchSearch =
-      !search ||
+      !q ||
       d.title.toLowerCase().includes(q) ||
       (d.doc_no ?? "").toLowerCase().includes(q) ||
       (d.file_name ?? "").toLowerCase().includes(q) ||
@@ -325,7 +329,6 @@ export function DocumentsLibrary({
       (filterExpiry === "missing" && expiry === null) ||
       (filterExpiry === "valid" && expiry !== null && expiry > 30);
     return (
-      d.folder_id === currentFolderId &&
       matchSearch &&
       matchCat &&
       matchStatus &&
@@ -754,7 +757,7 @@ export function DocumentsLibrary({
                 <button
                   type="button"
                   className="text-primary hover:underline"
-                  onClick={() => setCurrentFolderId(folder.id)}
+                  onClick={() => selectFolder(folder.id)}
                 >
                   {folder.name}
                 </button>
@@ -770,60 +773,37 @@ export function DocumentsLibrary({
                 <p>{search ? "No matching files found" : "No files in this company library"}</p>
               </div>
             ) : (
-              <div role="tree" aria-label="HSE document library" className="space-y-0.5">
-                <div className="flex items-center gap-2 rounded px-2 py-2 font-semibold text-primary">
-                  <FolderOpen className="h-5 w-5 text-amber-500" />
-                  <button type="button" onClick={() => setCurrentFolderId(null)} className="hover:underline">Library</button>
-                  <span className="text-xs font-normal text-muted-foreground">({docs.length} files · {folders.length} folders)</span>
-                </div>
-                {(() => {
-                  const renderFolder = (parentId: string | null, depth: number): JSX.Element[] => {
-                    const childFolders = folders.filter((folder) => folder.parent_id === parentId);
-                    const childDocs = docs.filter((doc) => {
-                      if (doc.folder_id !== parentId) return false;
-                      const q = search.trim().toLowerCase();
-                      return !q || [doc.title, doc.file_name ?? "", doc.doc_no ?? "", doc.category ?? ""].some((value) => value.toLowerCase().includes(q));
-                    });
-                    return [
-                      ...childFolders.map((folder) => {
-                        const isExpanded = expandedFolderIds.has(folder.id);
-                        const folderCount = docs.filter((doc) => doc.folder_id === folder.id).length;
-                        return (
-                          <div key={folder.id} role="treeitem" aria-expanded={isExpanded}>
-                            <div className="group flex items-center gap-2 rounded-md py-2 pe-2 hover:bg-muted" style={{ paddingLeft: 10 + depth * 22 }}>
-                              <button type="button" aria-label={isExpanded ? `Collapse ${folder.name}` : `Expand ${folder.name}`} className="flex h-6 w-6 shrink-0 items-center justify-center rounded hover:bg-background" onClick={() => setExpandedFolderIds((previous) => { const next = new Set(previous); if (next.has(folder.id)) next.delete(folder.id); else next.add(folder.id); return next; })}>
-                                <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isExpanded ? "" : "-rotate-90"}`} />
-                              </button>
-                              <FolderOpen className="h-5 w-5 shrink-0 text-amber-500" />
-                              <button type="button" className="min-w-0 flex-1 truncate text-left font-medium text-foreground hover:text-primary" onClick={() => { setCurrentFolderId(folder.id); setExpandedFolderIds((previous) => new Set(previous).add(folder.id)); }}>
-                                {folder.name}
-                              </button>
-                              <span className="text-xs text-muted-foreground">{folderCount} files</span>
-                            </div>
-                            {isExpanded && <div>{renderFolder(folder.id, depth + 1)}</div>}
-                          </div>
-                        );
-                      }),
-                      ...childDocs.map((doc) => (
-                        <div key={doc.id} role="treeitem" className="group flex items-center gap-2 rounded-md py-1.5 pe-2 hover:bg-muted" style={{ paddingLeft: 42 + depth * 22 }}>
-                          <span className="shrink-0">{fileIcon(doc.file_name, doc.file_type)}</span>
-                          <button type="button" className="min-w-0 flex-1 truncate text-left text-primary hover:underline" onClick={() => { setSelected(doc); setIsViewOpen(true); }}>{doc.title}</button>
-                          <span className="hidden text-xs text-muted-foreground sm:inline">{doc.category} · v{doc.version}</span>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-7 w-7" aria-label={`Options for ${doc.title}`}><ChevronDown className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48">
-                              <DropdownMenuItem onClick={() => { setSelected(doc); setIsViewOpen(true); }}><Eye className="mr-2 h-4 w-4" />View Details</DropdownMenuItem>
-                              {doc.file_url && <DropdownMenuItem asChild><a href={`/api/hse-files/${encodeURIComponent(doc.id)}/download`} target="_blank" rel="noopener noreferrer" download={doc.file_name ?? true}><Download className="mr-2 h-4 w-4" />Download File</a></DropdownMenuItem>}
-                              {canEdit && <><DropdownMenuItem onClick={() => openEdit(doc)}><Edit className="mr-2 h-4 w-4" />Edit Details</DropdownMenuItem><DropdownMenuItem onClick={() => openAccess(doc)}><Shield className="mr-2 h-4 w-4" />Manage Access</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => handleDelete(doc.id)}><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem></>}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      )),
-                    ];
-                  };
-                  return renderFolder(null, 0);
-                })()}
-              </div>
+              <DocumentFolderTree
+                key={`${activeCompanyId}:${search}:${filterCategory}:${filterStatus}:${filterExpiry}`}
+                folders={folders}
+                documents={filtered}
+                currentFolderId={currentFolderId}
+                expandedFolderIds={expandedFolderIds}
+                filtering={Boolean(search.trim()) || filterCategory !== "all" || filterStatus !== "all" || filterExpiry !== "all"}
+                onSelectFolder={selectFolder}
+                onToggleFolder={(id) => setExpandedFolderIds((previous) => {
+                  const next = new Set(previous);
+                  if (next.has(id)) next.delete(id); else next.add(id);
+                  return next;
+                })}
+                renderDocument={(doc) => (
+                  <div className="group flex min-w-0 items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted">
+                    <span className="shrink-0">{fileIcon(doc.file_name, doc.file_type)}</span>
+                    <button type="button" className="min-w-0 flex-1 break-words text-start text-primary hover:underline" onClick={() => { setSelected(doc); setIsViewOpen(true); }}>{doc.title}</button>
+                    <span className="hidden text-sm text-muted-foreground sm:inline">{doc.category} · v{doc.version}</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-8 shrink-0" aria-label={`Options for ${doc.title}`}><ChevronDown /></Button></DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem onSelect={() => { setSelected(doc); setIsViewOpen(true); }}><Eye />View Details</DropdownMenuItem>
+                          {doc.file_url && <DropdownMenuItem asChild><a href={`/api/hse-files/${encodeURIComponent(doc.id)}/download`} target="_blank" rel="noopener noreferrer" download={doc.file_name ?? true}><Download />Download File</a></DropdownMenuItem>}
+                          {canEdit && <><DropdownMenuItem onSelect={() => openEdit(doc)}><Edit />Edit Details</DropdownMenuItem><DropdownMenuItem onSelect={() => openAccess(doc)}><Shield />Manage Access</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem className="text-destructive focus:text-destructive" onSelect={() => handleDelete(doc.id)}><Trash2 />Delete</DropdownMenuItem></>}
+                        </DropdownMenuGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
+              />
             )}
           </div>
         </div>
