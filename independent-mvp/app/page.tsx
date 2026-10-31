@@ -7,8 +7,8 @@ export default async function Home() {
     user = await currentUser();
     if (user) {
       const result = await db().query(
-        "SELECT id,title,details,created_at FROM hse_records WHERE company_id=$1 ORDER BY created_at DESC LIMIT 20",
-        [user.company_id]
+        "SELECT id,title,details,created_at FROM hse_records WHERE company_id=$1 AND ($2::uuid IS NULL OR branch_id IS NULL OR branch_id=$2) ORDER BY created_at DESC LIMIT 20",
+        [user.company_id,user.branch_id]
       );
       records = result.rows;
     }
