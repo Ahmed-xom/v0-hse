@@ -21,7 +21,7 @@ export default async function Home() {
     </header>
     {error && <p style={{background:"#fff3cd",padding:16,borderRadius:8}}>Setup required: {error}</p>}
     {!user ? <section style={{background:"white",padding:24,marginTop:20,borderRadius:12}}>
-      <h2>Independent MVP is prepared</h2><p>Configure a dedicated Neon database and apply db/schema.sql and db/session-table.sql before enabling sign-in.</p>
+      <h2>Independent MVP is prepared</h2><p>Configure a dedicated Neon database and apply db/schema.sql before enabling sign-in.</p>
       <a href="/login">Sign in</a>
     </section> : <section style={{marginTop:20,background:"white",padding:24,borderRadius:12}}>
       <h2>Welcome, {user.display_name}</h2><p>Company workspace: {user.company_id}</p><h3>HSE records</h3>
