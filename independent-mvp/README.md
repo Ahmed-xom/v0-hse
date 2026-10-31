@@ -5,7 +5,7 @@ This application is isolated under `independent-mvp/` on branch `amnko-hse-indep
 ## Database safety
 Only `AMNKO_DATABASE_URL` is read. The legacy `DATABASE_URL` is never referenced. Do not set this variable until a new, dedicated Neon project/database has been created and verified.
 
-Apply `db/schema.sql` to that new database only. It includes all tables, including sessions. `db/session-table.sql` is a standalone, repeatable alternative for session-table setup; do not apply it as a second required migration. Create the first user and company through a separately reviewed bootstrap procedure; public registration is intentionally disabled.
+Apply `db/schema.sql` to that new database only. It includes all tables, including sessions. `db/session-table.sql` is a standalone, repeatable alternative for session-table setup; do not apply it as a second required migration. Create the first user and company on the dedicated database with `npm run bootstrap` after setting the five `BOOTSTRAP_*` variables in a private environment file. Use a unique 14+ character admin password, run once, then remove those five variables. The bootstrap assigns `COMPANY_ADMIN`; public registration is intentionally disabled.
 
 Set `APP_SESSION_SECRET` to a random value of at least 32 characters. Copy `.env.example` to a private environment file; never commit secrets.
 
