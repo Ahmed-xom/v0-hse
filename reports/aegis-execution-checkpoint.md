@@ -87,3 +87,15 @@ Use GitHub file/tree retrieval to locate source export manifests and app databas
 - Attempted read-only count query against the no-compute backup/restore-check branches; Neon returned endpoint not found. No database mutation occurred.
 - No source archive was re-extracted in this pass; GitHub binary fetch still does not expose archive bytes to this runtime.
 - No DDL/DML, data transfer, restore, Vercel/Blob/environment changes, deployment, or Production/main modification was performed.
+
+
+## Source archive recovered and independently verified — 2026-10-31
+- Located user Library file hse-dashboard0.zip (40,081,657 bytes), materialized it to the working container, and extracted it read-only.
+- The project archive contains .tmp/Aegis_XOM_Export.zip (4,918,503 bytes), plus SQL Server catalog metadata.
+- Independently extracted the nested Aegis_XOM_Export.zip and validated all 341 table JSON files: 341/341 SHA-256 checksums match, 341/341 JSON payloads parse, 341/341 row counts match manifest; zero parse errors, zero row-count mismatches, zero checksum mismatches.
+- Independently verified 7/7 top-level metadata checksums; total checksums 348/348.
+- Source catalog contains 341 tables, 3,665 columns, 253 primary-key columns, 529 FK constraints, 139,123 rows; 269 populated tables and 72 empty tables.
+- Generated local audit deliverables: reports/aegis-source-archive-audit.md, aegis-source-audit-summary.json, aegis-source-table-inventory.csv, aegis-source-column-inventory.csv, aegis-source-foreign-keys.csv, aegis-source-json-integrity.csv, aegis-source-metadata-integrity.csv, aegis-source-target-mapping-review.csv. Bundle: AMNKO-Aegis-Source-Audit.zip.
+- Existing config/aegis-final-mapping-review.json still classifies 335/341 tables unresolved, 3 evidence-backed proposals (company, business_unit, employee), and 3 candidate-review tables (document, document_folder, library access). All 341 entries remain unapproved.
+- The outer project ZIP contains XOM_Files.zip with only 13 bytes; this is a placeholder and not a usable attachment archive.
+- No database writes were performed. Staging backup/restore proof and approved mapping remain missing; production/main untouched.
