@@ -1,0 +1,8 @@
+severity,scope,error_or_blocker,status,action
+BLOCKER,Staging backup,"No Staging-specific snapshot or restore test evidenced",OPEN,"Obtain Staging restore point and test on disposable branch"
+BLOCKER,Mapping,"No approved mapping contract; Staging mapping rows=0",OPEN,"Complete evidence-backed mappings and approval"
+BLOCKER,Source availability,"aegis_import.source_rows exists on main but not Staging",OPEN,"Approve isolated source transfer route; do not copy from main autonomously"
+WARNING,Employee mapping,"17 source employees unmatched in prior comparison",OPEN,"Resolve using authoritative IDs"
+WARNING,Business unit,"BU6 XOM LLC does not match target BU-006 label",OPEN,"Obtain explicit business decision"
+WARNING,Designation,"Two employee designation conflicts",OPEN,"Obtain business owner decisions"
+INFO,Attachments,"46 attachment records remain unlinked",OPEN,"Do not link without verified parent identifiers"
