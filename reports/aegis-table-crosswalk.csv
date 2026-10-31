@@ -1,0 +1,6 @@
+source_schema,source_table,target_schema,target_table,status,evidence,notes
+dbo,tblEmployee,public,employee,PROPOSED,"Prior verified comparison: 360 payroll matches; 17 source unmatched; 9 target-only","Do not insert or update until approved contract and exact keys are validated"
+dbo,tblLibrary,public,document,PROPOSED,"Prior code/schema candidate","Needs column-level mapping and business-rule review"
+dbo,tblLibraryHierarchy,public,document_folder,PROPOSED,"Prior code/schema candidate; target table exists on main only","Not available in Staging; do not create or copy schema without approval"
+dbo,tblLibraryAccess,public,review_required_acl,UNMAPPED,"Prior candidate only","No verified target table; ACL semantics unresolved"
+dbo,ALL_OTHER_TABLES,,,UNMAPPED,"No current per-table evidence","341 source tables; must inspect archive manifest and application schema"
