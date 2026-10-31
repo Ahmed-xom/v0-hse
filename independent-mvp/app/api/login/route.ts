@@ -1,0 +1,14 @@
+import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import { db } from "@/lib/db";
+import { createSession } from "@/lib/session";
+export async function POST(req: Request) {
+  const form = await req.formData(); const email = String(form.get("email") ?? "").trim().toLowerCase(); const password = String(form.get("password") ?? "");
+  const result = await db().query("SELECT id,password_hash FROM app_users WHERE email=$1 AND active=true",[email]);
+  const user = result.rows[0];
+  if (!user || !(await bcrypt.compare(password,user.password_hash))) return NextResponse.json({error:"Invalid credentials"},{status:401});
+  const membership = await db().query("SELECT id FROM memberships WHERE user_id=$1 AND active=true LIMIT 1",[user.id]);
+  if (!membership.rowCount) return NextResponse.json({error:"No active company membership"},{status:403});
+  await createSession(user.id);
+  return NextResponse.redirect(new URL("/",req.url),303);
+}
