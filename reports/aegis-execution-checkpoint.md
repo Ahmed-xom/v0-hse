@@ -99,3 +99,12 @@ Use GitHub file/tree retrieval to locate source export manifests and app databas
 - Existing config/aegis-final-mapping-review.json still classifies 335/341 tables unresolved, 3 evidence-backed proposals (company, business_unit, employee), and 3 candidate-review tables (document, document_folder, library access). All 341 entries remain unapproved.
 - The outer project ZIP contains XOM_Files.zip with only 13 bytes; this is a placeholder and not a usable attachment archive.
 - No database writes were performed. Staging backup/restore proof and approved mapping remain missing; production/main untouched.
+
+
+## Additional source assets and target-state inspection — 2026-10-31 evening
+- Found and validated `amnko-drive-verified-attachments.zip`: 30,868,850 bytes, 47 ZIP entries, CRC test passed, containing index.csv plus 46 attachment files.
+- Both attachment manifests contain 46 records: 19 incident and 27 journey. All 46 still lack a resolved Neon parent ID and are marked NOT_UPLOADED. ZIP integrity is confirmed; parent linkage is not.
+- `amnko-library-content-crosswalk.csv` has 487 library rows: 348 CONFIRMED by exact legacy Rowguid-to-archive filename stem; 139 remain UNRESOLVED. This confirms archive-file identity, not target document IDs or upload completion.
+- Read-only Staging query (branch `br-wispy-hill-apxr32tq`) reports 111 public tables, 2 documents, 4 incidents, 1 journey, and 46 attachment_records. Existing attachment_records have blank target_id and legacy parent fields UNLINKED; they are not linked to source records.
+- The 4 current incident reference numbers are INC-20260912-0001 and INC-20260913-0001..0003; these do not match the source manifest references (e.g. INC-2024-000001), so no parent IDs can safely be inferred. Existing journey record is not proven to correspond to any of the 27 source journeys.
+- No uploads, database writes, DDL, or production changes performed. Library content target document rows are only 2; no full library import can be inferred from archive matches.
