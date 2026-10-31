@@ -1,0 +1,1 @@
+source_schema,source_table,source_column,source_data_type,source_nullable,source_pk,source_fk,target_schema,target_table,target_column,target_data_type,target_nullable,target_default,target_pk,target_fk,transformation,null_handling,business_rule,evidence,confidence,status,review_status
